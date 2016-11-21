@@ -68,8 +68,6 @@ class NiddlerWindow : JPanel(), NiddlerClientListener, NiddlerMessageListener {
             if (selection != null)
                 onDeviceSelectionChanged(selection)
         }
-
-        isVisible = true
     }
 
     fun onWindowInvisible() {
