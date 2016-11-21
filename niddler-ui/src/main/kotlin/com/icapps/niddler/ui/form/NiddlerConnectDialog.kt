@@ -2,10 +2,10 @@ package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.ui.addChangeListener
 import se.vidstige.jadb.JadbConnection
+import java.awt.Window
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.DefaultListModel
-import javax.swing.JFrame
 import javax.swing.JOptionPane
 import javax.swing.ListModel
 
@@ -13,11 +13,11 @@ import javax.swing.ListModel
  * @author Nicola Verbeeck
  * @date 17/11/16.
  */
-class NiddlerConnectDialog(parent: JFrame?, val adbConnection: JadbConnection, val previousIp: String?, val previousPort: Int?) : ConnectDialog(parent) {
+class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, val previousIp: String?, val previousPort: Int?) : ConnectDialog(parent) {
 
     companion object {
         @JvmStatic
-        fun showDialog(parent: JFrame?, adbConnection: JadbConnection, previousIp: String?, previousPort: Int?): ConnectSelection? {
+        fun showDialog(parent: Window?, adbConnection: JadbConnection, previousIp: String?, previousPort: Int?): ConnectSelection? {
             val dialog = NiddlerConnectDialog(parent, adbConnection, previousIp, previousPort)
             dialog.initUI()
             dialog.pack()

@@ -9,8 +9,6 @@ import com.icapps.niddler.ui.model.NiddlerMessageListener
 import com.icapps.niddler.ui.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.model.ui.TimelineMessagesTableModel
 import com.icapps.niddler.ui.setColumnFixedWidth
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
 import java.net.URI
 import javax.swing.*
 import javax.swing.border.EmptyBorder
@@ -66,24 +64,21 @@ class NiddlerWindow : JPanel(), NiddlerClientListener, NiddlerMessageListener {
         }
 
         windowContents.connectButton.addActionListener {
-            //TOOD
-            val selection = NiddlerConnectDialog.showDialog(null, adbConnection.bootStrap(), null, null)
+            val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(this), adbConnection.bootStrap(), null, null)
             if (selection != null)
                 onDeviceSelectionChanged(selection)
         }
 
-//        addWindowListener(object : WindowAdapter() {
-//            override fun windowClosing(e: WindowEvent?) {
-//                super.windowClosing(e)
-//                messages.unregisterListener(this@NiddlerWindow)
-//            }
-//
-//            override fun windowOpened(e: WindowEvent?) {
-//                super.windowOpened(e)
-//                messages.registerListener(this@NiddlerWindow)
-//            }
-//        })//TODO
         isVisible = true
+    }
+
+    fun onWindowInvisible() {
+        messages.unregisterListener(this@NiddlerWindow)
+    }
+
+    fun onWindowVisible() {
+        messages.registerListener(this@NiddlerWindow)
+        updateMessages()
     }
 
     private fun checkRowSelectionState() {
@@ -142,6 +137,10 @@ class NiddlerWindow : JPanel(), NiddlerClientListener, NiddlerMessageListener {
             return
         }
 
+        updateMessages()
+    }
+
+    private fun updateMessages() {
         SwingUtilities.invokeLater {
             val previousSelection = windowContents.messages.selectedRow
             (windowContents.messages.model as TimelineMessagesTableModel).updateMessages(messages)

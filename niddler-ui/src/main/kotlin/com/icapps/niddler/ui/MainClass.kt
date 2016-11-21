@@ -1,6 +1,9 @@
 package com.icapps.niddler.ui
 
 import com.icapps.niddler.ui.form.NiddlerWindow
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
+import javax.swing.JFrame
 import javax.swing.WindowConstants
 
 
@@ -10,7 +13,24 @@ import javax.swing.WindowConstants
  */
 fun main(args: Array<String>) {
     val window = NiddlerWindow()
-    window.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+
+    val frame = JFrame()
+    frame.add(window)
+    frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
+    frame.pack()
+
+    frame.addWindowListener(object : WindowAdapter() {
+        override fun windowClosing(e: WindowEvent?) {
+            super.windowClosing(e)
+            window.onWindowInvisible()
+        }
+
+        override fun windowOpened(e: WindowEvent?) {
+            super.windowOpened(e)
+            window.onWindowVisible()
+        }
+    })
+
     window.setSize(1300, 600)
     window.init()
 }
