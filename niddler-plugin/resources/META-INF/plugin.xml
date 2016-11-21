@@ -14,7 +14,7 @@
     <depends>com.intellij.modules.lang</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
+        <toolWindow id="Niddler tool window" anchor="bottom" factoryClass="com.icapps.niddler.ui.NiddlerToolWindow"/>
     </extensions>
 
     <actions>

@@ -9,6 +9,7 @@ import com.icapps.niddler.ui.model.NiddlerMessageListener
 import com.icapps.niddler.ui.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.model.ui.TimelineMessagesTableModel
 import com.icapps.niddler.ui.setColumnFixedWidth
+import java.awt.BorderLayout
 import java.net.URI
 import javax.swing.*
 import javax.swing.border.EmptyBorder
@@ -17,7 +18,7 @@ import javax.swing.border.EmptyBorder
  * @author Nicola Verbeeck
  * @date 14/11/16.
  */
-class NiddlerWindow : JPanel(), NiddlerClientListener, NiddlerMessageListener {
+class NiddlerWindow : JPanel(BorderLayout()), NiddlerClientListener, NiddlerMessageListener {
 
     private val windowContents = MainWindow()
     private val adbConnection = ADBBootstrap()
@@ -26,7 +27,7 @@ class NiddlerWindow : JPanel(), NiddlerClientListener, NiddlerMessageListener {
     private val detailContainer = MessageDetailContainer(messages)
 
     fun init() {
-        add(windowContents.rootPanel)
+        add(windowContents.rootPanel, BorderLayout.CENTER)
 
         windowContents.splitPane.rightComponent = detailContainer
 
