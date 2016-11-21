@@ -31,6 +31,7 @@ fun main(args: Array<String>) {
         }
     })
 
-    window.setSize(1300, 600)
     window.init()
+    frame.setSize(1300, 600)
+    frame.isVisible = true
 }
