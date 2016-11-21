@@ -19,7 +19,7 @@ import javax.swing.border.EmptyBorder
  * @author Nicola Verbeeck
  * @date 14/11/16.
  */
-class NiddlerWindow : JFrame(), NiddlerClientListener, NiddlerMessageListener {
+class NiddlerWindow : JPanel(), NiddlerClientListener, NiddlerMessageListener {
 
     private val windowContents = MainWindow()
     private val adbConnection = ADBBootstrap()
@@ -66,23 +66,23 @@ class NiddlerWindow : JFrame(), NiddlerClientListener, NiddlerMessageListener {
         }
 
         windowContents.connectButton.addActionListener {
-            val selection = NiddlerConnectDialog.showDialog(this, adbConnection.bootStrap(), null, null)
+            //TOOD
+            val selection = NiddlerConnectDialog.showDialog(null, adbConnection.bootStrap(), null, null)
             if (selection != null)
                 onDeviceSelectionChanged(selection)
         }
 
-        pack()
-        addWindowListener(object : WindowAdapter() {
-            override fun windowClosing(e: WindowEvent?) {
-                super.windowClosing(e)
-                messages.unregisterListener(this@NiddlerWindow)
-            }
-
-            override fun windowOpened(e: WindowEvent?) {
-                super.windowOpened(e)
-                messages.registerListener(this@NiddlerWindow)
-            }
-        })
+//        addWindowListener(object : WindowAdapter() {
+//            override fun windowClosing(e: WindowEvent?) {
+//                super.windowClosing(e)
+//                messages.unregisterListener(this@NiddlerWindow)
+//            }
+//
+//            override fun windowOpened(e: WindowEvent?) {
+//                super.windowOpened(e)
+//                messages.registerListener(this@NiddlerWindow)
+//            }
+//        })//TODO
         isVisible = true
     }
 
