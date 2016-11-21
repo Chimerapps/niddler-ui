@@ -18,18 +18,18 @@ import javax.swing.border.EmptyBorder
  * @author Nicola Verbeeck
  * @date 14/11/16.
  */
-class NiddlerWindow : JPanel(BorderLayout()), NiddlerClientListener, NiddlerMessageListener {
+class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout()), NiddlerClientListener, NiddlerMessageListener {
 
-    private val windowContents = MainWindow()
+    private val windowContents = NiddlerUIContainer(interfaceFactory)
     private val adbConnection = ADBBootstrap()
 
     private val messages = MessageContainer(NiddlerMessageBodyParser())
-    private val detailContainer = MessageDetailContainer(messages)
+    private val detailContainer = MessageDetailContainer(interfaceFactory, messages)
 
     fun init() {
         add(windowContents.rootPanel, BorderLayout.CENTER)
 
-        windowContents.splitPane.rightComponent = detailContainer
+        windowContents.splitPane.right = detailContainer.asComponent
 
         windowContents.messages.model = TimelineMessagesTableModel()
         windowContents.messages.setColumnFixedWidth(0, 90)

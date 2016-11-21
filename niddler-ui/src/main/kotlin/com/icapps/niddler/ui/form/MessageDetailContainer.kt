@@ -1,30 +1,36 @@
 package com.icapps.niddler.ui.form
 
+import com.icapps.niddler.ui.form.components.TabComponent
 import com.icapps.niddler.ui.model.BodyFormatType
 import com.icapps.niddler.ui.model.MessageContainer
 import com.icapps.niddler.ui.model.ParsedNiddlerMessage
 import java.awt.BorderLayout
+import java.awt.Component
 import javax.swing.JLabel
 import javax.swing.JPanel
-import javax.swing.JTabbedPane
 import javax.swing.SwingConstants
 
 /**
  * @author Nicola Verbeeck
  * @date 18/11/16.
  */
-class MessageDetailContainer(message: MessageContainer) : JTabbedPane() {
+class MessageDetailContainer(interfaceFactory: InterfaceFactory, message: MessageContainer) {
 
     private val bodyRoot: JPanel
     private val detailPanel: MessageDetailPanel
     private var currentMessage: ParsedNiddlerMessage? = null
+    private val content: TabComponent
+
+    val asComponent : Component
+        get() = content.asComponent
 
     init {
+        content = interfaceFactory.createTabComponent()
         bodyRoot = JPanel(BorderLayout())
 
         detailPanel = MessageDetailPanel(message)
-        addTab("Details", detailPanel)
-        addTab("Body", bodyRoot)
+        content.addTab("Details", detailPanel)
+        content.addTab("Body", bodyRoot)
     }
 
     fun setMessage(message: ParsedNiddlerMessage) {
@@ -43,17 +49,17 @@ class MessageDetailContainer(message: MessageContainer) : JTabbedPane() {
             showEmptyMessageBody()
             return
         }
-        revalidate()
         bodyRoot.revalidate()
-        repaint()
+        content.invalidate()
+        content.repaint()
     }
 
     private fun showEmptyMessageBody() {
         bodyRoot.removeAll()
         bodyRoot.add(JLabel("This ${if (currentMessage?.isRequest == true) "request" else "response"} has no body", SwingConstants.CENTER), BorderLayout.CENTER)
         bodyRoot.revalidate()
-        revalidate()
-        repaint()
+        content.invalidate()
+        content.repaint()
     }
 
     fun clear() {
@@ -67,8 +73,8 @@ class MessageDetailContainer(message: MessageContainer) : JTabbedPane() {
         bodyRoot.removeAll()
         bodyRoot.add(JLabel("Select a request/response", SwingConstants.CENTER), BorderLayout.CENTER)
         bodyRoot.revalidate()
-        revalidate()
-        repaint()
+        content.invalidate()
+        content.repaint()
     }
 
 }
