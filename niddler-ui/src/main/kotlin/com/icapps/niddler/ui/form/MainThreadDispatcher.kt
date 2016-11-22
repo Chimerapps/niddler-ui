@@ -8,6 +8,10 @@ interface MainThreadDispatcher {
 
     companion object {
         lateinit var instance: MainThreadDispatcher
+
+        fun dispatch(toExecute: (Unit) -> Unit) {
+            instance.dispatch(Runnable { toExecute.invoke(Unit) })
+        }
     }
 
     fun dispatch(toExecute: Runnable)

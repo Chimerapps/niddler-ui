@@ -1,6 +1,5 @@
 package com.icapps.niddler.ui.model
 
-import com.google.gson.JsonObject
 import org.java_websocket.util.Base64
 import java.nio.charset.Charset
 
@@ -16,9 +15,6 @@ open class NiddlerMessage {
     lateinit var messageId: String
     var timestamp: Long = 0
 
-    var controlCode: Int? = null
-    var controlData: JsonObject? = null
-
     var url: String? = null
     var method: String? = null
     var body: String? = null
@@ -27,9 +23,6 @@ open class NiddlerMessage {
 
     val isRequest: Boolean
         get() = statusCode == null
-
-    val isControlMessage: Boolean
-        get() = controlCode != null
 
     val getBodyAsBytes: ByteArray?
         get() = if (body != null) Base64.decode(body) else null

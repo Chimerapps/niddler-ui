@@ -1,20 +1,21 @@
 package com.icapps.niddler.ui.model
 
 import com.google.gson.Gson
-import com.icapps.niddler.ui.NiddlerClientMessageListener
+import com.icapps.niddler.ui.connection.NiddlerMessageListener
+import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
 import java.util.*
 
 /**
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : NiddlerClientMessageListener {
+class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : NiddlerMessageListener {
 
     private val knownMessageIds: MutableSet<String> = hashSetOf()
     private val messagesByMessageRequestId: MutableMap<String, MutableList<ParsedNiddlerMessage>> = hashMapOf()
 
     private val gson = Gson()
-    private val listeners: MutableSet<NiddlerMessageListener> = hashSetOf()
+    private val listeners: MutableSet<ParsedNiddlerMessageListener> = hashSetOf()
 
     fun clear() {
         synchronized(knownMessageIds) {
@@ -63,24 +64,21 @@ class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : Niddl
         return map as SortedMap<String, List<ParsedNiddlerMessage>>
     }
 
-    override fun onMessage(msg: String) {
-        val message = bodyParser.parseBody(gson.fromJson(msg, NiddlerMessage::class.java))
-        if (!message.isControlMessage) {
-            addMessage(message)
-        }
-
+    override fun onServiceMessage(niddlerMessage: NiddlerMessage) {
+        val parsedMessage = bodyParser.parseBody(niddlerMessage)
+        addMessage(parsedMessage)
         synchronized(listeners) {
-            listeners.forEach { it.onMessage(message) }
+            listeners.forEach { it.onMessage(parsedMessage) }
         }
     }
 
-    fun registerListener(listener: NiddlerMessageListener) {
+    fun registerListener(listener: ParsedNiddlerMessageListener) {
         synchronized(listeners) {
             listeners.add(listener)
         }
     }
 
-    fun unregisterListener(listener: NiddlerMessageListener) {
+    fun unregisterListener(listener: ParsedNiddlerMessageListener) {
         synchronized(listeners) {
             listeners.remove(listener)
         }
@@ -90,9 +88,26 @@ class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : Niddl
         return synchronized(knownMessageIds) { messagesByMessageRequestId[requestId] }
     }
 
+    override fun onServerInfo(serverInfo: NiddlerServerInfo) {
+        //Ignore
+    }
+
+    override fun onAuthRequest(): String? {
+        //We don't know anything about authentication
+        return null
+    }
+
+    override fun onReady() {
+        //Ignore
+    }
+
+    override fun onClosed() {
+        //Ignore
+    }
+
 }
 
-interface NiddlerMessageListener {
+interface ParsedNiddlerMessageListener {
 
     fun onMessage(message: ParsedNiddlerMessage)
 

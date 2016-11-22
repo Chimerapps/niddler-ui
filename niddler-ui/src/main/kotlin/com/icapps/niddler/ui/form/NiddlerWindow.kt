@@ -1,12 +1,10 @@
 package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.ui.NiddlerClient
-import com.icapps.niddler.ui.NiddlerClientListener
 import com.icapps.niddler.ui.adb.ADBBootstrap
-import com.icapps.niddler.ui.model.MessageContainer
-import com.icapps.niddler.ui.model.NiddlerMessageBodyParser
-import com.icapps.niddler.ui.model.NiddlerMessageListener
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.icapps.niddler.ui.connection.NiddlerMessageListener
+import com.icapps.niddler.ui.model.*
+import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
 import com.icapps.niddler.ui.model.ui.TimelineMessagesTableModel
 import com.icapps.niddler.ui.setColumnFixedWidth
 import java.awt.BorderLayout
@@ -18,7 +16,7 @@ import javax.swing.border.EmptyBorder
  * @author Nicola Verbeeck
  * @date 14/11/16.
  */
-class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout()), NiddlerClientListener, NiddlerMessageListener {
+class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout()), NiddlerMessageListener, ParsedNiddlerMessageListener {
 
     private val windowContents = NiddlerUIContainer(interfaceFactory)
     private val adbConnection = ADBBootstrap()
@@ -104,43 +102,44 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
 
     private fun initNiddlerOnDevice(ip: String) {
         niddlerClient?.close()
-        niddlerClient?.unregisterClientListener(this)
-        niddlerClient?.unregisterMessageListener(messages)
+        niddlerClient?.unregisterMessageListener(this)
         messages.clear()
         if (niddlerClient != null) {
             //TODO Remove previous port mapping, this could cause conflicts, to check
         }
         niddlerClient = NiddlerClient(URI.create("ws://$ip:6555"))
-        niddlerClient?.registerClientListener(this)
-        niddlerClient?.registerMessageListener(messages)
+        niddlerClient?.unregisterMessageListener(this)
         niddlerClient?.connectBlocking()
     }
 
-    override fun onConnected() {
-        SwingUtilities.invokeLater {
+    override fun onReady() {
+        MainThreadDispatcher.dispatch {
             windowContents.statusText.text = "Connected"
             windowContents.statusText.icon = ImageIcon(NiddlerWindow::class.java.getResource("/ic_connected.png"))
         }
     }
 
-    override fun onDisconnected() {
-        SwingUtilities.invokeLater {
+    override fun onClosed() {
+        MainThreadDispatcher.dispatch {
             windowContents.statusText.text = "Disconnected"
             windowContents.statusText.icon = ImageIcon(NiddlerWindow::class.java.getResource("/ic_disconnected.png"))
         }
     }
 
-    override fun onMessage(message: ParsedNiddlerMessage) {
-        if (message.isControlMessage) {
-            handleControlMessage(message)
-            return
-        }
+    override fun onAuthRequest(): String? {
+        return JOptionPane.showInputDialog("Enter the password")
+    }
 
+    override fun onServiceMessage(niddlerMessage: NiddlerMessage) {
+        //Nothing
+    }
+
+    override fun onMessage(message: ParsedNiddlerMessage) {
         updateMessages()
     }
 
     private fun updateMessages() {
-        SwingUtilities.invokeLater {
+        MainThreadDispatcher.dispatch {
             val previousSelection = windowContents.messages.selectedRow
             (windowContents.messages.model as TimelineMessagesTableModel).updateMessages(messages)
             if (previousSelection != -1)
@@ -148,16 +147,11 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
         }
     }
 
-    private fun handleControlMessage(message: ParsedNiddlerMessage) {
-        when (message.controlCode) {
-            1 -> SwingUtilities.invokeLater {
-                windowContents.statusText.text = "Connected to ${message.controlData?.get("serverName")?.asString} (${message.controlData?.get("serverDescription")?.asString})"
-                windowContents.statusText.icon = ImageIcon(NiddlerWindow::class.java.getResource("/ic_connected.png"))
-            }
-
-            else -> JOptionPane.showMessageDialog(this, "Received unknown control message")
+    override fun onServerInfo(serverInfo: NiddlerServerInfo) {
+        MainThreadDispatcher.dispatch {
+            windowContents.statusText.text = "Connected to ${serverInfo.serverName} (${serverInfo.serverDescription})"
         }
-
     }
+
 
 }

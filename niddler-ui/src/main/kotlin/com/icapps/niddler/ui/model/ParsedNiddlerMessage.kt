@@ -14,12 +14,6 @@ class ParsedNiddlerMessage(val bodyFormat: BodyFormat, val bodyData: Any?, val m
     val messageId: String
         get() = message.messageId
 
-    val controlCode: Int?
-        get() = message.controlCode
-
-    val controlData: JsonObject?
-        get() = message.controlData
-
     val timestamp: Long
         get() = message.timestamp
 
@@ -41,6 +35,4 @@ class ParsedNiddlerMessage(val bodyFormat: BodyFormat, val bodyData: Any?, val m
     val isRequest: Boolean
         get() = message.isRequest
 
-    val isControlMessage: Boolean
-        get() = message.isControlMessage
 }
