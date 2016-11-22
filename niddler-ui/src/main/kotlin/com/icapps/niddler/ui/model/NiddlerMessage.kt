@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.model
 
-import org.java_websocket.util.Base64
 import java.nio.charset.Charset
+import java.util.*
 
 
 /**
@@ -25,11 +25,11 @@ open class NiddlerMessage {
         get() = statusCode == null
 
     val getBodyAsBytes: ByteArray?
-        get() = if (body != null) Base64.decode(body) else null
+        get() = if (body != null) Base64.getUrlDecoder().decode(body) else null
 
     fun getBodyAsString(encoding: String?): String? {
         return if (body != null)
-            String(Base64.decode(body), if (encoding == null) Charsets.UTF_8 else Charset.forName(encoding))
+            String(Base64.getUrlDecoder().decode(body), if (encoding == null) Charsets.UTF_8 else Charset.forName(encoding))
         else
             null
     }

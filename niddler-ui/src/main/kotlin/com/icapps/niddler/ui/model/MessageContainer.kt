@@ -1,6 +1,5 @@
 package com.icapps.niddler.ui.model
 
-import com.google.gson.Gson
 import com.icapps.niddler.ui.connection.NiddlerMessageListener
 import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
 import java.util.*
@@ -14,7 +13,6 @@ class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : Niddl
     private val knownMessageIds: MutableSet<String> = hashSetOf()
     private val messagesByMessageRequestId: MutableMap<String, MutableList<ParsedNiddlerMessage>> = hashMapOf()
 
-    private val gson = Gson()
     private val listeners: MutableSet<ParsedNiddlerMessageListener> = hashSetOf()
 
     fun clear() {

@@ -103,12 +103,14 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
     private fun initNiddlerOnDevice(ip: String) {
         niddlerClient?.close()
         niddlerClient?.unregisterMessageListener(this)
+        niddlerClient?.unregisterMessageListener(messages)
         messages.clear()
         if (niddlerClient != null) {
             //TODO Remove previous port mapping, this could cause conflicts, to check
         }
         niddlerClient = NiddlerClient(URI.create("ws://$ip:6555"))
-        niddlerClient?.unregisterMessageListener(this)
+        niddlerClient?.registerMessageListener(this)
+        niddlerClient?.registerMessageListener(messages)
         niddlerClient?.connectBlocking()
     }
 
