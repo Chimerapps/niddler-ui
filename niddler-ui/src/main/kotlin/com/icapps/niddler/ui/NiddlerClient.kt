@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui
 
 import org.java_websocket.client.WebSocketClient
+import org.java_websocket.drafts.Draft_17
 import org.java_websocket.handshake.ServerHandshake
 import trikita.log.Log
 import java.net.URI
@@ -9,7 +10,7 @@ import java.util.*
 /**
  * Created by maartenvangiel on 14/11/2016.
  */
-class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI) {
+class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI, Draft_17()) {
 
     private val clientListeners: MutableSet<NiddlerClientListener> = HashSet()
     private val messageListeners: MutableSet<NiddlerClientMessageListener> = HashSet()
@@ -23,7 +24,7 @@ class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI) {
 
     override fun onClose(code: Int, reason: String?, remote: Boolean) {
         Log.d("Connection closed: " + reason)
-        synchronized(clientListeners){
+        synchronized(clientListeners) {
             clientListeners.forEach { it.onDisconnected() }
         }
     }

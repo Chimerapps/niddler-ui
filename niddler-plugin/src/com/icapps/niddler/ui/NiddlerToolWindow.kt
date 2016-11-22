@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui
 
 import com.icapps.niddler.ui.component.IntelliJInterfaceFactory
+import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.NiddlerWindow
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
@@ -19,6 +20,8 @@ class NiddlerToolWindow : ToolWindowFactory {
     private lateinit var niddlerWindow: NiddlerWindow
 
     override fun createToolWindowContent(p0: Project, window: ToolWindow) {
+        MainThreadDispatcher.instance = IntelliJMaiThreadDispatcher()
+
         niddlerWindow = NiddlerWindow(IntelliJInterfaceFactory(p0, window.contentManager))
 
         val contentService = ContentFactory.SERVICE.getInstance()
@@ -28,7 +31,7 @@ class NiddlerToolWindow : ToolWindowFactory {
         niddlerWindow.onWindowVisible()
 
         window.contentManager.addContent(content)
-        window.component.addAncestorListener(object: AncestorListener{
+        window.component.addAncestorListener(object : AncestorListener {
             override fun ancestorAdded(event: AncestorEvent?) {
                 niddlerWindow.onWindowVisible()
             }

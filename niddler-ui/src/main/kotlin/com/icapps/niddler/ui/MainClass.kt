@@ -1,7 +1,9 @@
 package com.icapps.niddler.ui
 
+import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.NiddlerWindow
 import com.icapps.niddler.ui.form.components.impl.SwingInterfaceFactory
+import com.icapps.niddler.ui.form.impl.SwingMainThreadDispatcher
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
@@ -13,6 +15,8 @@ import javax.swing.WindowConstants
  * @date 10/11/16.
  */
 fun main(args: Array<String>) {
+    MainThreadDispatcher.instance = SwingMainThreadDispatcher()
+
     val window = NiddlerWindow(SwingInterfaceFactory())
 
     val frame = JFrame()
