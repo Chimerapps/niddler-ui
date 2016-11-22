@@ -40,7 +40,7 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
         windowContents.statusBar.border = BorderFactory.createCompoundBorder(windowContents.statusBar.border, EmptyBorder(1, 6, 1, 6))
 
         windowContents.messages.selectionModel.addListSelectionListener {
-            SwingUtilities.invokeLater {
+            MainThreadDispatcher.dispatch {
                 if (windowContents.messages.selectedRowCount == 0) {
                     val timer = Timer(200) {
                         checkRowSelectionState()

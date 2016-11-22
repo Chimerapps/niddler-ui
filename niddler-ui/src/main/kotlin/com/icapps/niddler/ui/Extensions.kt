@@ -1,15 +1,13 @@
 package com.icapps.niddler.ui
 
+import com.icapps.niddler.ui.form.MainThreadDispatcher
 import java.beans.PropertyChangeEvent
 import java.util.*
 import javax.swing.JTable
 import javax.swing.JTextField
-import javax.swing.SwingUtilities
-import javax.swing.event.ChangeEvent
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.text.Document
-import javax.swing.text.JTextComponent
 
 
 /**
@@ -63,7 +61,7 @@ fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {
 
         override fun changedUpdate(e: DocumentEvent?) {
             lastChange++
-            SwingUtilities.invokeLater {
+            MainThreadDispatcher.dispatch {
                 if (lastNotifiedChange != lastChange) {
                     lastNotifiedChange = lastChange
                     changeListener.invoke(this@addChangeListener)
