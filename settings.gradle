@@ -1,0 +1,4 @@
+rootProject.name = 'niddler'
+
+include 'niddler-plugin'
+include 'niddler-ui'
