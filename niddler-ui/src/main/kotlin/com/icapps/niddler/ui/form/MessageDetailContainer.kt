@@ -21,7 +21,7 @@ class MessageDetailContainer(interfaceFactory: InterfaceFactory, message: Messag
     private var currentMessage: ParsedNiddlerMessage? = null
     private val content: TabComponent
 
-    val asComponent : Component
+    val asComponent: Component
         get() = content.asComponent
 
     init {
@@ -45,6 +45,8 @@ class MessageDetailContainer(interfaceFactory: InterfaceFactory, message: Messag
             bodyRoot.add(NiddlerJsonDataPanel(message), BorderLayout.CENTER)
         } else if (message.bodyFormat.type == BodyFormatType.FORMAT_XML) {
             bodyRoot.add(NiddlerXMLDataPanel(message), BorderLayout.CENTER)
+        } else if (message.bodyFormat.type == BodyFormatType.FORMAT_PLAIN) {
+            bodyRoot.add(NiddlerPlainDataPanel(message), BorderLayout.CENTER)
         } else if (message.body.isNullOrBlank()) {
             showEmptyMessageBody()
             return

@@ -23,6 +23,7 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
     private val generalPanel: JXTaskPane = JXTaskPane()
     private val headersPanel: JXTaskPane = JXTaskPane()
     private val generalContentPanel: JPanel
+    private val headersContentPanel: JPanel
 
     private val formatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
     private val boldFont: Font
@@ -40,6 +41,11 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
         val contentScroller = JScrollPane(generalContentPanel)
         generalPanel.contentPane.add(contentScroller)
 
+        headersContentPanel = JPanel(BorderLayout())
+        headersContentPanel.border = EmptyBorder(5, 5, 5, 5)
+        val contentScroller2 = JScrollPane(headersContentPanel)
+        headersPanel.contentPane.add(contentScroller2)
+
         boldFont = Font("Monospaced", Font.BOLD, 12)
         normalFont = Font("Monospaced", 0, 12)
     }
@@ -49,6 +55,7 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
 
         removeAll()
         generalContentPanel.removeAll()
+        headersContentPanel.removeAll()
         add(taskContainer, BorderLayout.CENTER)
 
         val labelPanel = JPanel()
@@ -80,10 +87,32 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
         labelPanel.add(boldLabel("Status"))
         valuePanel.add(regularLabel((message.statusCode ?: other?.statusCode)?.toString()))
 
+        populateHeaders(message)
+
+        headersContentPanel.revalidate()
         generalContentPanel.revalidate()
 
         revalidate()
         repaint()
+    }
+
+    private fun populateHeaders(message: ParsedNiddlerMessage) {
+        val labelPanel = JPanel()
+        val valuePanel = JPanel()
+        labelPanel.layout = BoxLayout(labelPanel, BoxLayout.Y_AXIS)
+        labelPanel.border = EmptyBorder(0, 0, 0, 10)
+        valuePanel.layout = BoxLayout(valuePanel, BoxLayout.Y_AXIS)
+        labelPanel.background = Color(0, 0, 0, 0)
+        valuePanel.background = Color(0, 0, 0, 0)
+        headersContentPanel.add(labelPanel, BorderLayout.WEST)
+        headersContentPanel.add(valuePanel, BorderLayout.CENTER)
+        message.headers?.forEach {
+            labelPanel.add(boldLabel(it.key))
+            labelPanel.add(Box.createRigidArea(Dimension(0, 5)))
+
+            valuePanel.add(regularLabel(it.value.joinToString(", ")))
+            valuePanel.add(Box.createRigidArea(Dimension(0, 5)))
+        }
     }
 
     fun clear() {

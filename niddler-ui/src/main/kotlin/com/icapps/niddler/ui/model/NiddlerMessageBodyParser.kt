@@ -64,7 +64,12 @@ class NiddlerMessageBodyParser {
         val firstReasonableTextByte = findFirstNonBlankByte(bodyAsBytes)
         val parsed = when (firstReasonableTextByte) {
             '{'.toByte(), '['.toByte() -> examineJson(bodyAsBytes, message)
-            '<'.toByte() -> examineXML(bodyAsBytes, message)
+            '<'.toByte() ->
+                examineXML(bodyAsBytes, message) ?:
+                        if (firstBytesContainHtml(bodyAsBytes, "html"))
+                            ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_PLAIN, null, null), String(bodyAsBytes, 0, bodyAsBytes.size), message)
+                        else
+                            null
             else -> null
         }
         if (parsed != null)
@@ -85,6 +90,10 @@ class NiddlerMessageBodyParser {
             return it
         }
         return null
+    }
+
+    private fun firstBytesContainHtml(bytes: ByteArray, string: String): Boolean {
+        return String(bytes, 0, Math.min(bytes.size, 32)).contains(string, true)
     }
 
     private fun fromMime(mimeType: String): BodyFormatType {
