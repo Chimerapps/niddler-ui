@@ -24,7 +24,6 @@ class NiddlerFormEncodedPanel(message: ParsedNiddlerMessage) : NiddlerStructured
 private class TwoColumnTableModel(items: Map<String, String>) : AbstractTableModel() {
 
     val itemList: List<Pair<String, String>> = items.entries.map { entry: Map.Entry<String, String> ->
-        println("Mapping")
         Pair(entry.key, entry.value)
     }
 
