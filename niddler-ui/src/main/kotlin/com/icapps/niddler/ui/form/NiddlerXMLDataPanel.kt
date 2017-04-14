@@ -17,21 +17,23 @@ import javax.xml.transform.stream.StreamResult
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-class NiddlerXMLDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(message) {
+class NiddlerXMLDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(true, message) {
 
     init {
         initUI()
     }
 
-    override fun createTreeView() {
-        treeView = JTree()
-        treeView.isEditable = false
-        treeView.showsRootHandles = true
-        treeView.isRootVisible = true
-        treeView.model = DefaultTreeModel(XMLTreeNode((message.bodyData as org.w3c.dom.Document).documentElement, null), false)
+    override fun createStructuredView() {
+        val structuredView = JTree()
+        structuredView.isEditable = false
+        structuredView.showsRootHandles = true
+        structuredView.isRootVisible = true
+        structuredView.model = DefaultTreeModel(XMLTreeNode((message.bodyData as org.w3c.dom.Document).documentElement, null), false)
 
-        treeView.cellRenderer = XMLTreeRenderer()
-        treeView.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
+        structuredView.cellRenderer = XMLTreeRenderer()
+        structuredView.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
+
+        this.structuredView = structuredView
     }
 
     override fun createPrettyPrintedView(doc: Document) {

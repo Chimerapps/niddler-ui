@@ -4,6 +4,7 @@ import com.google.gson.JsonParser
 import org.apache.http.entity.ContentType
 import java.io.ByteArrayInputStream
 import java.io.InputStreamReader
+import java.net.URLDecoder
 import java.nio.charset.Charset
 import javax.xml.parsers.DocumentBuilderFactory
 
@@ -34,6 +35,7 @@ class NiddlerMessageBodyParser {
             }
             BodyFormatType.FORMAT_IMAGE -> TODO("Images not yet supported, sorry!")
             BodyFormatType.FORMAT_BINARY -> return ParsedNiddlerMessage(contentType, message.getBodyAsBytes, message)
+            BodyFormatType.FORMAT_FORM_ENCODED -> return examineFormEncoded(message.getBodyAsBytes, message) ?: throw IllegalArgumentException("Message is not form encoded")
             BodyFormatType.FORMAT_EMPTY -> return ParsedNiddlerMessage(contentType, null, message)
         }
     }
@@ -103,6 +105,7 @@ class NiddlerMessageBodyParser {
             "application/octet-stream" -> return BodyFormatType.FORMAT_BINARY
             "text/html", "text/plain" -> return BodyFormatType.FORMAT_PLAIN
             "application/svg+xml" -> return BodyFormatType.FORMAT_IMAGE
+            "application/x-www-form-urlencoded" -> return BodyFormatType.FORMAT_FORM_ENCODED
             "image/bmp", "image/png", "image/tiff" -> return BodyFormatType.FORMAT_IMAGE
         }
         return BodyFormatType.FORMAT_BINARY
@@ -134,6 +137,19 @@ class NiddlerMessageBodyParser {
             return null
         }
     }
+
+    private fun examineFormEncoded(bodyAsBytes: ByteArray?, message: NiddlerMessage): ParsedNiddlerMessage? {
+        if (bodyAsBytes == null) return null
+
+        val map: MutableMap<String, String> = mutableMapOf()
+        String(bodyAsBytes).split('&').forEach {
+            val parts = it.split('=')
+            val key = URLDecoder.decode(parts[0], "UTF-8")
+            val value = URLDecoder.decode(parts[1], "UTF-8")
+            map[key] = value
+        }
+        return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_FORM_ENCODED, null, null), map, message)
+    }
 }
 
 data class BodyFormat(val type: BodyFormatType, val subtype: String?, val encoding: String?) {
@@ -153,5 +169,6 @@ enum class BodyFormatType(val verbose: String) {
     FORMAT_PLAIN("text/plain"),
     FORMAT_IMAGE("image"),
     FORMAT_BINARY("binary"),
-    FORMAT_EMPTY("")
+    FORMAT_EMPTY(""),
+    FORMAT_FORM_ENCODED("x-www-form-urlencoded")
 }

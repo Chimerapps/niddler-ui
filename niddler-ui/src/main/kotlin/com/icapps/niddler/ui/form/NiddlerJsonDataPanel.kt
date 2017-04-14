@@ -14,21 +14,23 @@ import javax.swing.tree.TreeSelectionModel
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-class NiddlerJsonDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(message) {
+class NiddlerJsonDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(true, message) {
 
     init {
         initUI()
     }
 
-    override fun createTreeView() {
-        treeView = JTree()
-        treeView.isEditable = false
-        treeView.showsRootHandles = true
-        treeView.isRootVisible = true
-        treeView.model = DefaultTreeModel(JsonTreeNode(message.bodyData as JsonElement, null, null), false)
+    override fun createStructuredView() {
+        val structuredView = JTree()
+        structuredView.isEditable = false
+        structuredView.showsRootHandles = true
+        structuredView.isRootVisible = true
+        structuredView.model = DefaultTreeModel(JsonTreeNode(message.bodyData as JsonElement, null, null), false)
 
-        treeView.cellRenderer = JsonTreeRenderer()
-        treeView.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
+        structuredView.cellRenderer = JsonTreeRenderer()
+        structuredView.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
+
+        this.structuredView = structuredView
     }
 
     override fun createPrettyPrintedView(doc: Document) {

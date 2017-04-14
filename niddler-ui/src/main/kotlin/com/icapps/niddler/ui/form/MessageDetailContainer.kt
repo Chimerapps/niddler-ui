@@ -47,6 +47,8 @@ class MessageDetailContainer(interfaceFactory: InterfaceFactory, message: Messag
             bodyRoot.add(NiddlerXMLDataPanel(message), BorderLayout.CENTER)
         } else if (message.bodyFormat.type == BodyFormatType.FORMAT_PLAIN) {
             bodyRoot.add(NiddlerPlainDataPanel(message), BorderLayout.CENTER)
+        } else if (message.bodyFormat.type == BodyFormatType.FORMAT_FORM_ENCODED) {
+            bodyRoot.add(NiddlerFormEncodedPanel(message), BorderLayout.CENTER)
         } else if (message.body.isNullOrBlank()) {
             showEmptyMessageBody()
             return

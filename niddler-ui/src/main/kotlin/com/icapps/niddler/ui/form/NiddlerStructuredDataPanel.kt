@@ -10,11 +10,11 @@ import javax.swing.text.Document
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-abstract class NiddlerStructuredDataPanel(protected val message: ParsedNiddlerMessage) : JPanel() {
+abstract class NiddlerStructuredDataPanel(hasPretty: Boolean, protected val message: ParsedNiddlerMessage) : JPanel() {
 
     private var currentContentPanel: JComponent? = null
 
-    protected lateinit var treeView: JTree
+    protected lateinit var structuredView: JComponent
 
     private val treeButton: JToggleButton
     private val prettyButton: JToggleButton
@@ -31,19 +31,22 @@ abstract class NiddlerStructuredDataPanel(protected val message: ParsedNiddlerMe
 
         val buttonGroup = ButtonGroup()
         buttonGroup.add(treeButton)
-        buttonGroup.add(prettyButton)
+        if (hasPretty)
+            buttonGroup.add(prettyButton)
         buttonGroup.add(rawButton)
 
         toolbar = JToolBar()
         toolbar.isFloatable = false
         toolbar.add(Box.createGlue())
         toolbar.add(treeButton)
-        toolbar.add(prettyButton)
+        if (hasPretty)
+            toolbar.add(prettyButton)
         toolbar.add(rawButton)
 
         treeButton.isSelected = true
         treeButton.addItemListener { if (treeButton.isSelected) initAsTree() }
-        prettyButton.addItemListener { if (prettyButton.isSelected) initAsPretty() }
+        if (hasPretty)
+            prettyButton.addItemListener { if (prettyButton.isSelected) initAsPretty() }
         rawButton.addItemListener { if (rawButton.isSelected) initAsRaw() }
 
         monospaceFont = Font("Monospaced", Font.PLAIN, 10)
@@ -52,15 +55,16 @@ abstract class NiddlerStructuredDataPanel(protected val message: ParsedNiddlerMe
     protected fun initUI() {
         add(toolbar, BorderLayout.NORTH)
 
-        createTreeView()
+        createStructuredView()
         initAsTree()
     }
 
-    protected abstract fun createTreeView()
-    protected abstract fun createPrettyPrintedView(doc: Document)
+    protected abstract fun createStructuredView()
+
+    protected open fun createPrettyPrintedView(doc: Document) {}
 
     private fun initAsTree() {
-        replacePanel(JScrollPane(treeView))
+        replacePanel(JScrollPane(structuredView))
     }
 
     private fun initAsPretty() {
