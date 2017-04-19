@@ -28,6 +28,7 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
     private val formatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
     private val boldFont: Font
     private val normalFont: Font
+    private val italicFont: Font
 
     init {
         add(taskContainer, BorderLayout.CENTER)
@@ -48,6 +49,7 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
 
         boldFont = Font("Monospaced", Font.BOLD, 12)
         normalFont = Font("Monospaced", 0, 12)
+        italicFont = Font("Monospaced", Font.ITALIC, 12)
     }
 
     fun setMessage(message: ParsedNiddlerMessage) {
@@ -87,6 +89,9 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
         labelPanel.add(boldLabel("Status"))
         valuePanel.add(regularLabel((message.statusCode ?: other?.statusCode)?.toString()))
 
+        labelPanel.add(boldLabel("Execution time"))
+        valuePanel.add(makeExecutionTimeLabel(message, other))
+
         populateHeaders(message)
 
         headersContentPanel.revalidate()
@@ -122,6 +127,17 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
         repaint()
     }
 
+    private fun makeExecutionTimeLabel(firstMessage: ParsedNiddlerMessage?, secondMessage: ParsedNiddlerMessage?): JLabel {
+        if (firstMessage == null || secondMessage == null) {
+            return italicLabel("Unknown")
+        }
+        val time = if (firstMessage.timestamp > secondMessage.timestamp)
+            firstMessage.timestamp - secondMessage.timestamp
+        else
+            secondMessage.timestamp - firstMessage.timestamp
+        return regularLabel("$time msec")
+    }
+
     private fun findResponse(message: ParsedNiddlerMessage): ParsedNiddlerMessage? {
         return messages.getMessagesWithRequestId(message.requestId)?.find {
             !it.isRequest
@@ -141,6 +157,12 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
     private fun regularLabel(text: String?): JLabel {
         val label = JLabel(text)
         label.font = normalFont
+        return label
+    }
+
+    private fun italicLabel(text: String?): JLabel {
+        val label = JLabel(text)
+        label.font = italicFont
         return label
     }
 

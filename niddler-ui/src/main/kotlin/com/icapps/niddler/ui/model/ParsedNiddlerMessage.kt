@@ -1,7 +1,5 @@
 package com.icapps.niddler.ui.model
 
-import com.google.gson.JsonObject
-
 /**
  * @author Nicola Verbeeck
  * @date 15/11/16.

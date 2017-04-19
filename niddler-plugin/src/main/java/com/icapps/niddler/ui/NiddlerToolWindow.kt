@@ -25,7 +25,7 @@ class NiddlerToolWindow : ToolWindowFactory {
         niddlerWindow = NiddlerWindow(IntelliJInterfaceFactory(p0, window.contentManager))
 
         val contentService = ContentFactory.SERVICE.getInstance()
-        val content = contentService.createContent(niddlerWindow, "Niddler", true)
+        val content = contentService.createContent(niddlerWindow, " - Inspect network traffic", true)
 
         niddlerWindow.init()
         niddlerWindow.onWindowVisible()

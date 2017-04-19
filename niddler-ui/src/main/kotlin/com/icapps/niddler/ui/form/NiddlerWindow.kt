@@ -144,8 +144,12 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
         MainThreadDispatcher.dispatch {
             val previousSelection = windowContents.messages.selectedRow
             (windowContents.messages.model as TimelineMessagesTableModel).updateMessages(messages)
-            if (previousSelection != -1)
-                windowContents.messages.addRowSelectionInterval(previousSelection, previousSelection)
+            if (previousSelection != -1) {
+                try {
+                    windowContents.messages.addRowSelectionInterval(previousSelection, previousSelection)
+                } catch(ignored: IllegalArgumentException) {
+                }
+            }
         }
     }
 
