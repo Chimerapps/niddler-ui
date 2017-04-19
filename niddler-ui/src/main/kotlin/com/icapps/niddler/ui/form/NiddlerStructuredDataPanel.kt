@@ -10,7 +10,7 @@ import javax.swing.text.Document
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-abstract class NiddlerStructuredDataPanel(hasPretty: Boolean, protected val message: ParsedNiddlerMessage) : JPanel() {
+abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, protected val message: ParsedNiddlerMessage) : JPanel() {
 
     private var currentContentPanel: JComponent? = null
 
@@ -30,7 +30,8 @@ abstract class NiddlerStructuredDataPanel(hasPretty: Boolean, protected val mess
         rawButton = JToggleButton("Raw", ImageIcon(javaClass.getResource("/ic_raw.png")))
 
         val buttonGroup = ButtonGroup()
-        buttonGroup.add(treeButton)
+        if (hasTree)
+            buttonGroup.add(treeButton)
         if (hasPretty)
             buttonGroup.add(prettyButton)
         buttonGroup.add(rawButton)
@@ -38,13 +39,20 @@ abstract class NiddlerStructuredDataPanel(hasPretty: Boolean, protected val mess
         toolbar = JToolBar()
         toolbar.isFloatable = false
         toolbar.add(Box.createGlue())
-        toolbar.add(treeButton)
+        if (hasTree)
+            toolbar.add(treeButton)
         if (hasPretty)
             toolbar.add(prettyButton)
         toolbar.add(rawButton)
 
-        treeButton.isSelected = true
-        treeButton.addItemListener { if (treeButton.isSelected) initAsTree() }
+        if (hasTree) {
+            treeButton.isSelected = true
+            treeButton.addItemListener { if (treeButton.isSelected) initAsTree() }
+        } else if (hasPretty) {
+            prettyButton.isSelected = true
+        } else {
+            rawButton.isSelected = true
+        }
         if (hasPretty)
             prettyButton.addItemListener { if (prettyButton.isSelected) initAsPretty() }
         rawButton.addItemListener { if (rawButton.isSelected) initAsRaw() }
@@ -56,7 +64,12 @@ abstract class NiddlerStructuredDataPanel(hasPretty: Boolean, protected val mess
         add(toolbar, BorderLayout.NORTH)
 
         createStructuredView()
-        initAsTree()
+        if (treeButton.isSelected)
+            initAsTree()
+        else if (prettyButton.isSelected)
+            initAsPretty()
+        else
+            initAsRaw()
     }
 
     protected abstract fun createStructuredView()

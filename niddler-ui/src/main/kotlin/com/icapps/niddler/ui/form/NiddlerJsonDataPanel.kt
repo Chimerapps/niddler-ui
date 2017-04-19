@@ -14,7 +14,7 @@ import javax.swing.tree.TreeSelectionModel
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-class NiddlerJsonDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(true, message) {
+class NiddlerJsonDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(true, true, message) {
 
     init {
         initUI()

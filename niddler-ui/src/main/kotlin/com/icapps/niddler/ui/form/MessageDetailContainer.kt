@@ -41,17 +41,18 @@ class MessageDetailContainer(interfaceFactory: InterfaceFactory, message: Messag
         bodyRoot.removeAll()
         detailPanel.setMessage(message)
 
-        if (message.bodyFormat.type == BodyFormatType.FORMAT_JSON) {
-            bodyRoot.add(NiddlerJsonDataPanel(message), BorderLayout.CENTER)
-        } else if (message.bodyFormat.type == BodyFormatType.FORMAT_XML) {
-            bodyRoot.add(NiddlerXMLDataPanel(message), BorderLayout.CENTER)
-        } else if (message.bodyFormat.type == BodyFormatType.FORMAT_PLAIN) {
-            bodyRoot.add(NiddlerPlainDataPanel(message), BorderLayout.CENTER)
-        } else if (message.bodyFormat.type == BodyFormatType.FORMAT_FORM_ENCODED) {
-            bodyRoot.add(NiddlerFormEncodedPanel(message), BorderLayout.CENTER)
-        } else if (message.body.isNullOrBlank()) {
+        if (message.body.isNullOrBlank()) {
             showEmptyMessageBody()
-            return
+        } else {
+            when (message.bodyFormat.type) {
+                BodyFormatType.FORMAT_JSON -> bodyRoot.add(NiddlerJsonDataPanel(message), BorderLayout.CENTER)
+                BodyFormatType.FORMAT_XML -> bodyRoot.add(NiddlerXMLDataPanel(message), BorderLayout.CENTER)
+                BodyFormatType.FORMAT_PLAIN -> bodyRoot.add(NiddlerPlainDataPanel(message), BorderLayout.CENTER)
+                BodyFormatType.FORMAT_HTML -> bodyRoot.add(NiddlerHTMLDataPanel(message), BorderLayout.CENTER)
+                BodyFormatType.FORMAT_FORM_ENCODED -> bodyRoot.add(NiddlerFormEncodedPanel(message), BorderLayout.CENTER)
+                BodyFormatType.FORMAT_BINARY -> bodyRoot.add(NiddlerBinaryPanel(message), BorderLayout.CENTER)
+                BodyFormatType.FORMAT_EMPTY -> showEmptyMessageBody()
+            }
         }
         bodyRoot.revalidate()
         content.invalidate()

@@ -29,7 +29,7 @@ class NiddlerMessageBodyParser {
         when (contentType.type) {
             BodyFormatType.FORMAT_JSON -> return examineJson(message.getBodyAsBytes, message) ?: throw IllegalArgumentException("Message is not json")
             BodyFormatType.FORMAT_XML -> return examineXML(message.getBodyAsBytes, message, contentType) ?: throw IllegalArgumentException("Message is not xml")
-            BodyFormatType.FORMAT_PLAIN -> {
+            BodyFormatType.FORMAT_HTML, BodyFormatType.FORMAT_PLAIN -> {
                 val bytes = message.getBodyAsBytes ?: return ParsedNiddlerMessage(contentType, null, message)
                 return ParsedNiddlerMessage(contentType, String(bytes, 0, bytes.size, Charset.forName(contentType.encoding ?: "UTF-8")), message)
             }
@@ -69,7 +69,7 @@ class NiddlerMessageBodyParser {
             '<'.toByte() ->
                 examineXML(bodyAsBytes, message) ?:
                         if (firstBytesContainHtml(bodyAsBytes, "html"))
-                            ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_PLAIN, null, null), String(bodyAsBytes, 0, bodyAsBytes.size), message)
+                            ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_HTML, null, null), String(bodyAsBytes, 0, bodyAsBytes.size), message)
                         else
                             null
             else -> null
@@ -81,17 +81,7 @@ class NiddlerMessageBodyParser {
     }
 
     private fun findFirstNonBlankByte(bytes: ByteArray): Byte? {
-        bytes.forEach {
-            if (it.toInt() <= SPACE) {
-                if (!(it == SPACE || it == LF || it == CR)) {
-                    return null
-                }
-            } else if (it.toInt() >= 127) {
-                return null
-            }
-            return it
-        }
-        return null
+        return bytes.find { it in (SPACE + 1)..126 }
     }
 
     private fun firstBytesContainHtml(bytes: ByteArray, string: String): Boolean {
@@ -103,7 +93,8 @@ class NiddlerMessageBodyParser {
             "application/json" -> return BodyFormatType.FORMAT_JSON
             "application/xml", "text/xml" -> return BodyFormatType.FORMAT_XML
             "application/octet-stream" -> return BodyFormatType.FORMAT_BINARY
-            "text/html", "text/plain" -> return BodyFormatType.FORMAT_PLAIN
+            "text/html" -> return BodyFormatType.FORMAT_HTML
+            "text/plain" -> return BodyFormatType.FORMAT_PLAIN
             "application/svg+xml" -> return BodyFormatType.FORMAT_IMAGE
             "application/x-www-form-urlencoded" -> return BodyFormatType.FORMAT_FORM_ENCODED
             "image/bmp", "image/png", "image/tiff" -> return BodyFormatType.FORMAT_IMAGE
@@ -169,6 +160,7 @@ enum class BodyFormatType(val verbose: String) {
     FORMAT_PLAIN("text/plain"),
     FORMAT_IMAGE("image"),
     FORMAT_BINARY("binary"),
+    FORMAT_HTML("text/html"),
     FORMAT_EMPTY(""),
     FORMAT_FORM_ENCODED("x-www-form-urlencoded")
 }
