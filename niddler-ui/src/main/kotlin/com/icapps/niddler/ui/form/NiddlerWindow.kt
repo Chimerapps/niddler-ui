@@ -19,12 +19,18 @@ import javax.swing.border.EmptyBorder
 class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout()), NiddlerMessageListener, ParsedNiddlerMessageListener {
 
     private val windowContents = NiddlerUIContainer(interfaceFactory)
-    private val adbConnection = ADBBootstrap()
+    private lateinit var adbConnection : ADBBootstrap
 
     private val messages = MessageContainer(NiddlerMessageBodyParser())
     private val detailContainer = MessageDetailContainer(interfaceFactory, messages)
 
     fun init() {
+        try {
+            adbConnection = ADBBootstrap()
+        }catch(e: IllegalStateException){
+            add(JLabel("Could not find ADB. Is adb accessible from your path or did you define the ANDROID_HOME environment variable"), BorderLayout.CENTER)
+            return
+        }
         add(windowContents.rootPanel, BorderLayout.CENTER)
 
         windowContents.splitPane.right = detailContainer.asComponent
