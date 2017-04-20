@@ -3,11 +3,14 @@ package com.icapps.niddler.ui.form
 import com.icapps.niddler.ui.NiddlerClient
 import com.icapps.niddler.ui.adb.ADBBootstrap
 import com.icapps.niddler.ui.connection.NiddlerMessageListener
+import com.icapps.niddler.ui.copyToClipboard
 import com.icapps.niddler.ui.model.*
 import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
 import com.icapps.niddler.ui.model.ui.TimelineMessagesTableModel
 import com.icapps.niddler.ui.setColumnFixedWidth
 import java.awt.BorderLayout
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import java.net.URI
 import javax.swing.*
 import javax.swing.border.EmptyBorder
@@ -16,18 +19,19 @@ import javax.swing.border.EmptyBorder
  * @author Nicola Verbeeck
  * @date 14/11/16.
  */
-class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout()), NiddlerMessageListener, ParsedNiddlerMessageListener {
-
-    private val windowContents = NiddlerUIContainer(interfaceFactory)
-    private lateinit var adbConnection : ADBBootstrap
+class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout()), NiddlerMessageListener, ParsedNiddlerMessageListener, NiddlerMessagePopupMenu.Listener {
 
     private val messages = MessageContainer(NiddlerMessageBodyParser())
     private val detailContainer = MessageDetailContainer(interfaceFactory, messages)
+    private val windowContents = NiddlerUIContainer(interfaceFactory)
+    private val messagePopupMenu = NiddlerMessagePopupMenu(this)
+
+    private lateinit var adbConnection: ADBBootstrap
 
     fun init() {
         try {
             adbConnection = ADBBootstrap()
-        }catch(e: IllegalStateException){
+        } catch(e: IllegalStateException) {
             add(JLabel("Could not find ADB. Is adb accessible from your path or did you define the ANDROID_HOME environment variable"), BorderLayout.CENTER)
             return
         }
@@ -35,29 +39,33 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
 
         windowContents.splitPane.right = detailContainer.asComponent
 
-        windowContents.messages.model = TimelineMessagesTableModel()
-        windowContents.messages.setColumnFixedWidth(0, 90)
-        windowContents.messages.setColumnFixedWidth(1, 36)
-        windowContents.messages.setColumnFixedWidth(2, 70)
-        windowContents.messages.setColumnFixedWidth(3, 400)
-        windowContents.messages.tableHeader = null
-        windowContents.messages.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
-        windowContents.statusText.text = "<>"
-        windowContents.statusBar.border = BorderFactory.createCompoundBorder(windowContents.statusBar.border, EmptyBorder(1, 6, 1, 6))
+        windowContents.messages.apply {
+            componentPopupMenu = messagePopupMenu
+            model = TimelineMessagesTableModel()
+            setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+            setColumnFixedWidth(0, 90)
+            setColumnFixedWidth(1, 36)
+            setColumnFixedWidth(2, 70)
+            setColumnFixedWidth(3, 400)
+            tableHeader = null
 
-        windowContents.messages.selectionModel.addListSelectionListener {
-            MainThreadDispatcher.dispatch {
-                if (windowContents.messages.selectedRowCount == 0) {
-                    val timer = Timer(200) {
+            selectionModel.addListSelectionListener {
+                MainThreadDispatcher.dispatch {
+                    if (windowContents.messages.selectedRowCount == 0) {
+                        val timer = Timer(200) {
+                            checkRowSelectionState()
+                        }
+                        timer.isRepeats = false
+                        timer.start()
+                    } else {
                         checkRowSelectionState()
                     }
-                    timer.isRepeats = false
-                    timer.start()
-                } else {
-                    checkRowSelectionState()
                 }
             }
         }
+
+        windowContents.statusText.text = "<>"
+        windowContents.statusBar.border = BorderFactory.createCompoundBorder(windowContents.statusBar.border, EmptyBorder(1, 6, 1, 6))
 
         detailContainer.clear()
         windowContents.buttonClear.addActionListener {
@@ -139,7 +147,7 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
     }
 
     override fun onServiceMessage(niddlerMessage: NiddlerMessage) {
-        //Nothing
+        // Nothing
     }
 
     override fun onMessage(message: ParsedNiddlerMessage) {
@@ -165,5 +173,24 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
         }
     }
 
+    override fun onCopyUrlClicked() {
+        val message = detailContainer.getMessage()
+        message?.let {
+            if(message.isRequest){
+                message.url?.copyToClipboard()
+            } else {
+                messages.findRequest(message)?.url?.copyToClipboard()
+            }
+        }
+    }
+
+    override fun onCopyBodyClicked() {
+        val message = detailContainer.getMessage()
+
+        message?.let {
+            val body = message.message.getBodyAsString(message.bodyFormat.encoding)
+            body?.copyToClipboard()
+        }
+    }
 
 }

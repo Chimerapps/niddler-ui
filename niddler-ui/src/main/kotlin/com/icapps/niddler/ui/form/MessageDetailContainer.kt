@@ -33,6 +33,10 @@ class MessageDetailContainer(interfaceFactory: InterfaceFactory, message: Messag
         content.addTab("Body", bodyRoot)
     }
 
+    fun getMessage(): ParsedNiddlerMessage? {
+        return currentMessage
+    }
+
     fun setMessage(message: ParsedNiddlerMessage) {
         if (currentMessage?.messageId == message.messageId)
             return

@@ -86,6 +86,16 @@ class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : Niddl
         return synchronized(knownMessageIds) { messagesByMessageRequestId[requestId] }
     }
 
+    fun findResponse(message: ParsedNiddlerMessage): ParsedNiddlerMessage? {
+        return getMessagesWithRequestId(message.requestId)?.find {
+            !it.isRequest
+        }
+    }
+
+    fun findRequest(message: ParsedNiddlerMessage): ParsedNiddlerMessage? {
+        return getMessagesWithRequestId(message.requestId)?.find(ParsedNiddlerMessage::isRequest)
+    }
+
     override fun onServerInfo(serverInfo: NiddlerServerInfo) {
         //Ignore
     }

@@ -1,6 +1,8 @@
 package com.icapps.niddler.ui
 
 import com.icapps.niddler.ui.form.MainThreadDispatcher
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import java.beans.PropertyChangeEvent
 import java.util.*
 import javax.swing.JTable
@@ -75,4 +77,10 @@ fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {
         dl.changedUpdate(null)
     }
     document?.addDocumentListener(dl)
+}
+
+fun String.copyToClipboard() {
+    val contents = StringSelection(this)
+    val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+    clipboard.setContents(contents, contents)
 }

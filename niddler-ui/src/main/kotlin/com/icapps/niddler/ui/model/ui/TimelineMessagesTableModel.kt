@@ -91,7 +91,7 @@ class TimelineMessagesTableModel : TableModel {
 
     override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? {
         val message = messages[rowIndex]
-        val other = if (message.isRequest) findResponse(message) else findRequest(message)
+        val other = if (message.isRequest) container.findResponse(message) else container.findRequest(message)
 
         return when (columnIndex) {
             INDEX_TIMESTAMP -> formatter.format(Date(message.timestamp))
@@ -120,14 +120,6 @@ class TimelineMessagesTableModel : TableModel {
         return messages[selectedRow]
     }
 
-    private fun findResponse(message: ParsedNiddlerMessage): ParsedNiddlerMessage? {
-        return container.getMessagesWithRequestId(message.requestId)?.find {
-            !it.isRequest
-        }
-    }
 
-    private fun findRequest(message: ParsedNiddlerMessage): ParsedNiddlerMessage? {
-        return container.getMessagesWithRequestId(message.requestId)?.find(ParsedNiddlerMessage::isRequest)
-    }
 
 }
