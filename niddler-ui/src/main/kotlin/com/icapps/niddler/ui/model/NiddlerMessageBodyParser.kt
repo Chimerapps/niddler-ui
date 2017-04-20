@@ -57,7 +57,7 @@ class NiddlerMessageBodyParser {
     }
 
     private fun classifyFormatFromHeaders(message: NiddlerMessage): BodyFormat? {
-        val contentTypeHeader = message.headers?.get("Content-Type")
+        val contentTypeHeader = message.headers?.get("content-type")
         if (contentTypeHeader != null && !contentTypeHeader.isEmpty()) {
             val contentTypeString = contentTypeHeader[0]
             val parsedContentType = ContentType.parse(contentTypeString)
@@ -110,7 +110,7 @@ class NiddlerMessageBodyParser {
             "text/plain" -> return BodyFormatType.FORMAT_PLAIN
             "application/svg+xml" -> return BodyFormatType.FORMAT_XML //TODO this is an image...
             "application/x-www-form-urlencoded" -> return BodyFormatType.FORMAT_FORM_ENCODED
-            "image/bmp", "image/png", "image/tiff" -> return BodyFormatType.FORMAT_IMAGE
+            "image/bmp", "image/png", "image/tiff", "image/jpg", "image/jpeg", "image/gif" -> return BodyFormatType.FORMAT_IMAGE
         }
         return BodyFormatType.FORMAT_BINARY
     }
