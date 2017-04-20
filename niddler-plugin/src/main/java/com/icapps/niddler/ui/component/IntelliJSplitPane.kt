@@ -11,6 +11,10 @@ import javax.swing.JComponent
  */
 class IntelliJSplitPane : JBSplitter(), SplitPane {
 
+    init {
+        setHonorComponentsMinimumSize(true)
+    }
+
     override val asComponent: Component
         get() = this
 
@@ -18,12 +22,14 @@ class IntelliJSplitPane : JBSplitter(), SplitPane {
         get() = firstComponent
         set(value) {
             firstComponent = value as JComponent?
+            firstComponent.minimumSize.width = 200
         }
 
     override var right: Component
         get() = secondComponent
         set(value) {
             secondComponent = value as JComponent?
+            secondComponent.minimumSize.width = 200
         }
 
     override var resizePriority: Double

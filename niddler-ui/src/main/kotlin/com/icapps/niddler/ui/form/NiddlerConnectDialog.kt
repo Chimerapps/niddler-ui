@@ -49,6 +49,9 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
             if (!adbList.isSelectionEmpty)
                 directIP.text = ""
         }
+        if (!model.isEmpty) {
+            adbList.selectedIndex = 0
+        }
         directIP.addChangeListener {
             if (!directIP.text.isNullOrBlank())
                 adbList.clearSelection()

@@ -14,8 +14,4 @@ class NiddlerHTMLDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDat
         initUI()
     }
 
-    override fun createStructuredView() {
-    }
-
-
 }

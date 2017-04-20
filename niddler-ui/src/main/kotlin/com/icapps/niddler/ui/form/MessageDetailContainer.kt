@@ -50,6 +50,7 @@ class MessageDetailContainer(interfaceFactory: InterfaceFactory, message: Messag
                 BodyFormatType.FORMAT_PLAIN -> bodyRoot.add(NiddlerPlainDataPanel(message), BorderLayout.CENTER)
                 BodyFormatType.FORMAT_HTML -> bodyRoot.add(NiddlerHTMLDataPanel(message), BorderLayout.CENTER)
                 BodyFormatType.FORMAT_FORM_ENCODED -> bodyRoot.add(NiddlerFormEncodedPanel(message), BorderLayout.CENTER)
+                BodyFormatType.FORMAT_IMAGE -> bodyRoot.add(NiddlerImageDataPanel(message), BorderLayout.CENTER)
                 BodyFormatType.FORMAT_BINARY -> bodyRoot.add(NiddlerBinaryPanel(message), BorderLayout.CENTER)
                 BodyFormatType.FORMAT_EMPTY -> showEmptyMessageBody()
             }

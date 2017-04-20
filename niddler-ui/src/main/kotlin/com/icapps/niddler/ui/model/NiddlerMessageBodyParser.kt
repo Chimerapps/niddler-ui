@@ -2,10 +2,12 @@ package com.icapps.niddler.ui.model
 
 import com.google.gson.JsonParser
 import org.apache.http.entity.ContentType
+import trikita.log.Log
 import java.io.ByteArrayInputStream
 import java.io.InputStreamReader
 import java.net.URLDecoder
 import java.nio.charset.Charset
+import javax.imageio.ImageIO
 import javax.xml.parsers.DocumentBuilderFactory
 
 /**
@@ -18,11 +20,17 @@ class NiddlerMessageBodyParser {
         private val SPACE = 32.toByte()
         private val LF = 10.toByte()
         private val CR = 13.toByte()
+        private val TAB = 9.toByte()
     }
 
     fun parseBody(message: NiddlerMessage): ParsedNiddlerMessage {
-        val format = parseMessage(message)
-        return format
+        try {
+            val format = parseMessage(message)
+            return format
+        } catch(e: Exception) {
+            Log.e("Message parse failure: ", e)
+            return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_BINARY, null, null), message.getBodyAsBytes, message)
+        }
     }
 
     fun parseBodyWithType(message: NiddlerMessage, contentType: BodyFormat): ParsedNiddlerMessage {
@@ -33,7 +41,7 @@ class NiddlerMessageBodyParser {
                 val bytes = message.getBodyAsBytes ?: return ParsedNiddlerMessage(contentType, null, message)
                 return ParsedNiddlerMessage(contentType, String(bytes, 0, bytes.size, Charset.forName(contentType.encoding ?: "UTF-8")), message)
             }
-            BodyFormatType.FORMAT_IMAGE -> TODO("Images not yet supported, sorry!")
+            BodyFormatType.FORMAT_IMAGE -> return ParsedNiddlerMessage(contentType, ImageIO.read(ByteArrayInputStream(message.getBodyAsBytes)), message)
             BodyFormatType.FORMAT_BINARY -> return ParsedNiddlerMessage(contentType, message.getBodyAsBytes, message)
             BodyFormatType.FORMAT_FORM_ENCODED -> return examineFormEncoded(message.getBodyAsBytes, message) ?: throw IllegalArgumentException("Message is not form encoded")
             BodyFormatType.FORMAT_EMPTY -> return ParsedNiddlerMessage(contentType, null, message)
@@ -81,7 +89,12 @@ class NiddlerMessageBodyParser {
     }
 
     private fun findFirstNonBlankByte(bytes: ByteArray): Byte? {
-        return bytes.find { it in (SPACE + 1)..126 }
+        bytes.forEach {
+            if (!(it == SPACE || it == CR || it == LF || it == TAB)) {
+                return it
+            }
+        }
+        return null
     }
 
     private fun firstBytesContainHtml(bytes: ByteArray, string: String): Boolean {
@@ -95,7 +108,7 @@ class NiddlerMessageBodyParser {
             "application/octet-stream" -> return BodyFormatType.FORMAT_BINARY
             "text/html" -> return BodyFormatType.FORMAT_HTML
             "text/plain" -> return BodyFormatType.FORMAT_PLAIN
-            "application/svg+xml" -> return BodyFormatType.FORMAT_IMAGE
+            "application/svg+xml" -> return BodyFormatType.FORMAT_XML //TODO this is an image...
             "application/x-www-form-urlencoded" -> return BodyFormatType.FORMAT_FORM_ENCODED
             "image/bmp", "image/png", "image/tiff" -> return BodyFormatType.FORMAT_IMAGE
         }
@@ -111,7 +124,7 @@ class NiddlerMessageBodyParser {
                 return ParsedNiddlerMessage(bodyType, document, message)
             }
             when (document.documentElement.tagName) {
-                "svg" -> return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_IMAGE, "application/svg+xml", document.inputEncoding), document, message)
+                "svg" -> return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_XML, "application/svg+xml", document.inputEncoding), document, message)
             }
             return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_XML, null, document.inputEncoding), document, message)
         } catch(e: Exception) {

@@ -72,7 +72,7 @@ abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, 
             initAsRaw()
     }
 
-    protected abstract fun createStructuredView()
+    protected open fun createStructuredView() {}
 
     protected open fun createPrettyPrintedView(doc: Document) {}
 
@@ -80,7 +80,7 @@ abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, 
         replacePanel(JScrollPane(structuredView))
     }
 
-    private fun initAsPretty() {
+    protected open fun initAsPretty() {
         val textArea = JTextArea()
         textArea.isEditable = false
         textArea.font = monospaceFont
@@ -88,7 +88,7 @@ abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, 
         replacePanel(JScrollPane(textArea))
     }
 
-    private fun initAsRaw() {
+    protected open fun initAsRaw() {
         val textArea = JTextArea()
         textArea.text = message.message.getBodyAsString(message.bodyFormat.encoding)
         textArea.isEditable = false
@@ -96,7 +96,7 @@ abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, 
         replacePanel(JScrollPane(textArea))
     }
 
-    private fun replacePanel(newContents: JComponent) {
+    protected fun replacePanel(newContents: JComponent) {
         if (currentContentPanel != null) remove(currentContentPanel)
         add(newContents, BorderLayout.CENTER)
         currentContentPanel = newContents
