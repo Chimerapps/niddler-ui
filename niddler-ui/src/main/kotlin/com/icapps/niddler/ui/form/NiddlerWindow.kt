@@ -3,14 +3,14 @@ package com.icapps.niddler.ui.form
 import com.icapps.niddler.ui.NiddlerClient
 import com.icapps.niddler.ui.adb.ADBBootstrap
 import com.icapps.niddler.ui.connection.NiddlerMessageListener
-import com.icapps.niddler.ui.copyToClipboard
 import com.icapps.niddler.ui.model.*
 import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
 import com.icapps.niddler.ui.model.ui.TimelineMessagesTableModel
 import com.icapps.niddler.ui.setColumnFixedWidth
+import com.icapps.niddler.ui.util.ClipboardUtil
 import java.awt.BorderLayout
-import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
+import java.awt.datatransfer.Transferable
 import java.net.URI
 import javax.swing.*
 import javax.swing.border.EmptyBorder
@@ -176,21 +176,33 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
     override fun onCopyUrlClicked() {
         val message = detailContainer.getMessage()
         message?.let {
-            if(message.isRequest){
-                message.url?.copyToClipboard()
+            if (message.isRequest) {
+                ClipboardUtil.copyToClipboard(StringSelection(message.url))
             } else {
-                messages.findRequest(message)?.url?.copyToClipboard()
+                ClipboardUtil.copyToClipboard(StringSelection(messages.findRequest(message)?.url))
             }
         }
     }
 
     override fun onCopyBodyClicked() {
         val message = detailContainer.getMessage()
+        if (message == null) return
 
-        message?.let {
-            val body = message.message.getBodyAsString(message.bodyFormat.encoding)
-            body?.copyToClipboard()
+        var clipboardData: Transferable? = null
+        when (message.bodyFormat.type) {
+            BodyFormatType.FORMAT_IMAGE -> {
+                clipboardData = ClipboardUtil.imageTransferableFromBytes(message.message.getBodyAsBytes)
+            }
+            BodyFormatType.FORMAT_PLAIN,
+            BodyFormatType.FORMAT_JSON,
+            BodyFormatType.FORMAT_XML -> {
+                clipboardData = StringSelection(message.message.getBodyAsString(message.bodyFormat.encoding))
+            }
+            BodyFormatType.FORMAT_BINARY -> {
+                JOptionPane.showConfirmDialog(null, "Binary data cannot be copied to clipboard.", "Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE)
+            }
         }
+        clipboardData?.let { ClipboardUtil.copyToClipboard(it) }
     }
 
 }

@@ -78,9 +78,3 @@ fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {
     }
     document?.addDocumentListener(dl)
 }
-
-fun String.copyToClipboard() {
-    val contents = StringSelection(this)
-    val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-    clipboard.setContents(contents, contents)
-}
