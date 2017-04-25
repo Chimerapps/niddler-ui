@@ -19,7 +19,7 @@ import javax.swing.border.EmptyBorder
  * @author Nicola Verbeeck
  * @date 14/11/16.
  */
-class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout()), NiddlerMessageListener, ParsedNiddlerMessageListener, NiddlerMessagePopupMenu.Listener {
+class NiddlerWindow(interfaceFactory: InterfaceFactory, private val sdkPathGuesses: Collection<String>) : JPanel(BorderLayout()), NiddlerMessageListener, ParsedNiddlerMessageListener, NiddlerMessagePopupMenu.Listener {
 
     private val messages = MessageContainer(NiddlerMessageBodyParser())
     private val detailContainer = MessageDetailContainer(interfaceFactory, messages)
@@ -29,7 +29,7 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
     private lateinit var adbConnection: ADBBootstrap
 
     fun init() {
-        adbConnection = ADBBootstrap()
+        adbConnection = ADBBootstrap(sdkPathGuesses)
         add(windowContents.rootPanel, BorderLayout.CENTER)
 
         windowContents.splitPane.right = detailContainer.asComponent

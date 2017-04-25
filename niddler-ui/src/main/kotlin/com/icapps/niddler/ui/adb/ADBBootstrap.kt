@@ -7,12 +7,13 @@ import se.vidstige.jadb.DeviceWatcher
 import se.vidstige.jadb.JadbConnection
 import se.vidstige.jadb.JadbDevice
 import java.io.File
+import java.util.*
 
 /**
  * @author Nicola Verbeeck
  * @date 10/11/16.
  */
-class ADBBootstrap {
+class ADBBootstrap(sdkPathGuesses: Collection<String>) {
 
     companion object {
         private val log = logger<ADBBootstrap>()
@@ -27,22 +28,15 @@ class ADBBootstrap {
             return null
         }
 
-        private fun findADB(): String? {
-            val androidHomePath = System.getenv("ANDROID_HOME")
-            if (androidHomePath != null) {
-                log.debug("Found android home at $androidHomePath")
-                val adbFile = File("$androidHomePath${File.separator}platform-tools${File.separator}adb${ext(".exe", "")}")
-                if (adbFile.exists() && adbFile.canExecute())
-                    return adbFile.absolutePath
-                else
-                    log.warn("Could not find adb at $adbFile -> Exist: ${adbFile.exists()}, Can execute: ${adbFile.canExecute()}")
-            } else {
-                log.info("Failed to find ANDROID_HOME environment variable. Variables:")
-                System.getenv().forEach {
-                    log.info("${it.key} = ${it.value}")
-                }
+        private fun findADB(sdkPathGuesses: Collection<String>): String? {
+            findAndroidSdkDirs(sdkPathGuesses).forEach {
+                val file = hasValidAdb(it)
+                if (file != null)
+                    return file.absolutePath
             }
-            return determineExecutablePath("adb")
+            log.info("Failed to find android sdk dir, searching path")
+
+            return determineExecutablePath("adb" + ext(".exe", ""))
         }
 
         private fun ext(windowsExtension: String, nonWindowsExtension: String): String {
@@ -51,6 +45,26 @@ class ADBBootstrap {
             } else {
                 return nonWindowsExtension
             }
+        }
+
+        private fun hasValidAdb(sdkDir: String): File? {
+            log.debug("Found android sdk at $sdkDir")
+            val adbFile = File("$sdkDir${File.separator}platform-tools${File.separator}adb${ext(".exe", "")}")
+            if (adbFile.exists() && adbFile.canExecute())
+                return adbFile
+
+            log.warn("Could not find adb at $adbFile -> Exist: ${adbFile.exists()}, Can execute: ${adbFile.canExecute()}")
+            return null
+        }
+
+        private fun findAndroidSdkDirs(sdkPathGuesses: Collection<String>): Collection<String> {
+            val list = HashSet<String>(sdkPathGuesses)
+            val env = System.getenv("ANDROID_HOME")
+            if (env != null) {
+                log.info("Got android sdk dir from env variable: $env")
+                list += env
+            }
+            return list
         }
 
         private val PLATFORM_UNKNOWN = 0
@@ -73,7 +87,7 @@ class ADBBootstrap {
 
     }
 
-    private var pathToAdb: String? = findADB()
+    private var pathToAdb: String? = findADB(sdkPathGuesses)
     private var hasBootStrap = false
 
     fun bootStrap(): JadbConnection {

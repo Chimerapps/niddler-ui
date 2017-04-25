@@ -17,7 +17,7 @@ import javax.swing.WindowConstants
 fun main(args: Array<String>) {
     MainThreadDispatcher.instance = SwingMainThreadDispatcher()
 
-    val window = NiddlerWindow(SwingInterfaceFactory())
+    val window = NiddlerWindow(SwingInterfaceFactory(), emptyList())
 
     val frame = JFrame()
     frame.add(window)
