@@ -185,8 +185,7 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
     }
 
     override fun onCopyBodyClicked() {
-        val message = detailContainer.getMessage()
-        if (message == null) return
+        val message = detailContainer.getMessage() ?: return
 
         var clipboardData: Transferable? = null
         when (message.bodyFormat.type) {
@@ -195,12 +194,16 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
             }
             BodyFormatType.FORMAT_PLAIN,
             BodyFormatType.FORMAT_JSON,
+            BodyFormatType.FORMAT_HTML,
+            BodyFormatType.FORMAT_FORM_ENCODED,
             BodyFormatType.FORMAT_XML -> {
                 clipboardData = StringSelection(message.message.getBodyAsString(message.bodyFormat.encoding))
             }
             BodyFormatType.FORMAT_BINARY -> {
                 JOptionPane.showConfirmDialog(null, "Binary data cannot be copied to clipboard.", "Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE)
             }
+            else -> {
+            } //Nothing to copy
         }
         clipboardData?.let { ClipboardUtil.copyToClipboard(it) }
     }
