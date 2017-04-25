@@ -29,12 +29,7 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
     private lateinit var adbConnection: ADBBootstrap
 
     fun init() {
-        try {
-            adbConnection = ADBBootstrap()
-        } catch(e: IllegalStateException) {
-            add(JLabel("Could not find ADB. Is adb accessible from your path or did you define the ANDROID_HOME environment variable"), BorderLayout.CENTER)
-            return
-        }
+        adbConnection = ADBBootstrap()
         add(windowContents.rootPanel, BorderLayout.CENTER)
 
         windowContents.splitPane.right = detailContainer.asComponent
@@ -70,10 +65,11 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
         detailContainer.clear()
         windowContents.buttonClear.addActionListener {
             messages.clear()
-            val model = windowContents.messages.model as TimelineMessagesTableModel
+            val model = windowContents.messages.model
             windowContents.messages.clearSelection()
             checkRowSelectionState()
-            model.updateMessages(messages)
+            if (model is TimelineMessagesTableModel)
+                model.updateMessages(messages)
         }
 
         windowContents.connectButton.addActionListener {
@@ -97,8 +93,11 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
             detailContainer.clear()
         } else {
             val selectedRow = windowContents.messages.selectedRow
-            val row = (windowContents.messages.model as TimelineMessagesTableModel).getRow(selectedRow)
-            detailContainer.setMessage(row)
+            val model = windowContents.messages.model
+            if (model is TimelineMessagesTableModel) {
+                val row = model.getRow(selectedRow)
+                detailContainer.setMessage(row)
+            }
         }
     }
 
@@ -157,7 +156,9 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory) : JPanel(BorderLayout())
     private fun updateMessages() {
         MainThreadDispatcher.dispatch {
             val previousSelection = windowContents.messages.selectedRow
-            (windowContents.messages.model as TimelineMessagesTableModel).updateMessages(messages)
+            val workingModel = windowContents.messages.model
+            if (workingModel is TimelineMessagesTableModel)
+                workingModel.updateMessages(messages)
             if (previousSelection != -1) {
                 try {
                     windowContents.messages.addRowSelectionInterval(previousSelection, previousSelection)

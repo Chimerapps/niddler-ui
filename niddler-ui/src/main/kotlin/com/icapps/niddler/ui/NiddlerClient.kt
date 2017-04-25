@@ -7,10 +7,10 @@ import com.icapps.niddler.ui.connection.NiddlerV1ProtocolHandler
 import com.icapps.niddler.ui.connection.NiddlerV2ProtocolHandler
 import com.icapps.niddler.ui.model.NiddlerMessage
 import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
+import com.icapps.niddler.ui.util.logger
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.drafts.Draft_17
 import org.java_websocket.handshake.ServerHandshake
-import trikita.log.Log
 import java.net.URI
 import java.util.*
 
@@ -20,22 +20,26 @@ import java.util.*
  */
 class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI, Draft_17()), NiddlerMessageListener {
 
+    companion object {
+        private val log = logger<NiddlerClient>()
+    }
+
     private val clientListeners: MutableSet<NiddlerMessageListener> = HashSet()
     private var protocolHandler: NiddlerProtocol? = null
 
     override fun onOpen(handshakeData: ServerHandshake?) {
-        Log.d("Connection succeeded: " + connection.remoteSocketAddress)
+        log.debug("Connection succeeded: ${connection.remoteSocketAddress}")
     }
 
     override fun onClose(code: Int, reason: String?, remote: Boolean) {
-        Log.d("Connection closed: " + reason)
+        log.debug("Connection closed: $reason")
         synchronized(clientListeners) {
             clientListeners.forEach { it.onClosed() }
         }
     }
 
     override fun onMessage(message: String) {
-        Log.d("Got message: " + message)
+        log.debug("Got message: $message")
         val json = JsonParser().parse(message).asJsonObject
         val messageType = json.get("type").asString
 
@@ -47,7 +51,7 @@ class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI, Draft_17()), N
     }
 
     override fun onError(ex: Exception?) {
-        Log.d(ex.toString())
+        log.debug(ex.toString())
     }
 
     fun registerMessageListener(listener: NiddlerMessageListener) {

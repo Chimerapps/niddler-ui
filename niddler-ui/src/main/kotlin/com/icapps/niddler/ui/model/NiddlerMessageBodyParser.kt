@@ -1,8 +1,8 @@
 package com.icapps.niddler.ui.model
 
 import com.google.gson.JsonParser
+import com.icapps.niddler.ui.util.logger
 import org.apache.http.entity.ContentType
-import trikita.log.Log
 import java.io.ByteArrayInputStream
 import java.io.InputStreamReader
 import java.net.URLDecoder
@@ -21,6 +21,8 @@ class NiddlerMessageBodyParser {
         private val LF = 10.toByte()
         private val CR = 13.toByte()
         private val TAB = 9.toByte()
+
+        private val log = logger<NiddlerMessageBodyParser>()
     }
 
     fun parseBody(message: NiddlerMessage): ParsedNiddlerMessage {
@@ -28,7 +30,7 @@ class NiddlerMessageBodyParser {
             val format = parseMessage(message)
             return format
         } catch(e: Exception) {
-            Log.e("Message parse failure: ", e)
+            log.error("Message parse failure: ", e)
             return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_BINARY, null, null), message.getBodyAsBytes, message)
         }
     }

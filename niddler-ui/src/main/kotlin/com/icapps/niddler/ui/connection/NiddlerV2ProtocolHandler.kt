@@ -2,8 +2,8 @@ package com.icapps.niddler.ui.connection
 
 import com.google.gson.JsonObject
 import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
+import com.icapps.niddler.ui.util.logger
 import org.java_websocket.client.WebSocketClient
-import trikita.log.Log
 import java.security.MessageDigest
 import java.util.*
 
@@ -13,6 +13,10 @@ import java.util.*
  */
 open class NiddlerV2ProtocolHandler(messageListener: NiddlerMessageListener) : NiddlerV1ProtocolHandler(messageListener) {
 
+    companion object {
+        private val log = logger<NiddlerV2ProtocolHandler>()
+    }
+
     override fun onMessage(socket: WebSocketClient, message: JsonObject) {
         val type = message["type"].asString
 
@@ -21,7 +25,7 @@ open class NiddlerV2ProtocolHandler(messageListener: NiddlerMessageListener) : N
             "authRequest" -> onAuthRequest(socket, message)
             "authSuccess" -> onAuthSuccess()
             "request", "response" -> onServiceMessage(message)
-            else -> Log.d("Failed to handle message, unknown type: " + type)
+            else -> log.warn("Failed to handle message, unknown type: " + type)
         }
     }
 
