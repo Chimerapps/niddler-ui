@@ -1,0 +1,151 @@
+package com.icapps.niddler.ui.model.ui
+
+import com.icapps.niddler.ui.model.MessageContainer
+import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import java.util.*
+import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.TreeNode
+
+/**
+ * @author Nicola Verbeeck
+ * @date 17/11/16.
+ */
+class LinkedMessagesModel() : DefaultTreeModel(DefaultMutableTreeNode()), MessagesModel {
+
+    private var messages: Map<String, List<ParsedNiddlerMessage>> = Collections.emptyMap()
+    private lateinit var container: MessageContainer
+
+    override fun updateMessages(messages: MessageContainer) {
+        this.messages = messages.getMessagesLinked()
+        container = messages
+
+        setRoot(MessageRootNode(this.messages))
+    }
+
+}
+
+class MessageRootNode(children: Map<String, List<ParsedNiddlerMessage>>) : TreeNode {
+
+    private val childNodes: List<RequestNode> = children.map { RequestNode(this, it.key, it.value) }
+
+    override fun children(): Enumeration<*> {
+        val iterator = childNodes.iterator()
+        return object : Enumeration<TreeNode> {
+            override fun nextElement(): TreeNode {
+                return iterator.next()
+            }
+
+            override fun hasMoreElements(): Boolean {
+                return iterator.hasNext()
+            }
+        }
+    }
+
+    override fun isLeaf(): Boolean {
+        return false
+    }
+
+    override fun getChildCount(): Int {
+        return childNodes.size
+    }
+
+    override fun getParent(): TreeNode? {
+        return null
+    }
+
+    override fun getChildAt(childIndex: Int): TreeNode {
+        return childNodes[childIndex]
+    }
+
+    override fun getIndex(node: TreeNode?): Int {
+        return childNodes.indexOf(node)
+    }
+
+    override fun getAllowsChildren(): Boolean {
+        return true
+    }
+
+}
+
+class RequestNode(private val parent: TreeNode, requestId: String, messages: List<ParsedNiddlerMessage>) : TreeNode {
+
+    var request: ParsedNiddlerMessage? = messages.find { it.isRequest }
+    private val responseNodes: List<ResponseNode> = messages.filter { !it.isRequest }.map { ResponseNode(this, it) }
+
+    override fun children(): Enumeration<*> {
+        val iterator = responseNodes.iterator()
+        return object : Enumeration<TreeNode> {
+            override fun nextElement(): TreeNode {
+                return iterator.next()
+            }
+
+            override fun hasMoreElements(): Boolean {
+                return iterator.hasNext()
+            }
+        }
+    }
+
+    override fun isLeaf(): Boolean {
+        return responseNodes.isEmpty()
+    }
+
+    override fun getChildCount(): Int {
+        return responseNodes.size
+    }
+
+    override fun getParent(): TreeNode {
+        return parent
+    }
+
+    override fun getChildAt(childIndex: Int): TreeNode {
+        return responseNodes[childIndex]
+    }
+
+    override fun getIndex(node: TreeNode?): Int {
+        return responseNodes.indexOf(node)
+    }
+
+    override fun getAllowsChildren(): Boolean {
+        return true
+    }
+}
+
+class ResponseNode(private val parent: TreeNode, val message: ParsedNiddlerMessage) : TreeNode {
+
+    override fun children(): Enumeration<*> {
+        return object : Enumeration<TreeNode> {
+            override fun nextElement(): TreeNode? {
+                return null
+            }
+
+            override fun hasMoreElements(): Boolean {
+                return false
+            }
+        }
+    }
+
+    override fun isLeaf(): Boolean {
+        return true
+    }
+
+    override fun getChildCount(): Int {
+        return 0
+    }
+
+    override fun getParent(): TreeNode {
+        return parent
+    }
+
+    override fun getChildAt(childIndex: Int): TreeNode? {
+        return null
+    }
+
+    override fun getIndex(node: TreeNode?): Int {
+        return -1
+    }
+
+    override fun getAllowsChildren(): Boolean {
+        return false
+    }
+}

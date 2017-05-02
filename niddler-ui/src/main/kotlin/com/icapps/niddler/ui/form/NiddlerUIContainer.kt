@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.ui.form.components.SplitPane
+import com.icapps.niddler.ui.model.ui.LinkedMessagesRenderer
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -15,15 +16,17 @@ import javax.swing.*
 internal class NiddlerUIContainer(factory: InterfaceFactory) {
 
     val rootPanel: JPanel
-    val messages: JTable
+    val messagesAsTable: JTable
+    val messagesAsTree: JTree
     private val toolbar: JToolBar
-    private val buttonTimeline: JToggleButton
-    private val buttonLinkedMode: JToggleButton
+    val buttonTimeline: JToggleButton
+    val buttonLinkedMode: JToggleButton
     val buttonClear: JButton
     val splitPane: SplitPane
     val statusText: JLabel
     val statusBar: JPanel
     val connectButton: JButton
+    val messagesScroller: JScrollPane
 
     init {
         rootPanel = JPanel()
@@ -80,14 +83,21 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
         splitPane.resizePriority = 1.0
         rootPanel.add(splitPane.asComponent, BorderLayout.CENTER)
 
-        val scrollPane1 = JScrollPane()
-        splitPane.left = scrollPane1
-        messages = JTable()
-        messages.fillsViewportHeight = false
-        messages.rowHeight = 32
-        messages.showHorizontalLines = true
-        messages.showVerticalLines = false
-        scrollPane1.setViewportView(messages)
+        messagesScroller = JScrollPane()
+        splitPane.left = messagesScroller
+        messagesAsTable = JTable()
+        messagesAsTable.fillsViewportHeight = false
+        messagesAsTable.rowHeight = 32
+        messagesAsTable.showHorizontalLines = true
+        messagesAsTable.showVerticalLines = false
+        messagesScroller.setViewportView(messagesAsTable)
+
+        messagesAsTree = JTree()
+        messagesAsTree.rowHeight = 32
+        messagesAsTree.isEditable = false
+        messagesAsTree.dragEnabled = false
+        messagesAsTree.isRootVisible = false
+        messagesAsTree.cellRenderer = LinkedMessagesRenderer()
 
         statusBar = JPanel()
         statusBar.layout = BorderLayout(0, 0)
@@ -100,8 +110,7 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
         statusText.putClientProperty("html.disable", java.lang.Boolean.FALSE)
         statusBar.add(statusText, BorderLayout.CENTER)
 
-        val buttonGroup: ButtonGroup
-        buttonGroup = ButtonGroup()
+        val buttonGroup: ButtonGroup = ButtonGroup()
         buttonGroup.add(buttonTimeline)
         buttonGroup.add(buttonLinkedMode)
     }

@@ -1,10 +1,10 @@
 package com.icapps.niddler.ui
 
 import com.icapps.niddler.ui.form.MainThreadDispatcher
-import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
+import java.awt.Dimension
 import java.beans.PropertyChangeEvent
 import java.util.*
+import javax.swing.JLabel
 import javax.swing.JTable
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
@@ -44,6 +44,12 @@ fun JTable.setColumnFixedWidth(columnIndex: Int, width: Int) {
     column?.minWidth = width
     column?.maxWidth = width
     column?.preferredWidth = width
+}
+
+fun JLabel.setFixedWidth(width: Int) {
+    minimumSize = Dimension(width, 32)
+    maximumSize = Dimension(width, 32)
+    preferredSize = Dimension(width, 32)
 }
 
 fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {

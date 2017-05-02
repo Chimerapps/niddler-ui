@@ -46,7 +46,7 @@ class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : Niddl
         return sortedMessages
     }
 
-    fun getMessagesLinked(): SortedMap<String, List<ParsedNiddlerMessage>> {
+    fun getMessagesLinked(): Map<String, List<ParsedNiddlerMessage>> {
         val chronological = getMessagesChronological()
         val map: MutableMap<String, MutableList<ParsedNiddlerMessage>> = LinkedHashMap()
         chronological.forEach {
@@ -58,8 +58,7 @@ class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : Niddl
                 items.add(it)
             }
         }
-        @Suppress("UNCHECKED_CAST")
-        return map as SortedMap<String, List<ParsedNiddlerMessage>>
+        return map
     }
 
     override fun onServiceMessage(niddlerMessage: NiddlerMessage) {

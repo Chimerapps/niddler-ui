@@ -15,7 +15,7 @@ import javax.swing.table.TableModel
  * @author Nicola Verbeeck
  * @date 17/11/16.
  */
-class TimelineMessagesTableModel : TableModel {
+class TimelineMessagesTableModel : TableModel, MessagesModel {
 
     companion object {
         @JvmStatic private val INDEX_TIMESTAMP = 0
@@ -39,9 +39,9 @@ class TimelineMessagesTableModel : TableModel {
         downIcon = ImageIcon(javaClass.getResource("/ic_down.png"))
     }
 
-    fun updateMessages(msgs: MessageContainer) {
-        messages = msgs.getMessagesChronological()
-        container = msgs
+    override fun updateMessages(messages: MessageContainer) {
+        this.messages = messages.getMessagesChronological()
+        container = messages
 
         val e = TableModelEvent(this)
         listeners.forEach { it.tableChanged(e) }
@@ -119,7 +119,6 @@ class TimelineMessagesTableModel : TableModel {
     fun getRow(selectedRow: Int): ParsedNiddlerMessage {
         return messages[selectedRow]
     }
-
 
 
 }
