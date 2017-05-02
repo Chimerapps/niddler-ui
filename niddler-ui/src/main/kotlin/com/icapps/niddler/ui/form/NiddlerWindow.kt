@@ -8,7 +8,7 @@ import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
 import com.icapps.niddler.ui.model.ui.*
 import com.icapps.niddler.ui.setColumnFixedWidth
 import com.icapps.niddler.ui.util.ClipboardUtil
-import com.intellij.util.ui.tree.WideSelectionTreeUI
+import com.icapps.niddler.ui.util.WideSelectionTreeUI
 import java.awt.BorderLayout
 import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable

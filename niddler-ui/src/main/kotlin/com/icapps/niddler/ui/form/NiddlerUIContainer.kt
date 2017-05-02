@@ -97,6 +97,7 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
         messagesAsTree.isEditable = false
         messagesAsTree.dragEnabled = false
         messagesAsTree.isRootVisible = false
+        messagesAsTree.showsRootHandles = true
         messagesAsTree.cellRenderer = LinkedMessagesRenderer()
 
         statusBar = JPanel()
