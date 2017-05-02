@@ -1,12 +1,15 @@
 <idea-plugin version="2">
     <id>com.icapps.niddler</id>
     <name>Niddler</name>
-    <version>0.0.9</version>
+    <version>0.0.10</version>
     <vendor email="support@icapps.com" url="https://www.icapps.com">iCapps</vendor>
 
     <description>This plugin enables the niddler ui inside the IDE</description>
 
-    <change-notes>0.0.9 - Remove required dependency on adb</change-notes>
+    <change-notes>
+        0.0.10 - Support for linked mode (alpha)
+        0.0.9 - Remove required dependency on adb
+    </change-notes>
 
     <idea-version since-build="141.0"/>
 
