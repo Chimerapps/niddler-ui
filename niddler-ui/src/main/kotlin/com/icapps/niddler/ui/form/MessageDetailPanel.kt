@@ -2,16 +2,19 @@ package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.ui.model.MessageContainer
 import com.icapps.niddler.ui.model.ParsedNiddlerMessage
-import org.jdesktop.swingx.JXTaskPane
-import org.jdesktop.swingx.JXTaskPaneContainer
+import com.icapps.niddler.ui.util.ClipboardUtil
+import com.jgoodies.forms.layout.CellConstraints
+import com.jgoodies.forms.layout.FormLayout
+import com.jgoodies.forms.layout.RowSpec
 import java.awt.BorderLayout
 import java.awt.Color
-import java.awt.Dimension
 import java.awt.Font
+import java.awt.datatransfer.StringSelection
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.*
 import javax.swing.border.EmptyBorder
+import javax.swing.border.TitledBorder
 
 
 /**
@@ -20,11 +23,11 @@ import javax.swing.border.EmptyBorder
  */
 class MessageDetailPanel(private val messages: MessageContainer) : JPanel(BorderLayout()) {
 
-    private val taskContainer: JXTaskPaneContainer = JXTaskPaneContainer()
-    private val generalPanel: JXTaskPane = JXTaskPane()
-    private val headersPanel: JXTaskPane = JXTaskPane()
+    private val generalPanel = JPanel(BorderLayout())
+    private val headersPanel = JPanel(BorderLayout())
     private val generalContentPanel: JPanel
     private val headersContentPanel: JPanel
+    private val containerPanel = JPanel()
 
     private val formatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
     private val boldFont: Font
@@ -32,21 +35,22 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
     private val italicFont: Font
 
     init {
-        add(taskContainer, BorderLayout.CENTER)
-        generalPanel.title = "General"
-        headersPanel.title = "Headers"
-        taskContainer.add(generalPanel)
-        taskContainer.add(headersPanel)
+        border = EmptyBorder(5, 5, 5, 5)
+        containerPanel.layout = BoxLayout(containerPanel, BoxLayout.Y_AXIS)
 
-        generalContentPanel = JPanel(BorderLayout())
+        generalPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0), "General", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
+        headersPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0), "Headers", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
+
+        generalContentPanel = JPanel(FormLayout("left:default, 3dlu, pref", "pref, pref, pref, pref, pref"))
         generalContentPanel.border = EmptyBorder(5, 5, 5, 5)
-        val contentScroller = JScrollPane(generalContentPanel)
-        generalPanel.contentPane.add(contentScroller)
+        generalPanel.add(JScrollPane(generalContentPanel))
 
-        headersContentPanel = JPanel(BorderLayout())
+        headersContentPanel = JPanel(FormLayout("left:default, 3dlu, pref", ""))
         headersContentPanel.border = EmptyBorder(5, 5, 5, 5)
-        val contentScroller2 = JScrollPane(headersContentPanel)
-        headersPanel.contentPane.add(contentScroller2)
+        headersPanel.add(JScrollPane(headersContentPanel))
+
+        containerPanel.add(generalPanel)
+        containerPanel.add(headersPanel)
 
         boldFont = Font("Monospaced", Font.BOLD, 12)
         normalFont = Font("Monospaced", 0, 12)
@@ -57,43 +61,28 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
         val other = if (message.isRequest) findResponse(message) else findRequest(message)
 
         removeAll()
+
+        add(containerPanel, BorderLayout.NORTH)
+
+        val constraints = CellConstraints()
+
         generalContentPanel.removeAll()
         headersContentPanel.removeAll()
-        add(taskContainer, BorderLayout.CENTER)
 
-        val labelPanel = JPanel()
-        val valuePanel = JPanel()
-        labelPanel.layout = BoxLayout(labelPanel, BoxLayout.Y_AXIS)
-        labelPanel.border = EmptyBorder(0, 0, 0, 10)
-        valuePanel.layout = BoxLayout(valuePanel, BoxLayout.Y_AXIS)
-        labelPanel.background = Color(0, 0, 0, 0)
-        valuePanel.background = Color(0, 0, 0, 0)
-        labelPanel.isOpaque = false
-        valuePanel.isOpaque = false
+        generalContentPanel.add(boldLabel("Timestamp"), constraints.xy(1, 1))
+        generalContentPanel.add(selectableLabel(formatter.format(Date(message.timestamp))), constraints.xy(3, 1))
 
-        generalContentPanel.add(labelPanel, BorderLayout.WEST)
-        generalContentPanel.add(valuePanel, BorderLayout.CENTER)
+        generalContentPanel.add(boldLabel("Method"), constraints.xy(1, 2))
+        generalContentPanel.add(selectableLabel(message.method ?: other?.method), constraints.xy(3, 2))
 
-        labelPanel.add(boldLabel("Timestamp"))
-        labelPanel.add(Box.createRigidArea(Dimension(0, 5)))
-        valuePanel.add(selectableLabel(formatter.format(Date(message.timestamp))))
-        valuePanel.add(Box.createRigidArea(Dimension(0, 5)))
+        generalContentPanel.add(boldLabel("URL"), constraints.xy(1, 3))
+        generalContentPanel.add(selectableLabel(message.url ?: other?.url), constraints.xy(3, 3))
 
-        labelPanel.add(boldLabel("Method"))
-        labelPanel.add(Box.createRigidArea(Dimension(0, 5)))
-        valuePanel.add(selectableLabel(message.method ?: other?.method))
-        valuePanel.add(Box.createRigidArea(Dimension(0, 5)))
+        generalContentPanel.add(boldLabel("Status"), constraints.xy(1, 4))
+        generalContentPanel.add(selectableLabel((message.statusCode ?: other?.statusCode)?.toString()), constraints.xy(3, 4))
 
-        labelPanel.add(boldLabel("URL"))
-        labelPanel.add(Box.createRigidArea(Dimension(0, 5)))
-        valuePanel.add(selectableLabel(message.url ?: other?.url))
-        valuePanel.add(Box.createRigidArea(Dimension(0, 5)))
-
-        labelPanel.add(boldLabel("Status"))
-        valuePanel.add(selectableLabel((message.statusCode ?: other?.statusCode)?.toString()))
-
-        labelPanel.add(boldLabel("Execution time"))
-        valuePanel.add(makeExecutionTimeLabel(message, other))
+        generalContentPanel.add(boldLabel("Execution time"), constraints.xy(1, 5))
+        generalContentPanel.add(makeExecutionTimeLabel(message, other), constraints.xy(3, 5))
 
         populateHeaders(message)
 
@@ -105,23 +94,22 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
     }
 
     private fun populateHeaders(message: ParsedNiddlerMessage) {
-        val labelPanel = JPanel()
-        val valuePanel = JPanel()
-        labelPanel.layout = BoxLayout(labelPanel, BoxLayout.Y_AXIS)
-        labelPanel.border = EmptyBorder(0, 0, 0, 10)
-        valuePanel.layout = BoxLayout(valuePanel, BoxLayout.Y_AXIS)
-        labelPanel.background = Color(0, 0, 0, 0)
-        valuePanel.background = Color(0, 0, 0, 0)
-        labelPanel.isOpaque = false
-        valuePanel.isOpaque = false
-        headersContentPanel.add(labelPanel, BorderLayout.WEST)
-        headersContentPanel.add(valuePanel, BorderLayout.CENTER)
+        val layout = headersContentPanel.layout as FormLayout
+        val numRows = layout.rowCount
+        for (i in 0..numRows - 1) {
+            layout.removeRow(1)
+        }
+        val spec = RowSpec.decodeSpecs("pref")[0]
+        for (i in 1..(message.headers?.size ?: 0)) {
+            layout.appendRow(spec)
+        }
+        val constraints = CellConstraints()
+        var row = 1
         message.headers?.forEach {
-            labelPanel.add(selectableBoldLabel(it.key))
-            labelPanel.add(Box.createRigidArea(Dimension(0, 5)))
+            headersContentPanel.add(selectableBoldLabel(it.key), constraints.xy(1, row))
+            headersContentPanel.add(selectableLabel(it.value.joinToString(", ")), constraints.xy(3, row))
 
-            valuePanel.add(selectableLabel(it.value.joinToString(", ")))
-            valuePanel.add(Box.createRigidArea(Dimension(0, 5)))
+            ++row
         }
     }
 
@@ -166,22 +154,30 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
     }
 
     private fun selectableLabel(text: String?): JComponent {
-        val f = JTextField(text)
-        f.isEditable = false
-        f.border = null
-        f.background = Color(0, 0, 0, 0)
-        f.foreground = UIManager.getColor("Label.foreground")
+        val f = JLabel(text)
         f.font = normalFont
+        f.componentPopupMenu = JPopupMenu().apply {
+
+            add(JMenuItem("Copy").apply {
+                addActionListener {
+                    ClipboardUtil.copyToClipboard(StringSelection(text))
+                }
+            })
+        }
         return f
     }
 
     private fun selectableBoldLabel(text: String?): JComponent {
-        val f = JTextField(text)
-        f.isEditable = false
-        f.border = null
-        f.background = Color(0, 0, 0, 0)
-        f.foreground = UIManager.getColor("Label.foreground")
+        val f = JLabel(text)
         f.font = boldFont
+        f.componentPopupMenu = JPopupMenu().apply {
+
+            add(JMenuItem("Copy").apply {
+                addActionListener {
+                    ClipboardUtil.copyToClipboard(StringSelection(text))
+                }
+            })
+        }
         return f
 
     }

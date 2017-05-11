@@ -8,6 +8,7 @@ import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.JScrollPane
 import javax.swing.SwingConstants
 
 /**
@@ -16,20 +17,16 @@ import javax.swing.SwingConstants
  */
 class MessageDetailContainer(interfaceFactory: InterfaceFactory, message: MessageContainer) {
 
-    private val bodyRoot: JPanel
-    private val detailPanel: MessageDetailPanel
+    private val bodyRoot: JPanel = JPanel(BorderLayout())
+    private val detailPanel: MessageDetailPanel = MessageDetailPanel(message)
     private var currentMessage: ParsedNiddlerMessage? = null
-    private val content: TabComponent
+    private val content: TabComponent = interfaceFactory.createTabComponent()
 
     val asComponent: Component
         get() = content.asComponent
 
     init {
-        content = interfaceFactory.createTabComponent()
-        bodyRoot = JPanel(BorderLayout())
-
-        detailPanel = MessageDetailPanel(message)
-        content.addTab("Details", detailPanel)
+        content.addTab("Details", JScrollPane(detailPanel))
         content.addTab("Body", bodyRoot)
     }
 
