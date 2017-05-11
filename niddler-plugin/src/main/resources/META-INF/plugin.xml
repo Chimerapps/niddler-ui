@@ -7,6 +7,7 @@
     <description>This plugin enables the niddler ui inside the IDE</description>
 
     <change-notes>
+        0.0.11 - Support copy of message detail values and header names
         0.0.10 - Support for linked mode (alpha)
         0.0.9 - Remove required dependency on adb
     </change-notes>

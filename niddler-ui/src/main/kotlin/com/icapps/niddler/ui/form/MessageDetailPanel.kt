@@ -13,6 +13,7 @@ import java.util.*
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 
+
 /**
  * @author Nicola Verbeeck
  * @date 18/11/16.
@@ -67,27 +68,29 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
         valuePanel.layout = BoxLayout(valuePanel, BoxLayout.Y_AXIS)
         labelPanel.background = Color(0, 0, 0, 0)
         valuePanel.background = Color(0, 0, 0, 0)
+        labelPanel.isOpaque = false
+        valuePanel.isOpaque = false
 
         generalContentPanel.add(labelPanel, BorderLayout.WEST)
         generalContentPanel.add(valuePanel, BorderLayout.CENTER)
 
         labelPanel.add(boldLabel("Timestamp"))
         labelPanel.add(Box.createRigidArea(Dimension(0, 5)))
-        valuePanel.add(regularLabel(formatter.format(Date(message.timestamp))))
+        valuePanel.add(selectableLabel(formatter.format(Date(message.timestamp))))
         valuePanel.add(Box.createRigidArea(Dimension(0, 5)))
 
         labelPanel.add(boldLabel("Method"))
         labelPanel.add(Box.createRigidArea(Dimension(0, 5)))
-        valuePanel.add(regularLabel(message.method ?: other?.method))
+        valuePanel.add(selectableLabel(message.method ?: other?.method))
         valuePanel.add(Box.createRigidArea(Dimension(0, 5)))
 
         labelPanel.add(boldLabel("URL"))
         labelPanel.add(Box.createRigidArea(Dimension(0, 5)))
-        valuePanel.add(regularLabel(message.url ?: other?.url))
+        valuePanel.add(selectableLabel(message.url ?: other?.url))
         valuePanel.add(Box.createRigidArea(Dimension(0, 5)))
 
         labelPanel.add(boldLabel("Status"))
-        valuePanel.add(regularLabel((message.statusCode ?: other?.statusCode)?.toString()))
+        valuePanel.add(selectableLabel((message.statusCode ?: other?.statusCode)?.toString()))
 
         labelPanel.add(boldLabel("Execution time"))
         valuePanel.add(makeExecutionTimeLabel(message, other))
@@ -109,13 +112,15 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
         valuePanel.layout = BoxLayout(valuePanel, BoxLayout.Y_AXIS)
         labelPanel.background = Color(0, 0, 0, 0)
         valuePanel.background = Color(0, 0, 0, 0)
+        labelPanel.isOpaque = false
+        valuePanel.isOpaque = false
         headersContentPanel.add(labelPanel, BorderLayout.WEST)
         headersContentPanel.add(valuePanel, BorderLayout.CENTER)
         message.headers?.forEach {
-            labelPanel.add(boldLabel(it.key))
+            labelPanel.add(selectableBoldLabel(it.key))
             labelPanel.add(Box.createRigidArea(Dimension(0, 5)))
 
-            valuePanel.add(regularLabel(it.value.joinToString(", ")))
+            valuePanel.add(selectableLabel(it.value.joinToString(", ")))
             valuePanel.add(Box.createRigidArea(Dimension(0, 5)))
         }
     }
@@ -127,7 +132,7 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
         repaint()
     }
 
-    private fun makeExecutionTimeLabel(firstMessage: ParsedNiddlerMessage?, secondMessage: ParsedNiddlerMessage?): JLabel {
+    private fun makeExecutionTimeLabel(firstMessage: ParsedNiddlerMessage?, secondMessage: ParsedNiddlerMessage?): JComponent {
         if (firstMessage == null || secondMessage == null) {
             return italicLabel("Unknown")
         }
@@ -135,7 +140,7 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
             firstMessage.timestamp - secondMessage.timestamp
         else
             secondMessage.timestamp - firstMessage.timestamp
-        return regularLabel("$time msec")
+        return selectableLabel("$time msec")
     }
 
     private fun findResponse(message: ParsedNiddlerMessage): ParsedNiddlerMessage? {
@@ -148,22 +153,36 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
         return messages.getMessagesWithRequestId(message.requestId)?.find(ParsedNiddlerMessage::isRequest)
     }
 
-    private fun boldLabel(text: String?): JLabel {
+    private fun boldLabel(text: String?): JComponent {
         val label = JLabel(text)
         label.font = boldFont
         return label
     }
 
-    private fun regularLabel(text: String?): JLabel {
-        val label = JLabel(text)
-        label.font = normalFont
-        return label
-    }
-
-    private fun italicLabel(text: String?): JLabel {
+    private fun italicLabel(text: String?): JComponent {
         val label = JLabel(text)
         label.font = italicFont
         return label
     }
 
+    private fun selectableLabel(text: String?): JComponent {
+        val f = JTextField(text)
+        f.isEditable = false
+        f.border = null
+        f.background = Color(0, 0, 0, 0)
+        f.foreground = UIManager.getColor("Label.foreground")
+        f.font = normalFont
+        return f
+    }
+
+    private fun selectableBoldLabel(text: String?): JComponent {
+        val f = JTextField(text)
+        f.isEditable = false
+        f.border = null
+        f.background = Color(0, 0, 0, 0)
+        f.foreground = UIManager.getColor("Label.foreground")
+        f.font = boldFont
+        return f
+
+    }
 }
