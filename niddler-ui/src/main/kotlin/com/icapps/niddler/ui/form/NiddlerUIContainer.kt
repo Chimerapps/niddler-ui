@@ -2,10 +2,8 @@ package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.model.ui.LinkedMessagesRenderer
-import java.awt.BorderLayout
-import java.awt.Dimension
-import java.awt.FlowLayout
-import java.awt.Insets
+import java.awt.*
+import java.awt.event.MouseEvent
 import javax.swing.*
 
 /**
@@ -85,7 +83,7 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
 
         messagesScroller = JScrollPane()
         splitPane.left = messagesScroller
-        messagesAsTable = JTable()
+        messagesAsTable = PopupMenuSelectingJTable()
         messagesAsTable.fillsViewportHeight = false
         messagesAsTable.rowHeight = 32
         messagesAsTable.showHorizontalLines = true
@@ -116,4 +114,15 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
         buttonGroup.add(buttonLinkedMode)
     }
 
+}
+
+class PopupMenuSelectingJTable : JTable() {
+
+    override fun getPopupLocation(event: MouseEvent): Point? {
+        val r = rowAtPoint(event.point);
+        if (r in 0..(rowCount - 1)) {
+            setRowSelectionInterval(r, r);
+        }
+        return super.getPopupLocation(event)
+    }
 }

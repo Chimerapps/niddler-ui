@@ -2,6 +2,7 @@ package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.ui.NiddlerClient
 import com.icapps.niddler.ui.adb.ADBBootstrap
+import com.icapps.niddler.ui.codegen.CurlCodeGenerator
 import com.icapps.niddler.ui.connection.NiddlerMessageListener
 import com.icapps.niddler.ui.model.*
 import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
@@ -13,6 +14,8 @@ import java.awt.BorderLayout
 import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
 import java.awt.event.ItemEvent
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.net.URI
 import javax.swing.*
 import javax.swing.border.EmptyBorder
@@ -229,8 +232,6 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory, private val sdkPathGuess
             } else {
                 (windowContents.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
             }
-
-
         }
     }
 
@@ -275,4 +276,13 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory, private val sdkPathGuess
         clipboardData?.let { ClipboardUtil.copyToClipboard(it) }
     }
 
+    override fun onExportCurlRequestClicked() {
+        val message = detailContainer.getMessage() ?: return
+        val request = messages.findRequest(message)
+        if (request == null) {
+            JOptionPane.showConfirmDialog(null, "Could not find request.", "Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE)
+            return
+        }
+        ClipboardUtil.copyToClipboard(StringSelection(CurlCodeGenerator().generateRequestCode(request)))
+    }
 }
