@@ -14,8 +14,6 @@ import java.awt.BorderLayout
 import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
 import java.awt.event.ItemEvent
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
 import java.net.URI
 import javax.swing.*
 import javax.swing.border.EmptyBorder
@@ -226,7 +224,7 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory, private val sdkPathGuess
                 if (previousSelection != -1) {
                     try {
                         windowContents.messagesAsTable.addRowSelectionInterval(previousSelection, previousSelection)
-                    } catch(ignored: IllegalArgumentException) {
+                    } catch (ignored: IllegalArgumentException) {
                     }
                 }
             } else {
@@ -237,6 +235,7 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory, private val sdkPathGuess
 
     override fun onServerInfo(serverInfo: NiddlerServerInfo) {
         MainThreadDispatcher.dispatch {
+            windowContents.updateProtocol(serverInfo.protocol)
             windowContents.statusText.text = "Connected to ${serverInfo.serverName} (${serverInfo.serverDescription})"
         }
     }

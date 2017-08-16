@@ -25,13 +25,22 @@ class NiddlerMessageBodyParser {
         private val log = logger<NiddlerMessageBodyParser>()
     }
 
-    fun parseBody(message: NiddlerMessage): ParsedNiddlerMessage {
+    fun parseBody(message: NiddlerMessage?): ParsedNiddlerMessage? {
+        if (message == null)
+            return null
         try {
-            val format = parseMessage(message)
-            return format
-        } catch(e: Exception) {
+            return parseMessage(message)
+        } catch (e: Exception) {
             log.error("Message parse failure: ", e)
-            return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_BINARY, null, null), message.getBodyAsBytes, message)
+            return ParsedNiddlerMessage(
+                    bodyFormat = BodyFormat(
+                            type = BodyFormatType.FORMAT_BINARY,
+                            subtype = null,
+                            encoding = null),
+                    bodyData = message.getBodyAsBytes,
+                    message = message,
+                    parsedNetworkRequest = parseBody(message.networkRequest),
+                    parsedNetworkReply = parseBody(message.networkReply))
         }
     }
 
@@ -40,13 +49,13 @@ class NiddlerMessageBodyParser {
             BodyFormatType.FORMAT_JSON -> return examineJson(message.getBodyAsBytes, message) ?: throw IllegalArgumentException("Message is not json")
             BodyFormatType.FORMAT_XML -> return examineXML(message.getBodyAsBytes, message, contentType) ?: throw IllegalArgumentException("Message is not xml")
             BodyFormatType.FORMAT_HTML, BodyFormatType.FORMAT_PLAIN -> {
-                val bytes = message.getBodyAsBytes ?: return ParsedNiddlerMessage(contentType, null, message)
-                return ParsedNiddlerMessage(contentType, String(bytes, 0, bytes.size, Charset.forName(contentType.encoding ?: "UTF-8")), message)
+                val bytes = message.getBodyAsBytes ?: return ParsedNiddlerMessage(contentType, null, message, parseBody(message.networkRequest), parseBody(message.networkReply))
+                return ParsedNiddlerMessage(contentType, String(bytes, 0, bytes.size, Charset.forName(contentType.encoding ?: "UTF-8")), message, parseBody(message.networkRequest), parseBody(message.networkReply))
             }
-            BodyFormatType.FORMAT_IMAGE -> return ParsedNiddlerMessage(contentType, ImageIO.read(ByteArrayInputStream(message.getBodyAsBytes)), message)
-            BodyFormatType.FORMAT_BINARY -> return ParsedNiddlerMessage(contentType, message.getBodyAsBytes, message)
+            BodyFormatType.FORMAT_IMAGE -> return ParsedNiddlerMessage(contentType, ImageIO.read(ByteArrayInputStream(message.getBodyAsBytes)), message, parseBody(message.networkRequest), parseBody(message.networkReply))
+            BodyFormatType.FORMAT_BINARY -> return ParsedNiddlerMessage(contentType, message.getBodyAsBytes, message, parseBody(message.networkRequest), parseBody(message.networkReply))
             BodyFormatType.FORMAT_FORM_ENCODED -> return examineFormEncoded(message.getBodyAsBytes, message) ?: throw IllegalArgumentException("Message is not form encoded")
-            BodyFormatType.FORMAT_EMPTY -> return ParsedNiddlerMessage(contentType, null, message)
+            BodyFormatType.FORMAT_EMPTY -> return ParsedNiddlerMessage(contentType, null, message, parseBody(message.networkRequest), parseBody(message.networkReply))
         }
     }
 
@@ -79,7 +88,7 @@ class NiddlerMessageBodyParser {
             '<'.toByte() ->
                 examineXML(bodyAsBytes, message) ?:
                         if (firstBytesContainHtml(bodyAsBytes, "html"))
-                            ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_HTML, null, null), String(bodyAsBytes, 0, bodyAsBytes.size), message)
+                            ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_HTML, null, null), String(bodyAsBytes, 0, bodyAsBytes.size), message, parseBody(message.networkRequest), parseBody(message.networkReply))
                         else
                             null
             else -> null
@@ -123,13 +132,13 @@ class NiddlerMessageBodyParser {
             val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(ByteArrayInputStream(bodyAsBytes))
             if (bodyType != null) {
                 //TODO handle svg?
-                return ParsedNiddlerMessage(bodyType, document, message)
+                return ParsedNiddlerMessage(bodyType, document, message, parseBody(message.networkRequest), parseBody(message.networkReply))
             }
             when (document.documentElement.tagName) {
-                "svg" -> return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_XML, "application/svg+xml", document.inputEncoding), document, message)
+                "svg" -> return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_XML, "application/svg+xml", document.inputEncoding), document, message, parseBody(message.networkRequest), parseBody(message.networkReply))
             }
-            return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_XML, null, document.inputEncoding), document, message)
-        } catch(e: Exception) {
+            return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_XML, null, document.inputEncoding), document, message, parseBody(message.networkRequest), parseBody(message.networkReply))
+        } catch (e: Exception) {
             return null
         }
     }
@@ -138,8 +147,8 @@ class NiddlerMessageBodyParser {
         if (bodyAsBytes == null) return null
         try {
             val json = JsonParser().parse(InputStreamReader(ByteArrayInputStream(bodyAsBytes), Charsets.UTF_8))
-            return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_JSON, null, Charsets.UTF_8.name()), json, message)
-        } catch(e: Exception) {
+            return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_JSON, null, Charsets.UTF_8.name()), json, message, parseBody(message.networkRequest), parseBody(message.networkReply))
+        } catch (e: Exception) {
             return null
         }
     }
@@ -154,7 +163,7 @@ class NiddlerMessageBodyParser {
             val value = URLDecoder.decode(parts[1], "UTF-8")
             map[key] = value
         }
-        return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_FORM_ENCODED, null, null), map, message)
+        return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_FORM_ENCODED, null, null), map, message, parseBody(message.networkRequest), parseBody(message.networkReply))
     }
 }
 

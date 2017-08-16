@@ -21,6 +21,9 @@ open class NiddlerMessage {
     var headers: Map<String, List<String>>? = null
     var statusCode: Int? = null
 
+    var networkRequest: NiddlerMessage? = null
+    var networkReply: NiddlerMessage? = null
+
     val isRequest: Boolean
         get() = statusCode == null
 

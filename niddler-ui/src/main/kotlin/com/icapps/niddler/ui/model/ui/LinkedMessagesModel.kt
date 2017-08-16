@@ -11,7 +11,7 @@ import javax.swing.tree.TreeNode
  * @author Nicola Verbeeck
  * @date 17/11/16.
  */
-class LinkedMessagesModel() : DefaultTreeModel(DefaultMutableTreeNode()), MessagesModel {
+class LinkedMessagesModel : DefaultTreeModel(DefaultMutableTreeNode()), MessagesModel {
 
     private var messages: Map<String, List<ParsedNiddlerMessage>> = Collections.emptyMap()
     private lateinit var container: MessageContainer
@@ -68,13 +68,39 @@ class MessageRootNode(children: Map<String, List<ParsedNiddlerMessage>>) : TreeN
 
 }
 
-class RequestNode(private val parent: TreeNode, requestId: String, messages: List<ParsedNiddlerMessage>) : TreeNode {
+class NetworkRequestNode(parent: TreeNode, requestId: String, messages: List<ParsedNiddlerMessage>) : RequestNode(parent, requestId, messages)
+class NetworkResponseNode(parent: TreeNode, message: ParsedNiddlerMessage) : ResponseNode(parent, message)
+
+open class RequestNode(private val parent: TreeNode, requestId: String, messages: List<ParsedNiddlerMessage>) : TreeNode {
 
     var request: ParsedNiddlerMessage? = messages.find { it.isRequest }
-    private val responseNodes: List<ResponseNode> = messages.filter { !it.isRequest }.map { ResponseNode(this, it) }
+
+    private val responseNodes: List<ResponseNode> = messages.filter { !it.isRequest }.map {
+        ResponseNode(this, it)
+    }
+    private val networkRequestNode: RequestNode?
+    private val networkReplyNode: ResponseNode?
+
+    private val nodes: List<TreeNode>
+
+    init {
+        val networkRequest = responseNodes.getOrNull(0)?.message?.parsedNetworkRequest
+        val networkReply = responseNodes.getOrNull(0)?.message?.parsedNetworkReply
+        networkRequestNode = if (networkRequest == null) null else NetworkRequestNode(this, requestId, listOf(networkRequest))
+        networkReplyNode = if (networkReply == null) null else NetworkResponseNode(this, networkReply)
+
+        val actualNodes = ArrayList<TreeNode>(responseNodes.size)
+        if (networkRequestNode != null)
+            actualNodes.add(networkRequestNode)
+        if (networkReplyNode != null)
+            actualNodes.add(networkReplyNode)
+        actualNodes += responseNodes
+
+        nodes = actualNodes
+    }
 
     override fun children(): Enumeration<*> {
-        val iterator = responseNodes.iterator()
+        val iterator = nodes.iterator()
         return object : Enumeration<TreeNode> {
             override fun nextElement(): TreeNode {
                 return iterator.next()
@@ -87,11 +113,11 @@ class RequestNode(private val parent: TreeNode, requestId: String, messages: Lis
     }
 
     override fun isLeaf(): Boolean {
-        return responseNodes.isEmpty()
+        return nodes.isEmpty()
     }
 
     override fun getChildCount(): Int {
-        return responseNodes.size
+        return nodes.size
     }
 
     override fun getParent(): TreeNode {
@@ -99,11 +125,11 @@ class RequestNode(private val parent: TreeNode, requestId: String, messages: Lis
     }
 
     override fun getChildAt(childIndex: Int): TreeNode {
-        return responseNodes[childIndex]
+        return nodes[childIndex]
     }
 
     override fun getIndex(node: TreeNode?): Int {
-        return responseNodes.indexOf(node)
+        return nodes.indexOf(node)
     }
 
     override fun getAllowsChildren(): Boolean {
@@ -111,7 +137,7 @@ class RequestNode(private val parent: TreeNode, requestId: String, messages: Lis
     }
 }
 
-class ResponseNode(private val parent: TreeNode, val message: ParsedNiddlerMessage) : TreeNode {
+open class ResponseNode(private val parent: TreeNode, val message: ParsedNiddlerMessage) : TreeNode {
 
     override fun children(): Enumeration<*> {
         return object : Enumeration<TreeNode> {

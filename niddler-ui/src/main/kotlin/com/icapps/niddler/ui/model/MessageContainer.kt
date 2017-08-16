@@ -62,7 +62,7 @@ class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : Niddl
     }
 
     override fun onServiceMessage(niddlerMessage: NiddlerMessage) {
-        val parsedMessage = bodyParser.parseBody(niddlerMessage)
+        val parsedMessage = bodyParser.parseBody(niddlerMessage) ?: return
         addMessage(parsedMessage)
         synchronized(listeners) {
             listeners.forEach { it.onMessage(parsedMessage) }

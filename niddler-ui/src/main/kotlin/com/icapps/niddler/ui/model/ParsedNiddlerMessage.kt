@@ -4,7 +4,11 @@ package com.icapps.niddler.ui.model
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-class ParsedNiddlerMessage(val bodyFormat: BodyFormat, val bodyData: Any?, val message: NiddlerMessage) {
+class ParsedNiddlerMessage(val bodyFormat: BodyFormat,
+                           val bodyData: Any?,
+                           val message: NiddlerMessage,
+                           val parsedNetworkRequest:ParsedNiddlerMessage?,
+                           val parsedNetworkReply: ParsedNiddlerMessage?) {
 
     val requestId: String
         get() = message.requestId

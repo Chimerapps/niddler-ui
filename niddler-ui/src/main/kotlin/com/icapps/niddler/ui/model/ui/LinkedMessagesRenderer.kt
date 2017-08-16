@@ -5,7 +5,6 @@ import com.icapps.niddler.ui.setFixedWidth
 import com.icapps.niddler.ui.util.getStatusCodeString
 import java.awt.Color
 import java.awt.Component
-import java.awt.Dimension
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.*
@@ -16,7 +15,7 @@ import javax.swing.tree.TreeCellRenderer
  * @author Nicola Verbeeck
  * @date 02/05/2017.
  */
-class LinkedMessagesRenderer : TreeCellRenderer {
+class LinkedMessagesRenderer(private val protocolVersion: Int) : TreeCellRenderer {
 
     private val formatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
     private val upIcon: Icon
@@ -48,8 +47,8 @@ class LinkedMessagesRenderer : TreeCellRenderer {
         requestFrame.add(timeLabel)
         requestFrame.add(directionLabel)
         requestFrame.add(methodLabel)
-        requestFrame.add(urlLabel)
         requestFrame.add(statusLabel)
+        requestFrame.add(urlLabel)
         requestFrame.add(formatLabel)
 
         timeLabel.horizontalAlignment = SwingConstants.LEFT
@@ -73,7 +72,11 @@ class LinkedMessagesRenderer : TreeCellRenderer {
             message = value.request
             icon = upIcon
             method = message?.method
-            url = message?.url
+
+            if (value is NetworkRequestNode)
+                url = "Network - ${message?.url}"
+            else
+                url = message?.url
 
             methodLabel.setFixedWidth(70)
             urlLabel.setFixedWidth(400)
@@ -84,8 +87,21 @@ class LinkedMessagesRenderer : TreeCellRenderer {
             status = formatStatusCode(value.message.statusCode)
             format = value.message.bodyFormat.toString()
 
+            if (protocolVersion == 3) {
+                if (value is NetworkResponseNode)
+                    url = "Network"
+                else if (value.message.parsedNetworkRequest == null)
+                    url = "Cached"
+                else if (value.message.parsedNetworkReply?.statusCode == 304)
+                    url = "Cached"
+                else
+                    url = null
+            } else {
+                url = null
+            }
+
             methodLabel.setFixedWidth(0)
-            urlLabel.setFixedWidth(0)
+            urlLabel.setFixedWidth(100)
             statusLabel.setFixedWidth(70)
         }
 

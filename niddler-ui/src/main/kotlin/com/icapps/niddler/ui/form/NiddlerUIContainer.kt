@@ -96,7 +96,7 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
         messagesAsTree.dragEnabled = false
         messagesAsTree.isRootVisible = false
         messagesAsTree.showsRootHandles = true
-        messagesAsTree.cellRenderer = LinkedMessagesRenderer()
+        messagesAsTree.cellRenderer = LinkedMessagesRenderer(0)
 
         statusBar = JPanel()
         statusBar.layout = BorderLayout(0, 0)
@@ -112,6 +112,10 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
         val buttonGroup: ButtonGroup = ButtonGroup()
         buttonGroup.add(buttonTimeline)
         buttonGroup.add(buttonLinkedMode)
+    }
+
+    fun updateProtocol(protocol: Int) {
+        messagesAsTree.cellRenderer = LinkedMessagesRenderer(protocol)
     }
 
 }
