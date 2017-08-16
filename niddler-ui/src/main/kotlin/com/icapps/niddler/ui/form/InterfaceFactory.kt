@@ -2,7 +2,7 @@ package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.TabComponent
-import javax.swing.JComponent
+import javax.swing.JScrollPane
 
 /**
  * @author Nicola Verbeeck
@@ -13,5 +13,7 @@ interface InterfaceFactory {
     fun createSplitPane(): SplitPane
 
     fun createTabComponent(): TabComponent
+
+    fun createScrollPane(): JScrollPane
 
 }

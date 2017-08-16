@@ -81,7 +81,7 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
         splitPane.resizePriority = 1.0
         rootPanel.add(splitPane.asComponent, BorderLayout.CENTER)
 
-        messagesScroller = JScrollPane()
+        messagesScroller = factory.createScrollPane()
         splitPane.left = messagesScroller
         messagesAsTable = PopupMenuSelectingJTable()
         messagesAsTable.fillsViewportHeight = false
