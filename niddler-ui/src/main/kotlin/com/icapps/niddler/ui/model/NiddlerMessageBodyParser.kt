@@ -44,10 +44,10 @@ class NiddlerMessageBodyParser {
         }
     }
 
-    fun parseBodyWithType(message: NiddlerMessage, contentType: BodyFormat): ParsedNiddlerMessage {
+    fun parseBodyWithType(message: NiddlerMessage, contentType: BodyFormat): ParsedNiddlerMessage? {
         when (contentType.type) {
-            BodyFormatType.FORMAT_JSON -> return examineJson(message.getBodyAsBytes, message) ?: throw IllegalArgumentException("Message is not json")
-            BodyFormatType.FORMAT_XML -> return examineXML(message.getBodyAsBytes, message, contentType) ?: throw IllegalArgumentException("Message is not xml")
+            BodyFormatType.FORMAT_JSON -> return examineJson(message.getBodyAsBytes, message)
+            BodyFormatType.FORMAT_XML -> return examineXML(message.getBodyAsBytes, message, contentType)
             BodyFormatType.FORMAT_HTML, BodyFormatType.FORMAT_PLAIN -> {
                 val bytes = message.getBodyAsBytes ?: return ParsedNiddlerMessage(contentType, null, message, parseBody(message.networkRequest), parseBody(message.networkReply))
                 return ParsedNiddlerMessage(contentType, String(bytes, 0, bytes.size, Charset.forName(contentType.encoding ?: "UTF-8")), message, parseBody(message.networkRequest), parseBody(message.networkReply))
@@ -62,7 +62,7 @@ class NiddlerMessageBodyParser {
     private fun parseMessage(message: NiddlerMessage): ParsedNiddlerMessage {
         val contentType = classifyFormatFromHeaders(message)
         if (contentType != null) {
-            return parseBodyWithType(message, contentType)
+            return parseBodyWithType(message, contentType) ?: return parseBodyWithType(message, BodyFormat.NONE)!!
         }
         return determineTypeFromBody(message)
     }
@@ -72,7 +72,8 @@ class NiddlerMessageBodyParser {
         if (contentTypeHeader != null && !contentTypeHeader.isEmpty()) {
             val contentTypeString = contentTypeHeader[0]
             val parsedContentType = ContentType.parse(contentTypeString)
-            return BodyFormat(fromMime(parsedContentType.mimeType), parsedContentType.mimeType, parsedContentType.charset?.name())
+            val fromMime = fromMime(parsedContentType.mimeType) ?: return null
+            return BodyFormat(fromMime, parsedContentType.mimeType, parsedContentType.charset?.name())
         }
         return null
     }
@@ -80,7 +81,7 @@ class NiddlerMessageBodyParser {
     private fun determineTypeFromBody(message: NiddlerMessage): ParsedNiddlerMessage {
         val bodyAsBytes = message.getBodyAsBytes
         if (bodyAsBytes == null || bodyAsBytes.isEmpty())
-            return parseBodyWithType(message, BodyFormat.NONE)
+            return parseBodyWithType(message, BodyFormat.NONE)!!
 
         val firstReasonableTextByte = findFirstNonBlankByte(bodyAsBytes)
         val parsed = when (firstReasonableTextByte) {
@@ -96,7 +97,7 @@ class NiddlerMessageBodyParser {
         if (parsed != null)
             return parsed
         //TODO image
-        return parseBodyWithType(message, BodyFormat.UNKNOWN)
+        return parseBodyWithType(message, BodyFormat.UNKNOWN)!!
     }
 
     private fun findFirstNonBlankByte(bytes: ByteArray): Byte? {
@@ -112,10 +113,10 @@ class NiddlerMessageBodyParser {
         return String(bytes, 0, Math.min(bytes.size, 32)).contains(string, true)
     }
 
-    private fun fromMime(mimeType: String): BodyFormatType {
+    private fun fromMime(mimeType: String): BodyFormatType? {
         when (mimeType.toLowerCase()) {
             "application/json" -> return BodyFormatType.FORMAT_JSON
-            "application/xml", "text/xml" -> return BodyFormatType.FORMAT_XML
+            "application/xml", "text/xml", "application/dash+xml" -> return BodyFormatType.FORMAT_XML
             "application/octet-stream" -> return BodyFormatType.FORMAT_BINARY
             "text/html" -> return BodyFormatType.FORMAT_HTML
             "text/plain" -> return BodyFormatType.FORMAT_PLAIN
@@ -123,11 +124,11 @@ class NiddlerMessageBodyParser {
             "application/x-www-form-urlencoded" -> return BodyFormatType.FORMAT_FORM_ENCODED
             "image/bmp", "image/png", "image/tiff", "image/jpg", "image/jpeg", "image/gif" -> return BodyFormatType.FORMAT_IMAGE
         }
-        return BodyFormatType.FORMAT_BINARY
+        return null
     }
 
     private fun examineXML(bodyAsBytes: ByteArray?, message: NiddlerMessage, bodyType: BodyFormat? = null): ParsedNiddlerMessage? {
-        if (bodyAsBytes == null) return null
+        if (bodyAsBytes == null || bodyAsBytes.isEmpty()) return null
         try {
             val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(ByteArrayInputStream(bodyAsBytes))
             if (bodyType != null) {
@@ -144,7 +145,7 @@ class NiddlerMessageBodyParser {
     }
 
     private fun examineJson(bodyAsBytes: ByteArray?, message: NiddlerMessage): ParsedNiddlerMessage? {
-        if (bodyAsBytes == null) return null
+        if (bodyAsBytes == null || bodyAsBytes.isEmpty()) return null
         try {
             val json = JsonParser().parse(InputStreamReader(ByteArrayInputStream(bodyAsBytes), Charsets.UTF_8))
             return ParsedNiddlerMessage(BodyFormat(BodyFormatType.FORMAT_JSON, null, Charsets.UTF_8.name()), json, message, parseBody(message.networkRequest), parseBody(message.networkReply))
@@ -154,7 +155,7 @@ class NiddlerMessageBodyParser {
     }
 
     private fun examineFormEncoded(bodyAsBytes: ByteArray?, message: NiddlerMessage): ParsedNiddlerMessage? {
-        if (bodyAsBytes == null) return null
+        if (bodyAsBytes == null || bodyAsBytes.isEmpty()) return null
 
         val map: MutableMap<String, String> = mutableMapOf()
         String(bodyAsBytes).split('&').forEach {
