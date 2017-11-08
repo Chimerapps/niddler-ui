@@ -30,7 +30,7 @@ class NiddlerMessageBodyParser {
             return null
         try {
             return parseMessage(message)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             log.error("Message parse failure: ", e)
             return ParsedNiddlerMessage(
                     bodyFormat = BodyFormat(
