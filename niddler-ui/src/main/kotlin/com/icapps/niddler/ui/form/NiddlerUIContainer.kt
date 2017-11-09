@@ -20,6 +20,8 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
     val buttonTimeline: JToggleButton
     val buttonLinkedMode: JToggleButton
     val buttonClear: JButton
+    val buttonExport: JButton
+
     val splitPane: SplitPane
     val statusText: JLabel
     val statusBar: JPanel
@@ -47,35 +49,49 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
         toolbar.orientation = 1
         panel2.add(toolbar, BorderLayout.NORTH)
 
-        buttonTimeline = JToggleButton()
-        buttonTimeline.isFocusPainted = true
-        buttonTimeline.icon = ImageIcon(javaClass.getResource("/ic_chronological.png"))
-        buttonTimeline.inheritsPopupMenu = false
-        buttonTimeline.margin = Insets(0, 2, 0, 2)
-        buttonTimeline.maximumSize = Dimension(32, 32)
-        buttonTimeline.minimumSize = Dimension(32, 32)
-        buttonTimeline.preferredSize = Dimension(32, 32)
-        buttonTimeline.isSelected = true
-        buttonTimeline.text = ""
+        buttonTimeline = JToggleButton().apply {
+            isFocusPainted = true
+            icon = ImageIcon(javaClass.getResource("/ic_chronological.png"))
+            inheritsPopupMenu = false
+            margin = Insets(0, 2, 0, 2)
+            maximumSize = Dimension(32, 32)
+            minimumSize = Dimension(32, 32)
+            preferredSize = Dimension(32, 32)
+            isSelected = true
+            text = ""
+        }
         toolbar.add(buttonTimeline)
 
-        buttonLinkedMode = JToggleButton()
-        buttonLinkedMode.isFocusPainted = true
-        buttonLinkedMode.icon = ImageIcon(javaClass.getResource("/ic_link.png"))
-        buttonLinkedMode.margin = Insets(0, 2, 0, 2)
-        buttonLinkedMode.maximumSize = Dimension(32, 32)
-        buttonLinkedMode.minimumSize = Dimension(32, 32)
-        buttonLinkedMode.preferredSize = Dimension(32, 32)
-        buttonLinkedMode.text = ""
+        buttonLinkedMode = JToggleButton().apply {
+            isFocusPainted = true
+            icon = ImageIcon(javaClass.getResource("/ic_link.png"))
+            margin = Insets(0, 2, 0, 2)
+            maximumSize = Dimension(32, 32)
+            minimumSize = Dimension(32, 32)
+            preferredSize = Dimension(32, 32)
+            text = ""
+        }
         toolbar.add(buttonLinkedMode)
 
-        buttonClear = JButton()
-        buttonClear.icon = ImageIcon(javaClass.getResource("/ic_delete.png"))
-        buttonClear.text = ""
-        buttonClear.maximumSize = Dimension(32, 32)
-        buttonClear.minimumSize = Dimension(32, 32)
-        buttonClear.preferredSize = Dimension(32, 32)
+        buttonClear = JButton().apply {
+            icon = ImageIcon(javaClass.getResource("/ic_delete.png"))
+            text = ""
+            maximumSize = Dimension(32, 32)
+            minimumSize = Dimension(32, 32)
+            preferredSize = Dimension(32, 32)
+        }
+        toolbar.addSeparator()
         toolbar.add(buttonClear)
+
+        buttonExport = JButton().apply {
+            icon = ImageIcon(javaClass.getResource("/ic_save.png"))
+            text = ""
+            maximumSize = Dimension(32, 32)
+            minimumSize = Dimension(32, 32)
+            preferredSize = Dimension(32, 32)
+        }
+        toolbar.addSeparator()
+        toolbar.add(buttonExport)
 
         splitPane = factory.createSplitPane()
         splitPane.resizePriority = 1.0
@@ -83,30 +99,33 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
 
         messagesScroller = factory.createScrollPane()
         splitPane.left = messagesScroller
-        messagesAsTable = PopupMenuSelectingJTable()
-        messagesAsTable.fillsViewportHeight = false
-        messagesAsTable.rowHeight = 32
-        messagesAsTable.showHorizontalLines = true
-        messagesAsTable.showVerticalLines = false
+        messagesAsTable = PopupMenuSelectingJTable().apply {
+            fillsViewportHeight = false
+            rowHeight = 32
+            showHorizontalLines = true
+            showVerticalLines = false
+        }
         messagesScroller.setViewportView(messagesAsTable)
 
-        messagesAsTree = JTree()
-        messagesAsTree.rowHeight = 32
-        messagesAsTree.isEditable = false
-        messagesAsTree.dragEnabled = false
-        messagesAsTree.isRootVisible = false
-        messagesAsTree.showsRootHandles = true
-        messagesAsTree.cellRenderer = LinkedMessagesRenderer(0)
+        messagesAsTree = JTree().apply {
+            rowHeight = 32
+            isEditable = false
+            dragEnabled = false
+            isRootVisible = false
+            showsRootHandles = true
+            cellRenderer = LinkedMessagesRenderer(0)
+        }
 
         statusBar = JPanel()
         statusBar.layout = BorderLayout(0, 0)
         rootPanel.add(statusBar, BorderLayout.SOUTH)
         statusBar.border = BorderFactory.createTitledBorder(BorderFactory.createLoweredBevelBorder(), null)
-        statusText = JLabel()
-        statusText.isFocusable = false
-        statusText.text = ""
-        statusText.verifyInputWhenFocusTarget = false
-        statusText.putClientProperty("html.disable", java.lang.Boolean.FALSE)
+        statusText = JLabel().apply {
+            isFocusable = false
+            text = ""
+            verifyInputWhenFocusTarget = false
+            putClientProperty("html.disable", java.lang.Boolean.FALSE)
+        }
         statusBar.add(statusText, BorderLayout.CENTER)
 
         val buttonGroup: ButtonGroup = ButtonGroup()

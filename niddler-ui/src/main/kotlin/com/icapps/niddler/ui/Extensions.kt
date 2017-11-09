@@ -46,6 +46,12 @@ fun JTable.setColumnFixedWidth(columnIndex: Int, width: Int) {
     column?.preferredWidth = width
 }
 
+fun JTable.setColumnMinWidth(columnIndex: Int, width: Int) {
+    val column = columnModel.getColumn(columnIndex)
+    column?.minWidth = width
+    column?.preferredWidth = width
+}
+
 fun JLabel.setFixedWidth(width: Int) {
     minimumSize = Dimension(width, 32)
     maximumSize = Dimension(width, 32)

@@ -5,6 +5,7 @@ import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.NiddlerWindow
 import com.icapps.niddler.ui.util.logger
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
