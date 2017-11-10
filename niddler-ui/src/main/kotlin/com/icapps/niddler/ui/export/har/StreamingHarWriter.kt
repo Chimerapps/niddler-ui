@@ -9,7 +9,7 @@ import java.io.OutputStreamWriter
  * @author Nicola Verbeeck
  * @date 09/11/2017.
  */
-class StreamingHarWriter(target: OutputStream, version: String, creator: Creator, comment: String? = null) {
+class StreamingHarWriter(target: OutputStream, creator: Creator, version: String = "1.2", comment: String? = null) {
 
     private val json = JsonWriter(OutputStreamWriter(target, Charsets.UTF_8))
     private val gson = Gson()

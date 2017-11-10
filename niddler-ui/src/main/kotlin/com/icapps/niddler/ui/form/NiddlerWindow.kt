@@ -293,7 +293,9 @@ class NiddlerWindow(private val interfaceFactory: InterfaceFactory, private val 
     }
 
     private fun showExportDialog() {
-        val exportLocation = interfaceFactory.showSaveDialog("Save export to", ".har") ?: return
+        var exportLocation = interfaceFactory.showSaveDialog("Save export to", ".har") ?: return
+        if (!exportLocation.endsWith(".har"))
+            exportLocation += ".har"
         HarExport(File(exportLocation)).export(messages.getMessagesLinked())
     }
 }

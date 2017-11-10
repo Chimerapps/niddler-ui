@@ -6,6 +6,7 @@ import com.icapps.niddler.ui.form.components.TabComponent
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
+import javax.swing.JFileChooser
 import javax.swing.JScrollPane
 
 /**
@@ -24,5 +25,14 @@ class IntelliJInterfaceFactory(val project: Project?, val parent: Disposable) : 
 
     override fun createScrollPane(): JScrollPane {
         return JBScrollPane()
+    }
+
+    override fun showSaveDialog(title: String, extension: String): String? {
+        val dialog = JFileChooser()
+        dialog.dialogTitle = title
+        if (dialog.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+            return dialog.selectedFile.absolutePath
+        }
+        return null //TODO Make intellij version
     }
 }

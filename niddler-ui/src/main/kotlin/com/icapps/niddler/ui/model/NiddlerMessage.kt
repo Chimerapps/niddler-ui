@@ -20,6 +20,11 @@ open class NiddlerMessage {
     var body: String? = null
     var headers: Map<String, List<String>>? = null
     var statusCode: Int? = null
+    var statusLine: String? = null
+    var writeTime: Int? = null
+    var readTime: Int? = null
+    var waitTime: Int? = null
+    var httpVersion: String? = null
 
     var networkRequest: NiddlerMessage? = null
     var networkReply: NiddlerMessage? = null

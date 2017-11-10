@@ -1,13 +1,11 @@
 package com.icapps.niddler.ui.export
 
+import com.icapps.niddler.ui.export.har.*
 import com.icapps.niddler.ui.model.BodyFormatType
 import com.icapps.niddler.ui.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.util.UrlUtil
-import com.smartbear.har.builder.*
-import com.smartbear.har.creator.DefaultHarStreamWriter
-import com.smartbear.har.creator.HarStreamWriter
-import com.smartbear.har.model.*
 import java.io.File
+import java.io.FileOutputStream
 import java.util.*
 
 /**
@@ -17,121 +15,112 @@ import java.util.*
 class HarExport(private val targetFile: File) {
 
     fun export(messages: Map<String, List<ParsedNiddlerMessage>>) {
-        val writer = DefaultHarStreamWriter.Builder()
-                .withCreator(HarCreatorBuilder().withName("Niddler").withVersion("1").build())
-                .withOutputFile(targetFile)
-                .withUsePrettyPrint(true)
-                .build()
+        val writer = StreamingHarWriter(target = FileOutputStream(targetFile).buffered(),
+                creator = Creator("Niddler", "1.0"))
 
         exportTo(messages, writer)
 
-        writer.closeHar()
+        writer.close()
     }
 
-    private fun exportTo(messages: Map<String, List<ParsedNiddlerMessage>>, writer: HarStreamWriter) {
+    private fun exportTo(messages: Map<String, List<ParsedNiddlerMessage>>, writer: StreamingHarWriter) {
         messages.forEach {
             exportTo(it.value, writer)
         }
     }
 
-    private fun exportTo(niddlerMessages: List<ParsedNiddlerMessage>, writer: HarStreamWriter) {
-        val request = extractRequest(niddlerMessages)
-        val response = extractResponse(niddlerMessages)
+    private fun exportTo(niddlerMessages: List<ParsedNiddlerMessage>, writer: StreamingHarWriter) {
+        val request = niddlerMessages.find { it.isRequest } ?: return
+        val response = niddlerMessages.firstOrNull { !it.isRequest } ?: return
 
-        val builder = HarEntryBuilder()
-        if (request != null)
-            builder.withRequest(request)
-        if (response != null)
-            builder.withResponse(response)
+        val harEntry = Entry(
+                startedDateTime = Entry.format(request.timestamp.let { Date(it) }),
+                time = request.timestamp - response.timestamp,
+                request = makeRequest(request),
+                response = makeResponse(response),
+                cache = Cache(),
+                timings = extractTimings(request, response)
+        )
 
-        builder.withStartedDateTime(niddlerMessages.find { it.isRequest }?.timestamp?.let { Date(it) })
-        builder.withCache(HarCacheBuilder().build())
-        builder.withTimings(HarTimingsBuilder().
-                withSend(0)
-                .withWait(0)
-                .withReceive(0)
-                .build())
-
-        if (request != null || response != null)
-            writer.addEntry(builder.build())
+        writer.addEntry(harEntry)
     }
 
-    private fun extractRequest(niddlerMessages: List<ParsedNiddlerMessage>): HarRequest? {
-        val request = niddlerMessages.find { it.isRequest } ?: return null
+    private fun makeRequest(niddlerMessage: ParsedNiddlerMessage): Request {
+        val urlUtil = UrlUtil(niddlerMessage.url)
 
-        val urlUtil = UrlUtil(request.url)
-        val builder = HarRequestBuilder()
-        builder.withUrl(urlUtil.url)
-                .withMethod(request.method)
-                .withHeaders(makeHeaders(request))
-                .withPostData(extractPostData(request))
-                .withHttpVersion("1")
-
-        if (urlUtil.queryString != null)
-            builder.withQueryString(urlUtil.queryString)
-
-        return builder.build()
+        return Request(
+                method = niddlerMessage.method ?: "",
+                url = urlUtil.url ?: "",
+                httpVersion = niddlerMessage.message.httpVersion ?: "http/1.1",
+                headers = makeHeaders(niddlerMessage),
+                queryString = urlUtil.query.map {
+                    QueryParameter(name = it.key, value = it.value.joinToString(","))
+                },
+                postData = extractPostData(niddlerMessage)
+        )
     }
 
-    private fun extractResponse(niddlerMessages: List<ParsedNiddlerMessage>): HarResponse? {
-        val response = niddlerMessages.first { !it.isRequest } ?: return null
+    private fun makeResponse(niddlerMessage: ParsedNiddlerMessage): Response {
 
-        val builder = HarResponseBuilder()
-        return builder.withHeaders(makeHeaders(response))
-                .withStatus(response.statusCode ?: 0)
-                .withContent(extractContent(response))
-                .withStatusText("-")
-                .withHttpVersion("1")
-                .withRedirectURL("-")
-                .withHeadersSize(-1)
-                .withBodySize(-1)
-                .build()
+        return Response(
+                status = niddlerMessage.statusCode ?: 0,
+                statusText = niddlerMessage.message.statusLine ?: "",
+                httpVersion = niddlerMessage.message.httpVersion ?: "",
+                content = extractContent(niddlerMessage),
+                headers = makeHeaders(niddlerMessage)
+        )
     }
 
-    private fun makeHeaders(message: ParsedNiddlerMessage): List<HarHeader> {
+    private fun makeHeaders(message: ParsedNiddlerMessage): List<Header> {
         return message.headers?.map {
-            HarHeaderBuilder().withName(it.key).withValues(it.value).build()
+            Header(name = it.key, value = it.value.joinToString(","))
         } ?: emptyList()
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun extractPostData(message: ParsedNiddlerMessage): HarPostData? {
+    private fun extractPostData(message: ParsedNiddlerMessage): PostData? {
         if (message.message.body == null)
             return null
 
-        val builder = HarPostDataBuilder()
+        val builder = PostDataBuilder()
         when (message.bodyFormat.type) {
-            BodyFormatType.FORMAT_JSON -> builder.withMimeType(BodyFormatType.FORMAT_JSON.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding))
-            BodyFormatType.FORMAT_XML -> builder.withMimeType(BodyFormatType.FORMAT_XML.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding))
-            BodyFormatType.FORMAT_PLAIN -> builder.withMimeType(BodyFormatType.FORMAT_PLAIN.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding))
+            BodyFormatType.FORMAT_JSON -> builder.withMime(BodyFormatType.FORMAT_JSON.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "")
+            BodyFormatType.FORMAT_XML -> builder.withMime(BodyFormatType.FORMAT_XML.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "")
+            BodyFormatType.FORMAT_PLAIN -> builder.withMime(BodyFormatType.FORMAT_PLAIN.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "")
             BodyFormatType.FORMAT_IMAGE -> return null
             BodyFormatType.FORMAT_BINARY -> return null
             BodyFormatType.FORMAT_HTML -> return null
             BodyFormatType.FORMAT_EMPTY -> return null
-            BodyFormatType.FORMAT_FORM_ENCODED -> builder.withParams((message.body as Map<String, String>).map { HarParamsBuilder().withName(it.key).withValue(it.value).build() })
-            else -> return null
+            BodyFormatType.FORMAT_FORM_ENCODED -> builder.withParams((message.body as Map<String, String>).map { Param(name = it.key, value = it.value) })
         }
         return builder.build()
     }
 
-    private fun extractContent(message: ParsedNiddlerMessage): HarContent? {
+    private fun extractContent(message: ParsedNiddlerMessage): Content {
         if (message.message.body == null)
-            return null
+            return Content(size = -1, mimeType = "", text = null, encoding = null)
 
-        val builder = HarContentBuilder()
+        val builder = ContentBuilder()
         when (message.bodyFormat.type) {
-            BodyFormatType.FORMAT_JSON -> builder.withMimeType(BodyFormatType.FORMAT_JSON.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding))
-            BodyFormatType.FORMAT_XML -> builder.withMimeType(BodyFormatType.FORMAT_XML.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding))
-            BodyFormatType.FORMAT_PLAIN -> builder.withMimeType(BodyFormatType.FORMAT_PLAIN.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding))
-            BodyFormatType.FORMAT_IMAGE -> builder.withMimeType(message.bodyFormat.subtype ?: "").withText(message.message.body)
-            BodyFormatType.FORMAT_BINARY -> builder.withMimeType(message.bodyFormat.subtype ?: "").withText(message.message.body)
-            BodyFormatType.FORMAT_HTML -> builder.withMimeType(message.bodyFormat.subtype ?: "").withText(message.message.body)
-            BodyFormatType.FORMAT_EMPTY -> builder.withMimeType("").withText("")
-            else -> builder.withMimeType("").withText("")
+            BodyFormatType.FORMAT_JSON -> builder.withMime(BodyFormatType.FORMAT_JSON.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding))
+            BodyFormatType.FORMAT_XML -> builder.withMime(BodyFormatType.FORMAT_XML.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding))
+            BodyFormatType.FORMAT_PLAIN -> builder.withMime(BodyFormatType.FORMAT_PLAIN.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding))
+            BodyFormatType.FORMAT_IMAGE -> builder.withMime(message.bodyFormat.subtype ?: "").withText(message.message.body).withEncoding("base64")
+            BodyFormatType.FORMAT_BINARY -> builder.withMime(message.bodyFormat.subtype ?: "").withText(message.message.body).withEncoding("base64")
+            BodyFormatType.FORMAT_HTML -> builder.withMime(message.bodyFormat.subtype ?: "").withText(message.message.body).withEncoding("base64")
+            BodyFormatType.FORMAT_EMPTY -> builder.withMime("").withText("")
+            else -> builder.withMime("").withText("")
         }
         builder.withSize(-1)
         return builder.build()
     }
 
+    fun extractTimings(request: ParsedNiddlerMessage, response: ParsedNiddlerMessage): Timings {
+        return Timings(
+                response.message.writeTime?.toLong() ?: 0L,
+                response.message.waitTime?.toLong() ?: 0L,
+                response.message.readTime?.toLong() ?: 0L
+        )
+    }
 
 }

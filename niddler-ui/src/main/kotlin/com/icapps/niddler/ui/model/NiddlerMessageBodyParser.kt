@@ -122,7 +122,7 @@ class NiddlerMessageBodyParser {
             "text/plain" -> return BodyFormatType.FORMAT_PLAIN
             "application/svg+xml" -> return BodyFormatType.FORMAT_XML //TODO this is an image...
             "application/x-www-form-urlencoded" -> return BodyFormatType.FORMAT_FORM_ENCODED
-            "image/bmp", "image/png", "image/tiff", "image/jpg", "image/jpeg", "image/gif" -> return BodyFormatType.FORMAT_IMAGE
+            "image/bmp", "image/png", "image/tiff", "image/jpg", "image/jpeg", "image/gif", "image/webp" -> return BodyFormatType.FORMAT_IMAGE
         }
         return null
     }

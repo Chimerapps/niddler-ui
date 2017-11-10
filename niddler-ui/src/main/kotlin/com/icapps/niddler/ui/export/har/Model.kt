@@ -1,12 +1,15 @@
 package com.icapps.niddler.ui.export.har
 
+import java.text.SimpleDateFormat
+import java.util.*
+
 /**
  * @author Nicola Verbeeck
  * @date 09/11/2017.
  */
 data class Creator(
         val name: String,
-        val version: String,
+        val version: String = "1.2",
         val comment: String? = null
 )
 
@@ -33,6 +36,40 @@ data class PostData(
         val comment: String? = null
 )
 
+class PostDataBuilder {
+    var mimeType: String? = null
+    var params: List<Param> = emptyList()
+    var text: String? = null
+    var comment: String? = null
+
+    fun withMime(mime: String): PostDataBuilder {
+        mimeType = mime
+        return this
+    }
+
+    fun withParams(params: List<Param>): PostDataBuilder {
+        this.params = params
+        return this
+    }
+
+    fun withText(text: String): PostDataBuilder {
+        this.text = text
+        return this
+    }
+
+    fun withComment(comment: String?): PostDataBuilder {
+        this.comment = comment
+        return this
+    }
+
+    fun build(): PostData {
+        return PostData(mimeType = mimeType ?: "",
+                params = params,
+                text = text ?: "",
+                comment = comment)
+    }
+}
+
 data class Request(
         val method: String,
         val url: String,
@@ -53,6 +90,49 @@ data class Content(
         val encoding: String?,
         val comment: String? = null
 )
+
+class ContentBuilder {
+    var size: Long? = null
+    var mimeType: String? = null
+    var text: String? = null
+    var encoding: String? = null
+    var comment: String? = null
+
+    fun withSize(size: Long): ContentBuilder {
+        this.size = size
+        return this
+    }
+
+    fun withMime(mime: String): ContentBuilder {
+        this.mimeType = mime
+        return this
+    }
+
+    fun withText(text: String?): ContentBuilder {
+        this.text = text
+        return this
+    }
+
+    fun withEncoding(encoding: String?): ContentBuilder {
+        this.encoding = encoding
+        return this
+    }
+
+    fun comment(comment: String?): ContentBuilder {
+        this.comment = comment
+        return this
+    }
+
+    fun build(): Content {
+        return Content(
+                size = size ?: -1,
+                mimeType = mimeType ?: "",
+                text = text,
+                encoding = encoding,
+                comment = comment
+        )
+    }
+}
 
 data class Response(
         val status: Int,
@@ -87,6 +167,10 @@ data class Entry(
 ) {
     companion object {
         val TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ"
+
+        fun format(date: Date): String {
+            return SimpleDateFormat(TIME_FORMAT).format(date)
+        }
     }
 }
 
