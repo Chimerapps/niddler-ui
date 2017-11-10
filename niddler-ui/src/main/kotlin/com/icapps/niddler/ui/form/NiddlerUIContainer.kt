@@ -51,7 +51,7 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
 
         buttonTimeline = JToggleButton().apply {
             isFocusPainted = true
-            icon = ImageIcon(javaClass.getResource("/ic_chronological.png"))
+            icon = ImageIcon(NiddlerUIContainer::class.java.getResource("/ic_chronological.png"))
             inheritsPopupMenu = false
             margin = Insets(0, 2, 0, 2)
             maximumSize = Dimension(32, 32)
@@ -64,7 +64,7 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
 
         buttonLinkedMode = JToggleButton().apply {
             isFocusPainted = true
-            icon = ImageIcon(javaClass.getResource("/ic_link.png"))
+            icon = ImageIcon(NiddlerUIContainer::class.java.getResource("/ic_link.png"))
             margin = Insets(0, 2, 0, 2)
             maximumSize = Dimension(32, 32)
             minimumSize = Dimension(32, 32)
@@ -74,7 +74,7 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
         toolbar.add(buttonLinkedMode)
 
         buttonClear = JButton().apply {
-            icon = ImageIcon(javaClass.getResource("/ic_delete.png"))
+            icon = ImageIcon(NiddlerUIContainer::class.java.getResource("/ic_delete.png"))
             text = ""
             maximumSize = Dimension(32, 32)
             minimumSize = Dimension(32, 32)
@@ -84,7 +84,7 @@ internal class NiddlerUIContainer(factory: InterfaceFactory) {
         toolbar.add(buttonClear)
 
         buttonExport = JButton().apply {
-            icon = ImageIcon(javaClass.getResource("/ic_save.png"))
+            icon = ImageIcon(NiddlerUIContainer::class.java.getResource("/ic_save.png"))
             text = ""
             maximumSize = Dimension(32, 32)
             minimumSize = Dimension(32, 32)
