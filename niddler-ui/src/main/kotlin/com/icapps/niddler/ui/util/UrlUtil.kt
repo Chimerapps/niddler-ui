@@ -22,7 +22,8 @@ class UrlUtil(private val fullUrl: String?) {
         get() {
             if (internalUrl?.query == null)
                 return fullUrl
-            return fullUrl?.replace(internalUrl.query, "")
+
+            return fullUrl?.substring(0, fullUrl.indexOf('?')) + '?' + queryString
         }
 
     val query: Map<String, List<String>>

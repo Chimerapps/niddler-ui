@@ -7,6 +7,7 @@
     <description>This plugin enables the niddler ui inside the IDE</description>
 
     <change-notes>
+        0.0.17 - Fixed HAR exports using wrong url
         0.0.16 - Fixed exception when the server uses a different format. Support for exporting to HAR 1.2
         0.0.15 - Better handle empty bodies (from network requests/replies)
         0.0.14 - Support for actual network requests

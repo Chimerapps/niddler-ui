@@ -14,7 +14,7 @@ class StreamingHarWriterTest {
     fun testEmpty() {
         val out = ByteArrayOutputStream()
 
-        val writer = StreamingHarWriter(out, "1.2", Creator(name = "Niddler", version = "1.0"))
+        val writer = StreamingHarWriter(out, creator = Creator(name = "Niddler", version = "1.0"))
 
         writer.close()
         val string = out.toString(Charsets.UTF_8.name())
@@ -25,7 +25,7 @@ class StreamingHarWriterTest {
     fun testAdd() {
         val out = ByteArrayOutputStream()
 
-        val writer = StreamingHarWriter(out, "1.2", Creator(name = "Niddler", version = "1.0"))
+        val writer = StreamingHarWriter(out, creator = Creator(name = "Niddler", version = "1.0"))
 
         val entry = Entry(startedDateTime = "2005-04-01T13:38:09-0800",
                 time = 19200,
