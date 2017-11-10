@@ -16,4 +16,6 @@ interface InterfaceFactory {
 
     fun createScrollPane(): JScrollPane
 
+    fun showSaveDialog(title: String, extension: String): String?
+
 }

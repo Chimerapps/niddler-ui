@@ -4,16 +4,19 @@ import com.icapps.niddler.ui.NiddlerClient
 import com.icapps.niddler.ui.adb.ADBBootstrap
 import com.icapps.niddler.ui.codegen.CurlCodeGenerator
 import com.icapps.niddler.ui.connection.NiddlerMessageListener
+import com.icapps.niddler.ui.export.HarExport
 import com.icapps.niddler.ui.model.*
 import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
 import com.icapps.niddler.ui.model.ui.*
 import com.icapps.niddler.ui.setColumnFixedWidth
+import com.icapps.niddler.ui.setColumnMinWidth
 import com.icapps.niddler.ui.util.ClipboardUtil
 import com.icapps.niddler.ui.util.WideSelectionTreeUI
 import java.awt.BorderLayout
 import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
 import java.awt.event.ItemEvent
+import java.io.File
 import java.net.URI
 import javax.swing.*
 import javax.swing.border.EmptyBorder
@@ -22,7 +25,8 @@ import javax.swing.border.EmptyBorder
  * @author Nicola Verbeeck
  * @date 14/11/16.
  */
-class NiddlerWindow(interfaceFactory: InterfaceFactory, private val sdkPathGuesses: Collection<String>) : JPanel(BorderLayout()), NiddlerMessageListener, ParsedNiddlerMessageListener, NiddlerMessagePopupMenu.Listener {
+class NiddlerWindow(private val interfaceFactory: InterfaceFactory, private val sdkPathGuesses: Collection<String>)
+    : JPanel(BorderLayout()), NiddlerMessageListener, ParsedNiddlerMessageListener, NiddlerMessagePopupMenu.Listener {
 
     private val messages = MessageContainer(NiddlerMessageBodyParser())
     private val detailContainer = MessageDetailContainer(interfaceFactory, messages)
@@ -45,7 +49,7 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory, private val sdkPathGuess
             setColumnFixedWidth(0, 90)
             setColumnFixedWidth(1, 36)
             setColumnFixedWidth(2, 70)
-            setColumnFixedWidth(3, 400)
+            setColumnMinWidth(3, 400)
             tableHeader = null
 
             selectionModel.addListSelectionListener {
@@ -115,6 +119,9 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory, private val sdkPathGuess
                 messageMode = MessageMode.LINKED
                 (windowContents.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
             }
+        }
+        windowContents.buttonExport.addActionListener {
+            showExportDialog()
         }
 
         windowContents.connectButton.addActionListener {
@@ -283,5 +290,12 @@ class NiddlerWindow(interfaceFactory: InterfaceFactory, private val sdkPathGuess
             return
         }
         ClipboardUtil.copyToClipboard(StringSelection(CurlCodeGenerator().generateRequestCode(request)))
+    }
+
+    private fun showExportDialog() {
+        var exportLocation = interfaceFactory.showSaveDialog("Save export to", ".har") ?: return
+        if (!exportLocation.endsWith(".har"))
+            exportLocation += ".har"
+        HarExport(File(exportLocation)).export(messages.getMessagesLinked())
     }
 }
