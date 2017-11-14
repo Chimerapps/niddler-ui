@@ -15,12 +15,12 @@ import javax.swing.SwingConstants
  * @author Nicola Verbeeck
  * @date 18/11/16.
  */
-class MessageDetailContainer(interfaceFactory: InterfaceFactory, message: MessageContainer) {
+class MessageDetailContainer(componentsFactory: ComponentsFactory, message: MessageContainer) {
 
     private val bodyRoot: JPanel = JPanel(BorderLayout())
     private val detailPanel: MessageDetailPanel = MessageDetailPanel(message)
     private var currentMessage: ParsedNiddlerMessage? = null
-    private val content: TabComponent = interfaceFactory.createTabComponent()
+    private val content: TabComponent = componentsFactory.createTabComponent()
 
     val asComponent: Component
         get() = content.asComponent

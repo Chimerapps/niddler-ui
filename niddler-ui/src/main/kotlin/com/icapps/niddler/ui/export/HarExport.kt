@@ -35,7 +35,7 @@ class HarExport(private val targetFile: File) {
 
         val harEntry = Entry(
                 startedDateTime = Entry.format(request.timestamp.let { Date(it) }),
-                time = request.timestamp - response.timestamp,
+                time = response.timestamp - request.timestamp,
                 request = makeRequest(request),
                 response = makeResponse(response),
                 cache = Cache(),
@@ -51,7 +51,7 @@ class HarExport(private val targetFile: File) {
         return Request(
                 method = niddlerMessage.method ?: "",
                 url = urlUtil.url ?: "",
-                httpVersion = niddlerMessage.message.httpVersion ?: "http/1.1",
+                httpVersion = niddlerMessage.message.httpVersion?.toUpperCase() ?: "HTTP/1.1",
                 headers = makeHeaders(niddlerMessage),
                 queryString = urlUtil.query.map {
                     QueryParameter(name = it.key, value = it.value.joinToString(","))
@@ -65,7 +65,7 @@ class HarExport(private val targetFile: File) {
         return Response(
                 status = niddlerMessage.statusCode ?: 0,
                 statusText = niddlerMessage.message.statusLine ?: "",
-                httpVersion = niddlerMessage.message.httpVersion ?: "",
+                httpVersion = niddlerMessage.message.httpVersion?.toUpperCase() ?: "HTTP/1.1",
                 content = extractContent(niddlerMessage),
                 headers = makeHeaders(niddlerMessage)
         )

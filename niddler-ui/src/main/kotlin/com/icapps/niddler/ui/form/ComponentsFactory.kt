@@ -8,7 +8,7 @@ import javax.swing.JScrollPane
  * @author Nicola Verbeeck
  * @date 21/11/16.
  */
-interface InterfaceFactory {
+interface ComponentsFactory {
 
     fun createSplitPane(): SplitPane
 
@@ -19,3 +19,4 @@ interface InterfaceFactory {
     fun showSaveDialog(title: String, extension: String): String?
 
 }
+
