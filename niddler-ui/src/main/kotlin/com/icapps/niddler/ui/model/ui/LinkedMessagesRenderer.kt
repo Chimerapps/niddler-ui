@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.model.ui
 
+import com.icapps.niddler.ui.model.NiddlerMessage
 import com.icapps.niddler.ui.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.setFixedWidth
 import com.icapps.niddler.ui.util.getStatusCodeString
@@ -84,7 +85,7 @@ class LinkedMessagesRenderer(private val protocolVersion: Int) : TreeCellRendere
         } else if (value is ResponseNode) {
             message = value.message
             icon = downIcon
-            status = formatStatusCode(value.message.statusCode)
+            status = fromStatusLine(value.message.message) ?: formatStatusCode(value.message.statusCode)
             format = value.message.bodyFormat.toString()
 
             if (protocolVersion == 3) {
@@ -128,7 +129,7 @@ class LinkedMessagesRenderer(private val protocolVersion: Int) : TreeCellRendere
         return if (statusCode == null) {
             ""
         } else {
-            String.format("%d %s", statusCode, getStatusCodeString(statusCode))
+            String.format("%d - %s", statusCode, getStatusCodeString(statusCode))
         }
     }
 
@@ -138,6 +139,12 @@ class LinkedMessagesRenderer(private val protocolVersion: Int) : TreeCellRendere
         urlLabel.foreground = color
         statusLabel.foreground = color
         formatLabel.foreground = color
+    }
+
+    private fun fromStatusLine(message: NiddlerMessage): String? {
+        if (message.statusLine.isNullOrBlank())
+            return null
+        return "${message.statusCode} - ${message.statusLine}"
     }
 
 }

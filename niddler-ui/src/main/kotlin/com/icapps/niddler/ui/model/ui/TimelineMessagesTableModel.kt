@@ -98,7 +98,16 @@ class TimelineMessagesTableModel : TableModel, MessagesModel {
             INDEX_DIRECTION -> if (message.isRequest) upIcon else downIcon
             INDEX_METHOD -> message.method ?: other?.method
             INDEX_URL -> message.url ?: other?.url
-            INDEX_STATUS_CODE -> if (message.statusCode != null) formatStatusCode(message.statusCode) else formatStatusCode(other?.statusCode)
+            INDEX_STATUS_CODE -> {
+                if (!message.message.statusLine.isNullOrBlank())
+                    "${message.statusCode} - ${message.message.statusLine}"
+                else if (!other?.message?.statusLine.isNullOrBlank())
+                    "${other?.message?.statusCode} - ${other?.message?.statusLine}"
+                else if (message.statusCode != null)
+                    formatStatusCode(message.statusCode)
+                else
+                    formatStatusCode(other?.statusCode)
+            }
             INDEX_FORMAT -> message.bodyFormat
             else -> "<NO COLUMN DEF>"
         }
@@ -108,7 +117,7 @@ class TimelineMessagesTableModel : TableModel, MessagesModel {
         return if (statusCode == null) {
             ""
         } else {
-            String.format("%d %s", statusCode, getStatusCodeString(statusCode))
+            String.format("%d - %s", statusCode, getStatusCodeString(statusCode))
         }
     }
 

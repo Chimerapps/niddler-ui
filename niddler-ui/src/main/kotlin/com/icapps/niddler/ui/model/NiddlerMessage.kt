@@ -35,6 +35,9 @@ open class NiddlerMessage {
     val getBodyAsBytes: ByteArray?
         get() = if (body != null) Base64.getUrlDecoder().decode(body) else null
 
+    val bodyAsNormalBase64: String?
+        get() = if (body != null) Base64.getEncoder().encodeToString(getBodyAsBytes) else null
+
     fun getBodyAsString(encoding: String?): String? {
         return if (body != null)
             String(Base64.getUrlDecoder().decode(body), if (encoding == null) Charsets.UTF_8 else Charset.forName(encoding))

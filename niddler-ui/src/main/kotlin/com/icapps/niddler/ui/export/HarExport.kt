@@ -105,9 +105,9 @@ class HarExport(private val targetFile: File) {
             BodyFormatType.FORMAT_JSON -> builder.withMime(BodyFormatType.FORMAT_JSON.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding))
             BodyFormatType.FORMAT_XML -> builder.withMime(BodyFormatType.FORMAT_XML.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding))
             BodyFormatType.FORMAT_PLAIN -> builder.withMime(BodyFormatType.FORMAT_PLAIN.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding))
-            BodyFormatType.FORMAT_IMAGE -> builder.withMime(message.bodyFormat.subtype ?: "").withText(message.message.body).withEncoding("base64")
-            BodyFormatType.FORMAT_BINARY -> builder.withMime(message.bodyFormat.subtype ?: "").withText(message.message.body).withEncoding("base64")
-            BodyFormatType.FORMAT_HTML -> builder.withMime(message.bodyFormat.subtype ?: "").withText(message.message.body).withEncoding("base64")
+            BodyFormatType.FORMAT_IMAGE -> builder.withMime(message.bodyFormat.subtype ?: "").withText(message.message.bodyAsNormalBase64).withEncoding("base64")
+            BodyFormatType.FORMAT_BINARY -> builder.withMime(message.bodyFormat.subtype ?: "").withText(message.message.bodyAsNormalBase64).withEncoding("base64")
+            BodyFormatType.FORMAT_HTML -> builder.withMime(message.bodyFormat.subtype ?: "").withText(message.message.bodyAsNormalBase64).withEncoding("base64")
             BodyFormatType.FORMAT_EMPTY -> builder.withMime("").withText("")
             else -> builder.withMime("").withText("")
         }
