@@ -1,12 +1,13 @@
 package com.icapps.niddler.ui.form.impl
 
 import com.icapps.niddler.ui.form.ComponentsFactory
-import com.icapps.niddler.ui.form.NiddlerUserInterface
-import com.icapps.niddler.ui.form.PopupMenuSelectingJTable
 import com.icapps.niddler.ui.form.components.NiddlerToolbar
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.impl.SwingToolbar
-import com.icapps.niddler.ui.model.ui.LinkedMessagesRenderer
+import com.icapps.niddler.ui.form.ui.NiddlerDetailUserInterface
+import com.icapps.niddler.ui.form.ui.NiddlerOverviewUserInterface
+import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
+import com.icapps.niddler.ui.model.MessageContainer
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -17,15 +18,16 @@ import javax.swing.border.EmptyBorder
  * @author Nicola Verbeeck
  * @date 14/11/2017.
  */
-open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsFactory) : NiddlerUserInterface {
+open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsFactory) : NiddlerUserInterface, SwingNiddlerOverviewUserInterface.NiddlerOverviewParent {
 
     override var connectButtonListener: (() -> Unit)? = null
 
-    override lateinit var messagesAsTable: JTable
-    override lateinit var messagesAsTree: JTree
     override val asComponent: JComponent
         get() = rootPanel
     override lateinit var toolbar: NiddlerToolbar
+
+    override lateinit var overview: NiddlerOverviewUserInterface
+    override lateinit var detail: NiddlerDetailUserInterface
 
     private val rootPanel: JPanel
 
@@ -42,9 +44,10 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         rootPanel.minimumSize = Dimension(300, 300)
     }
 
-    override fun init() {
+    override fun init(messageContainer: MessageContainer) {
         initStatusbar()
-        initMessagesWindows()
+        initDetail(messageContainer)
+        initOverview()
         initScroller()
         initSplitPane()
         initConnectPanel()
@@ -56,11 +59,12 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         splitPane.resizePriority = 1.0
         rootPanel.add(splitPane.asComponent, BorderLayout.CENTER)
         splitPane.left = messagesScroller
+        splitPane.right = detail.asComponent
     }
 
     protected open fun initScroller() {
         messagesScroller = componentsFactory.createScrollPane()
-        messagesScroller.setViewportView(messagesAsTable)
+        messagesScroller.setViewportView(overview.messagesAsTable)
     }
 
     protected open fun initStatusbar() {
@@ -76,24 +80,6 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         }
         statusBar.add(statusText, BorderLayout.CENTER)
         statusBar.border = BorderFactory.createCompoundBorder(statusBar.border, EmptyBorder(1, 6, 1, 6))
-    }
-
-    protected open fun initMessagesWindows() {
-        messagesAsTable = PopupMenuSelectingJTable().apply {
-            fillsViewportHeight = false
-            rowHeight = 32
-            showHorizontalLines = true
-            showVerticalLines = false
-        }
-
-        messagesAsTree = JTree().apply {
-            rowHeight = 32
-            isEditable = false
-            dragEnabled = false
-            isRootVisible = false
-            showsRootHandles = true
-            cellRenderer = LinkedMessagesRenderer(0)
-        }
     }
 
     protected open fun initConnectPanel() {
@@ -119,4 +105,21 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         this.statusText.icon = icon
     }
 
+    protected open fun initDetail(messagesContainer: MessageContainer) {
+        detail = SwingNiddlerDetailUserInterface(componentsFactory, messagesContainer)
+        detail.init()
+    }
+
+    protected open fun initOverview() {
+        overview = SwingNiddlerOverviewUserInterface(this)
+        overview.init()
+    }
+
+    override fun showTable() {
+        messagesScroller.setViewportView(overview.messagesAsTable)
+    }
+
+    override fun showLinked() {
+        messagesScroller.setViewportView(overview.messagesAsTree)
+    }
 }

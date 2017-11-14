@@ -2,16 +2,21 @@ package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.ui.NiddlerClient
 import com.icapps.niddler.ui.adb.ADBBootstrap
+import com.icapps.niddler.ui.codegen.CurlCodeGenerator
 import com.icapps.niddler.ui.connection.NiddlerMessageListener
 import com.icapps.niddler.ui.export.HarExport
 import com.icapps.niddler.ui.form.components.NiddlerToolbar
+import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
 import com.icapps.niddler.ui.model.*
 import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
 import com.icapps.niddler.ui.model.ui.*
 import com.icapps.niddler.ui.setColumnFixedWidth
 import com.icapps.niddler.ui.setColumnMinWidth
+import com.icapps.niddler.ui.util.ClipboardUtil
 import com.icapps.niddler.ui.util.WideSelectionTreeUI
 import java.awt.BorderLayout
+import java.awt.datatransfer.StringSelection
+import java.awt.datatransfer.Transferable
 import java.io.File
 import java.net.URI
 import javax.swing.*
@@ -25,20 +30,17 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         NiddlerToolbar.ToolbarListener {
 
     private val messages = MessageContainer(NiddlerMessageBodyParser())
-    //private val detailContainer = MessageDetailContainer(interfaceFactory, messages)
     private val messagePopupMenu = NiddlerMessagePopupMenu(this)
 
     private lateinit var adbConnection: ADBBootstrap
     private var messageMode = MessageMode.TIMELINE
 
     fun init() {
-        windowContents.init()
+        windowContents.init(messages)
         adbConnection = ADBBootstrap(sdkPathGuesses)
         add(windowContents.asComponent, BorderLayout.CENTER) //TODO remove?
 
-        //windowContents.splitPane.right = detailContainer.asComponent
-
-        windowContents.messagesAsTable.apply {
+        windowContents.overview.messagesAsTable.apply {
             //TODO cleanup
             componentPopupMenu = messagePopupMenu
             model = TimelineMessagesTableModel()
@@ -52,7 +54,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             selectionModel.addListSelectionListener {
                 MainThreadDispatcher.dispatch {
                     if (messageMode == MessageMode.TIMELINE) {
-                        if (windowContents.messagesAsTable.selectedRowCount == 0) {
+                        if (windowContents.overview.messagesAsTable.selectedRowCount == 0) {
                             val timer = Timer(200) {
                                 checkRowSelectionState()
                             }
@@ -65,7 +67,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
                 }
             }
         }
-        windowContents.messagesAsTree.apply {
+        windowContents.overview.messagesAsTree.apply {
             componentPopupMenu = messagePopupMenu
             model = LinkedMessagesModel()
             ui = WideSelectionTreeUI()
@@ -73,7 +75,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             selectionModel.addTreeSelectionListener {
                 MainThreadDispatcher.dispatch {
                     if (messageMode == MessageMode.LINKED) {
-                        if (windowContents.messagesAsTree.selectionCount == 0) {
+                        if (windowContents.overview.messagesAsTree.selectionCount == 0) {
                             val timer = Timer(200) {
                                 checkRowSelectionState()
                             }
@@ -91,7 +93,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
         windowContents.toolbar.listener = this
 
-        //detailContainer.clear()
+        windowContents.detail.message = null
 
         windowContents.connectButtonListener = {
             val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(this), adbConnection.bootStrap(), null, null)
@@ -111,30 +113,30 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
     private fun checkRowSelectionState() {
         if (messageMode == MessageMode.TIMELINE) {
-            if (windowContents.messagesAsTable.selectedRowCount == 0) {
-                //detailContainer.clear()
+            if (windowContents.overview.messagesAsTable.selectedRowCount == 0) {
+                windowContents.detail.message = null
             } else {
-                val selectedRow = windowContents.messagesAsTable.selectedRow
-                val model = windowContents.messagesAsTable.model
+                val selectedRow = windowContents.overview.messagesAsTable.selectedRow
+                val model = windowContents.overview.messagesAsTable.model
                 if (model is TimelineMessagesTableModel) {
                     val row = model.getRow(selectedRow)
-                    //detailContainer.setMessage(row)
+                    windowContents.detail.message = row
                 }
             }
         } else if (messageMode == MessageMode.LINKED) {
-            if (windowContents.messagesAsTree.selectionCount == 0) {
-                //detailContainer.clear()
+            if (windowContents.overview.messagesAsTree.selectionCount == 0) {
+                windowContents.detail.message = null
             } else {
-                val selectedPath = windowContents.messagesAsTree.selectionPath?.lastPathComponent
+                val selectedPath = windowContents.overview.messagesAsTree.selectionPath?.lastPathComponent
                 if (selectedPath is RequestNode) {
                     val request = selectedPath.request
                     if (request == null) {
-                        // detailContainer.clear()
+                        windowContents.detail.message = null
                     } else {
-                        //   detailContainer.setMessage(request)
+                        windowContents.detail.message = request
                     }
                 } else if (selectedPath is ResponseNode) {
-                    //detailContainer.setMessage(selectedPath.message)
+                    windowContents.detail.message = selectedPath.message
                 }
             }
         }
@@ -193,26 +195,26 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     }
 
     override fun onTimelineSelected() {
-        //windowContents.messagesScroller.setViewportView(windowContents.messagesAsTable)
+        windowContents.overview.showTable()
         messageMode = MessageMode.TIMELINE
-        (windowContents.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
+        (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
     }
 
     override fun onLinkedSelected() {
-        //windowContents.messagesScroller.setViewportView(windowContents.messagesAsTree)
+        windowContents.overview.showLinked()
         messageMode = MessageMode.LINKED
-        (windowContents.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
+        (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
     }
 
     override fun onClearSelected() {
         messages.clear()
         if (messageMode == MessageMode.TIMELINE)
-            (windowContents.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
+            (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
         else
-            (windowContents.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
+            (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
 
-        windowContents.messagesAsTable.clearSelection()
-        windowContents.messagesAsTree.clearSelection()
+        windowContents.overview.messagesAsTable.clearSelection()
+        windowContents.overview.messagesAsTree.clearSelection()
         checkRowSelectionState()
     }
 
@@ -224,70 +226,70 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         MainThreadDispatcher.dispatch {
 
             if (messageMode == MessageMode.TIMELINE) {
-                val previousSelection = windowContents.messagesAsTable.selectedRow
-                (windowContents.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
+                val previousSelection = windowContents.overview.messagesAsTable.selectedRow
+                (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
                 if (previousSelection != -1) {
                     try {
-                        windowContents.messagesAsTable.addRowSelectionInterval(previousSelection, previousSelection)
+                        windowContents.overview.messagesAsTable.addRowSelectionInterval(previousSelection, previousSelection)
                     } catch (ignored: IllegalArgumentException) {
                     }
                 }
             } else {
-                (windowContents.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
+                (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
             }
         }
     }
 
     override fun onServerInfo(serverInfo: NiddlerServerInfo) {
         MainThreadDispatcher.dispatch {
-            //windowContents.updateProtocol(serverInfo.protocol)
+            //TODO windowContents.updateProtocol(serverInfo.protocol)
             windowContents.setStatusText("Connected to ${serverInfo.serverName} (${serverInfo.serverDescription})")
         }
     }
 
     override fun onCopyUrlClicked() {
-//        val message = detailContainer.getMessage()
-//        message?.let {
-//            if (message.isRequest) {
-//                ClipboardUtil.copyToClipboard(StringSelection(message.url))
-//            } else {
-//                ClipboardUtil.copyToClipboard(StringSelection(messages.findRequest(message)?.url))
-//            }
-//        }
+        val message = windowContents.detail.message ?: return
+        message.let {
+            if (message.isRequest) {
+                ClipboardUtil.copyToClipboard(StringSelection(message.url))
+            } else {
+                ClipboardUtil.copyToClipboard(StringSelection(messages.findRequest(message)?.url))
+            }
+        }
     }
 
     override fun onCopyBodyClicked() {
-//        val message = detailContainer.getMessage() ?: return
-//
-//        var clipboardData: Transferable? = null
-//        when (message.bodyFormat.type) {
-//            BodyFormatType.FORMAT_IMAGE -> {
-//                clipboardData = ClipboardUtil.imageTransferableFromBytes(message.message.getBodyAsBytes)
-//            }
-//            BodyFormatType.FORMAT_PLAIN,
-//            BodyFormatType.FORMAT_JSON,
-//            BodyFormatType.FORMAT_HTML,
-//            BodyFormatType.FORMAT_FORM_ENCODED,
-//            BodyFormatType.FORMAT_XML -> {
-//                clipboardData = StringSelection(message.message.getBodyAsString(message.bodyFormat.encoding))
-//            }
-//            BodyFormatType.FORMAT_BINARY -> {
-//                JOptionPane.showConfirmDialog(null, "Binary data cannot be copied to clipboard.", "Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE)
-//            }
-//            else -> {
-//            } //Nothing to copy
-//        }
-//        clipboardData?.let { ClipboardUtil.copyToClipboard(it) }
+        val message = windowContents.detail.message ?: return
+
+        var clipboardData: Transferable? = null
+        when (message.bodyFormat.type) {
+            BodyFormatType.FORMAT_IMAGE -> {
+                clipboardData = ClipboardUtil.imageTransferableFromBytes(message.message.getBodyAsBytes)
+            }
+            BodyFormatType.FORMAT_PLAIN,
+            BodyFormatType.FORMAT_JSON,
+            BodyFormatType.FORMAT_HTML,
+            BodyFormatType.FORMAT_FORM_ENCODED,
+            BodyFormatType.FORMAT_XML -> {
+                clipboardData = StringSelection(message.message.getBodyAsString(message.bodyFormat.encoding))
+            }
+            BodyFormatType.FORMAT_BINARY -> {
+                JOptionPane.showConfirmDialog(null, "Binary data cannot be copied to clipboard.", "Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE)
+            }
+            else -> {
+            } //Nothing to copy
+        }
+        clipboardData?.let { ClipboardUtil.copyToClipboard(it) }
     }
 
     override fun onExportCurlRequestClicked() {
-//        val message = detailContainer.getMessage() ?: return
-//        val request = messages.findRequest(message)
-//        if (request == null) {
-//            JOptionPane.showConfirmDialog(null, "Could not find request.", "Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE)
-//            return
-//        }
-//        ClipboardUtil.copyToClipboard(StringSelection(CurlCodeGenerator().generateRequestCode(request)))
+        val message = windowContents.detail.message ?: return
+        val request = messages.findRequest(message)
+        if (request == null) {
+            JOptionPane.showConfirmDialog(null, "Could not find request.", "Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE)
+            return
+        }
+        ClipboardUtil.copyToClipboard(StringSelection(CurlCodeGenerator().generateRequestCode(request)))
     }
 
     private fun showExportDialog() {

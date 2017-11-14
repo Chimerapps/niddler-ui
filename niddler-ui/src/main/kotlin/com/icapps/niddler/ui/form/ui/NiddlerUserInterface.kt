@@ -1,10 +1,10 @@
-package com.icapps.niddler.ui.form
+package com.icapps.niddler.ui.form.ui
 
+import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.NiddlerToolbar
+import com.icapps.niddler.ui.model.MessageContainer
 import javax.swing.ImageIcon
 import javax.swing.JComponent
-import javax.swing.JTable
-import javax.swing.JTree
 
 /**
  * @author Nicola Verbeeck
@@ -13,12 +13,10 @@ import javax.swing.JTree
 
 interface NiddlerUserInterface {
 
-    fun init()
+    fun init(messageContainer: MessageContainer)
 
     var connectButtonListener: (() -> Unit)?
 
-    val messagesAsTable: JTable
-    val messagesAsTree: JTree
     val toolbar: NiddlerToolbar
 
     fun setStatusText(statusText: String?)
@@ -26,4 +24,7 @@ interface NiddlerUserInterface {
 
     val asComponent: JComponent
     val componentsFactory: ComponentsFactory
+
+    val overview: NiddlerOverviewUserInterface
+    val detail: NiddlerDetailUserInterface
 }
