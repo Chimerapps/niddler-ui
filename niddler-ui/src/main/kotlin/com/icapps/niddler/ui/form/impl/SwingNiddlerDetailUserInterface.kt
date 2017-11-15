@@ -2,6 +2,8 @@ package com.icapps.niddler.ui.form.impl
 
 import com.icapps.niddler.ui.form.*
 import com.icapps.niddler.ui.form.components.TabComponent
+import com.icapps.niddler.ui.form.detail.MessageDetailPanel
+import com.icapps.niddler.ui.form.detail.body.*
 import com.icapps.niddler.ui.form.ui.NiddlerDetailUserInterface
 import com.icapps.niddler.ui.model.BodyFormatType
 import com.icapps.niddler.ui.model.MessageContainer

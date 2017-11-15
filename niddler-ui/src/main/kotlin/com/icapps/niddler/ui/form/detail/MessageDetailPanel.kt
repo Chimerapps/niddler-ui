@@ -1,4 +1,4 @@
-package com.icapps.niddler.ui.form
+package com.icapps.niddler.ui.form.detail
 
 import com.icapps.niddler.ui.model.MessageContainer
 import com.icapps.niddler.ui.model.ParsedNiddlerMessage
@@ -7,7 +7,6 @@ import com.jgoodies.forms.layout.CellConstraints
 import com.jgoodies.forms.layout.FormLayout
 import com.jgoodies.forms.layout.RowSpec
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.Font
 import java.awt.datatransfer.StringSelection
 import java.text.SimpleDateFormat
