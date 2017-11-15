@@ -58,7 +58,7 @@ private class LabelCellRenderer : TableCellRenderer {
         cell.border = BorderFactory.createMatteBorder(0, 0, 0, 1, cell.background.darker())
 
         label.setFixedWidth(LABEL_WIDTH)
-        label.horizontalAlignment = SwingConstants.CENTER
+        label.horizontalAlignment = SwingConstants.RIGHT
         label.font = UIManager.getFont("EditorPane.font")
         cell.add(label, BorderLayout.CENTER)
     }
@@ -75,6 +75,10 @@ private class LabelCellRenderer : TableCellRenderer {
         label.setSize(width, label.height)
     }
 
+}
+
+private val hexArray = Array<String>(256) {
+    String.format("%02X", it)
 }
 
 private class ItemCellRenderer : TableCellRenderer {
@@ -222,7 +226,7 @@ class BinaryTableModel(private val table: JTable) : AbstractTableModel() {
         }
         val index = (rowIndex * numDataCols) + (columnIndex - 1)
         if (index < bytes.size)
-            return String.format("%02X ", bytes[index])
+            return hexArray[bytes[index].toInt()]
         return ""
     }
 
