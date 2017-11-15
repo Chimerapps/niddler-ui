@@ -87,9 +87,9 @@ class HarExport(private val targetFile: File) {
             BodyFormatType.FORMAT_JSON -> builder.withMime(BodyFormatType.FORMAT_JSON.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "")
             BodyFormatType.FORMAT_XML -> builder.withMime(BodyFormatType.FORMAT_XML.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "")
             BodyFormatType.FORMAT_PLAIN -> builder.withMime(BodyFormatType.FORMAT_PLAIN.verbose).withText(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "")
-            BodyFormatType.FORMAT_IMAGE -> return null
-            BodyFormatType.FORMAT_BINARY -> return null
-            BodyFormatType.FORMAT_HTML -> return null
+            BodyFormatType.FORMAT_IMAGE -> builder.withMime(message.bodyFormat.subtype ?: "").withText(message.message.bodyAsNormalBase64 ?: "")
+            BodyFormatType.FORMAT_BINARY -> builder.withMime(message.bodyFormat.subtype ?: "").withText(message.message.bodyAsNormalBase64 ?: "")
+            BodyFormatType.FORMAT_HTML -> builder.withMime(message.bodyFormat.subtype ?: "").withText(message.message.getBodyAsString("UTF-8") ?: "")
             BodyFormatType.FORMAT_EMPTY -> return null
             BodyFormatType.FORMAT_FORM_ENCODED -> builder.withParams((message.body as Map<String, String>).map { Param(name = it.key, value = it.value) })
         }
