@@ -18,7 +18,6 @@ interface NiddlerToolbar {
 
         fun onExportSelected()
 
-
     }
 
 }

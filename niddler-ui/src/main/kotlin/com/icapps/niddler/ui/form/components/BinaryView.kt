@@ -3,12 +3,9 @@ package com.icapps.niddler.ui.form.components
 import com.icapps.niddler.ui.setFixedWidth
 import java.awt.BorderLayout
 import java.awt.Component
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
 import java.io.File
 import java.util.*
 import javax.swing.*
-import javax.swing.event.TableColumnModelEvent
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableColumnModel
 import javax.swing.table.TableCellRenderer
@@ -23,21 +20,20 @@ class BinaryView : JPanel(BorderLayout()) {
     private val table = JTable()
 
     init {
-        val model = BinaryTableModel(table)
-        val labelRenderer = LabelCellRenderer()
-        val columnModel = ColumnModel(model, table, labelRenderer)
+        val columnModel = ColumnModel()
+        val model = BinaryTableModel(table, columnModel.labelRenderer)
 
         table.background = UIManager.getColor("EditorPane.background")
         table.model = model
         table.autoCreateColumnsFromModel = false
         table.columnModel = columnModel
-        table.setDefaultRenderer(Int::class.java, labelRenderer)
-        table.setDefaultRenderer(String::class.java, ItemCellRenderer())
         table.rowMargin = 0
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
 
         model.bytes = File("/Users/nicolaverbeeck/bad_request.har").readBytes()
 
         table.autoResizeMode = JTable.AUTO_RESIZE_OFF
+        table.cellSelectionEnabled = true
 
         add(table, BorderLayout.CENTER)
     }
@@ -46,6 +42,7 @@ class BinaryView : JPanel(BorderLayout()) {
 
 private const val LABEL_WIDTH = 60
 private const val ENTRY_WIDTH = 30
+private const val TEXTUAL_WIDTH = 30
 
 private class LabelCellRenderer : TableCellRenderer {
 
@@ -63,7 +60,12 @@ private class LabelCellRenderer : TableCellRenderer {
         cell.add(label, BorderLayout.CENTER)
     }
 
-    override fun getTableCellRendererComponent(table: JTable, value: Any, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
+    override fun getTableCellRendererComponent(table: JTable, value: Any?, isSelected: Boolean, hasFocus: Boolean,
+                                               row: Int, column: Int): Component {
+        if (value == null) {
+            label.text = ""
+            return label
+        }
         label.text = value.toString()
 
         return cell
@@ -81,57 +83,106 @@ private val hexArray = Array<String>(256) {
     String.format("%02X", it)
 }
 
-private class ItemCellRenderer : TableCellRenderer {
+private val textArray = Array<String>(256) {
+    String(byteArrayOf(it.toByte(), 0))
+}
+
+private class BinaryItemCellRenderer : TableCellRenderer {
 
     private val label = JLabel()
 
     init {
-        label.horizontalAlignment = SwingConstants.CENTER
-        label.font = UIManager.getFont("EditorPane.font")
-        label.setFixedWidth(ENTRY_WIDTH)
+        label.apply {
+            horizontalAlignment = SwingConstants.CENTER
+            font = UIManager.getFont("EditorPane.font")
+            setFixedWidth(ENTRY_WIDTH)
+        }
     }
 
-    override fun getTableCellRendererComponent(table: JTable?, value: Any, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
-        label.text = value.toString()
+    override fun getTableCellRendererComponent(table: JTable?, value: Any?, isSelected: Boolean,
+                                               hasFocus: Boolean, row: Int, column: Int): Component {
+        if (value == null) {
+            label.text = ""
+            return label
+        }
+        label.text = hexArray[value as Int]
         return label
     }
 }
 
-private class ColumnModel(private val tableModel: BinaryTableModel,
-                          private val parentView: JTable,
-                          private val labelRenderer: LabelCellRenderer) : DefaultTableColumnModel() {
+private class TextualCellRenderer : TableCellRenderer {
 
-    private val labelCol = TableColumn()
-    private var previousWidth = parentView.width
-    private var colCount = -1
-    private var calculatedLastWidth = -1
+    private val label = JLabel()
+    private val normalBg = UIManager.getColor("EditorPane.background")
+    private val selectedBg = UIManager.getColor("EditorPane.selectionBackground")
+    private val normalTextColor = UIManager.getColor("EditorPane.foreground")
+    private val selectedTextColor = UIManager.getColor("EditorPane.selectionForeground")
 
     init {
-        labelCol.width = LABEL_WIDTH
-        labelCol.maxWidth = LABEL_WIDTH
-        labelCol.minWidth = LABEL_WIDTH
+        label.apply {
+            isOpaque = true
+            horizontalAlignment = SwingConstants.CENTER
+            font = UIManager.getFont("EditorPane.font")
+            background = normalBg
+            foreground = normalTextColor
+            setFixedWidth(TEXTUAL_WIDTH)
+        }
+    }
 
-        parentView.addComponentListener(object : ComponentAdapter() {
-            override fun componentResized(e: ComponentEvent) {
-                super.componentResized(e)
+    override fun getTableCellRendererComponent(table: JTable?, value: Any?, isSelected: Boolean,
+                                               hasFocus: Boolean, row: Int, column: Int): Component {
+        if (value == null) {
+            label.text = ""
+            return label
+        }
 
-                if (parentView.width != previousWidth) {
-                    previousWidth = parentView.width
-                    val prevCol = colCount
-                    val newCount = columnCount
-                    if (newCount > prevCol) {
-                        fireColumnAdded(TableColumnModelEvent(this@ColumnModel, prevCol, newCount))
-                    } else if (newCount < prevCol) {
-                        fireColumnRemoved(TableColumnModelEvent(this@ColumnModel, newCount, prevCol))
-                    }
-                }
+        label.text = textArray[value as Int]
+
+        if (isSelected) {
+            label.apply {
+                background = selectedBg
+                foreground = selectedTextColor
             }
-        })
+        } else {
+            label.apply {
+                background = normalBg
+                foreground = normalTextColor
+            }
+        }
+
+        return label
+    }
+}
+
+private class ColumnModel : DefaultTableColumnModel() {
+
+    private val labelCol = TableColumn()
+    private val binaryCol = TableColumn()
+    private val textualCol = TableColumn()
+    val labelRenderer = LabelCellRenderer()
+
+    init {
+        labelCol.apply {
+            width = LABEL_WIDTH
+            maxWidth = LABEL_WIDTH
+            minWidth = LABEL_WIDTH
+            cellRenderer = labelRenderer
+        }
+        binaryCol.apply {
+            width = ENTRY_WIDTH
+            maxWidth = ENTRY_WIDTH
+            minWidth = ENTRY_WIDTH
+            cellRenderer = BinaryItemCellRenderer()
+        }
+        textualCol.apply {
+            width = TEXTUAL_WIDTH
+            maxWidth = TEXTUAL_WIDTH
+            minWidth = TEXTUAL_WIDTH
+            cellRenderer = TextualCellRenderer()
+        }
     }
 
-    override fun getColumnSelectionAllowed(): Boolean {
-        return false
-    }
+    override fun getColumnSelectionAllowed(): Boolean = true
 
     override fun setColumnSelectionAllowed(flag: Boolean) {
         //Ignore
@@ -162,38 +213,28 @@ private class ColumnModel(private val tableModel: BinaryTableModel,
 
     override fun getColumnMargin(): Int = 0
 
-    override fun getTotalColumnWidth(): Int {
-        return (columnCount - 1) * ENTRY_WIDTH + labelCol.width
-    }
+    override fun getColumnCount(): Int = 17
 
-    override fun getColumnCount(): Int {
-        if (previousWidth <= 0)
-            return 2
-
-        if (calculatedLastWidth == previousWidth)
-            return colCount
-
-        colCount = 1
-        val availableDataWidth = previousWidth - LABEL_WIDTH
-        colCount += Math.max(1, availableDataWidth / ENTRY_WIDTH)
-
-        calculatedLastWidth = previousWidth
-
-        val rows = tableModel.rowCount
-        labelRenderer.setLargestIndex(rows * colCount - 1)
-
-        return colCount
-    }
+    override fun getTotalColumnWidth(): Int = labelCol.width + (8 * ENTRY_WIDTH) + (8 * TEXTUAL_WIDTH)
 
     override fun getColumn(columnIndex: Int): TableColumn {
         if (columnIndex == 0)
             return labelCol
-        return TableColumn(columnIndex, ENTRY_WIDTH)
+
+        if (columnIndex <= 8) {
+            binaryCol.modelIndex = columnIndex
+            return binaryCol
+        }
+
+        textualCol.modelIndex = columnIndex
+        return textualCol
     }
 }
 
-class BinaryTableModel(private val table: JTable) : AbstractTableModel() {
+private class BinaryTableModel(private val table: JTable,
+                               private val labelCellRenderer: LabelCellRenderer) : AbstractTableModel() {
 
+    private var lastRowCount = -1
     var bytes: ByteArray = ByteArray(0)
         set(value) {
             field = value
@@ -201,42 +242,41 @@ class BinaryTableModel(private val table: JTable) : AbstractTableModel() {
         }
 
     override fun getRowCount(): Int {
-        val numDataCols = columnCount - 1
-        if (numDataCols > 0) {
-            var base = bytes.size / numDataCols
-            if ((bytes.size % numDataCols) > 0)
-                ++base
-            return base
+        val numDataCols = 8
+        var base = bytes.size / numDataCols
+        if ((bytes.size % numDataCols) > 0)
+            ++base
+
+        if (base != lastRowCount) {
+            labelCellRenderer.setLargestIndex(base)
+            lastRowCount = base
         }
-
-        return 0
+        return base
     }
 
-    override fun getColumnCount(): Int {
-        return table.columnModel.columnCount
-    }
+    override fun getColumnCount(): Int = table.columnModel.columnCount
 
     override fun getValueAt(rowIndex: Int, columnIndex: Int): Any {
-        val numDataCols = columnCount - 1
-        if (numDataCols < 0)
-            return ""
+        val numDataCols = 8
 
         if (columnIndex == 0) {
             return rowIndex * numDataCols
         }
-        val index = (rowIndex * numDataCols) + (columnIndex - 1)
-        if (index < bytes.size)
-            return hexArray[bytes[index].toInt()]
-        return ""
+
+        var index = (rowIndex * numDataCols)
+
+        if (columnIndex > numDataCols)
+            index += (columnIndex - numDataCols - 1)
+        else
+            index += (columnIndex - 1)
+
+        if (index >= bytes.size) return ""
+
+        return bytes[index].toInt()
     }
 
     override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
         return false
-    }
-
-    override fun getColumnClass(columnIndex: Int): Class<*> {
-        if (columnIndex == 0) return Int::class.java
-        return String::class.java
     }
 
 }

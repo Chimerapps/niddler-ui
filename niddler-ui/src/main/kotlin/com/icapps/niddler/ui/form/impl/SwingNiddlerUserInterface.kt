@@ -29,7 +29,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     override lateinit var overview: NiddlerOverviewUserInterface
     override lateinit var detail: NiddlerDetailUserInterface
 
-    private val rootPanel: JPanel
+    protected val rootPanel: JPanel
 
     private lateinit var splitPane: SplitPane
     private lateinit var statusBar: JPanel
@@ -42,6 +42,10 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         rootPanel = JPanel()
         rootPanel.layout = BorderLayout(0, 0)
         rootPanel.minimumSize = Dimension(300, 300)
+    }
+
+    protected open fun uiContainer(): JComponent {
+        return rootPanel
     }
 
     override fun init(messageContainer: MessageContainer) {
@@ -57,7 +61,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     protected open fun initSplitPane() {
         splitPane = componentsFactory.createSplitPane()
         splitPane.resizePriority = 1.0
-        rootPanel.add(splitPane.asComponent, BorderLayout.CENTER)
+        uiContainer().add(splitPane.asComponent, BorderLayout.CENTER)
         splitPane.left = messagesScroller
         splitPane.right = detail.asComponent
     }
@@ -70,7 +74,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     protected open fun initStatusbar() {
         statusBar = JPanel()
         statusBar.layout = BorderLayout(0, 0)
-        rootPanel.add(statusBar, BorderLayout.SOUTH)
+        uiContainer().add(statusBar, BorderLayout.SOUTH)
         statusBar.border = BorderFactory.createTitledBorder(BorderFactory.createLoweredBevelBorder(), null)
         statusText = JLabel().apply {
             isFocusable = false
@@ -85,7 +89,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     protected open fun initConnectPanel() {
         val panel1 = JPanel()
         panel1.layout = FlowLayout(FlowLayout.LEFT, 5, 5)
-        rootPanel.add(panel1, BorderLayout.NORTH)
+        uiContainer().add(panel1, BorderLayout.NORTH)
         connectButton = JButton()
         connectButton.text = "Connect"
         panel1.add(connectButton)
@@ -94,7 +98,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     }
 
     protected open fun initToolbar() {
-        toolbar = SwingToolbar(rootPanel)
+        toolbar = SwingToolbar(uiContainer())
     }
 
     override fun setStatusText(statusText: String?) {

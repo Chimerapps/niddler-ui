@@ -26,7 +26,7 @@ import javax.swing.*
  * @date 14/11/16.
  */
 class NiddlerWindow(private val windowContents: NiddlerUserInterface, private val sdkPathGuesses: Collection<String>)
-    : JPanel(BorderLayout()), NiddlerMessageListener, ParsedNiddlerMessageListener, NiddlerMessagePopupMenu.Listener,
+    : NiddlerMessageListener, ParsedNiddlerMessageListener, NiddlerMessagePopupMenu.Listener,
         NiddlerToolbar.ToolbarListener {
 
     private val messages = MessageContainer(NiddlerMessageBodyParser())
@@ -38,7 +38,6 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     fun init() {
         windowContents.init(messages)
         adbConnection = ADBBootstrap(sdkPathGuesses)
-        add(windowContents.asComponent, BorderLayout.CENTER) //TODO remove?
 
         windowContents.overview.messagesAsTable.apply {
             //TODO cleanup
@@ -96,7 +95,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         windowContents.detail.message = null
 
         windowContents.connectButtonListener = {
-            val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(this), adbConnection.bootStrap(), null, null)
+            val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent), adbConnection.bootStrap(), null, null)
             if (selection != null)
                 onDeviceSelectionChanged(selection)
         }

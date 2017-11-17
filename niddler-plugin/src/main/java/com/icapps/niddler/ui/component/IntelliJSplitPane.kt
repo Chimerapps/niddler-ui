@@ -39,5 +39,4 @@ class IntelliJSplitPane : JBSplitter(), SplitPane {
         set(value) {
         }
 
-
 }

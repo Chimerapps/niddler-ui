@@ -5,9 +5,11 @@ import com.icapps.niddler.ui.form.NiddlerWindow
 import com.icapps.niddler.ui.form.components.impl.SwingComponentsFactory
 import com.icapps.niddler.ui.form.impl.SwingMainThreadDispatcher
 import com.icapps.niddler.ui.form.impl.SwingNiddlerUserInterface
+import java.awt.BorderLayout
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
+import javax.swing.JPanel
 import javax.swing.WindowConstants
 
 
@@ -18,10 +20,14 @@ import javax.swing.WindowConstants
 fun main(args: Array<String>) {
     MainThreadDispatcher.instance = SwingMainThreadDispatcher()
 
-    val window = NiddlerWindow(SwingNiddlerUserInterface(SwingComponentsFactory()), emptyList())
+    val ui = SwingNiddlerUserInterface(SwingComponentsFactory())
+    val window = NiddlerWindow(ui, emptyList())
+
+    val panel = JPanel(BorderLayout())
+    panel.add(ui.asComponent, BorderLayout.CENTER)
 
     val frame = JFrame()
-    frame.add(window)
+    frame.add(panel)
     frame.defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
     frame.pack()
 
@@ -40,4 +46,5 @@ fun main(args: Array<String>) {
     window.init()
     frame.setSize(1300, 600)
     frame.isVisible = true
+
 }
