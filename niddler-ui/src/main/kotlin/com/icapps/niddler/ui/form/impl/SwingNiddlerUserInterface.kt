@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form.impl
 
 import com.icapps.niddler.ui.form.ComponentsFactory
+import com.icapps.niddler.ui.form.components.HintTextField
 import com.icapps.niddler.ui.form.components.NiddlerToolbar
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.impl.SwingToolbar
@@ -13,6 +14,8 @@ import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.*
 import javax.swing.border.EmptyBorder
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 
 /**
  * @author Nicola Verbeeck
@@ -21,6 +24,7 @@ import javax.swing.border.EmptyBorder
 open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsFactory) : NiddlerUserInterface, SwingNiddlerOverviewUserInterface.NiddlerOverviewParent {
 
     override var connectButtonListener: (() -> Unit)? = null
+    override var filterListener: ((String?) -> Unit)? = null
 
     override val asComponent: JComponent
         get() = rootPanel
@@ -88,13 +92,40 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
 
     protected open fun initConnectPanel() {
         val panel1 = JPanel()
-        panel1.layout = FlowLayout(FlowLayout.LEFT, 5, 5)
+        panel1.layout = BorderLayout(5, 5)
         uiContainer().add(panel1, BorderLayout.NORTH)
         connectButton = JButton()
         connectButton.text = "Connect"
-        panel1.add(connectButton)
+        panel1.add(connectButton, BorderLayout.WEST)
 
         connectButton.addActionListener { connectButtonListener?.invoke() }
+
+        initFilter(panel1)
+    }
+
+    protected open fun initFilter(parent: JPanel) {
+        val filter = HintTextField()
+        filter.hint = "Filter"
+        filter.preferredSize = Dimension(200, filter.preferredSize.height)
+        filter.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent) {
+                onChange()
+            }
+
+            override fun removeUpdate(e: DocumentEvent) {
+                onChange()
+            }
+
+            override fun changedUpdate(e: DocumentEvent) {
+                onChange()
+            }
+
+            private fun onChange() {
+                filterListener?.invoke(filter.text)
+            }
+        })
+
+        parent.add(filter, BorderLayout.EAST)
     }
 
     protected open fun initToolbar() {

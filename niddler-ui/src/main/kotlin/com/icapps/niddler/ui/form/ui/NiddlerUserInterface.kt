@@ -16,6 +16,7 @@ interface NiddlerUserInterface {
     fun init(messageContainer: MessageContainer)
 
     var connectButtonListener: (() -> Unit)?
+    var filterListener: ((String?) -> Unit)?
 
     val toolbar: NiddlerToolbar
 

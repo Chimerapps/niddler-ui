@@ -118,3 +118,4 @@ gradle-app.setting
 niddler-ui/build
 niddler-plugin/build
 niddler-ui/out
+niddler-plugin/out

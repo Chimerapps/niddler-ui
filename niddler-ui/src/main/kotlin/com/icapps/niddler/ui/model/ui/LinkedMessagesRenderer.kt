@@ -80,7 +80,7 @@ class LinkedMessagesRenderer(private val protocolVersion: Int) : TreeCellRendere
                 url = message?.url
 
             methodLabel.setFixedWidth(70)
-            urlLabel.setFixedWidth(400)
+            urlLabel.setFixedWidth(tree.width)
             statusLabel.setFixedWidth(0)
         } else if (value is ResponseNode) {
             message = value.message

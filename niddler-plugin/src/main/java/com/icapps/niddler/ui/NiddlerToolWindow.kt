@@ -6,6 +6,7 @@ import com.icapps.niddler.ui.form.NiddlerWindow
 import com.icapps.niddler.ui.impl.IntelliJNiddlerUserInterface
 import com.icapps.niddler.ui.util.logger
 import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
@@ -19,7 +20,7 @@ import javax.swing.event.AncestorListener
  *
  * @date 21/11/16.
  */
-class NiddlerToolWindow : ToolWindowFactory {
+class NiddlerToolWindow : ToolWindowFactory, DumbAware {
 
     companion object {
         private val log = logger<NiddlerToolWindow>()

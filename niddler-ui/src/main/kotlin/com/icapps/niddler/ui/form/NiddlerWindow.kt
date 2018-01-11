@@ -14,7 +14,6 @@ import com.icapps.niddler.ui.setColumnFixedWidth
 import com.icapps.niddler.ui.setColumnMinWidth
 import com.icapps.niddler.ui.util.ClipboardUtil
 import com.icapps.niddler.ui.util.WideSelectionTreeUI
-import java.awt.BorderLayout
 import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
 import java.io.File
@@ -34,6 +33,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
     private lateinit var adbConnection: ADBBootstrap
     private var messageMode = MessageMode.TIMELINE
+    private var currentFilter: String = ""
 
     fun init() {
         windowContents.init(messages)
@@ -98,6 +98,10 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent), adbConnection.bootStrap(), null, null)
             if (selection != null)
                 onDeviceSelectionChanged(selection)
+        }
+
+        windowContents.filterListener = {
+            applyFilter(it ?: "")
         }
     }
 
@@ -226,7 +230,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
             if (messageMode == MessageMode.TIMELINE) {
                 val previousSelection = windowContents.overview.messagesAsTable.selectedRow
-                (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
+                (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages.filtered(currentFilter))
                 if (previousSelection != -1) {
                     try {
                         windowContents.overview.messagesAsTable.addRowSelectionInterval(previousSelection, previousSelection)
@@ -234,7 +238,14 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
                     }
                 }
             } else {
-                (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
+                val previousSelection = windowContents.overview.messagesAsTree.selectionPath
+                (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages.filtered(currentFilter))
+                if (previousSelection != null) {
+                    try {
+                        windowContents.overview.messagesAsTree.selectionPath = previousSelection
+                    } catch (ignored: IllegalArgumentException) {
+                    }
+                }
             }
         }
     }
@@ -296,5 +307,10 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         if (!exportLocation.endsWith(".har"))
             exportLocation += ".har"
         HarExport(File(exportLocation)).export(messages.getMessagesLinked())
+    }
+
+    private fun applyFilter(filter: String) {
+        currentFilter = filter
+        updateMessages()
     }
 }
