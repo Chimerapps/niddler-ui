@@ -1,4 +1,4 @@
-package com.icapps.niddler.ui.form
+package com.icapps.niddler.ui.form.detail.body
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement

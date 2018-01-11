@@ -78,7 +78,7 @@ data class Request(
         val queryString: List<QueryParameter>,
         val postData: PostData?,
         val cookies: List<Any> = emptyList(),
-        val headersSize: Long = 1,
+        val headersSize: Long = -1,
         val bodySize: Long = -1,
         val comment: String? = null
 )

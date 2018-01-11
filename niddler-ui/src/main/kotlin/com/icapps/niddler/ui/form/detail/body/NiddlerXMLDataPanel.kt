@@ -1,4 +1,4 @@
-package com.icapps.niddler.ui.form
+package com.icapps.niddler.ui.form.detail.body
 
 import com.icapps.niddler.ui.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.model.ui.json.XMLTreeRenderer

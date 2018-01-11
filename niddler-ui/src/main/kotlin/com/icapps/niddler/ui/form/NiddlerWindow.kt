@@ -5,6 +5,8 @@ import com.icapps.niddler.ui.adb.ADBBootstrap
 import com.icapps.niddler.ui.codegen.CurlCodeGenerator
 import com.icapps.niddler.ui.connection.NiddlerMessageListener
 import com.icapps.niddler.ui.export.HarExport
+import com.icapps.niddler.ui.form.components.NiddlerToolbar
+import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
 import com.icapps.niddler.ui.model.*
 import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
 import com.icapps.niddler.ui.model.ui.*
@@ -12,37 +14,33 @@ import com.icapps.niddler.ui.setColumnFixedWidth
 import com.icapps.niddler.ui.setColumnMinWidth
 import com.icapps.niddler.ui.util.ClipboardUtil
 import com.icapps.niddler.ui.util.WideSelectionTreeUI
-import java.awt.BorderLayout
 import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
-import java.awt.event.ItemEvent
 import java.io.File
 import java.net.URI
 import javax.swing.*
-import javax.swing.border.EmptyBorder
 
 /**
  * @author Nicola Verbeeck
  * @date 14/11/16.
  */
-class NiddlerWindow(private val interfaceFactory: InterfaceFactory, private val sdkPathGuesses: Collection<String>)
-    : JPanel(BorderLayout()), NiddlerMessageListener, ParsedNiddlerMessageListener, NiddlerMessagePopupMenu.Listener {
+class NiddlerWindow(private val windowContents: NiddlerUserInterface, private val sdkPathGuesses: Collection<String>)
+    : NiddlerMessageListener, ParsedNiddlerMessageListener, NiddlerMessagePopupMenu.Listener,
+        NiddlerToolbar.ToolbarListener {
 
     private val messages = MessageContainer(NiddlerMessageBodyParser())
-    private val detailContainer = MessageDetailContainer(interfaceFactory, messages)
-    private val windowContents = NiddlerUIContainer(interfaceFactory)
     private val messagePopupMenu = NiddlerMessagePopupMenu(this)
 
     private lateinit var adbConnection: ADBBootstrap
     private var messageMode = MessageMode.TIMELINE
+    private var currentFilter: String = ""
 
     fun init() {
+        windowContents.init(messages)
         adbConnection = ADBBootstrap(sdkPathGuesses)
-        add(windowContents.rootPanel, BorderLayout.CENTER)
 
-        windowContents.splitPane.right = detailContainer.asComponent
-
-        windowContents.messagesAsTable.apply {
+        windowContents.overview.messagesAsTable.apply {
+            //TODO cleanup
             componentPopupMenu = messagePopupMenu
             model = TimelineMessagesTableModel()
             setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
@@ -55,7 +53,7 @@ class NiddlerWindow(private val interfaceFactory: InterfaceFactory, private val 
             selectionModel.addListSelectionListener {
                 MainThreadDispatcher.dispatch {
                     if (messageMode == MessageMode.TIMELINE) {
-                        if (windowContents.messagesAsTable.selectedRowCount == 0) {
+                        if (windowContents.overview.messagesAsTable.selectedRowCount == 0) {
                             val timer = Timer(200) {
                                 checkRowSelectionState()
                             }
@@ -68,7 +66,7 @@ class NiddlerWindow(private val interfaceFactory: InterfaceFactory, private val 
                 }
             }
         }
-        windowContents.messagesAsTree.apply {
+        windowContents.overview.messagesAsTree.apply {
             componentPopupMenu = messagePopupMenu
             model = LinkedMessagesModel()
             ui = WideSelectionTreeUI()
@@ -76,7 +74,7 @@ class NiddlerWindow(private val interfaceFactory: InterfaceFactory, private val 
             selectionModel.addTreeSelectionListener {
                 MainThreadDispatcher.dispatch {
                     if (messageMode == MessageMode.LINKED) {
-                        if (windowContents.messagesAsTree.selectionCount == 0) {
+                        if (windowContents.overview.messagesAsTree.selectionCount == 0) {
                             val timer = Timer(200) {
                                 checkRowSelectionState()
                             }
@@ -90,44 +88,20 @@ class NiddlerWindow(private val interfaceFactory: InterfaceFactory, private val 
             }
         }
 
-        windowContents.statusText.text = "<>"
-        windowContents.statusBar.border = BorderFactory.createCompoundBorder(windowContents.statusBar.border, EmptyBorder(1, 6, 1, 6))
+        windowContents.setStatusText("<>")
 
-        detailContainer.clear()
-        windowContents.buttonClear.addActionListener {
-            messages.clear()
-            if (messageMode == MessageMode.TIMELINE)
-                (windowContents.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
-            else
-                (windowContents.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
+        windowContents.toolbar.listener = this
 
-            windowContents.messagesAsTable.clearSelection()
-            windowContents.messagesAsTree.clearSelection()
-            checkRowSelectionState()
-        }
-        windowContents.buttonTimeline.addItemListener { event ->
-            if (event.stateChange == ItemEvent.SELECTED) {
-                windowContents.messagesScroller.setViewportView(windowContents.messagesAsTable)
-                messageMode = MessageMode.TIMELINE
-                (windowContents.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
+        windowContents.detail.message = null
 
-            }
-        }
-        windowContents.buttonLinkedMode.addItemListener { event ->
-            if (event.stateChange == ItemEvent.SELECTED) {
-                windowContents.messagesScroller.setViewportView(windowContents.messagesAsTree)
-                messageMode = MessageMode.LINKED
-                (windowContents.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
-            }
-        }
-        windowContents.buttonExport.addActionListener {
-            showExportDialog()
-        }
-
-        windowContents.connectButton.addActionListener {
-            val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(this), adbConnection.bootStrap(), null, null)
+        windowContents.connectButtonListener = {
+            val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent), adbConnection.bootStrap(), null, null)
             if (selection != null)
                 onDeviceSelectionChanged(selection)
+        }
+
+        windowContents.filterListener = {
+            applyFilter(it ?: "")
         }
     }
 
@@ -142,29 +116,30 @@ class NiddlerWindow(private val interfaceFactory: InterfaceFactory, private val 
 
     private fun checkRowSelectionState() {
         if (messageMode == MessageMode.TIMELINE) {
-            if (windowContents.messagesAsTable.selectedRowCount == 0) {
-                detailContainer.clear()
+            if (windowContents.overview.messagesAsTable.selectedRowCount == 0) {
+                windowContents.detail.message = null
             } else {
-                val selectedRow = windowContents.messagesAsTable.selectedRow
-                val model = windowContents.messagesAsTable.model
+                val selectedRow = windowContents.overview.messagesAsTable.selectedRow
+                val model = windowContents.overview.messagesAsTable.model
                 if (model is TimelineMessagesTableModel) {
                     val row = model.getRow(selectedRow)
-                    detailContainer.setMessage(row)
+                    windowContents.detail.message = row
                 }
             }
         } else if (messageMode == MessageMode.LINKED) {
-            if (windowContents.messagesAsTree.selectionCount == 0) {
-                detailContainer.clear()
+            if (windowContents.overview.messagesAsTree.selectionCount == 0) {
+                windowContents.detail.message = null
             } else {
-                val selectedPath = windowContents.messagesAsTree.selectionPath?.lastPathComponent
+                val selectedPath = windowContents.overview.messagesAsTree.selectionPath?.lastPathComponent
                 if (selectedPath is RequestNode) {
                     val request = selectedPath.request
-                    if (request == null)
-                        detailContainer.clear()
-                    else
-                        detailContainer.setMessage(request)
+                    if (request == null) {
+                        windowContents.detail.message = null
+                    } else {
+                        windowContents.detail.message = request
+                    }
                 } else if (selectedPath is ResponseNode) {
-                    detailContainer.setMessage(selectedPath.message)
+                    windowContents.detail.message = selectedPath.message
                 }
             }
         }
@@ -198,15 +173,15 @@ class NiddlerWindow(private val interfaceFactory: InterfaceFactory, private val 
 
     override fun onReady() {
         MainThreadDispatcher.dispatch {
-            windowContents.statusText.text = "Connected"
-            windowContents.statusText.icon = ImageIcon(NiddlerWindow::class.java.getResource("/ic_connected.png"))
+            windowContents.setStatusText("Connected")
+            windowContents.setStatusIcon(ImageIcon(NiddlerWindow::class.java.getResource("/ic_connected.png")))
         }
     }
 
     override fun onClosed() {
         MainThreadDispatcher.dispatch {
-            windowContents.statusText.text = "Disconnected"
-            windowContents.statusText.icon = ImageIcon(NiddlerWindow::class.java.getResource("/ic_disconnected.png"))
+            windowContents.setStatusText("Disconnected")
+            windowContents.setStatusIcon(ImageIcon(NiddlerWindow::class.java.getResource("/ic_disconnected.png")))
         }
     }
 
@@ -222,34 +197,69 @@ class NiddlerWindow(private val interfaceFactory: InterfaceFactory, private val 
         updateMessages()
     }
 
+    override fun onTimelineSelected() {
+        windowContents.overview.showTable()
+        messageMode = MessageMode.TIMELINE
+        (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
+    }
+
+    override fun onLinkedSelected() {
+        windowContents.overview.showLinked()
+        messageMode = MessageMode.LINKED
+        (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
+    }
+
+    override fun onClearSelected() {
+        messages.clear()
+        if (messageMode == MessageMode.TIMELINE)
+            (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
+        else
+            (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
+
+        windowContents.overview.messagesAsTable.clearSelection()
+        windowContents.overview.messagesAsTree.clearSelection()
+        checkRowSelectionState()
+    }
+
+    override fun onExportSelected() {
+        showExportDialog()
+    }
+
     private fun updateMessages() {
         MainThreadDispatcher.dispatch {
 
             if (messageMode == MessageMode.TIMELINE) {
-                val previousSelection = windowContents.messagesAsTable.selectedRow
-                (windowContents.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
+                val previousSelection = windowContents.overview.messagesAsTable.selectedRow
+                (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages.filtered(currentFilter))
                 if (previousSelection != -1) {
                     try {
-                        windowContents.messagesAsTable.addRowSelectionInterval(previousSelection, previousSelection)
+                        windowContents.overview.messagesAsTable.addRowSelectionInterval(previousSelection, previousSelection)
                     } catch (ignored: IllegalArgumentException) {
                     }
                 }
             } else {
-                (windowContents.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
+                val previousSelection = windowContents.overview.messagesAsTree.selectionPath
+                (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages.filtered(currentFilter))
+                if (previousSelection != null) {
+                    try {
+                        windowContents.overview.messagesAsTree.selectionPath = previousSelection
+                    } catch (ignored: IllegalArgumentException) {
+                    }
+                }
             }
         }
     }
 
     override fun onServerInfo(serverInfo: NiddlerServerInfo) {
         MainThreadDispatcher.dispatch {
-            windowContents.updateProtocol(serverInfo.protocol)
-            windowContents.statusText.text = "Connected to ${serverInfo.serverName} (${serverInfo.serverDescription})"
+            //TODO windowContents.updateProtocol(serverInfo.protocol)
+            windowContents.setStatusText("Connected to ${serverInfo.serverName} (${serverInfo.serverDescription})")
         }
     }
 
     override fun onCopyUrlClicked() {
-        val message = detailContainer.getMessage()
-        message?.let {
+        val message = windowContents.detail.message ?: return
+        message.let {
             if (message.isRequest) {
                 ClipboardUtil.copyToClipboard(StringSelection(message.url))
             } else {
@@ -259,7 +269,7 @@ class NiddlerWindow(private val interfaceFactory: InterfaceFactory, private val 
     }
 
     override fun onCopyBodyClicked() {
-        val message = detailContainer.getMessage() ?: return
+        val message = windowContents.detail.message ?: return
 
         var clipboardData: Transferable? = null
         when (message.bodyFormat.type) {
@@ -283,7 +293,7 @@ class NiddlerWindow(private val interfaceFactory: InterfaceFactory, private val 
     }
 
     override fun onExportCurlRequestClicked() {
-        val message = detailContainer.getMessage() ?: return
+        val message = windowContents.detail.message ?: return
         val request = messages.findRequest(message)
         if (request == null) {
             JOptionPane.showConfirmDialog(null, "Could not find request.", "Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE)
@@ -293,9 +303,14 @@ class NiddlerWindow(private val interfaceFactory: InterfaceFactory, private val 
     }
 
     private fun showExportDialog() {
-        var exportLocation = interfaceFactory.showSaveDialog("Save export to", ".har") ?: return
+        var exportLocation = windowContents.componentsFactory.showSaveDialog("Save export to", ".har") ?: return
         if (!exportLocation.endsWith(".har"))
             exportLocation += ".har"
         HarExport(File(exportLocation)).export(messages.getMessagesLinked())
+    }
+
+    private fun applyFilter(filter: String) {
+        currentFilter = filter
+        updateMessages()
     }
 }

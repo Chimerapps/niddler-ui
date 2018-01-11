@@ -14,6 +14,7 @@ class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : Niddl
     private val messagesByMessageRequestId: MutableMap<String, MutableList<ParsedNiddlerMessage>> = hashMapOf()
 
     private val listeners: MutableSet<ParsedNiddlerMessageListener> = hashSetOf()
+    private var currentFilter: String = ""
 
     fun clear() {
         synchronized(knownMessageIds) {
@@ -38,11 +39,18 @@ class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : Niddl
     }
 
     fun getMessagesChronological(): List<ParsedNiddlerMessage> {
+        val filter = currentFilter.trim()
+        val doFilter = filter.isNotEmpty()
+
         val sortedMessages = ArrayList<ParsedNiddlerMessage>(knownMessageIds.size)
         synchronized(knownMessageIds) {
-            messagesByMessageRequestId.forEach { it -> sortedMessages.addAll(it.value) }
+            if (doFilter)
+                messagesByMessageRequestId.forEach { it -> if (filterAccept(filter, it.value)) sortedMessages.addAll(it.value) }
+            else
+                messagesByMessageRequestId.forEach { it -> sortedMessages.addAll(it.value) }
         }
         sortedMessages.sortBy { it.timestamp }
+
         return sortedMessages
     }
 
@@ -110,6 +118,17 @@ class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : Niddl
 
     override fun onClosed() {
         //Ignore
+    }
+
+    fun filtered(currentFilter: String): MessageContainer {
+        this.currentFilter = currentFilter
+        return this
+    }
+
+    private fun filterAccept(filter: String, messages: List<ParsedNiddlerMessage>): Boolean {
+        return messages.firstOrNull {
+            it.url?.contains(filter) == true
+        } != null
     }
 
 }

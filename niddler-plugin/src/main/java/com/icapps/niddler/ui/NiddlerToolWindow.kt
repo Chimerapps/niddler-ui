@@ -1,11 +1,12 @@
 package com.icapps.niddler.ui
 
-import com.icapps.niddler.ui.component.IntelliJInterfaceFactory
+import com.icapps.niddler.ui.component.IntelliJComponentsFactory
 import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.NiddlerWindow
+import com.icapps.niddler.ui.impl.IntelliJNiddlerUserInterface
 import com.icapps.niddler.ui.util.logger
 import com.intellij.ide.util.PropertiesComponent
-import com.intellij.openapi.fileChooser.FileChooser
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
@@ -19,7 +20,7 @@ import javax.swing.event.AncestorListener
  *
  * @date 21/11/16.
  */
-class NiddlerToolWindow : ToolWindowFactory {
+class NiddlerToolWindow : ToolWindowFactory, DumbAware {
 
     companion object {
         private val log = logger<NiddlerToolWindow>()
@@ -30,10 +31,11 @@ class NiddlerToolWindow : ToolWindowFactory {
     override fun createToolWindowContent(p0: Project, window: ToolWindow) {
         MainThreadDispatcher.instance = IntelliJMaiThreadDispatcher()
 
-        niddlerWindow = NiddlerWindow(IntelliJInterfaceFactory(p0, window.contentManager), guessPaths(p0))
+        val ui = IntelliJNiddlerUserInterface(IntelliJComponentsFactory(p0, window.contentManager))
+        niddlerWindow = NiddlerWindow(ui, guessPaths(p0))
 
         val contentService = ContentFactory.SERVICE.getInstance()
-        val content = contentService.createContent(niddlerWindow, " - Inspect network traffic", true)
+        val content = contentService.createContent(ui.asComponent, " - Inspect network traffic", true)
 
         niddlerWindow.init()
         niddlerWindow.onWindowVisible()
