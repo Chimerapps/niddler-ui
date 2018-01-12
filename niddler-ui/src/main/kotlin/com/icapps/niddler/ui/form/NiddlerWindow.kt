@@ -99,6 +99,10 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             if (selection != null)
                 onDeviceSelectionChanged(selection)
         }
+        windowContents.disconnectButtonListener = {
+            disconnect()
+            windowContents.disconnectButton.isEnabled = false
+        }
 
         windowContents.filterListener = {
             applyFilter(it ?: "")
@@ -157,15 +161,23 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
     private var niddlerClient: NiddlerClient? = null
 
-    private fun initNiddlerOnDevice(ip: String) {
+    private fun disconnect() {
         niddlerClient?.close()
         niddlerClient?.unregisterMessageListener(this)
         niddlerClient?.unregisterMessageListener(messages)
-        messages.clear()
         if (niddlerClient != null) {
             //TODO Remove previous port mapping, this could cause conflicts, to check
         }
-        niddlerClient = NiddlerClient(URI.create("ws://$ip:6555"))
+    }
+
+    private fun initNiddlerOnDevice(ip: String) {
+        disconnect()
+        messages.clear()
+
+        val tempUri = URI.create("sis://$ip")
+        val port = if (tempUri.port == -1) 6555 else tempUri.port
+
+        niddlerClient = NiddlerClient(URI.create("ws://${tempUri.host}:$port"))
         niddlerClient?.registerMessageListener(this)
         niddlerClient?.registerMessageListener(messages)
         niddlerClient?.connectBlocking()
@@ -175,6 +187,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         MainThreadDispatcher.dispatch {
             windowContents.setStatusText("Connected")
             windowContents.setStatusIcon(ImageIcon(NiddlerWindow::class.java.getResource("/ic_connected.png")))
+            windowContents.disconnectButton.isEnabled = true
         }
     }
 
@@ -182,6 +195,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         MainThreadDispatcher.dispatch {
             windowContents.setStatusText("Disconnected")
             windowContents.setStatusIcon(ImageIcon(NiddlerWindow::class.java.getResource("/ic_disconnected.png")))
+            windowContents.disconnectButton.isEnabled = false
         }
     }
 

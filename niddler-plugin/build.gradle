@@ -19,7 +19,7 @@ plugins {
 apply plugin: 'kotlin'
 
 group 'com.icapps'
-version '0.0.19'
+version '1.0.0'
 sourceCompatibility = 1.8
 
 intellij {

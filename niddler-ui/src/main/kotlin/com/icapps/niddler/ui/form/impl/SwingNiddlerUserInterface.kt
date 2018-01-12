@@ -10,6 +10,7 @@ import com.icapps.niddler.ui.form.ui.NiddlerOverviewUserInterface
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
 import com.icapps.niddler.ui.model.MessageContainer
 import java.awt.BorderLayout
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.*
@@ -25,6 +26,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
 
     override var connectButtonListener: (() -> Unit)? = null
     override var filterListener: ((String?) -> Unit)? = null
+    override var disconnectButtonListener: (() -> Unit)? = null
 
     override val asComponent: JComponent
         get() = rootPanel
@@ -32,6 +34,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
 
     override lateinit var overview: NiddlerOverviewUserInterface
     override lateinit var detail: NiddlerDetailUserInterface
+    override lateinit var disconnectButton: Component
 
     protected val rootPanel: JPanel
 
@@ -91,16 +94,28 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     }
 
     protected open fun initConnectPanel() {
-        val panel1 = JPanel()
-        panel1.layout = BorderLayout(5, 5)
-        uiContainer().add(panel1, BorderLayout.NORTH)
+        val topPanel = JPanel()
+        topPanel.layout = BorderLayout(5, 5)
+        uiContainer().add(topPanel, BorderLayout.NORTH)
+
+        val buttonsPanel = JPanel().apply { layout = FlowLayout(FlowLayout.LEFT, 0, 0) }
+        topPanel.add(buttonsPanel, BorderLayout.WEST)
+
         connectButton = JButton()
         connectButton.text = "Connect"
-        panel1.add(connectButton, BorderLayout.WEST)
 
         connectButton.addActionListener { connectButtonListener?.invoke() }
 
-        initFilter(panel1)
+        disconnectButton = JButton().apply {
+            text = "Disconnect"
+            isEnabled = false
+            addActionListener { disconnectButtonListener?.invoke() }
+        }
+
+        buttonsPanel.add(connectButton)
+        buttonsPanel.add(disconnectButton)
+
+        initFilter(topPanel)
     }
 
     protected open fun initFilter(parent: JPanel) {
