@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.icapps.niddler</id>
     <name>Niddler</name>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <vendor email="support@icapps.com" url="https://www.icapps.com">iCapps &amp; Chimerapps</vendor>
 
     <description>This plugin enables the niddler ui inside the IDE</description>
@@ -9,6 +9,7 @@
     <change-notes><![CDATA[
     <b>1.0.0 - First 'public' release</b>
     <ul>
+        <li>1.0.1 - Filtering was not case insensitive</li>
         <li>1.0.0 - Disconnect button</li>
         <li>0.0.19 - Filtering on url</li>
         <li>0.0.18 - Fixed HAR export of base64, charles did not like url encoding. Show status line with code when we have

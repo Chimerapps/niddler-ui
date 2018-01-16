@@ -127,7 +127,7 @@ class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : Niddl
 
     private fun filterAccept(filter: String, messages: List<ParsedNiddlerMessage>): Boolean {
         return messages.firstOrNull {
-            it.url?.contains(filter) == true
+            it.url?.contains(filter, ignoreCase = true) == true
         } != null
     }
 
