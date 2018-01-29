@@ -2,7 +2,7 @@ group 'com.icapps'
 version '0.0.1'
 
 buildscript {
-    ext.kotlin_version = '1.1.60'
+    ext.kotlin_version = '1.2.21'
 
     repositories {
         jcenter()
@@ -50,4 +50,5 @@ dependencies {
     compile group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.5'
 
     testCompile 'junit:junit:4.12'
+    testCompile 'io.mockk:mockk:1.7'
 }

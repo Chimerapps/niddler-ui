@@ -3,6 +3,7 @@ package com.icapps.niddler.ui
 import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.NiddlerWindow
 import com.icapps.niddler.ui.form.components.impl.SwingComponentsFactory
+import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.impl.SwingMainThreadDispatcher
 import com.icapps.niddler.ui.form.impl.SwingNiddlerUserInterface
 import java.awt.BorderLayout
@@ -20,7 +21,13 @@ import javax.swing.WindowConstants
 fun main(args: Array<String>) {
     MainThreadDispatcher.instance = SwingMainThreadDispatcher()
 
-    val ui = SwingNiddlerUserInterface(SwingComponentsFactory())
+    val factory = SwingComponentsFactory()
+    val dialog = SwingNiddlerDebugConfigurationDialog(null, factory)
+    dialog.init()
+    dialog.visibility = true
+    return
+
+    val ui = SwingNiddlerUserInterface(factory)
     val window = NiddlerWindow(ui, emptyList())
 
     val panel = JPanel(BorderLayout())
