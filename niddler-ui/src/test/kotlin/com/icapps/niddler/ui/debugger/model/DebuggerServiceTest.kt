@@ -35,7 +35,10 @@ internal class DebuggerServiceTest {
 
     @Test
     fun addDefaultResponse() {
-        TODO("Implement test")
+        service.respondTo("299-2991-1-331", DebugResponse(200, "OK", mapOf("X-Client-Id" to "23019-10"),
+                "ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=", "application/json"))
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"debugReply\",\"payload\":{\"messageId\":\"299-2991-1-331\",\"code\":200,\"message\":\"OK\",\"headers\":{\"X-Client-Id\":\"23019-10\"},\"encodedBody\":\"ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=\",\"bodyMimeType\":\"application/json\"},\"type\":\"controlDebug\"}") }
+
     }
 
     @Test
@@ -52,7 +55,8 @@ internal class DebuggerServiceTest {
 
     @Test
     fun respondTo() {
-        TODO("Implement test")
+        service.respondTo("299-2991-1-331", DebugResponse(200, "OK", null, null, null))
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"debugReply\",\"payload\":{\"messageId\":\"299-2991-1-331\",\"code\":200,\"message\":\"OK\"},\"type\":\"controlDebug\"}") }
     }
 
     @Test
