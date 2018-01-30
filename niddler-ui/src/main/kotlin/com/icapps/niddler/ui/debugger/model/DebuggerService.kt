@@ -1,6 +1,5 @@
 package com.icapps.niddler.ui.debugger.model
 
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -24,6 +23,13 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
         sendMessage(RemoveBlacklistMessage(regex))
     }
 
+    fun addDefaultRequestOverride(regex: String, request: DebugRequest): String {
+        val id = UUID.randomUUID().toString()
+        sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_DEFAULT_REQUEST_OVERRIDE,
+                merge(RegexPayload(regex), ActionPayload(id), request)))
+        return id
+    }
+
     fun addDefaultResponse(regex: String, response: DebugResponse): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_DEFAULT_RESPONSE,
@@ -41,6 +47,13 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
     fun addResponseIntercept(regex: String): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_RESPONSE,
+                merge(RegexPayload(regex), ActionPayload(id))))
+        return id
+    }
+
+    fun addRequestOverride(regex: String): String {
+        val id = UUID.randomUUID().toString()
+        sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_REQUEST_OVERRIDE,
                 merge(RegexPayload(regex), ActionPayload(id))))
         return id
     }
@@ -64,6 +77,10 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
 
     fun removeResponseAction(id: String) {
         sendMessage(RemoveResponseActionMessage(id))
+    }
+
+    fun removeRequestOverrideMethod(id: String) {
+        sendMessage(RemoveRequestOverrideActionMessage(id))
     }
 
     fun updateDelays(delays: DebuggerDelays) {

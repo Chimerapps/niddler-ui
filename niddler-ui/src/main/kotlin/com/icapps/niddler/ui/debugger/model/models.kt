@@ -20,6 +20,10 @@ internal const val MESSAGE_REMOVE_RESPONSE = "removeResponse"
 internal const val MESSAGE_ACTIVATE_ACTION = "activateAction"
 internal const val MESSAGE_DEACTIVATE_ACTION = "deactivateAction"
 internal const val MESSAGE_DELAYS = "updateDelays"
+internal const val MESSAGE_ADD_DEFAULT_REQUEST_OVERRIDE = "addDefaultRequestOverride"
+internal const val MESSAGE_ADD_REQUEST_OVERRIDE = "addRequestOverride"
+internal const val MESSAGE_REMOVE_REQUEST_OVERRIDE = "removeRequestOverride"
+
 
 open class NiddlerDebugControlMessage(val controlType: String,
                                       val payload: Any?)
@@ -56,12 +60,26 @@ class RemoveRequestActionMessage(id: String)
 class RemoveResponseActionMessage(id: String)
     : NiddlerDebugControlMessage(MESSAGE_REMOVE_RESPONSE, ActionPayload(id))
 
+class RemoveRequestOverrideActionMessage(id: String)
+    : NiddlerDebugControlMessage(MESSAGE_REMOVE_REQUEST_OVERRIDE, ActionPayload(id))
+
 data class DebugReplyPayload(val messageId: String)
 
-data class DebugResponse(val code: Int,
-                         val message: String,
-                         val headers: Map<String, String>?,
-                         val encodedBody: String?,
-                         val bodyMimeType: String?)
+abstract class DebugMessage(
+        val headers: Map<String, String>?,
+        val encodedBody: String?,
+        val bodyMimeType: String?)
 
-data class DebuggerDelays(val preBlacklist: Long?, val postBlacklist: Long?)
+class DebugResponse(val code: Int,
+                    val message: String,
+                    headers: Map<String, String>?,
+                    encodedBody: String?,
+                    bodyMimeType: String?) : DebugMessage(headers, encodedBody, bodyMimeType)
+
+class DebugRequest(val url: String,
+                   val method: String,
+                   headers: Map<String, String>?,
+                   encodedBody: String?,
+                   bodyMimeType: String?) : DebugMessage(headers, encodedBody, bodyMimeType)
+
+data class DebuggerDelays(val preBlacklist: Long?, val postBlacklist: Long?, val timePerCall: Long?)

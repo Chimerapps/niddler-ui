@@ -35,9 +35,9 @@ internal class DebuggerServiceTest {
 
     @Test
     fun addDefaultResponse() {
-        service.respondTo("299-2991-1-331", DebugResponse(200, "OK", mapOf("X-Client-Id" to "23019-10"),
+        val id = service.addDefaultResponse("299-2991-1-331", DebugResponse(200, "OK", mapOf("X-Client-Id" to "23019-10"),
                 "ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=", "application/json"))
-        verify { mockingedConnection.sendMessage("{\"controlType\":\"debugReply\",\"payload\":{\"messageId\":\"299-2991-1-331\",\"code\":200,\"message\":\"OK\",\"headers\":{\"X-Client-Id\":\"23019-10\"},\"encodedBody\":\"ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=\",\"bodyMimeType\":\"application/json\"},\"type\":\"controlDebug\"}") }
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"addDefaultResponse\",\"payload\":{\"regex\":\"299-2991-1-331\",\"id\":\"$id\",\"code\":200,\"message\":\"OK\",\"headers\":{\"X-Client-Id\":\"23019-10\"},\"encodedBody\":\"ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=\",\"bodyMimeType\":\"application/json\"},\"type\":\"controlDebug\"}") }
 
     }
 
@@ -85,8 +85,8 @@ internal class DebuggerServiceTest {
 
     @Test
     fun updateDelays() {
-        service.updateDelays(DebuggerDelays(123, 456))
-        verify { mockingedConnection.sendMessage("{\"controlType\":\"updateDelays\",\"payload\":{\"preBlacklist\":123,\"postBlacklist\":456},\"type\":\"controlDebug\"}") }
+        service.updateDelays(DebuggerDelays(123, 456, 789))
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"updateDelays\",\"payload\":{\"preBlacklist\":123,\"postBlacklist\":456,\"timePerCall\":789},\"type\":\"controlDebug\"}") }
     }
 
     @Test
@@ -97,4 +97,24 @@ internal class DebuggerServiceTest {
         service.setAllActionsMuted(false)
         verify { mockingedConnection.sendMessage("{\"controlType\":\"unmuteActions\",\"type\":\"controlDebug\"}") }
     }
+
+    @Test
+    fun addDefaultRequestOverride() {
+        val id = service.addDefaultRequestOverride("299-2991-1-331", DebugRequest("https://www.google.com", "GET", mapOf("X-Client-Id" to "23019-10"),
+                "ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=", "application/json"))
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"addDefaultRequestOverride\",\"payload\":{\"regex\":\"299-2991-1-331\",\"id\":\"$id\",\"url\":\"https://www.google.com\",\"method\":\"GET\",\"headers\":{\"X-Client-Id\":\"23019-10\"},\"encodedBody\":\"ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=\",\"bodyMimeType\":\"application/json\"},\"type\":\"controlDebug\"}") }
+    }
+
+    @Test
+    fun addRequestOverride() {
+        val id = service.addRequestOverride("299-2991-1-331")
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"addRequestOverride\",\"payload\":{\"regex\":\"299-2991-1-331\",\"id\":\"$id\"},\"type\":\"controlDebug\"}") }
+    }
+
+    @Test
+    fun removeRequestOverrideMethod() {
+        service.removeRequestOverrideMethod("ww-ff-qq")
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"removeRequestOverride\",\"payload\":{\"id\":\"ww-ff-qq\"},\"type\":\"controlDebug\"}") }
+    }
+
 }
