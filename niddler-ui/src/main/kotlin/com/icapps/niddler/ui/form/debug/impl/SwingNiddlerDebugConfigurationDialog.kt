@@ -5,6 +5,8 @@ import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.debug.ConfigurationModel
 import com.icapps.niddler.ui.form.debug.DebugToolbar
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
+import com.icapps.niddler.ui.form.debug.content.BlacklistPanel
+import com.icapps.niddler.ui.form.debug.dialog.EnterRegexDialog
 import com.icapps.niddler.ui.form.debug.nodes.renderer.CheckboxCellEditor
 import com.icapps.niddler.ui.form.debug.nodes.renderer.CheckedCellRenderer
 import com.icapps.niddler.ui.form.debug.nodes.renderer.DefaultCellRenderer
@@ -17,7 +19,7 @@ import javax.swing.JWindow
 /**
  * @author nicolaverbeeck
  */
-open class SwingNiddlerDebugConfigurationDialog(parent: JWindow?, private val factory: ComponentsFactory)
+open class SwingNiddlerDebugConfigurationDialog(private val parent: JWindow?, private val factory: ComponentsFactory)
     : NiddlerDebugConfigurationDialog, JDialog(parent) {
 
     override var visibility: Boolean
@@ -39,10 +41,13 @@ open class SwingNiddlerDebugConfigurationDialog(parent: JWindow?, private val fa
         configurationTree = initConfigurationTree()
 
         splitPane.left = factory.createScrollPane().apply { setViewportView(configurationTree) }
+        splitPane.right = BlacklistPanel()
 
         rootPanel.add(splitPane.asComponent, BorderLayout.CENTER)
 
         setSize(400, 200)
+
+        println(EnterRegexDialog(parent, "Create something", factory).show())
     }
 
     protected fun initConfigurationTree(): JTree {

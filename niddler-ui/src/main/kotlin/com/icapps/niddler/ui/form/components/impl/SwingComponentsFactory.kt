@@ -1,9 +1,14 @@
 package com.icapps.niddler.ui.form.components.impl
 
 import com.icapps.niddler.ui.form.ComponentsFactory
+import com.icapps.niddler.ui.form.components.Dialog
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.TabComponent
-import javax.swing.*
+import java.awt.Frame
+import java.awt.Window
+import javax.swing.JComponent
+import javax.swing.JFileChooser
+import javax.swing.JScrollPane
 
 /**
  * @author Nicola Verbeeck
@@ -32,4 +37,7 @@ class SwingComponentsFactory : ComponentsFactory {
         return null
     }
 
+    override fun createDialog(parent: Window?, title: String, content: JComponent): Dialog {
+        return SwingDialog(parent,title, content)
+    }
 }
