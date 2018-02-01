@@ -2,7 +2,7 @@ package com.icapps.niddler.ui.form.impl
 
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.HintTextField
-import com.icapps.niddler.ui.form.components.NiddlerToolbar
+import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.impl.SwingToolbar
 import com.icapps.niddler.ui.form.ui.NiddlerDetailUserInterface
@@ -30,7 +30,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
 
     override val asComponent: JComponent
         get() = rootPanel
-    override lateinit var toolbar: NiddlerToolbar
+    override lateinit var toolbar: NiddlerMainToolbar
 
     override lateinit var overview: NiddlerOverviewUserInterface
     override lateinit var detail: NiddlerDetailUserInterface

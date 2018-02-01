@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.components.impl
 
 import com.icapps.niddler.ui.form.NiddlerUIContainer
-import com.icapps.niddler.ui.form.components.NiddlerToolbar
+import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.Insets
@@ -12,9 +12,10 @@ import javax.swing.*
  * @author Nicola Verbeeck
  * @date 14/11/2017.
  */
-class SwingToolbar(root: JComponent) : NiddlerToolbar {
+class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
 
-    override var listener: NiddlerToolbar.ToolbarListener? = null
+    override var listener: NiddlerMainToolbar.ToolbarListener? = null
+    private val buttonMuteBreakpoints: JButton
 
     init {
         val actionPanel = JPanel()
@@ -61,6 +62,24 @@ class SwingToolbar(root: JComponent) : NiddlerToolbar {
         toolbar.addSeparator()
         toolbar.add(buttonClear)
 
+        val buttonConfigureBreakpoints = JButton().apply {
+            icon = ImageIcon(NiddlerUIContainer::class.java.getResource("/viewBreakpoints.png"))
+            text = ""
+            maximumSize = Dimension(32, 32)
+            minimumSize = Dimension(32, 32)
+            preferredSize = Dimension(32, 32)
+        }
+        buttonMuteBreakpoints = JButton().apply {
+            icon = ImageIcon(NiddlerUIContainer::class.java.getResource("/muteBreakpoints.png"))
+            text = ""
+            maximumSize = Dimension(32, 32)
+            minimumSize = Dimension(32, 32)
+            preferredSize = Dimension(32, 32)
+        }
+        toolbar.addSeparator()
+        toolbar.add(buttonConfigureBreakpoints)
+        toolbar.add(buttonMuteBreakpoints)
+
         val buttonExport = JButton().apply {
             icon = ImageIcon(NiddlerUIContainer::class.java.getResource("/ic_save.png"))
             text = ""
@@ -91,6 +110,18 @@ class SwingToolbar(root: JComponent) : NiddlerToolbar {
         buttonExport.addActionListener {
             listener?.onExportSelected()
         }
+        buttonConfigureBreakpoints.addActionListener {
+            listener?.onConfigureBreakpointsSelected()
+        }
+        buttonMuteBreakpoints.addActionListener {
+            listener?.onMuteBreakpointsSelected()
+        }
     }
 
+    override fun onBreakpointsMuted(muted: Boolean) {
+        buttonMuteBreakpoints.icon = if (muted)
+            ImageIcon(NiddlerUIContainer::class.java.getResource("/muteBreakpoints_muted.png"))
+        else
+            ImageIcon(NiddlerUIContainer::class.java.getResource("/muteBreakpoints.png"))
+    }
 }

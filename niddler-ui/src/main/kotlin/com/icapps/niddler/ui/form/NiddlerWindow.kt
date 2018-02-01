@@ -5,7 +5,7 @@ import com.icapps.niddler.ui.adb.ADBBootstrap
 import com.icapps.niddler.ui.codegen.CurlCodeGenerator
 import com.icapps.niddler.ui.connection.NiddlerMessageListener
 import com.icapps.niddler.ui.export.HarExport
-import com.icapps.niddler.ui.form.components.NiddlerToolbar
+import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
 import com.icapps.niddler.ui.model.*
 import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
@@ -26,7 +26,7 @@ import javax.swing.*
  */
 class NiddlerWindow(private val windowContents: NiddlerUserInterface, private val sdkPathGuesses: Collection<String>)
     : NiddlerMessageListener, ParsedNiddlerMessageListener, NiddlerMessagePopupMenu.Listener,
-        NiddlerToolbar.ToolbarListener {
+        NiddlerMainToolbar.ToolbarListener {
 
     private val messages = MessageContainer(NiddlerMessageBodyParser())
     private val messagePopupMenu = NiddlerMessagePopupMenu(this)
@@ -233,6 +233,18 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         windowContents.overview.messagesAsTable.clearSelection()
         windowContents.overview.messagesAsTree.clearSelection()
         checkRowSelectionState()
+    }
+
+    override fun onConfigureBreakpointsSelected() {
+        val dialog = windowContents.componentsFactory
+                .createDebugConfigurationDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent))
+        dialog.init()
+        dialog.visibility = true
+    }
+
+    override fun onMuteBreakpointsSelected() {
+        windowContents.toolbar.onBreakpointsMuted(true)
+        //TODO
     }
 
     override fun onExportSelected() {

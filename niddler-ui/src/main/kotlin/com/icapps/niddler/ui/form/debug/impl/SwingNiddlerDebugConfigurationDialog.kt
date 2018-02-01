@@ -6,20 +6,19 @@ import com.icapps.niddler.ui.form.debug.ConfigurationModel
 import com.icapps.niddler.ui.form.debug.DebugToolbar
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.debug.content.BlacklistPanel
-import com.icapps.niddler.ui.form.debug.dialog.EnterRegexDialog
 import com.icapps.niddler.ui.form.debug.nodes.renderer.CheckboxCellEditor
 import com.icapps.niddler.ui.form.debug.nodes.renderer.CheckedCellRenderer
 import com.icapps.niddler.ui.form.debug.nodes.renderer.DefaultCellRenderer
 import java.awt.BorderLayout
+import java.awt.Window
 import javax.swing.JDialog
 import javax.swing.JPanel
 import javax.swing.JTree
-import javax.swing.JWindow
 
 /**
  * @author nicolaverbeeck
  */
-open class SwingNiddlerDebugConfigurationDialog(private val parent: JWindow?, private val factory: ComponentsFactory)
+open class SwingNiddlerDebugConfigurationDialog(parent: Window?, private val factory: ComponentsFactory)
     : NiddlerDebugConfigurationDialog, JDialog(parent) {
 
     override var visibility: Boolean
@@ -37,6 +36,8 @@ open class SwingNiddlerDebugConfigurationDialog(private val parent: JWindow?, pr
     override fun init() {
         contentPane = rootPanel
 
+        isModal = true
+
         configurationModel = ConfigurationModel()
         configurationTree = initConfigurationTree()
 
@@ -45,9 +46,17 @@ open class SwingNiddlerDebugConfigurationDialog(private val parent: JWindow?, pr
 
         rootPanel.add(splitPane.asComponent, BorderLayout.CENTER)
 
-        setSize(400, 200)
+        createActions()
 
-        println(EnterRegexDialog(parent, "Create something", factory).show())
+        setSize(400, 200)
+        if (parent != null)
+            setLocationRelativeTo(parent)
+    }
+
+    protected fun createActions() {
+        val debugToolbar = SwingDebugToolbar()
+        rootPanel.add(debugToolbar, BorderLayout.NORTH)
+        this.debugToolbar = debugToolbar
     }
 
     protected fun initConfigurationTree(): JTree {

@@ -24,9 +24,21 @@ interface DebugToolbar {
 
     var listener: DebugToolbarListener?
 
+    fun setRemoveEnabled(enabled: Boolean)
+
     interface DebugToolbarListener {
 
-        fun onMuteSelected()
+        fun onAddBlacklist()
+
+        fun onAddRequestInterceptor()
+
+        fun onAddRequestOverride()
+
+        fun onAddResponseOverride()
+
+        fun onConfigureDelays()
+
+        fun onRemoveClicked()
 
     }
 

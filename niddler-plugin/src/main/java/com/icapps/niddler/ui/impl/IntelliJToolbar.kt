@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.impl
 
-import com.icapps.niddler.ui.form.components.NiddlerToolbar
+import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -15,9 +15,9 @@ import javax.swing.JComponent
  * @author Nicola Verbeeck
  * @date 16/11/2017.
  */
-class IntelliJToolbar(panel: SimpleToolWindowPanel) : NiddlerToolbar {
+class IntelliJToolbar(panel: SimpleToolWindowPanel) : NiddlerMainToolbar {
 
-    override var listener: NiddlerToolbar.ToolbarListener? = null
+    override var listener: NiddlerMainToolbar.ToolbarListener? = null
 
     internal var mode: Int = 0
 

@@ -4,7 +4,8 @@ import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.Dialog
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.TabComponent
-import java.awt.Frame
+import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
+import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialog
 import java.awt.Window
 import javax.swing.JComponent
 import javax.swing.JFileChooser
@@ -38,6 +39,10 @@ class SwingComponentsFactory : ComponentsFactory {
     }
 
     override fun createDialog(parent: Window?, title: String, content: JComponent): Dialog {
-        return SwingDialog(parent,title, content)
+        return SwingDialog(parent, title, content)
+    }
+
+    override fun createDebugConfigurationDialog(parent: Window?): NiddlerDebugConfigurationDialog {
+        return SwingNiddlerDebugConfigurationDialog(parent, this)
     }
 }

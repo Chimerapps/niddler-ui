@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.ui
 
 import com.icapps.niddler.ui.form.ComponentsFactory
-import com.icapps.niddler.ui.form.components.NiddlerToolbar
+import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.model.MessageContainer
 import java.awt.Component
 import javax.swing.ImageIcon
@@ -20,7 +20,7 @@ interface NiddlerUserInterface {
     var filterListener: ((String?) -> Unit)?
     var disconnectButtonListener: (() -> Unit)?
 
-    val toolbar: NiddlerToolbar
+    val toolbar: NiddlerMainToolbar
     val disconnectButton: Component
 
     fun setStatusText(statusText: String?)
