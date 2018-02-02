@@ -50,4 +50,11 @@ class DebuggerConfiguration(private val service: DebuggerService) : DebuggerInte
     override fun unmute() {
         service.setAllActionsMuted(false)
     }
+
+    override fun updateDelays(delays: DebuggerDelays?) {
+        if (delays == null)
+            service.updateDelays(DebuggerDelays(null, null, null))
+        else
+            service.updateDelays(delays)
+    }
 }

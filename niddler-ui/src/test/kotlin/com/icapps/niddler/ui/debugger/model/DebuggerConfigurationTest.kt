@@ -169,13 +169,27 @@ internal class DebuggerConfigurationTest {
     fun mute() {
         every { mockedService.setAllActionsMuted(any()) } just Runs
         debuggerInterface.mute()
-        verify { mockedService.setAllActionsMuted(true) }
+        verify(exactly = 1) { mockedService.setAllActionsMuted(true) }
     }
 
     @Test
     fun unmute() {
         every { mockedService.setAllActionsMuted(any()) } just Runs
         debuggerInterface.unmute()
-        verify { mockedService.setAllActionsMuted(false) }
+        verify(exactly = 1) { mockedService.setAllActionsMuted(false) }
+    }
+
+    @Test
+    fun updateDelaysDisable() {
+        every { mockedService.updateDelays(DebuggerDelays(null, null, null)) } just Runs
+        debuggerInterface.updateDelays(null)
+        verify(exactly = 1) { mockedService.updateDelays(DebuggerDelays(null, null, null)) }
+    }
+
+    @Test
+    fun updateDelaysEnable() {
+        every { mockedService.updateDelays(DebuggerDelays(123, 456, 789)) } just Runs
+        debuggerInterface.updateDelays(DebuggerDelays(123, 456, 789))
+        verify(exactly = 1) { mockedService.updateDelays(DebuggerDelays(123, 456, 789)) }
     }
 }

@@ -13,6 +13,8 @@ interface DebuggerInterface {
 
     fun unmute()
 
+    fun updateDelays(delays: DebuggerDelays?)
+
 }
 
 data class DefaultResponseAction(var id: String?,
