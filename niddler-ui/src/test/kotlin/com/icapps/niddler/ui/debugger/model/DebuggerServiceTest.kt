@@ -36,21 +36,21 @@ internal class DebuggerServiceTest {
     @Test
     fun addDefaultResponse() {
         val id = service.addDefaultResponse("299-2991-1-331", DebugResponse(200, "OK", mapOf("X-Client-Id" to "23019-10"),
-                "ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=", "application/json"))
-        verify { mockingedConnection.sendMessage("{\"controlType\":\"addDefaultResponse\",\"payload\":{\"regex\":\"299-2991-1-331\",\"id\":\"$id\",\"code\":200,\"message\":\"OK\",\"headers\":{\"X-Client-Id\":\"23019-10\"},\"encodedBody\":\"ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=\",\"bodyMimeType\":\"application/json\"},\"type\":\"controlDebug\"}") }
+                "ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=", "application/json"), true)
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"addDefaultResponse\",\"payload\":{\"regex\":\"299-2991-1-331\",\"id\":\"$id\",\"active\":true,\"code\":200,\"message\":\"OK\",\"headers\":{\"X-Client-Id\":\"23019-10\"},\"encodedBody\":\"ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=\",\"bodyMimeType\":\"application/json\"},\"type\":\"controlDebug\"}") }
 
     }
 
     @Test
     fun addRequestIntercept() {
-        val id = service.addRequestIntercept(".*\\.*mdp")
-        verify { mockingedConnection.sendMessage("{\"controlType\":\"addRequest\",\"payload\":{\"regex\":\".*\\\\.*mdp\",\"id\":\"$id\"},\"type\":\"controlDebug\"}") }
+        val id = service.addRequestIntercept(".*\\.*mdp", true)
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"addRequest\",\"payload\":{\"regex\":\".*\\\\.*mdp\",\"id\":\"$id\",\"active\":true},\"type\":\"controlDebug\"}") }
     }
 
     @Test
     fun addResponseIntercept() {
-        val id = service.addResponseIntercept(".*\\.*mdp")
-        verify { mockingedConnection.sendMessage("{\"controlType\":\"addResponse\",\"payload\":{\"regex\":\".*\\\\.*mdp\",\"id\":\"$id\"},\"type\":\"controlDebug\"}") }
+        val id = service.addResponseIntercept(".*\\.*mdp", true)
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"addResponse\",\"payload\":{\"regex\":\".*\\\\.*mdp\",\"id\":\"$id\",\"active\":true},\"type\":\"controlDebug\"}") }
     }
 
     @Test
@@ -101,14 +101,14 @@ internal class DebuggerServiceTest {
     @Test
     fun addDefaultRequestOverride() {
         val id = service.addDefaultRequestOverride("299-2991-1-331", DebugRequest("https://www.google.com", "GET", mapOf("X-Client-Id" to "23019-10"),
-                "ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=", "application/json"))
-        verify { mockingedConnection.sendMessage("{\"controlType\":\"addDefaultRequestOverride\",\"payload\":{\"regex\":\"299-2991-1-331\",\"id\":\"$id\",\"url\":\"https://www.google.com\",\"method\":\"GET\",\"headers\":{\"X-Client-Id\":\"23019-10\"},\"encodedBody\":\"ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=\",\"bodyMimeType\":\"application/json\"},\"type\":\"controlDebug\"}") }
+                "ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=", "application/json"), true)
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"addDefaultRequestOverride\",\"payload\":{\"regex\":\"299-2991-1-331\",\"id\":\"$id\",\"active\":true,\"url\":\"https://www.google.com\",\"method\":\"GET\",\"headers\":{\"X-Client-Id\":\"23019-10\"},\"encodedBody\":\"ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=\",\"bodyMimeType\":\"application/json\"},\"type\":\"controlDebug\"}") }
     }
 
     @Test
     fun addRequestOverride() {
-        val id = service.addRequestOverride("299-2991-1-331")
-        verify { mockingedConnection.sendMessage("{\"controlType\":\"addRequestOverride\",\"payload\":{\"regex\":\"299-2991-1-331\",\"id\":\"$id\"},\"type\":\"controlDebug\"}") }
+        val id = service.addRequestOverride("299-2991-1-331", true)
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"addRequestOverride\",\"payload\":{\"regex\":\"299-2991-1-331\",\"id\":\"$id\",\"active\":true},\"type\":\"controlDebug\"}") }
     }
 
     @Test

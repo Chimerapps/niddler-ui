@@ -33,6 +33,8 @@ open class RegexPayload(val regex: String)
 
 open class ActionPayload(val id: String)
 
+open class ActivePayload(val active: Boolean)
+
 class AddBlacklistMessage(regex: String)
     : NiddlerDebugControlMessage(MESSAGE_ADD_BLACKLIST, RegexPayload(regex))
 
