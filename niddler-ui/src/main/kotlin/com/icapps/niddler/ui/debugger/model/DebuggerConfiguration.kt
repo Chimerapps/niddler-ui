@@ -10,6 +10,7 @@ class DebuggerConfiguration(private val service: DebuggerService) : DebuggerInte
     private val serverBlacklist: MutableSet<String> = mutableSetOf()
     private val knownDefaultResponses: MutableSet<String> = mutableSetOf()
     private val enabledActions: MutableSet<String> = mutableSetOf()
+    private var delays: DebuggerDelays? = null
 
     override fun updateBlacklist(active: Iterable<String>) {
         val new = active.filterNot { serverBlacklist.contains(it) }
@@ -52,9 +53,14 @@ class DebuggerConfiguration(private val service: DebuggerService) : DebuggerInte
     }
 
     override fun updateDelays(delays: DebuggerDelays?) {
+        this.delays = delays
         if (delays == null)
             service.updateDelays(DebuggerDelays(null, null, null))
         else
             service.updateDelays(delays)
+    }
+
+    override fun debugDelays(): DebuggerDelays? {
+        return delays
     }
 }

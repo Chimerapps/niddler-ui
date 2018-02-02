@@ -51,6 +51,8 @@ class SwingDialog(parent: Window?, title: String, content: JComponent) : Dialog,
         linearBox.add(buttonBox)
         rootPane.contentPane = linearBox
         pack()
+        if (parent != null)
+            setLocationRelativeTo(parent)
     }
 
     override fun tryValidate() {

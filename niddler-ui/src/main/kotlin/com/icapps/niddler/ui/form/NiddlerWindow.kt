@@ -1,11 +1,16 @@
 package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.ui.NiddlerClient
+import com.icapps.niddler.ui.NiddlerClientDebuggerInterface
 import com.icapps.niddler.ui.adb.ADBBootstrap
 import com.icapps.niddler.ui.codegen.CurlCodeGenerator
 import com.icapps.niddler.ui.connection.NiddlerMessageListener
+import com.icapps.niddler.ui.debugger.model.DebuggerConfiguration
+import com.icapps.niddler.ui.debugger.model.DebuggerInterface
+import com.icapps.niddler.ui.debugger.model.DebuggerService
 import com.icapps.niddler.ui.export.HarExport
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
+import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationHelper
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
 import com.icapps.niddler.ui.model.*
 import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
@@ -34,6 +39,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     private lateinit var adbConnection: ADBBootstrap
     private var messageMode = MessageMode.TIMELINE
     private var currentFilter: String = ""
+    private var debuggerInterface: DebuggerInterface? = null
 
     fun init() {
         windowContents.init(messages)
@@ -168,6 +174,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         if (niddlerClient != null) {
             //TODO Remove previous port mapping, this could cause conflicts, to check
         }
+        onClosed()
     }
 
     private fun initNiddlerOnDevice(ip: String) {
@@ -236,9 +243,13 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     }
 
     override fun onConfigureBreakpointsSelected() {
+        val debuggerInterface = debuggerInterface ?: return
+        val parent = SwingUtilities.getWindowAncestor(windowContents.asComponent)
         val dialog = windowContents.componentsFactory
-                .createDebugConfigurationDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent))
+                .createDebugConfigurationDialog(parent)
         dialog.init()
+        dialog.debugToolbar.listener = NiddlerDebugConfigurationHelper(parent, windowContents.componentsFactory, debuggerInterface)
+
         dialog.visibility = true
     }
 
@@ -280,6 +291,9 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         MainThreadDispatcher.dispatch {
             //TODO windowContents.updateProtocol(serverInfo.protocol)
             windowContents.setStatusText("Connected to ${serverInfo.serverName} (${serverInfo.serverDescription})")
+        }
+        if (serverInfo.protocol >= 1) { //TODO constant
+            debuggerInterface = DebuggerConfiguration(DebuggerService(NiddlerClientDebuggerInterface(niddlerClient!!)))
         }
     }
 

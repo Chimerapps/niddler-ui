@@ -2,6 +2,7 @@ package com.icapps.niddler.ui.debugger.model
 
 import io.mockk.*
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import java.util.*
@@ -184,6 +185,7 @@ internal class DebuggerConfigurationTest {
         every { mockedService.updateDelays(DebuggerDelays(null, null, null)) } just Runs
         debuggerInterface.updateDelays(null)
         verify(exactly = 1) { mockedService.updateDelays(DebuggerDelays(null, null, null)) }
+        assertNull(debuggerInterface.debugDelays())
     }
 
     @Test
@@ -191,5 +193,6 @@ internal class DebuggerConfigurationTest {
         every { mockedService.updateDelays(DebuggerDelays(123, 456, 789)) } just Runs
         debuggerInterface.updateDelays(DebuggerDelays(123, 456, 789))
         verify(exactly = 1) { mockedService.updateDelays(DebuggerDelays(123, 456, 789)) }
+        assertEquals(DebuggerDelays(123, 456, 789), debuggerInterface.debugDelays())
     }
 }
