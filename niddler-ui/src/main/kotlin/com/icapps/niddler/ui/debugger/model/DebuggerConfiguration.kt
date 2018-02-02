@@ -23,18 +23,22 @@ class DebuggerConfiguration(private val service: DebuggerService) : DebuggerInte
     }
 
     override fun updateDefaultResponses(items: Iterable<DefaultResponseAction>) {
-        val (unsentItems, knownItems) = items.split { it.id == null }
+        val (unsentItems, knownItems) = items.split { !knownDefaultResponses.contains(it.id) }
         unsentItems.forEach {
             val actionId = service.addDefaultResponse(it.regex, it.response, it.enabled)
             if (it.enabled)
                 enabledActions += actionId
+            it.id = actionId
         }
         knownItems.forEach {
             if (!it.enabled && enabledActions.contains(it.id))
                 service.muteAction(it.id!!)
+            else if (it.enabled && !enabledActions.contains(it.id))
+                service.unmuteAction(it.id!!)
         }
-        val removed = knownDefaultResponses.filterNot { id -> items.indexOfFirst { it.id == id } != 0 }
-        removed.forEach(service::removeRequestOverrideMethod)
+
+        val removed = knownDefaultResponses.filterNot { id -> items.indexOfFirst { it.id == id } != -1 }
+        removed.forEach(service::removeRequestAction)
         knownDefaultResponses.clear()
         items.mapTo(knownDefaultResponses) { it.id!! }
     }
