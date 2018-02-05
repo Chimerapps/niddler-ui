@@ -5,7 +5,7 @@ import com.icapps.niddler.ui.NiddlerClientDebuggerInterface
 import com.icapps.niddler.ui.adb.ADBBootstrap
 import com.icapps.niddler.ui.codegen.CurlCodeGenerator
 import com.icapps.niddler.ui.connection.NiddlerMessageListener
-import com.icapps.niddler.ui.debugger.model.DebuggerConfiguration
+import com.icapps.niddler.ui.debugger.model.ActiveDebuggerConfiguration
 import com.icapps.niddler.ui.debugger.model.DebuggerInterface
 import com.icapps.niddler.ui.debugger.model.DebuggerService
 import com.icapps.niddler.ui.export.HarExport
@@ -295,7 +295,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             windowContents.setStatusText("Connected to ${serverInfo.serverName} (${serverInfo.serverDescription})")
         }
         if (serverInfo.protocol >= 1) { //TODO constant
-            debuggerInterface = DebuggerConfiguration(DebuggerService(NiddlerClientDebuggerInterface(niddlerClient!!)))
+            debuggerInterface = ActiveDebuggerConfiguration(DebuggerService(NiddlerClientDebuggerInterface(niddlerClient!!)))
         }
     }
 

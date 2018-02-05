@@ -11,7 +11,7 @@ import java.util.*
 /**
  * @author nicolaverbeeck
  */
-internal class DebuggerConfigurationTest {
+internal class ActiveDebuggerConfigurationTest {
 
     private lateinit var mockedService: DebuggerService
     private lateinit var debuggerInterface: DebuggerInterface
@@ -19,7 +19,7 @@ internal class DebuggerConfigurationTest {
     @Before
     fun setUp() {
         mockedService = mockk()
-        debuggerInterface = DebuggerConfiguration(mockedService)
+        debuggerInterface = ActiveDebuggerConfiguration(mockedService)
     }
 
     @Test

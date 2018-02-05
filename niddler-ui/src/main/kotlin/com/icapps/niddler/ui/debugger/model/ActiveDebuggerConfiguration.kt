@@ -5,7 +5,7 @@ import com.icapps.niddler.ui.split
 /**
  * @author nicolaverbeeck
  */
-class DebuggerConfiguration(private val service: DebuggerService) : DebuggerInterface {
+class ActiveDebuggerConfiguration(private val service: DebuggerService) : DebuggerInterface {
 
     private val serverBlacklist: MutableSet<String> = mutableSetOf()
     private val knownDefaultResponses: MutableSet<String> = mutableSetOf()
