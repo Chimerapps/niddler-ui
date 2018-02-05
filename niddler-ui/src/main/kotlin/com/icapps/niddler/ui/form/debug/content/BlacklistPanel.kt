@@ -25,4 +25,8 @@ class BlacklistPanel : JPanel() {
         add(box)
     }
 
+    fun init(regex: String) {
+        editField.text = regex
+    }
+
 }

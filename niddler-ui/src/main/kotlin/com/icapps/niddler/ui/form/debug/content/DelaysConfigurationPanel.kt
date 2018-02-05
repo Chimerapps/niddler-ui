@@ -1,61 +1,48 @@
-package com.icapps.niddler.ui.form.debug.dialog
+package com.icapps.niddler.ui.form.debug.content
 
 import com.icapps.niddler.ui.addChangeListener
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
-import com.icapps.niddler.ui.form.ComponentsFactory
-import com.icapps.niddler.ui.form.components.Dialog
+import com.icapps.niddler.ui.debugger.model.DebuggerInterface
 import java.awt.BorderLayout
 import java.awt.Dimension
-import java.awt.Window
 import java.text.NumberFormat
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 import javax.swing.text.NumberFormatter
 
-
 /**
  * @author nicolaverbeeck
  */
-class DelaysConfigurationDialog(owner: Window?, componentsFactory: ComponentsFactory) {
+class DelaysConfigurationPanel(private val debuggerInterface: DebuggerInterface) : JPanel(BorderLayout()) {
 
-    private val preBlacklist = DelayPanel(this, "Before blacklist")
-    private val postBlacklist = DelayPanel(this, "After blacklist")
-    private val ensureCallTime = DelayPanel(this, "Ensure call time")
-    private val dialog: Dialog = componentsFactory.createDialog(owner, "Simulated delays", createContent())
+    private val preBlacklist = DelayPanel("Before blacklist")
+    private val postBlacklist = DelayPanel("After blacklist")
+    private val ensureCallTime = DelayPanel("Ensure call time")
 
     init {
-        dialog.dialogCanResize = false
-    }
-
-    private fun createContent(): JComponent {
         val rootBox = Box.createVerticalBox()
 
         rootBox.add(preBlacklist)
-        rootBox.add(Box.createVerticalStrut(6))
+        rootBox.add(Box.createVerticalStrut(8))
         rootBox.add(postBlacklist)
-        rootBox.add(Box.createVerticalStrut(6))
+        rootBox.add(Box.createVerticalStrut(8))
         rootBox.add(ensureCallTime)
+        rootBox.add(Box.createVerticalGlue())
 
         rootBox.border = EmptyBorder(6, 12, 6, 12)
 
-        return rootBox
+        add(rootBox, BorderLayout.NORTH)
+
+        initFrom(debuggerInterface.debugDelays())
     }
 
-    fun show(previousConfiguration: DebuggerDelays?): DebuggerDelays? {
+    private fun initFrom(previousConfiguration: DebuggerDelays?) {
         set(preBlacklist, previousConfiguration?.preBlacklist)
         set(postBlacklist, previousConfiguration?.postBlacklist)
         set(ensureCallTime, previousConfiguration?.timePerCall)
-
-        if (dialog.show(::validateInput) == Dialog.ACCEPTED)
-            return extractDelays()
-        return null
     }
 
-    private fun onApply() {
-        dialog.tryValidate()
-    }
-
-    private fun extractDelays(): DebuggerDelays {
+    fun extractDelays(): DebuggerDelays {
         val pre = extractTime(preBlacklist)
         val post = extractTime(postBlacklist)
         val ensureTime = extractTime(ensureCallTime)
@@ -74,8 +61,7 @@ class DelaysConfigurationDialog(owner: Window?, componentsFactory: ComponentsFac
         panel.field.text = time?.toString() ?: ""
     }
 
-    private class DelayPanel(private val parentDialog: DelaysConfigurationDialog,
-                             title: String) : JPanel(BorderLayout()) {
+    private class DelayPanel(title: String) : JPanel(BorderLayout()) {
 
         val checkbox: JCheckBox = JCheckBox()
         val field: JFormattedTextField = JFormattedTextField(numberFormatter())
@@ -85,7 +71,6 @@ class DelaysConfigurationDialog(owner: Window?, componentsFactory: ComponentsFac
 
             field.apply {
                 maximumSize = Dimension(maximumSize.width, preferredSize.height)
-                addActionListener { parentDialog.onApply() }
             }
             field.addChangeListener { checkbox.isSelected = it.text.isNotEmpty() }
 
@@ -120,7 +105,4 @@ class DelaysConfigurationDialog(owner: Window?, componentsFactory: ComponentsFac
             return formatter
         }
     }
-
-    private fun validateInput() = Dialog.ValidationResult(true)
-
 }

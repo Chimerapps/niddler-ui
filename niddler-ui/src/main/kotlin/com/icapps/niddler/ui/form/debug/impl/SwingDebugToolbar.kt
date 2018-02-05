@@ -15,7 +15,6 @@ class SwingDebugToolbar : DebugToolbar, JToolBar(JToolBar.HORIZONTAL) {
     private val menu: JPopupMenu = JPopupMenu()
     private lateinit var addButton: JButton
     private val removeButton: JButton
-    private val configureDelaysButton: JButton
 
     init {
         isFloatable = false
@@ -37,9 +36,6 @@ class SwingDebugToolbar : DebugToolbar, JToolBar(JToolBar.HORIZONTAL) {
         })
         removeButton = add(simpleAction("Remove", "/remove.png") {
             listener?.onRemoveClicked()
-        })
-        configureDelaysButton = add(simpleAction("Configure delays", "/clock.png") {
-            listener?.onConfigureDelays()
         })
     }
 

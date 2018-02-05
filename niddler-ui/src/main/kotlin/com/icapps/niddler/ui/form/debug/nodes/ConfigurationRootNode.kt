@@ -6,6 +6,7 @@ package com.icapps.niddler.ui.form.debug.nodes
 class ConfigurationRootNode : DefaultTreeNode(null) {
 
     init {
+        addChild(TimeoutConfigurationRootNode(this))
         addChild(BlacklistRootNode(this))
         addChild(DefaultResponsesNode(this))
     }

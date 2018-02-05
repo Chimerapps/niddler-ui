@@ -2,7 +2,7 @@ package com.icapps.niddler.ui.form.debug
 
 import com.icapps.niddler.ui.debugger.model.DebuggerInterface
 import com.icapps.niddler.ui.form.ComponentsFactory
-import com.icapps.niddler.ui.form.debug.dialog.DelaysConfigurationDialog
+import com.icapps.niddler.ui.form.debug.content.DelaysConfigurationPanel
 import java.awt.Window
 
 /**
@@ -27,11 +27,6 @@ class NiddlerDebugConfigurationHelper(private val owner: Window?,
 
     override fun onAddResponseOverride() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onConfigureDelays() {
-        val delays = DelaysConfigurationDialog(owner, factory).show(debuggerInterface.debugDelays()) ?: return
-        debuggerInterface.updateDelays(delays)
     }
 
     override fun onRemoveClicked() {

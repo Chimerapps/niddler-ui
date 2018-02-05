@@ -5,10 +5,10 @@ import javax.swing.tree.TreeNode
 /**
  * @author nicolaverbeeck
  */
-class BlacklistNode(val regex: String, val enabled: Boolean, parent: TreeNode) : CheckedNode(parent) {
+class TimeoutConfigurationRootNode(parent: TreeNode) : CheckedNode(parent) {
 
     override fun toString(): String {
-        return regex
+        return "Timeout configuration"
     }
 
     override fun getAllowsChildren(): Boolean {

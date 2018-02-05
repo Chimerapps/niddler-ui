@@ -246,9 +246,11 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         val debuggerInterface = debuggerInterface ?: return
         val parent = SwingUtilities.getWindowAncestor(windowContents.asComponent)
         val dialog = windowContents.componentsFactory
-                .createDebugConfigurationDialog(parent)
+                .createDebugConfigurationDialog(parent, debuggerInterface)
         dialog.init()
-        dialog.debugToolbar.listener = NiddlerDebugConfigurationHelper(parent, windowContents.componentsFactory, debuggerInterface)
+        dialog.debugToolbar.listener = NiddlerDebugConfigurationHelper(parent,
+                windowContents.componentsFactory,
+                debuggerInterface)
 
         dialog.visibility = true
     }

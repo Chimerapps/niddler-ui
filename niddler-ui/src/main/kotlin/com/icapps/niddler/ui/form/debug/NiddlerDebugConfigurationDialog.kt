@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.form.debug
 
+import com.icapps.niddler.ui.form.debug.content.DelaysConfigurationPanel
 import javax.swing.JPanel
 import javax.swing.JTree
 
@@ -35,8 +36,6 @@ interface DebugToolbar {
         fun onAddRequestOverride()
 
         fun onAddResponseOverride()
-
-        fun onConfigureDelays()
 
         fun onRemoveClicked()
 

@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.form.components.impl
 
+import com.icapps.niddler.ui.debugger.model.DebuggerInterface
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.Dialog
 import com.icapps.niddler.ui.form.components.SplitPane
@@ -42,7 +43,8 @@ class SwingComponentsFactory : ComponentsFactory {
         return SwingDialog(parent, title, content)
     }
 
-    override fun createDebugConfigurationDialog(parent: Window?): NiddlerDebugConfigurationDialog {
-        return SwingNiddlerDebugConfigurationDialog(parent, this)
+    override fun createDebugConfigurationDialog(parent: Window?,
+                                                debuggerInterface: DebuggerInterface): NiddlerDebugConfigurationDialog {
+        return SwingNiddlerDebugConfigurationDialog(parent, this, debuggerInterface)
     }
 }

@@ -4,9 +4,7 @@ import com.icapps.niddler.ui.form.MainThreadDispatcher
 import java.awt.Dimension
 import java.beans.PropertyChangeEvent
 import java.util.*
-import javax.swing.JLabel
-import javax.swing.JTable
-import javax.swing.JTextField
+import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.text.Document
@@ -101,4 +99,14 @@ fun <T> Iterable<T>.split(block: (T) -> Boolean): Pair<List<T>, List<T>> {
             right += it
     }
     return left to right
+}
+
+fun button(title: String, listener: () -> Unit): JButton {
+    return JButton(title).apply {
+        addActionListener { listener() }
+    }
+}
+
+operator fun JComponent.plusAssign(component: JComponent) {
+    add(component)
 }
