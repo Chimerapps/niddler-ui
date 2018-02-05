@@ -18,10 +18,10 @@ import kotlin.reflect.KProperty
  */
 class WrappingDebuggerConfigurationProvider : DebuggerConfigurationProvider {
 
-    override var delayConfiguration: DisableableItem<DebuggerDelays> by unwrap("delays") {
+    override var delayConfiguration: DisableableItem<DebuggerDelays> by jsonWrap("delays") {
         DisableableItem(false, DebuggerDelays(null, null, null))
     }
-    override var blacklistConfiguration: List<DisableableItem<String>> by unwrap("blacklist") {
+    override var blacklistConfiguration: List<DisableableItem<String>> by jsonWrap("blacklist") {
         emptyList<DisableableItem<String>>()
     }
 
@@ -54,11 +54,6 @@ class WrappingDebuggerConfigurationProvider : DebuggerConfigurationProvider {
         gson.toJson(configurationTree, JsonWriter(writer))
     }
 
-    private inline fun <reified T : Any> unwrap(name: String,
-                                                noinline defaultCreator: () -> T): ExtractingDelegate<T> {
-        return ExtractingDelegate(name, this, object : TypeToken<T>() {}.type, defaultCreator)
-    }
-
     private fun getNode(name: String): JsonElement? {
         return configurationTree.get(name)
     }
@@ -74,6 +69,11 @@ class WrappingDebuggerConfigurationProvider : DebuggerConfigurationProvider {
         } catch (e: Throwable) {
             null
         }
+    }
+
+    private inline fun <reified T : Any> jsonWrap(name: String,
+                                                  noinline defaultCreator: () -> T): ExtractingDelegate<T> {
+        return ExtractingDelegate(name, this, object : TypeToken<T>() {}.type, defaultCreator)
     }
 
     private class ExtractingDelegate<T : Any>(private val name: String,
