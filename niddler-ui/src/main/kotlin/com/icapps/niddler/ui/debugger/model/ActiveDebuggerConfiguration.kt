@@ -53,6 +53,9 @@ class ActiveDebuggerConfiguration(private val service: DebuggerService) : Debugg
     }
 
     override fun updateDelays(delays: DebuggerDelays?) {
+        if (this.delays == delays)
+            return
+
         this.delays = delays
         if (delays == null)
             service.updateDelays(DebuggerDelays(null, null, null))
