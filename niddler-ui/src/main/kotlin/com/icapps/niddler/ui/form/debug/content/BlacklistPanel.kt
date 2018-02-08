@@ -1,5 +1,7 @@
 package com.icapps.niddler.ui.form.debug.content
 
+import com.icapps.niddler.ui.debugger.model.saved.DisableableItem
+import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfigurationProvider
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.*
@@ -8,10 +10,13 @@ import javax.swing.border.EmptyBorder
 /**
  * @author nicolaverbeeck
  */
-class BlacklistPanel : JPanel() {
+class BlacklistPanel(private val configuration: TemporaryDebuggerConfigurationProvider) : JPanel(), ContentPanel {
 
     private val editField = JTextField()
     private val testEditField = JTextField()
+
+    private lateinit var startRegex: String
+    private var item: DisableableItem<String>? = null
 
     init {
         editField.maximumSize = Dimension(editField.maximumSize.width, editField.preferredSize.height)
@@ -35,8 +40,27 @@ class BlacklistPanel : JPanel() {
         add(box)
     }
 
-    fun init(regex: String) {
-        editField.text = regex
+    fun init(item: DisableableItem<String>) {
+        startRegex = item.item
+        editField.text = startRegex
+        this.item = item
     }
 
+    fun initNew() {
+        startRegex = ""
+        item = null
+        editField.text = startRegex
+    }
+
+    override fun apply(isEnabled: Boolean) {
+        val inEditor = editField.text.trim()
+        if (inEditor == startRegex) {
+            item?.let { it.enabled = isEnabled }
+            return
+        }
+
+        item?.let { configuration.removeBlacklistItem(it) }
+        item = configuration.addBlacklistItem(inEditor, isEnabled)
+        startRegex = inEditor
+    }
 }

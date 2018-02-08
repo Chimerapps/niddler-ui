@@ -2,7 +2,7 @@ package com.icapps.niddler.ui.form.debug.content
 
 import com.icapps.niddler.ui.addChangeListener
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
-import com.icapps.niddler.ui.debugger.model.DebuggerInterface
+import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfigurationProvider
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.text.NumberFormat
@@ -13,7 +13,8 @@ import javax.swing.text.NumberFormatter
 /**
  * @author nicolaverbeeck
  */
-class DelaysConfigurationPanel(private val debuggerInterface: DebuggerInterface) : JPanel(BorderLayout()) {
+class DelaysConfigurationPanel(private var configuration: TemporaryDebuggerConfigurationProvider)
+    : JPanel(BorderLayout()), ContentPanel {
 
     private val preBlacklist = DelayPanel("Before blacklist")
     private val postBlacklist = DelayPanel("After blacklist")
@@ -33,21 +34,19 @@ class DelaysConfigurationPanel(private val debuggerInterface: DebuggerInterface)
 
         add(rootBox, BorderLayout.NORTH)
 
-        initFrom(debuggerInterface.debugDelays())
+        val currentConfig = configuration.delayConfiguration.item
+        set(preBlacklist, currentConfig.preBlacklist)
+        set(postBlacklist, currentConfig.postBlacklist)
+        set(ensureCallTime, currentConfig.timePerCall)
     }
 
-    private fun initFrom(previousConfiguration: DebuggerDelays?) {
-        set(preBlacklist, previousConfiguration?.preBlacklist)
-        set(postBlacklist, previousConfiguration?.postBlacklist)
-        set(ensureCallTime, previousConfiguration?.timePerCall)
-    }
-
-    fun extractDelays(): DebuggerDelays {
+    override fun apply(isEnabled: Boolean) {
         val pre = extractTime(preBlacklist)
         val post = extractTime(postBlacklist)
         val ensureTime = extractTime(ensureCallTime)
 
-        return DebuggerDelays(pre, post, ensureTime)
+        configuration.delayConfiguration.item = DebuggerDelays(pre, post, ensureTime)
+        configuration.delayConfiguration.enabled = isEnabled
     }
 
     private fun extractTime(panel: DelayPanel): Long? {

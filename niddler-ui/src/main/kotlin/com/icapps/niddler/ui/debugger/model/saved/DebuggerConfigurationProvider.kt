@@ -17,4 +17,4 @@ interface DebuggerConfigurationProvider {
 
 }
 
-data class DisableableItem<out T>(@Expose val enabled: Boolean, @Expose val item: T)
+data class DisableableItem<T>(@Expose var enabled: Boolean, @Expose var item: T)

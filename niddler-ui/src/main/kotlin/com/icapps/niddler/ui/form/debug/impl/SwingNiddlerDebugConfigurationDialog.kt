@@ -1,7 +1,8 @@
 package com.icapps.niddler.ui.form.debug.impl
 
 import com.icapps.niddler.ui.button
-import com.icapps.niddler.ui.debugger.model.DebuggerInterface
+import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfigurationProvider
+import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfigurationProvider
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.debug.ConfigurationModel
@@ -29,7 +30,8 @@ import javax.swing.tree.TreeSelectionModel
  */
 open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
                                                 private val factory: ComponentsFactory,
-                                                private val debuggerInterface: DebuggerInterface)
+                                                initialConfig: DebuggerConfigurationProvider)
+
     : NiddlerDebugConfigurationDialog, JDialog(parent) {
 
     override var visibility: Boolean
@@ -40,6 +42,8 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     override lateinit var configurationTree: JTree
     override lateinit var detailPanelContainer: JPanel
     override lateinit var configurationModel: ConfigurationModel
+
+    protected var changingConfiguration = TemporaryDebuggerConfigurationProvider(initialConfig)
 
     protected val rootPanel: JPanel = JPanel(BorderLayout())
     protected val splitPane: SplitPane = factory.createSplitPane()
@@ -57,7 +61,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         initTreeListener()
 
         splitPane.left = factory.createScrollPane().apply { setViewportView(configurationTree) }
-        splitPane.right = BlacklistPanel()
+        splitPane.right = BlacklistPanel(changingConfiguration)
 
         rootPanel.add(splitPane.asComponent, BorderLayout.CENTER)
 
@@ -115,7 +119,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         if (currentDetailPanel == CurrentDetailPanel.TIMEOUT)
             return
         currentDetailPanel = CurrentDetailPanel.TIMEOUT
-        splitPane.right = DelaysConfigurationPanel(debuggerInterface)
+        splitPane.right = DelaysConfigurationPanel(changingConfiguration)
     }
 
     protected fun onBlacklistRootNodeSelected() {
@@ -128,7 +132,9 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
         currentDetailPanel = CurrentDetailPanel.BLACKLIST
         currentDetailPayload = regex
-        splitPane.right = BlacklistPanel().apply { init(regex) }
+        splitPane.right = BlacklistPanel(changingConfiguration).apply {
+            init(changingConfiguration.blacklistConfiguration.first { it.item == regex })
+        }
     }
 
     protected fun onCancel() {
