@@ -26,7 +26,7 @@ class ActiveDebuggerConfiguration(private val service: DebuggerService) : Debugg
     override fun updateDefaultResponses(items: Iterable<DefaultResponseAction>) {
         val (unsentItems, knownItems) = items.split { !knownDefaultResponses.contains(it.id) }
         unsentItems.forEach {
-            val actionId = service.addDefaultResponse(it.regex, it.response, it.enabled)
+            val actionId = service.addDefaultResponse(it.regex, it.method, it.response, it.enabled)
             if (it.enabled)
                 enabledActions += actionId
             it.id = actionId

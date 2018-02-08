@@ -29,7 +29,11 @@ open class NiddlerDebugControlMessage(val controlType: String,
                                       val payload: Any?)
     : NiddlerClientMessage(CONTROL_DEBUG)
 
-open class RegexPayload(val regex: String)
+open class RegexPayload(val regex: String?)
+
+open class MethodPayload(val matchMethod: String?)
+
+open class ResponseCodePayload(val responseCode: Int?)
 
 open class ActionPayload(val id: String)
 

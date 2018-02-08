@@ -23,38 +23,39 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
         sendMessage(RemoveBlacklistMessage(regex))
     }
 
-    fun addDefaultRequestOverride(regex: String, request: DebugRequest, active: Boolean): String {
+    fun addDefaultRequestOverride(regex: String?, method: String?, request: DebugRequest, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_DEFAULT_REQUEST_OVERRIDE,
-                merge(RegexPayload(regex), ActionPayload(id), ActivePayload(active), request)))
+                merge(RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active), request)))
         return id
     }
 
-    fun addDefaultResponse(regex: String, response: DebugResponse, active: Boolean): String {
+    fun addDefaultResponse(regex: String?, method: String?, response: DebugResponse, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_DEFAULT_RESPONSE,
-                merge(RegexPayload(regex), ActionPayload(id), ActivePayload(active), response)))
+                merge(RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active), response)))
         return id
     }
 
-    fun addRequestIntercept(regex: String, active: Boolean): String {
+    fun addRequestIntercept(regex: String?, method: String?, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_REQUEST,
-                merge(RegexPayload(regex), ActionPayload(id), ActivePayload(active))))
+                merge(RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active))))
         return id
     }
 
-    fun addResponseIntercept(regex: String, active: Boolean): String {
+    fun addResponseIntercept(regex: String?, method: String?, responseCode: Int?, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_RESPONSE,
-                merge(RegexPayload(regex), ActionPayload(id), ActivePayload(active))))
+                merge(RegexPayload(regex), MethodPayload(method), ResponseCodePayload(responseCode),
+                        ActionPayload(id), ActivePayload(active))))
         return id
     }
 
-    fun addRequestOverride(regex: String, active: Boolean): String {
+    fun addRequestOverride(regex: String?, method: String?, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_REQUEST_OVERRIDE,
-                merge(RegexPayload(regex), ActionPayload(id), ActivePayload(active))))
+                merge(RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active))))
         return id
     }
 

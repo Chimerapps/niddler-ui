@@ -20,5 +20,6 @@ interface DebuggerInterface {
 
 data class DefaultResponseAction(var id: String?,
                                  var enabled: Boolean,
-                                 val regex: String,
+                                 val regex: String?,
+                                 val method: String?,
                                  val response: DebugResponse)

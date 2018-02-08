@@ -60,19 +60,19 @@ internal class ActiveDebuggerConfigurationTest {
     fun updateDefaultResponses() {
         val uuids = mutableListOf<String>()
 
-        every { mockedService.addDefaultResponse(".*\\.png", any(), any()) } answers {
+        every { mockedService.addDefaultResponse(".*\\.png", any(), any(), any()) } answers {
             val id = UUID.randomUUID().toString()
             uuids += id
             id
         }
 
-        val actions = listOf(DefaultResponseAction(null, true, ".*\\.png", DebugResponse(200, "OK", null, null, null)),
-                DefaultResponseAction(null, true, ".*\\.png", DebugResponse(404, "Not found", null, null, null)))
+        val actions = listOf(DefaultResponseAction(null, true, ".*\\.png", "GET", DebugResponse(200, "OK", null, null, null)),
+                DefaultResponseAction(null, true, ".*\\.png", "POST", DebugResponse(404, "Not found", null, null, null)))
 
         debuggerInterface.updateDefaultResponses(actions)
 
-        verify { mockedService.addDefaultResponse(actions[0].regex, actions[0].response, actions[0].enabled) }
-        verify { mockedService.addDefaultResponse(actions[1].regex, actions[1].response, actions[1].enabled) }
+        verify { mockedService.addDefaultResponse(actions[0].regex, actions[0].method, actions[0].response, actions[0].enabled) }
+        verify { mockedService.addDefaultResponse(actions[1].regex, actions[1].method, actions[1].response, actions[1].enabled) }
 
         assertEquals(uuids[0], actions[0].id)
         assertEquals(uuids[1], actions[1].id)
@@ -82,15 +82,15 @@ internal class ActiveDebuggerConfigurationTest {
     fun updateDefaultResponsesRemoveAll() {
         val uuids = mutableListOf<String>()
 
-        every { mockedService.addDefaultResponse(".*\\.png", any(), any()) } answers {
+        every { mockedService.addDefaultResponse(".*\\.png", any(), any(), any()) } answers {
             val id = UUID.randomUUID().toString()
             uuids += id
             id
         }
         every { mockedService.removeRequestAction(any()) } just Runs
 
-        val actions = listOf(DefaultResponseAction(null, true, ".*\\.png", DebugResponse(200, "OK", null, null, null)),
-                DefaultResponseAction(null, true, ".*\\.png", DebugResponse(404, "Not found", null, null, null)))
+        val actions = listOf(DefaultResponseAction(null, true, ".*\\.png", null, DebugResponse(200, "OK", null, null, null)),
+                DefaultResponseAction(null, true, ".*\\.png", "HEAD", DebugResponse(404, "Not found", null, null, null)))
 
         debuggerInterface.updateDefaultResponses(actions)
 
@@ -99,8 +99,8 @@ internal class ActiveDebuggerConfigurationTest {
 
         debuggerInterface.updateDefaultResponses(emptyList())
 
-        verify(exactly = 1) { mockedService.addDefaultResponse(actions[0].regex, actions[0].response, actions[0].enabled) }
-        verify(exactly = 1) { mockedService.addDefaultResponse(actions[1].regex, actions[1].response, actions[1].enabled) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(actions[0].regex, actions[0].method, actions[0].response, actions[0].enabled) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(actions[1].regex, actions[1].method, actions[1].response, actions[1].enabled) }
 
         verify { mockedService.removeRequestAction(or(uuids[0], uuids[1])) }
     }
@@ -109,27 +109,27 @@ internal class ActiveDebuggerConfigurationTest {
     fun updateDefaultResponsesAddAndRemove() {
         val uuids = mutableListOf<String>()
 
-        every { mockedService.addDefaultResponse(".*\\.png", any(), any()) } answers {
+        every { mockedService.addDefaultResponse(".*\\.png", any(), any(), any()) } answers {
             val id = UUID.randomUUID().toString()
             uuids += id
             id
         }
         every { mockedService.removeRequestAction(any()) } just Runs
 
-        val actions = listOf(DefaultResponseAction(null, true, ".*\\.png", DebugResponse(200, "OK", null, null, null)),
-                DefaultResponseAction(null, true, ".*\\.png", DebugResponse(404, "Not found", null, null, null)))
+        val actions = listOf(DefaultResponseAction(null, true, ".*\\.png", "HEAD", DebugResponse(200, "OK", null, null, null)),
+                DefaultResponseAction(null, true, ".*\\.png", "GET", DebugResponse(404, "Not found", null, null, null)))
 
         debuggerInterface.updateDefaultResponses(actions)
 
         assertEquals(uuids[0], actions[0].id)
         assertEquals(uuids[1], actions[1].id)
 
-        val secondActions = listOf(actions[1], DefaultResponseAction(null, true, ".*\\.png", DebugResponse(404, "Not found", null, null, null)))
+        val secondActions = listOf(actions[1], DefaultResponseAction(null, true, ".*\\.png", "POST", DebugResponse(404, "Not found", null, null, null)))
         debuggerInterface.updateDefaultResponses(secondActions)
 
-        verify(exactly = 1) { mockedService.addDefaultResponse(actions[0].regex, actions[0].response, actions[0].enabled) }
-        verify(exactly = 1) { mockedService.addDefaultResponse(actions[1].regex, actions[1].response, actions[1].enabled) }
-        verify(exactly = 1) { mockedService.addDefaultResponse(secondActions[1].regex, secondActions[1].response, secondActions[1].enabled) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(actions[0].regex, actions[0].method, actions[0].response, actions[0].enabled) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(actions[1].regex, actions[1].method, actions[1].response, actions[1].enabled) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(secondActions[1].regex, secondActions[1].method, secondActions[1].response, secondActions[1].enabled) }
 
         verify(exactly = 1) { mockedService.removeRequestAction(uuids[0]) }
     }
@@ -138,7 +138,7 @@ internal class ActiveDebuggerConfigurationTest {
     fun updateDefaultResponsesActivateLater() {
         val uuids = mutableListOf<String>()
 
-        every { mockedService.addDefaultResponse(".*\\.png", any(), any()) } answers {
+        every { mockedService.addDefaultResponse(".*\\.png", any(), any(), any()) } answers {
             val id = UUID.randomUUID().toString()
             uuids += id
             id
@@ -146,8 +146,8 @@ internal class ActiveDebuggerConfigurationTest {
         every { mockedService.muteAction(any()) } just Runs
         every { mockedService.unmuteAction(any()) } just Runs
 
-        val actions = listOf(DefaultResponseAction(null, true, ".*\\.png", DebugResponse(200, "OK", null, null, null)),
-                DefaultResponseAction(null, false, ".*\\.png", DebugResponse(404, "Not found", null, null, null)))
+        val actions = listOf(DefaultResponseAction(null, true, ".*\\.png", "DELETE", DebugResponse(200, "OK", null, null, null)),
+                DefaultResponseAction(null, false, ".*\\.png", "subscribe", DebugResponse(404, "Not found", null, null, null)))
 
         debuggerInterface.updateDefaultResponses(actions)
 
@@ -159,8 +159,8 @@ internal class ActiveDebuggerConfigurationTest {
 
         debuggerInterface.updateDefaultResponses(actions)
 
-        verify(exactly = 1) { mockedService.addDefaultResponse(actions[0].regex, actions[0].response, any()) }
-        verify(exactly = 1) { mockedService.addDefaultResponse(actions[1].regex, actions[1].response, any()) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(actions[0].regex, actions[0].method, actions[0].response, any()) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(actions[1].regex, actions[1].method, actions[1].response, any()) }
 
         verify(exactly = 1) { mockedService.muteAction(uuids[0]) }
         verify(exactly = 1) { mockedService.unmuteAction(uuids[1]) }
