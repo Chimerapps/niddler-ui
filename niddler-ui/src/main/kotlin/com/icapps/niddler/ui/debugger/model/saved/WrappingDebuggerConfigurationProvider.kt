@@ -1,12 +1,14 @@
 package com.icapps.niddler.ui.debugger.model.saved
 
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonWriter
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
+import com.icapps.niddler.ui.debugger.model.DefaultResponseAction
+import com.icapps.niddler.ui.util.createGsonListType
 import java.io.File
 import java.io.Reader
 import java.io.Writer
@@ -21,11 +23,14 @@ class WrappingDebuggerConfigurationProvider : DebuggerConfigurationProvider {
     override var delayConfiguration: DisableableItem<DebuggerDelays> by jsonWrap("delays") {
         DisableableItem(false, DebuggerDelays(null, null, null))
     }
-    override var blacklistConfiguration: List<DisableableItem<String>> by jsonWrap("blacklist") {
+    override var blacklistConfiguration: List<DisableableItem<String>> by jsonWrapList("blacklist") {
         emptyList<DisableableItem<String>>()
     }
+    override var defaultResponses: List<DisableableItem<DefaultResponseAction>> by jsonWrapList("defaultResponses") {
+        emptyList<DisableableItem<DefaultResponseAction>>()
+    }
 
-    private val gson = Gson()
+    private val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().disableHtmlEscaping().create()
     private val configurationTree: JsonObject
 
     constructor(stream: Reader) {
@@ -74,6 +79,11 @@ class WrappingDebuggerConfigurationProvider : DebuggerConfigurationProvider {
     private inline fun <reified T : Any> jsonWrap(name: String,
                                                   noinline defaultCreator: () -> T): ExtractingDelegate<T> {
         return ExtractingDelegate(name, this, object : TypeToken<T>() {}.type, defaultCreator)
+    }
+
+    private inline fun <reified T : Any> jsonWrapList(name: String,
+                                                      noinline defaultCreator: () -> List<T>): ExtractingDelegate<List<T>> {
+        return ExtractingDelegate(name, this, createGsonListType<T>(), defaultCreator)
     }
 
     private class ExtractingDelegate<T : Any>(private val name: String,

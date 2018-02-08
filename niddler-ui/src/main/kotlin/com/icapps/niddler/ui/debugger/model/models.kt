@@ -1,5 +1,7 @@
 package com.icapps.niddler.ui.debugger.model
 
+import com.google.gson.annotations.Expose
+
 
 /**
  * @author nicolaverbeeck
@@ -72,20 +74,22 @@ class RemoveRequestOverrideActionMessage(id: String)
 data class DebugReplyPayload(val messageId: String)
 
 abstract class DebugMessage(
-        val headers: Map<String, String>?,
-        val encodedBody: String?,
-        val bodyMimeType: String?)
+        @Expose val headers: Map<String, String>?,
+        @Expose val encodedBody: String?,
+        @Expose val bodyMimeType: String?)
 
-class DebugResponse(val code: Int,
-                    val message: String,
+class DebugResponse(@Expose val code: Int,
+                    @Expose val message: String,
                     headers: Map<String, String>?,
                     encodedBody: String?,
                     bodyMimeType: String?) : DebugMessage(headers, encodedBody, bodyMimeType)
 
-class DebugRequest(val url: String,
-                   val method: String,
+class DebugRequest(@Expose val url: String,
+                   @Expose val method: String,
                    headers: Map<String, String>?,
                    encodedBody: String?,
                    bodyMimeType: String?) : DebugMessage(headers, encodedBody, bodyMimeType)
 
-data class DebuggerDelays(val preBlacklist: Long?, val postBlacklist: Long?, val timePerCall: Long?)
+data class DebuggerDelays(@Expose val preBlacklist: Long?,
+                          @Expose val postBlacklist: Long?,
+                          @Expose val timePerCall: Long?)

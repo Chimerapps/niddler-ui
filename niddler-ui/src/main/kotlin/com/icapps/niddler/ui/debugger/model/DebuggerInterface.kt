@@ -1,5 +1,7 @@
 package com.icapps.niddler.ui.debugger.model
 
+import com.google.gson.annotations.Expose
+
 /**
  * @author nicolaverbeeck
  */
@@ -20,6 +22,6 @@ interface DebuggerInterface {
 
 data class DefaultResponseAction(var id: String?,
                                  var enabled: Boolean,
-                                 val regex: String?,
-                                 val method: String?,
-                                 val response: DebugResponse)
+                                 @Expose val regex: String?,
+                                 @Expose val method: String?,
+                                 @Expose val response: DebugResponse)

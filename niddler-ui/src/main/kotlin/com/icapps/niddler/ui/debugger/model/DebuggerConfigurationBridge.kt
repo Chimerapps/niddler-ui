@@ -1,6 +1,6 @@
-package com.icapps.niddler.ui.debugger.model.saved
+package com.icapps.niddler.ui.debugger.model
 
-import com.icapps.niddler.ui.debugger.model.DebuggerInterface
+import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfigurationProvider
 
 /**
  * @author nicolaverbeeck
@@ -11,6 +11,7 @@ class DebuggerConfigurationBridge(private val configurationProvider: DebuggerCon
     fun apply() {
         applyDelays()
         applyBlacklist()
+        applyDefaultResponses()
     }
 
     private fun applyDelays() {
@@ -25,6 +26,12 @@ class DebuggerConfigurationBridge(private val configurationProvider: DebuggerCon
         val blacklistItems = configurationProvider.blacklistConfiguration
         val regularExpressions = blacklistItems.filter { it.enabled }.map { it.item }
         debuggerInterface.updateBlacklist(regularExpressions)
+    }
+
+    private fun applyDefaultResponses() {
+        val defaultResponses = configurationProvider.defaultResponses
+        val activeResponses = defaultResponses.filter { it.enabled }.map { it.item }
+        debuggerInterface.updateDefaultResponses(activeResponses)
     }
 
 }
