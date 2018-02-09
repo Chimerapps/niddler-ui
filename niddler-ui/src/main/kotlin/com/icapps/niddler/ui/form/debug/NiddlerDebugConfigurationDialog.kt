@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.form.debug
 
-import com.icapps.niddler.ui.form.debug.content.DelaysConfigurationPanel
+import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
 import javax.swing.JPanel
 import javax.swing.JTree
 
@@ -17,7 +17,7 @@ interface NiddlerDebugConfigurationDialog {
 
     val configurationModel: ConfigurationModel
 
-    fun init()
+    fun init(applyListener: (DebuggerConfiguration) -> Unit)
 
 }
 

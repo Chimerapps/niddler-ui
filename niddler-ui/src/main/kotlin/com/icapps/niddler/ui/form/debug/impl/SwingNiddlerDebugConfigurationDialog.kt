@@ -1,8 +1,8 @@
 package com.icapps.niddler.ui.form.debug.impl
 
 import com.icapps.niddler.ui.button
-import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfigurationProvider
-import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfigurationProvider
+import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
+import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfiguration
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.debug.ConfigurationModel
@@ -30,7 +30,7 @@ import javax.swing.tree.TreeSelectionModel
  */
 open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
                                                 private val factory: ComponentsFactory,
-                                                initialConfig: DebuggerConfigurationProvider)
+                                                initialConfig: DebuggerConfiguration)
 
     : NiddlerDebugConfigurationDialog, JDialog(parent) {
 
@@ -43,7 +43,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     override lateinit var detailPanelContainer: JPanel
     override lateinit var configurationModel: ConfigurationModel
 
-    protected var changingConfiguration = TemporaryDebuggerConfigurationProvider(initialConfig)
+    protected var changingConfiguration = TemporaryDebuggerConfiguration(initialConfig)
 
     protected val rootPanel: JPanel = JPanel(BorderLayout())
     protected val splitPane: SplitPane = factory.createSplitPane()
@@ -51,7 +51,10 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     protected var currentDetailPanel: CurrentDetailPanel = CurrentDetailPanel.BLACKLIST
     protected var currentDetailPayload: Any? = null
 
-    override fun init() {
+    protected lateinit var applyListener: (DebuggerConfiguration) -> Unit
+
+    override fun init(applyListener: (DebuggerConfiguration) -> Unit) {
+        this.applyListener = applyListener
         contentPane = rootPanel
 
         isModal = true
@@ -142,7 +145,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     }
 
     protected fun onApply() {
-
+        applyListener(changingConfiguration)
     }
 
     enum class CurrentDetailPanel {

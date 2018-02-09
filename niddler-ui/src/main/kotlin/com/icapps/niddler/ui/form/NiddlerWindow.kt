@@ -10,7 +10,6 @@ import com.icapps.niddler.ui.debugger.model.DebuggerInterface
 import com.icapps.niddler.ui.debugger.model.DebuggerService
 import com.icapps.niddler.ui.export.HarExport
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
-import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationHelper
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
 import com.icapps.niddler.ui.model.*
 import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
@@ -243,14 +242,14 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     }
 
     override fun onConfigureBreakpointsSelected() {
-        val debuggerInterface = debuggerInterface ?: return
         val parent = SwingUtilities.getWindowAncestor(windowContents.asComponent)
         val dialog = windowContents.componentsFactory
-                .createDebugConfigurationDialog(parent, debuggerInterface)
-        dialog.init()
-        dialog.debugToolbar.listener = NiddlerDebugConfigurationHelper(parent,
-                windowContents.componentsFactory,
-                debuggerInterface)
+                .createDebugConfigurationDialog(parent, windowContents.componentsFactory.loadSavedConfiguration())
+        dialog.init { debuggerConfiguration ->
+            windowContents.componentsFactory.saveConfiguration(debuggerConfiguration)
+
+            //TODO send new config to connection
+        }
 
         dialog.visibility = true
     }

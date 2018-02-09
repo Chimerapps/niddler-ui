@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.debug.content
 
 import com.icapps.niddler.ui.debugger.model.saved.DisableableItem
-import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfigurationProvider
+import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfiguration
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.*
@@ -10,7 +10,7 @@ import javax.swing.border.EmptyBorder
 /**
  * @author nicolaverbeeck
  */
-class BlacklistPanel(private val configuration: TemporaryDebuggerConfigurationProvider) : JPanel(), ContentPanel {
+class BlacklistPanel(private val configuration: TemporaryDebuggerConfiguration) : JPanel(), ContentPanel {
 
     private val editField = JTextField()
     private val testEditField = JTextField()

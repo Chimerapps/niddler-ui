@@ -11,11 +11,11 @@ import java.io.StringWriter
 /**
  * @author nicolaverbeeck
  */
-class WrappingDebuggerConfigurationProviderTest {
+class WrappingDebuggerConfigurationTest {
 
     @Test
     fun getDelayConfiguration() {
-        val provider = WrappingDebuggerConfigurationProvider("{\"delays\": {\"enabled\": true,\"item\": {\"preBlacklist\": 123,\"postBlacklist\": 456,\"timePerCall\": 789}}}".reader())
+        val provider = WrappingDebuggerConfiguration("{\"delays\": {\"enabled\": true,\"item\": {\"preBlacklist\": 123,\"postBlacklist\": 456,\"timePerCall\": 789}}}".reader())
         assertEquals(true, provider.delayConfiguration.enabled)
         assertEquals(123L, provider.delayConfiguration.item.preBlacklist)
         assertEquals(456L, provider.delayConfiguration.item.postBlacklist)
@@ -24,7 +24,7 @@ class WrappingDebuggerConfigurationProviderTest {
 
     @Test
     fun getDelayConfigurationDefault() {
-        val provider = WrappingDebuggerConfigurationProvider("".reader())
+        val provider = WrappingDebuggerConfiguration("".reader())
         assertEquals(false, provider.delayConfiguration.enabled)
         assertNull(provider.delayConfiguration.item.preBlacklist)
         assertNull(provider.delayConfiguration.item.postBlacklist)
@@ -33,7 +33,7 @@ class WrappingDebuggerConfigurationProviderTest {
 
     @Test
     fun setDelayConfiguration() {
-        val provider = WrappingDebuggerConfigurationProvider("".reader())
+        val provider = WrappingDebuggerConfiguration("".reader())
         provider.delayConfiguration = DisableableItem(true, DebuggerDelays(123L, 456L, 789L))
         assertEquals(true, provider.delayConfiguration.enabled)
         assertEquals(123L, provider.delayConfiguration.item.preBlacklist)
@@ -43,7 +43,7 @@ class WrappingDebuggerConfigurationProviderTest {
 
     @Test
     fun saveDelayConfigurationAfterSet() {
-        val provider = WrappingDebuggerConfigurationProvider("".reader())
+        val provider = WrappingDebuggerConfiguration("".reader())
         provider.delayConfiguration = DisableableItem(true, DebuggerDelays(123L, 456L, 789L))
 
         val stringWriter = StringWriter()
@@ -53,7 +53,7 @@ class WrappingDebuggerConfigurationProviderTest {
 
     @Test
     fun getBlacklistConfiguration() {
-        val provider = WrappingDebuggerConfigurationProvider("{\"blacklist\": [{\"enabled\": true,\"item\": \".*\\\\.json\"},{\"enabled\": false,\"item\": \".*\\\\.png\"}]}".reader())
+        val provider = WrappingDebuggerConfiguration("{\"blacklist\": [{\"enabled\": true,\"item\": \".*\\\\.json\"},{\"enabled\": false,\"item\": \".*\\\\.png\"}]}".reader())
         assertEquals(2, provider.blacklistConfiguration.size)
 
         assertEquals(true, provider.blacklistConfiguration[0].enabled)
@@ -65,13 +65,13 @@ class WrappingDebuggerConfigurationProviderTest {
 
     @Test
     fun getBlacklistConfigurationDefault() {
-        val provider = WrappingDebuggerConfigurationProvider("weqweqcc][]".reader())
+        val provider = WrappingDebuggerConfiguration("weqweqcc][]".reader())
         assertEquals(0, provider.blacklistConfiguration.size)
     }
 
     @Test
     fun setBlacklistConfiguration() {
-        val provider = WrappingDebuggerConfigurationProvider("".reader())
+        val provider = WrappingDebuggerConfiguration("".reader())
         assertEquals(0, provider.blacklistConfiguration.size)
 
         provider.blacklistConfiguration = listOf(DisableableItem(true, ".*\\.json"),
@@ -84,7 +84,7 @@ class WrappingDebuggerConfigurationProviderTest {
 
     @Test
     fun getDefaultResponses() {
-        val provider = WrappingDebuggerConfigurationProvider("{\"defaultResponses\":[{\"enabled\":true,\"item\":{\"regex\":\"reg1\",\"response\":{\"code\":200,\"message\":\"OK\"}}},{\"enabled\":false,\"item\":{\"regex\":\"reg2\",\"method\":\"GET\",\"response\":{\"code\":401,\"message\":\"Forbidden\"}}}]}".reader())
+        val provider = WrappingDebuggerConfiguration("{\"defaultResponses\":[{\"enabled\":true,\"item\":{\"regex\":\"reg1\",\"response\":{\"code\":200,\"message\":\"OK\"}}},{\"enabled\":false,\"item\":{\"regex\":\"reg2\",\"method\":\"GET\",\"response\":{\"code\":401,\"message\":\"Forbidden\"}}}]}".reader())
         assertEquals(2, provider.defaultResponses.size)
 
         assertEquals(true, provider.defaultResponses[0].enabled)
@@ -102,13 +102,13 @@ class WrappingDebuggerConfigurationProviderTest {
 
     @Test
     fun getDefaultResponsesDefault() {
-        val provider = WrappingDebuggerConfigurationProvider("weqweqcc][]".reader())
+        val provider = WrappingDebuggerConfiguration("weqweqcc][]".reader())
         assertEquals(0, provider.defaultResponses.size)
     }
 
     @Test
     fun setDefaultResponses() {
-        val provider = WrappingDebuggerConfigurationProvider("".reader())
+        val provider = WrappingDebuggerConfiguration("".reader())
         assertEquals(0, provider.defaultResponses.size)
 
         provider.defaultResponses = listOf(DisableableItem(true, DefaultResponseAction(null, false, "reg1", null, DebugResponse(200, "OK", null, null, null))),
@@ -121,7 +121,7 @@ class WrappingDebuggerConfigurationProviderTest {
 
     @Test
     fun save() {
-        val provider = WrappingDebuggerConfigurationProvider("".reader())
+        val provider = WrappingDebuggerConfiguration("".reader())
 
         provider.delayConfiguration = DisableableItem(true, DebuggerDelays(123L, 456L, 789L))
         provider.blacklistConfiguration = listOf(DisableableItem(true, ".*\\.json"),

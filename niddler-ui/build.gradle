@@ -48,6 +48,7 @@ dependencies {
     compile 'com.google.code.gson:gson:2.8.0'
 
     compile group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.5'
+    compile group: 'net.harawata', name: 'appdirs', version: '1.0.1'
 
     testCompile 'junit:junit:4.12'
     testCompile 'io.mockk:mockk:1.7'

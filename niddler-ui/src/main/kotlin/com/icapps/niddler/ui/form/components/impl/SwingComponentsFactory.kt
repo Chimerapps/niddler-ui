@@ -1,13 +1,16 @@
 package com.icapps.niddler.ui.form.components.impl
 
-import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfigurationProvider
+import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
+import com.icapps.niddler.ui.debugger.model.saved.WrappingDebuggerConfiguration
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.Dialog
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.TabComponent
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialog
+import net.harawata.appdirs.AppDirsFactory
 import java.awt.Window
+import java.io.File
 import javax.swing.JComponent
 import javax.swing.JFileChooser
 import javax.swing.JScrollPane
@@ -17,6 +20,10 @@ import javax.swing.JScrollPane
  * @date 21/11/16.
  */
 class SwingComponentsFactory : ComponentsFactory {
+
+    private companion object {
+        private const val DEBUGGER_FILE = "debuggerConfig"
+    }
 
     override fun createScrollPane(): JScrollPane {
         return JScrollPane()
@@ -43,8 +50,23 @@ class SwingComponentsFactory : ComponentsFactory {
         return SwingDialog(parent, title, content)
     }
 
-    override fun createDebugConfigurationDialog(parent: Window?, configuration: DebuggerConfigurationProvider)
+    override fun createDebugConfigurationDialog(parent: Window?, configuration: DebuggerConfiguration)
             : NiddlerDebugConfigurationDialog {
         return SwingNiddlerDebugConfigurationDialog(parent, this, configuration)
+    }
+
+    override fun loadSavedConfiguration(): DebuggerConfiguration {
+        return WrappingDebuggerConfiguration(getConfigFile(DEBUGGER_FILE))
+    }
+
+    override fun saveConfiguration(config: DebuggerConfiguration) {
+        val wrapped = config as? WrappingDebuggerConfiguration ?: WrappingDebuggerConfiguration(config)
+        wrapped.save(getConfigFile(DEBUGGER_FILE))
+    }
+
+    private fun getConfigFile(name: String): File {
+        val rootDir = File(AppDirsFactory.getInstance().getUserConfigDir("Niddler", null, null))
+        rootDir.mkdirs()
+        return File(rootDir, name)
     }
 }

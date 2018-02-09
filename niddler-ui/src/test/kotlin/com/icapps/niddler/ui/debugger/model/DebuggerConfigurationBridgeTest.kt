@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.debugger.model
 
-import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfigurationProvider
+import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.ui.debugger.model.saved.DisableableItem
 import io.mockk.every
 import io.mockk.mockk
@@ -13,7 +13,7 @@ import org.junit.Test
  */
 class DebuggerConfigurationBridgeTest {
 
-    private lateinit var configurationProvider: DebuggerConfigurationProvider
+    private lateinit var configurationProvider: DebuggerConfiguration
     private lateinit var debuggerInterface: DebuggerInterface
     private lateinit var bridge: DebuggerConfigurationBridge
 

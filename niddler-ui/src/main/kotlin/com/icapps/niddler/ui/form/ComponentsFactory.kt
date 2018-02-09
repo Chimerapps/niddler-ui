@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.form
 
-import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfigurationProvider
+import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.ui.form.components.Dialog
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.TabComponent
@@ -25,7 +25,11 @@ interface ComponentsFactory {
 
     fun createDialog(parent: Window?, title: String, content: JComponent): Dialog
 
-    fun createDebugConfigurationDialog(parent: Window?, configuration: DebuggerConfigurationProvider)
+    fun createDebugConfigurationDialog(parent: Window?, configuration: DebuggerConfiguration)
             : NiddlerDebugConfigurationDialog
+
+    fun loadSavedConfiguration(): DebuggerConfiguration
+
+    fun saveConfiguration(config: DebuggerConfiguration)
 }
 

@@ -7,7 +7,7 @@ import com.icapps.niddler.ui.debugger.model.DefaultResponseAction
 /**
  * @author nicolaverbeeck
  */
-interface DebuggerConfigurationProvider {
+interface DebuggerConfiguration {
 
     var delayConfiguration: DisableableItem<DebuggerDelays>
 

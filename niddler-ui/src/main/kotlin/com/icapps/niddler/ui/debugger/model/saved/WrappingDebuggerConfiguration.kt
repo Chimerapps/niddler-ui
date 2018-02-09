@@ -18,7 +18,7 @@ import kotlin.reflect.KProperty
 /**
  * @author nicolaverbeeck
  */
-class WrappingDebuggerConfigurationProvider : DebuggerConfigurationProvider {
+class WrappingDebuggerConfiguration : DebuggerConfiguration {
 
     override var delayConfiguration: DisableableItem<DebuggerDelays> by jsonWrap("delays") {
         DisableableItem(false, DebuggerDelays(null, null, null))
@@ -49,6 +49,17 @@ class WrappingDebuggerConfigurationProvider : DebuggerConfigurationProvider {
         } catch (e: Throwable) {
             JsonObject()
         }
+    }
+
+    constructor() {
+        configurationTree = JsonObject()
+    }
+
+    constructor(source: DebuggerConfiguration) {
+        configurationTree = JsonObject()
+        delayConfiguration = source.delayConfiguration.copy()
+        blacklistConfiguration = source.blacklistConfiguration.map { it.copy() }
+        defaultResponses = source.defaultResponses.map { it.copy() }
     }
 
     fun save(target: File) {
@@ -87,7 +98,7 @@ class WrappingDebuggerConfigurationProvider : DebuggerConfigurationProvider {
     }
 
     private class ExtractingDelegate<T : Any>(private val name: String,
-                                              private val parent: WrappingDebuggerConfigurationProvider,
+                                              private val parent: WrappingDebuggerConfiguration,
                                               private val type: Type,
                                               private val defaultCreator: () -> T) {
 

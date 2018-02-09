@@ -2,7 +2,7 @@ package com.icapps.niddler.ui.form.debug.content
 
 import com.icapps.niddler.ui.addChangeListener
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
-import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfigurationProvider
+import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfiguration
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.text.NumberFormat
@@ -13,7 +13,7 @@ import javax.swing.text.NumberFormatter
 /**
  * @author nicolaverbeeck
  */
-class DelaysConfigurationPanel(private var configuration: TemporaryDebuggerConfigurationProvider)
+class DelaysConfigurationPanel(private var configuration: TemporaryDebuggerConfiguration)
     : JPanel(BorderLayout()), ContentPanel {
 
     private val preBlacklist = DelayPanel("Before blacklist")

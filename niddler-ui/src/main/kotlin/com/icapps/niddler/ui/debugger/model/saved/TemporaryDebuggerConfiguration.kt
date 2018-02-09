@@ -7,7 +7,7 @@ import com.icapps.niddler.ui.debugger.model.DefaultResponseAction
 /**
  * @author nicolaverbeeck
  */
-class TemporaryDebuggerConfigurationProvider(delegate: DebuggerConfigurationProvider) : DebuggerConfigurationProvider {
+class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration) : DebuggerConfiguration {
 
     private val internalBlacklist: MutableList<DisableableItem<String>> = mutableListOf()
     private val internalDefaultResponses: MutableList<DisableableItem<DefaultResponseAction>> = mutableListOf()
