@@ -5,10 +5,10 @@ import javax.swing.tree.TreeNode
 /**
  * @author nicolaverbeeck
  */
-class TimeoutConfigurationRootNode(parent: TreeNode) : CheckedNode(parent) {
+class TimeoutConfigurationRootNode(parent: TreeNode, changeListener: () -> Unit) : CheckedNode(parent, changeListener) {
 
     override fun toString(): String {
-        return "Timeout configuration"
+        return "Delay configuration"
     }
 
     override fun getAllowsChildren(): Boolean {

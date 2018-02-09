@@ -5,10 +5,19 @@ import javax.swing.tree.TreeNode
 /**
  * @author nicolaverbeeck
  */
-class BlacklistRootNode(parent: TreeNode) : DefaultTreeNode(parent) {
+class BlacklistRootNode(parent: TreeNode,
+                        private val changeListener: () -> Unit) : DefaultTreeNode(parent, changeListener) {
 
-    init {
-        addChild(BlacklistNode("*.json", false, this))
+    private val nodes: MutableList<BlacklistNode> = mutableListOf()
+
+    fun addBlacklistItem(regex: String) {
+        val node = BlacklistNode(regex, true, this, changeListener)
+        nodes.add(node)
+        addChild(node)
+    }
+
+    fun isEnabled(regex: String): Boolean {
+        return nodes.find { it.regex == regex }?.enabled == true
     }
 
     override fun toString(): String {

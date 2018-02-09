@@ -5,7 +5,8 @@ import javax.swing.tree.TreeNode
 /**
  * @author nicolaverbeeck
  */
-class BlacklistNode(val regex: String, val enabled: Boolean, parent: TreeNode) : CheckedNode(parent) {
+class BlacklistNode(val regex: String, val enabled: Boolean, parent: TreeNode,
+                    changeListener: () -> Unit) : CheckedNode(parent, changeListener) {
 
     override fun toString(): String {
         return regex

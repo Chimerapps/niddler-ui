@@ -9,6 +9,7 @@ import com.icapps.niddler.ui.form.debug.ConfigurationModel
 import com.icapps.niddler.ui.form.debug.DebugToolbar
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.debug.content.BlacklistPanel
+import com.icapps.niddler.ui.form.debug.content.ContentPanel
 import com.icapps.niddler.ui.form.debug.content.DelaysConfigurationPanel
 import com.icapps.niddler.ui.form.debug.nodes.BlacklistNode
 import com.icapps.niddler.ui.form.debug.nodes.BlacklistRootNode
@@ -19,10 +20,7 @@ import com.icapps.niddler.ui.form.debug.nodes.renderer.DefaultCellRenderer
 import com.icapps.niddler.ui.plusAssign
 import java.awt.BorderLayout
 import java.awt.Window
-import javax.swing.Box
-import javax.swing.JDialog
-import javax.swing.JPanel
-import javax.swing.JTree
+import javax.swing.*
 import javax.swing.tree.TreeSelectionModel
 
 /**
@@ -38,6 +36,12 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         get() = super.isVisible()
         set(value) = super.setVisible(value)
 
+    private var isChanged: Boolean = false
+        set(value) {
+            field = value
+            applyButton.isEnabled = field
+        }
+
     override lateinit var debugToolbar: DebugToolbar
     override lateinit var configurationTree: JTree
     override lateinit var detailPanelContainer: JPanel
@@ -48,10 +52,12 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     protected val rootPanel: JPanel = JPanel(BorderLayout())
     protected val splitPane: SplitPane = factory.createSplitPane()
 
-    protected var currentDetailPanel: CurrentDetailPanel = CurrentDetailPanel.BLACKLIST
+    protected var currentDetailPanelType: CurrentDetailPanelType = CurrentDetailPanelType.BLACKLIST
+    protected var currentDetailPanel: ContentPanel? = null
     protected var currentDetailPayload: Any? = null
 
     protected lateinit var applyListener: (DebuggerConfiguration) -> Unit
+    protected lateinit var applyButton: JComponent
 
     override fun init(applyListener: (DebuggerConfiguration) -> Unit) {
         this.applyListener = applyListener
@@ -59,7 +65,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
         isModal = true
 
-        configurationModel = ConfigurationModel()
+        configurationModel = ConfigurationModel { isChanged = true }
         configurationTree = initConfigurationTree()
         initTreeListener()
 
@@ -74,19 +80,23 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         setSize(600, 300)
         if (parent != null)
             setLocationRelativeTo(parent)
+
+        configurationModel.setDelaysEnabled(changingConfiguration.delayConfiguration.enabled)
+        isChanged = false
     }
 
-    protected fun createActions() {
+    protected open fun createActions() {
         val debugToolbar = SwingDebugToolbar()
         rootPanel.add(debugToolbar, BorderLayout.NORTH)
         this.debugToolbar = debugToolbar
     }
 
-    protected fun createButtons() {
+    protected open fun createButtons() {
         val buttonPanel = Box.createHorizontalBox()
         buttonPanel.add(Box.createHorizontalGlue())
         buttonPanel += button("Cancel") { onCancel() }
-        buttonPanel += button("Apply") { onApply() }
+        applyButton = button("Apply") { onApply() }
+        buttonPanel += applyButton
         buttonPanel += button("Apply and close") {
             onApply()
             visibility = false
@@ -94,7 +104,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         rootPanel.add(buttonPanel, BorderLayout.SOUTH)
     }
 
-    protected fun initConfigurationTree(): JTree {
+    protected open fun initConfigurationTree(): JTree {
         return JTree(configurationModel.treeModel).apply {
 
             showsRootHandles = true
@@ -107,7 +117,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         }
     }
 
-    protected fun initTreeListener() {
+    protected open fun initTreeListener() {
         configurationTree.addTreeSelectionListener { _ ->
             val component = configurationTree.lastSelectedPathComponent
             when (component) {
@@ -118,38 +128,60 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         }
     }
 
-    protected fun onTimeoutNodeSelected() {
-        if (currentDetailPanel == CurrentDetailPanel.TIMEOUT)
+    protected open fun onTimeoutNodeSelected() {
+        if (currentDetailPanelType == CurrentDetailPanelType.DELAYS)
             return
-        currentDetailPanel = CurrentDetailPanel.TIMEOUT
-        splitPane.right = DelaysConfigurationPanel(changingConfiguration)
+
+        currentDetailPanel?.apply(currentNodeEnabled())
+        currentDetailPanelType = CurrentDetailPanelType.DELAYS
+        val right = DelaysConfigurationPanel(changingConfiguration) {
+            isChanged = true
+        }
+        currentDetailPanel = right
+        splitPane.right = right
     }
 
-    protected fun onBlacklistRootNodeSelected() {
+    protected open fun onBlacklistRootNodeSelected() {
         return
     }
 
-    protected fun onBlacklistNodeSelected(regex: String) {
-        if (currentDetailPanel == CurrentDetailPanel.BLACKLIST && currentDetailPayload == regex)
+    protected open fun onBlacklistNodeSelected(regex: String) {
+        if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST && currentDetailPayload == regex)
             return
 
-        currentDetailPanel = CurrentDetailPanel.BLACKLIST
+        currentDetailPanel?.apply(currentNodeEnabled())
+
+        currentDetailPanelType = CurrentDetailPanelType.BLACKLIST
         currentDetailPayload = regex
-        splitPane.right = BlacklistPanel(changingConfiguration).apply {
+
+        val right = BlacklistPanel(changingConfiguration)
+        currentDetailPanel = right
+        splitPane.right = right.apply {
             init(changingConfiguration.blacklistConfiguration.first { it.item == regex })
         }
     }
 
-    protected fun onCancel() {
+    protected open fun onCancel() {
         visibility = false
     }
 
-    protected fun onApply() {
+    protected open fun onApply() {
+        currentDetailPanel?.apply(currentNodeEnabled())
+        isChanged = false
         applyListener(changingConfiguration)
     }
 
-    enum class CurrentDetailPanel {
-        TIMEOUT,
+    protected open fun currentNodeEnabled(): Boolean {
+        return when (currentDetailPanelType) {
+            SwingNiddlerDebugConfigurationDialog.CurrentDetailPanelType.DELAYS ->
+                configurationModel.isDelaysEnabled()
+            SwingNiddlerDebugConfigurationDialog.CurrentDetailPanelType.BLACKLIST ->
+                configurationModel.isBlacklistEnabled(currentDetailPayload as? String?)
+        }
+    }
+
+    enum class CurrentDetailPanelType {
+        DELAYS,
         BLACKLIST
     }
 

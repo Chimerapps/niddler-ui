@@ -3,22 +3,27 @@ package com.icapps.niddler.ui.form.debug.content
 import com.icapps.niddler.ui.addChangeListener
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
 import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfiguration
+import com.icapps.niddler.ui.form.MainThreadDispatcher
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.text.NumberFormat
-import javax.swing.*
+import javax.swing.Box
+import javax.swing.JFormattedTextField
+import javax.swing.JLabel
+import javax.swing.JPanel
 import javax.swing.border.EmptyBorder
 import javax.swing.text.NumberFormatter
 
 /**
  * @author nicolaverbeeck
  */
-class DelaysConfigurationPanel(private var configuration: TemporaryDebuggerConfiguration)
+class DelaysConfigurationPanel(private var configuration: TemporaryDebuggerConfiguration,
+                               changeListener: () -> Unit)
     : JPanel(BorderLayout()), ContentPanel {
 
-    private val preBlacklist = DelayPanel("Before blacklist")
-    private val postBlacklist = DelayPanel("After blacklist")
-    private val ensureCallTime = DelayPanel("Ensure call time")
+    private val preBlacklist = DelayPanel("Before blacklist", changeListener)
+    private val postBlacklist = DelayPanel("After blacklist", changeListener)
+    private val ensureCallTime = DelayPanel("Ensure call time", changeListener)
 
     init {
         val rootBox = Box.createVerticalBox()
@@ -38,6 +43,12 @@ class DelaysConfigurationPanel(private var configuration: TemporaryDebuggerConfi
         set(preBlacklist, currentConfig.preBlacklist)
         set(postBlacklist, currentConfig.postBlacklist)
         set(ensureCallTime, currentConfig.timePerCall)
+
+        MainThreadDispatcher.dispatch {
+            preBlacklist.initComplete()
+            postBlacklist.initComplete()
+            ensureCallTime.initComplete()
+        }
     }
 
     override fun apply(isEnabled: Boolean) {
@@ -50,36 +61,38 @@ class DelaysConfigurationPanel(private var configuration: TemporaryDebuggerConfi
     }
 
     private fun extractTime(panel: DelayPanel): Long? {
-        if (panel.checkbox.isSelected)
-            return panel.field.text.toLongOrNull()
-        return null
+        return panel.field.text.toLongOrNull()
     }
 
     private fun set(panel: DelayPanel, time: Long?) {
-        panel.checkbox.isSelected = time != null
         panel.field.text = time?.toString() ?: ""
     }
 
-    private class DelayPanel(title: String) : JPanel(BorderLayout()) {
+    private class DelayPanel(title: String, private var changeListener: () -> Unit) : JPanel(BorderLayout()) {
 
-        val checkbox: JCheckBox = JCheckBox()
         val field: JFormattedTextField = JFormattedTextField(numberFormatter())
+        private var initComplete = false
 
         init {
-            add(JLabel(title), BorderLayout.NORTH)
+            add(JLabel(title).apply { border = EmptyBorder(0, 3, 0, 0) }, BorderLayout.NORTH)
 
             field.apply {
                 maximumSize = Dimension(maximumSize.width, preferredSize.height)
             }
-            field.addChangeListener { checkbox.isSelected = it.text.isNotEmpty() }
+            field.addChangeListener {
+                if (initComplete)
+                    changeListener()
+            }
 
-            add(checkbox, BorderLayout.WEST)
             add(field, BorderLayout.CENTER)
 
             preferredSize = Dimension(300, preferredSize.height)
             minimumSize = Dimension(300, minimumSize.height)
         }
 
+        fun initComplete() {
+            initComplete = true
+        }
 
         private fun numberFormatter(): NumberFormatter {
             val format = NumberFormat.getIntegerInstance()

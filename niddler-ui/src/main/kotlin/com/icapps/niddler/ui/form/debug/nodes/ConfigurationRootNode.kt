@@ -3,12 +3,18 @@ package com.icapps.niddler.ui.form.debug.nodes
 /**
  * @author nicolaverbeeck
  */
-class ConfigurationRootNode : DefaultTreeNode(null) {
+class ConfigurationRootNode(changeListener: () -> Unit) : DefaultTreeNode(null, changeListener) {
+
+    val delaysRoot: CheckedNode
+    val blacklistRoot: BlacklistRootNode
 
     init {
-        addChild(TimeoutConfigurationRootNode(this))
-        addChild(BlacklistRootNode(this))
-        addChild(DefaultResponsesNode(this))
+        delaysRoot = TimeoutConfigurationRootNode(this, changeListener)
+        blacklistRoot = BlacklistRootNode(this, changeListener)
+        addChild(delaysRoot)
+        addChild(blacklistRoot)
+        addChild(DefaultResponsesNode(this, changeListener))
     }
+
 
 }

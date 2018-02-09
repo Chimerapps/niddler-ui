@@ -7,7 +7,8 @@ import javax.swing.tree.TreeNode
 /**
  * @author nicolaverbeeck
  */
-abstract class DefaultTreeNode(private val parent: TreeNode?) : MutableTreeNode {
+abstract class DefaultTreeNode(private val parent: TreeNode?,
+                               private val changeListener: () -> Unit) : MutableTreeNode {
 
     private val children = mutableListOf<TreeNode>()
 
@@ -46,7 +47,13 @@ abstract class DefaultTreeNode(private val parent: TreeNode?) : MutableTreeNode 
     }
 
     override fun setUserObject(obj: Any?) {
-        println(obj)
+        if (this is CheckedNode && obj is Pair<*, *>) {
+            val newValue = obj.second as Boolean
+            if (newValue != isChecked) {
+                isChecked = newValue
+                changeListener()
+            }
+        }
     }
 
     override fun remove(index: Int) {

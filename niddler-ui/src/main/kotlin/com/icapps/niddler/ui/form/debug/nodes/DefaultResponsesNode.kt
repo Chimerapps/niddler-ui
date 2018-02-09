@@ -5,7 +5,7 @@ import javax.swing.tree.TreeNode
 /**
  * @author nicolaverbeeck
  */
-class DefaultResponsesNode(parent: TreeNode?) : DefaultTreeNode(parent) {
+class DefaultResponsesNode(parent: TreeNode?, changeListener: () -> Unit) : DefaultTreeNode(parent, changeListener) {
 
     override fun toString(): String {
         return "Default responses"
