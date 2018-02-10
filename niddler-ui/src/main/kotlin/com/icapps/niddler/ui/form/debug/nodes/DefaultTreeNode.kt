@@ -8,12 +8,12 @@ import javax.swing.tree.TreeNode
  * @author nicolaverbeeck
  */
 abstract class DefaultTreeNode(private val parent: TreeNode?,
-                               private val changeListener: () -> Unit) : MutableTreeNode {
+                               private val changeListener: (node: CheckedNode) -> Unit) : MutableTreeNode {
 
     private val children = mutableListOf<TreeNode>()
 
     override fun children(): Enumeration<*> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw IllegalStateException("Not allowed")
     }
 
     override fun isLeaf(): Boolean = children.isEmpty()
@@ -39,11 +39,11 @@ abstract class DefaultTreeNode(private val parent: TreeNode?,
     }
 
     override fun insert(child: MutableTreeNode?, index: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw IllegalStateException("Not allowed")
     }
 
     override fun setParent(newParent: MutableTreeNode?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw IllegalStateException("Not allowed")
     }
 
     override fun setUserObject(obj: Any?) {
@@ -51,20 +51,20 @@ abstract class DefaultTreeNode(private val parent: TreeNode?,
             val newValue = obj.second as Boolean
             if (newValue != isChecked) {
                 isChecked = newValue
-                changeListener()
+                changeListener(this)
             }
         }
     }
 
     override fun remove(index: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw IllegalStateException("Not allowed")
     }
 
     override fun remove(node: MutableTreeNode?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw IllegalStateException("Not allowed")
     }
 
     override fun removeFromParent() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        throw IllegalStateException("Not allowed")
     }
 }

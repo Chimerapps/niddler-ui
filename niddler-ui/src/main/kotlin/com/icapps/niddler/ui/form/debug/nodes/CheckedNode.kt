@@ -5,7 +5,8 @@ import javax.swing.tree.TreeNode
 /**
  * @author nicolaverbeeck
  */
-open class CheckedNode(parent: TreeNode,changeListener: () -> Unit) : DefaultTreeNode(parent,changeListener) {
+open class CheckedNode(parent: TreeNode,
+                       changeListener: (node: CheckedNode) -> Unit) : DefaultTreeNode(parent, changeListener) {
 
     open var isChecked: Boolean = false
 

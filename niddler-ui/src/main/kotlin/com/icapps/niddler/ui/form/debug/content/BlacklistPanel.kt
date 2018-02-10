@@ -18,6 +18,9 @@ class BlacklistPanel(private val configuration: TemporaryDebuggerConfiguration) 
     private lateinit var startRegex: String
     private var item: DisableableItem<String>? = null
 
+    private val enabledFlag: JCheckBox = JCheckBox("Enabled")
+    override var enableListener: ((enabled: Boolean) -> Unit)? = null
+
     init {
         editField.maximumSize = Dimension(editField.maximumSize.width, editField.preferredSize.height)
         testEditField.maximumSize = Dimension(testEditField.maximumSize.width, testEditField.preferredSize.height)
@@ -30,6 +33,9 @@ class BlacklistPanel(private val configuration: TemporaryDebuggerConfiguration) 
             border = EmptyBorder(0, 5, 0, 0)
         })
 
+        box.add(enabledFlag)
+        enabledFlag.addActionListener { enableListener?.invoke(enabledFlag.isSelected) }
+
         val horizontalBox = Box.createHorizontalBox()
         horizontalBox.alignmentX = JComponent.LEFT_ALIGNMENT
 
@@ -40,9 +46,14 @@ class BlacklistPanel(private val configuration: TemporaryDebuggerConfiguration) 
         add(box)
     }
 
+    override fun updateEnabledFlag(enabled: Boolean) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     fun init(item: DisableableItem<String>) {
         startRegex = item.item
         editField.text = startRegex
+        enabledFlag.isSelected = item.enabled
         this.item = item
     }
 
@@ -50,6 +61,7 @@ class BlacklistPanel(private val configuration: TemporaryDebuggerConfiguration) 
         startRegex = ""
         item = null
         editField.text = startRegex
+        enabledFlag.isSelected = true
     }
 
     override fun apply(isEnabled: Boolean) {

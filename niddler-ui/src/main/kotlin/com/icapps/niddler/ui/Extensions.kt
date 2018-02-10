@@ -2,6 +2,7 @@ package com.icapps.niddler.ui
 
 import com.icapps.niddler.ui.form.MainThreadDispatcher
 import java.awt.Dimension
+import java.awt.Font
 import java.beans.PropertyChangeEvent
 import java.util.*
 import javax.swing.*
@@ -109,4 +110,14 @@ fun button(title: String, listener: () -> Unit): JButton {
 
 operator fun JComponent.plusAssign(component: JComponent) {
     add(component)
+}
+
+fun JComponent.left(): JComponent {
+    alignmentX = JComponent.LEFT_ALIGNMENT
+    return this
+}
+
+fun JLabel.bold(): JLabel {
+    font = font.deriveFont(font.style or Font.BOLD)
+    return this
 }

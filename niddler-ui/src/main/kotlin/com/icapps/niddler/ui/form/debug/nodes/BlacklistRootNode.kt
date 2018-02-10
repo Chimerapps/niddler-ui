@@ -6,7 +6,8 @@ import javax.swing.tree.TreeNode
  * @author nicolaverbeeck
  */
 class BlacklistRootNode(parent: TreeNode,
-                        private val changeListener: () -> Unit) : DefaultTreeNode(parent, changeListener) {
+                        private val changeListener: (node: CheckedNode) -> Unit)
+    : CheckedNode(parent, changeListener) {
 
     private val nodes: MutableList<BlacklistNode> = mutableListOf()
 

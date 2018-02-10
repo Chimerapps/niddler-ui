@@ -5,6 +5,10 @@ package com.icapps.niddler.ui.form.debug.content
  */
 interface ContentPanel {
 
+    var enableListener: ((enabled: Boolean) -> Unit)?
+
     fun apply(isEnabled: Boolean)
+
+    fun updateEnabledFlag(enabled: Boolean)
 
 }

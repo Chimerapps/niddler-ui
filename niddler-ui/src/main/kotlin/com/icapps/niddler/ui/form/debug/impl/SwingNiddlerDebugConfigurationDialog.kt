@@ -13,7 +13,8 @@ import com.icapps.niddler.ui.form.debug.content.ContentPanel
 import com.icapps.niddler.ui.form.debug.content.DelaysConfigurationPanel
 import com.icapps.niddler.ui.form.debug.nodes.BlacklistNode
 import com.icapps.niddler.ui.form.debug.nodes.BlacklistRootNode
-import com.icapps.niddler.ui.form.debug.nodes.TimeoutConfigurationRootNode
+import com.icapps.niddler.ui.form.debug.nodes.CheckedNode
+import com.icapps.niddler.ui.form.debug.nodes.DelaysConfigurationRootNode
 import com.icapps.niddler.ui.form.debug.nodes.renderer.CheckboxCellEditor
 import com.icapps.niddler.ui.form.debug.nodes.renderer.CheckedCellRenderer
 import com.icapps.niddler.ui.form.debug.nodes.renderer.DefaultCellRenderer
@@ -58,6 +59,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
     protected lateinit var applyListener: (DebuggerConfiguration) -> Unit
     protected lateinit var applyButton: JComponent
+    protected lateinit var leftComponent: JComponent
 
     override fun init(applyListener: (DebuggerConfiguration) -> Unit) {
         this.applyListener = applyListener
@@ -65,11 +67,17 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
         isModal = true
 
-        configurationModel = ConfigurationModel { isChanged = true }
+        configurationModel = ConfigurationModel {
+            updatePanelCheckedStateIfRequired(it)
+            isChanged = true
+        }
         configurationTree = initConfigurationTree()
         initTreeListener()
 
-        splitPane.left = factory.createScrollPane().apply { setViewportView(configurationTree) }
+        leftComponent = JPanel(BorderLayout())
+        leftComponent.add(factory.createScrollPane().apply { setViewportView(configurationTree) }, BorderLayout.CENTER)
+
+        splitPane.left = leftComponent
         splitPane.right = BlacklistPanel(changingConfiguration)
 
         rootPanel.add(splitPane.asComponent, BorderLayout.CENTER)
@@ -87,8 +95,8 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
     protected open fun createActions() {
         val debugToolbar = SwingDebugToolbar()
-        rootPanel.add(debugToolbar, BorderLayout.NORTH)
         this.debugToolbar = debugToolbar
+        leftComponent.add(debugToolbar, BorderLayout.NORTH)
     }
 
     protected open fun createButtons() {
@@ -121,14 +129,14 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         configurationTree.addTreeSelectionListener { _ ->
             val component = configurationTree.lastSelectedPathComponent
             when (component) {
-                is TimeoutConfigurationRootNode -> onTimeoutNodeSelected()
+                is DelaysConfigurationRootNode -> onDelaySelected()
                 is BlacklistRootNode -> onBlacklistRootNodeSelected()
                 is BlacklistNode -> onBlacklistNodeSelected(component.regex)
             }
         }
     }
 
-    protected open fun onTimeoutNodeSelected() {
+    protected open fun onDelaySelected() {
         if (currentDetailPanelType == CurrentDetailPanelType.DELAYS)
             return
 
@@ -136,6 +144,9 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         currentDetailPanelType = CurrentDetailPanelType.DELAYS
         val right = DelaysConfigurationPanel(changingConfiguration) {
             isChanged = true
+        }
+        right.enableListener = {
+            configurationModel.setDelaysEnabled(it)
         }
         currentDetailPanel = right
         splitPane.right = right
@@ -177,6 +188,20 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
                 configurationModel.isDelaysEnabled()
             SwingNiddlerDebugConfigurationDialog.CurrentDetailPanelType.BLACKLIST ->
                 configurationModel.isBlacklistEnabled(currentDetailPayload as? String?)
+        }
+    }
+
+    protected open fun updatePanelCheckedStateIfRequired(node: CheckedNode) {
+        when (node) {
+            is DelaysConfigurationRootNode -> if (currentDetailPanelType == CurrentDetailPanelType.DELAYS) {
+                currentDetailPanel?.updateEnabledFlag(node.isChecked)
+            }
+            is BlacklistRootNode -> if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST) {
+                currentDetailPanel?.updateEnabledFlag(node.isChecked)
+            }
+            is BlacklistNode -> if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST && node.regex == currentDetailPayload) {
+                currentDetailPanel?.updateEnabledFlag(node.isChecked)
+            }
         }
     }
 
