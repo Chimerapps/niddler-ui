@@ -55,7 +55,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     protected val rootPanel: JPanel = JPanel(BorderLayout())
     protected val splitPane: SplitPane = factory.createSplitPane()
 
-    protected var currentDetailPanelType: CurrentDetailPanelType = CurrentDetailPanelType.BLACKLIST
+    protected var currentDetailPanelType: CurrentDetailPanelType? = null
     protected var currentDetailPanel: ContentPanel? = null
     protected var currentDetailPayload: Any? = null
 
@@ -77,7 +77,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         leftComponent.add(factory.createScrollPane().apply { setViewportView(configurationTree) }, BorderLayout.CENTER)
 
         splitPane.left = leftComponent
-        splitPane.right = BlacklistPanel(changingConfiguration)
+        splitPane.right = JPanel()
 
         rootPanel.add(splitPane.asComponent, BorderLayout.CENTER)
 
@@ -155,6 +155,10 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     }
 
     protected open fun onBlacklistRootNodeSelected() {
+        currentDetailPanel?.apply(currentNodeEnabled())
+        currentDetailPanel = null
+        currentDetailPanelType = null
+        splitPane.right = JPanel()
         return
     }
 
@@ -190,6 +194,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
                 configurationModel.isDelaysEnabled()
             SwingNiddlerDebugConfigurationDialog.CurrentDetailPanelType.BLACKLIST ->
                 configurationModel.isBlacklistEnabled(currentDetailPayload as? String?)
+            else -> false
         }
     }
 
