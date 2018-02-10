@@ -11,18 +11,18 @@ import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.debug.content.BlacklistPanel
 import com.icapps.niddler.ui.form.debug.content.ContentPanel
 import com.icapps.niddler.ui.form.debug.content.DelaysConfigurationPanel
-import com.icapps.niddler.ui.form.debug.nodes.BlacklistNode
-import com.icapps.niddler.ui.form.debug.nodes.BlacklistRootNode
 import com.icapps.niddler.ui.form.debug.nodes.CheckedNode
-import com.icapps.niddler.ui.form.debug.nodes.DelaysConfigurationRootNode
-import com.icapps.niddler.ui.form.debug.nodes.renderer.CheckboxCellEditor
-import com.icapps.niddler.ui.form.debug.nodes.renderer.CheckedCellRenderer
-import com.icapps.niddler.ui.form.debug.nodes.renderer.DefaultCellRenderer
+import com.icapps.niddler.ui.form.debug.nodes.swing.SwingBlacklistNode
+import com.icapps.niddler.ui.form.debug.nodes.swing.SwingBlacklistRootNode
+import com.icapps.niddler.ui.form.debug.nodes.swing.SwingDelaysConfigurationRootNode
 import com.icapps.niddler.ui.plusAssign
+import org.scijava.swing.checkboxtree.CheckBoxNodeEditor
+import org.scijava.swing.checkboxtree.CheckBoxNodeRenderer
 import java.awt.BorderLayout
 import java.awt.Window
 import javax.swing.*
 import javax.swing.tree.TreeSelectionModel
+
 
 /**
  * @author nicolaverbeeck
@@ -41,6 +41,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         set(value) {
             field = value
             applyButton.isEnabled = field
+
         }
 
     override lateinit var debugToolbar: DebugToolbar
@@ -68,6 +69,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         isModal = true
 
         configurationModel = ConfigurationModel {
+            updateConfigurationModel()
             updatePanelCheckedStateIfRequired(it)
             isChanged = true
         }
@@ -116,8 +118,11 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         return JTree(configurationModel.treeModel).apply {
 
             showsRootHandles = true
-            cellRenderer = CheckedCellRenderer(DefaultCellRenderer())
-            cellEditor = CheckboxCellEditor(cellRenderer as CheckedCellRenderer, this)
+            val renderer = CheckBoxNodeRenderer()
+            cellRenderer = renderer
+
+            val editor = CheckBoxNodeEditor(this)
+            cellEditor = editor
             isEditable = true
             isRootVisible = false
 
@@ -129,9 +134,9 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         configurationTree.addTreeSelectionListener { _ ->
             val component = configurationTree.lastSelectedPathComponent
             when (component) {
-                is DelaysConfigurationRootNode -> onDelaySelected()
-                is BlacklistRootNode -> onBlacklistRootNodeSelected()
-                is BlacklistNode -> onBlacklistNodeSelected(component.regex)
+                is SwingDelaysConfigurationRootNode -> onDelaySelected()
+                is SwingBlacklistRootNode -> onBlacklistRootNodeSelected()
+                is SwingBlacklistNode -> onBlacklistNodeSelected(component.regex)
             }
         }
     }
@@ -193,16 +198,21 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
     protected open fun updatePanelCheckedStateIfRequired(node: CheckedNode) {
         when (node) {
-            is DelaysConfigurationRootNode -> if (currentDetailPanelType == CurrentDetailPanelType.DELAYS) {
-                currentDetailPanel?.updateEnabledFlag(node.isChecked)
+            is SwingDelaysConfigurationRootNode -> if (currentDetailPanelType == CurrentDetailPanelType.DELAYS) {
+                currentDetailPanel?.updateEnabledFlag(node.nodeCheckState)
             }
-            is BlacklistRootNode -> if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST) {
-                currentDetailPanel?.updateEnabledFlag(node.isChecked)
+            is SwingBlacklistRootNode -> if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST) {
+                currentDetailPanel?.updateEnabledFlag(node.nodeCheckState)
             }
-            is BlacklistNode -> if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST && node.regex == currentDetailPayload) {
-                currentDetailPanel?.updateEnabledFlag(node.isChecked)
+            is SwingBlacklistNode -> if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST && node.regex == currentDetailPayload) {
+                currentDetailPanel?.updateEnabledFlag(node.nodeCheckState)
             }
         }
+    }
+
+    protected open fun updateConfigurationModel() {
+        configurationModel.treeModel.reload()
+        configurationTree.repaint()
     }
 
     enum class CurrentDetailPanelType {

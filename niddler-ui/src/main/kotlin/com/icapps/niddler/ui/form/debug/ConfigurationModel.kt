@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.debug
 
 import com.icapps.niddler.ui.form.debug.nodes.CheckedNode
-import com.icapps.niddler.ui.form.debug.nodes.ConfigurationRootNode
+import com.icapps.niddler.ui.form.debug.nodes.swing.SwingConfigurationRootNode
 import javax.swing.tree.DefaultTreeModel
 
 /**
@@ -10,14 +10,14 @@ import javax.swing.tree.DefaultTreeModel
 class ConfigurationModel(changeListener: (node: CheckedNode) -> Unit) {
 
     val treeModel: DefaultTreeModel
-    val root: ConfigurationRootNode = ConfigurationRootNode(changeListener)
+    val root: SwingConfigurationRootNode = SwingConfigurationRootNode(changeListener)
 
     init {
         treeModel = DefaultTreeModel(root, true)
     }
 
     fun isDelaysEnabled(): Boolean {
-        return root.delaysRoot.isChecked
+        return root.delaysRoot.nodeCheckState
     }
 
     fun isBlacklistEnabled(regex: String?): Boolean {
@@ -28,7 +28,7 @@ class ConfigurationModel(changeListener: (node: CheckedNode) -> Unit) {
     }
 
     fun setDelaysEnabled(enabled: Boolean) {
-        root.delaysRoot.isChecked = enabled
-        treeModel.nodeChanged(root.delaysRoot)
+        root.delaysRoot.nodeCheckState = enabled
+        treeModel.reload()
     }
 }
