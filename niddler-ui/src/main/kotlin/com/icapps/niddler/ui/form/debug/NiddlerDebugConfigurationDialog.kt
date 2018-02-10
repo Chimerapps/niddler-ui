@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form.debug
 
 import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
+import com.icapps.niddler.ui.form.debug.nodes.TreeNode
 import javax.swing.JPanel
 import javax.swing.JTree
 
@@ -18,6 +19,8 @@ interface NiddlerDebugConfigurationDialog {
     val configurationModel: ConfigurationModel
 
     fun init(applyListener: (DebuggerConfiguration) -> Unit)
+
+    fun focusOnNode(node: TreeNode)
 
 }
 

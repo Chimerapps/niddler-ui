@@ -8,14 +8,17 @@ import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.debug.ConfigurationModel
 import com.icapps.niddler.ui.form.debug.DebugToolbar
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
+import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationHelper
 import com.icapps.niddler.ui.form.debug.content.BlacklistPanel
 import com.icapps.niddler.ui.form.debug.content.ContentPanel
 import com.icapps.niddler.ui.form.debug.content.DelaysConfigurationPanel
 import com.icapps.niddler.ui.form.debug.nodes.CheckedNode
+import com.icapps.niddler.ui.form.debug.nodes.TreeNode
 import com.icapps.niddler.ui.form.debug.nodes.swing.SwingBlacklistNode
 import com.icapps.niddler.ui.form.debug.nodes.swing.SwingBlacklistRootNode
 import com.icapps.niddler.ui.form.debug.nodes.swing.SwingDelaysConfigurationRootNode
 import com.icapps.niddler.ui.form.debug.nodes.swing.SwingNodeBuilder
+import com.icapps.niddler.ui.path
 import com.icapps.niddler.ui.plusAssign
 import org.scijava.swing.checkboxtree.CheckBoxNodeEditor
 import org.scijava.swing.checkboxtree.CheckBoxNodeRenderer
@@ -42,7 +45,6 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         set(value) {
             field = value
             applyButton.isEnabled = field
-
         }
 
     override lateinit var debugToolbar: DebugToolbar
@@ -83,6 +85,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
         createActions()
         createButtons()
+        createToolbarListener()
 
         setSize(600, 300)
         if (parent != null)
@@ -90,6 +93,10 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
         configurationModel.setDelaysEnabled(changingConfiguration.delayConfiguration.enabled)
         isChanged = false
+    }
+
+    override fun focusOnNode(node: TreeNode) {
+        configurationTree.selectionPath = (node as javax.swing.tree.TreeNode).path()
     }
 
     protected open fun createActions() {
@@ -218,11 +225,15 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     }
 
     protected open fun createConfigurationModel() {
-        configurationModel = ConfigurationModel(SwingNodeBuilder {
+        configurationModel = ConfigurationModel(SwingNodeBuilder(changingConfiguration) {
             updateConfigurationModel()
             updatePanelCheckedStateIfRequired(it)
             isChanged = true
         })
+    }
+
+    protected open fun createToolbarListener() {
+        debugToolbar.listener = NiddlerDebugConfigurationHelper(this, factory, this, configurationModel)
     }
 
     enum class CurrentDetailPanelType {

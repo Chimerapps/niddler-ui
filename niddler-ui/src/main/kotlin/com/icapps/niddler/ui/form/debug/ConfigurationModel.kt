@@ -11,25 +11,25 @@ import javax.swing.tree.TreeNode
 class ConfigurationModel(nodeBuilder: NodeBuilder) {
 
     val treeModel: DefaultTreeModel
-    val root: ConfigurationRootNode = nodeBuilder.createRootNode()
+    val configurationRoot: ConfigurationRootNode = nodeBuilder.createRootNode()
 
     init {
-        treeModel = DefaultTreeModel(root as TreeNode, true)
+        treeModel = DefaultTreeModel(configurationRoot as TreeNode, true)
     }
 
     fun isDelaysEnabled(): Boolean {
-        return root.delaysRoot.nodeCheckState
+        return configurationRoot.delaysRoot.nodeCheckState
     }
 
     fun isBlacklistEnabled(regex: String?): Boolean {
         if (regex == null)
             return false
 
-        return root.blacklistRoot.isEnabled(regex)
+        return configurationRoot.blacklistRoot.isEnabled(regex)
     }
 
     fun setDelaysEnabled(enabled: Boolean) {
-        root.delaysRoot.nodeCheckState = enabled
+        configurationRoot.delaysRoot.nodeCheckState = enabled
         treeModel.reload()
     }
 }

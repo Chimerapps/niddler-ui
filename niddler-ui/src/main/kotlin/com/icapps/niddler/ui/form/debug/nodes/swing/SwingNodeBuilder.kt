@@ -1,14 +1,16 @@
 package com.icapps.niddler.ui.form.debug.nodes.swing
 
+import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfiguration
 import com.icapps.niddler.ui.form.debug.nodes.*
 
 /**
  * @author nicolaverbeeck
  */
-class SwingNodeBuilder(private val changeListener: (node: CheckedNode) -> Unit) : NodeBuilder {
+class SwingNodeBuilder(private val configuration: TemporaryDebuggerConfiguration,
+                       private val changeListener: (node: CheckedNode) -> Unit) : NodeBuilder {
 
     override fun createBlacklistRootNode(isChecked: Boolean): BlacklistRootNode {
-        return SwingBlacklistRootNode(isChecked, changeListener)
+        return SwingBlacklistRootNode(isChecked, configuration, changeListener)
     }
 
     override fun createDelaysConfigurationNode(isChecked: Boolean): DelaysConfigurationRootNode {
@@ -24,7 +26,7 @@ class SwingNodeBuilder(private val changeListener: (node: CheckedNode) -> Unit) 
     }
 
     override fun createRootNode(): ConfigurationRootNode {
-        return SwingConfigurationRootNode(changeListener)
+        return SwingConfigurationRootNode(configuration, changeListener)
     }
 
 

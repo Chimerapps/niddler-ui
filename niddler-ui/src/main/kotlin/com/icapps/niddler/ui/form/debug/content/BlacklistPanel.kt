@@ -47,7 +47,7 @@ class BlacklistPanel(private val configuration: TemporaryDebuggerConfiguration) 
     }
 
     override fun updateEnabledFlag(enabled: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        enabledFlag.isSelected = enabled
     }
 
     fun init(item: DisableableItem<String>) {

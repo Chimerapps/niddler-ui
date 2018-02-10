@@ -1,20 +1,29 @@
 package com.icapps.niddler.ui.form.debug
 
-import com.icapps.niddler.ui.debugger.model.DebuggerInterface
 import com.icapps.niddler.ui.form.ComponentsFactory
-import com.icapps.niddler.ui.form.debug.content.DelaysConfigurationPanel
+import com.icapps.niddler.ui.form.debug.dialog.EnterRegexDialog
 import java.awt.Window
+import javax.swing.JOptionPane
 
 /**
  * @author nicolaverbeeck
  */
-class NiddlerDebugConfigurationHelper(private val owner: Window?,
-                                      private val factory: ComponentsFactory,
-                                      private val debuggerInterface: DebuggerInterface)
+open class NiddlerDebugConfigurationHelper(private val owner: Window?,
+                                           private val factory: ComponentsFactory,
+                                           private val configurationDialog: NiddlerDebugConfigurationDialog,
+                                           private val configurationModel: ConfigurationModel)
     : DebugToolbar.DebugToolbarListener {
 
     override fun onAddBlacklist() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val regex = EnterRegexDialog(owner, "Add new blacklist item", factory).show() ?: return
+
+        try {
+            val node = configurationModel.configurationRoot.blacklistRoot.addBlacklistItem(regex)
+            configurationDialog.focusOnNode(node)
+        } catch (e: Exception) {
+            showError(e)
+        }
+
     }
 
     override fun onAddRequestInterceptor() {
@@ -33,4 +42,7 @@ class NiddlerDebugConfigurationHelper(private val owner: Window?,
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    protected open fun showError(e: Exception) {
+        JOptionPane.showMessageDialog(owner, e.message)
+    }
 }

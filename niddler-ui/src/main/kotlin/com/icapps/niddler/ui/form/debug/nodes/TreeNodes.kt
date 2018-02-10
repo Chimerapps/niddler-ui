@@ -15,7 +15,7 @@ interface CheckedNode : TreeNode {
 
 interface BlacklistRootNode : CheckedNode {
 
-    fun addBlacklistItem(regex: String)
+    fun addBlacklistItem(regex: String): BlacklistItemNode
 
     fun isEnabled(regex: String): Boolean
 

@@ -9,6 +9,8 @@ import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.text.Document
+import javax.swing.tree.TreeNode
+import javax.swing.tree.TreePath
 
 
 /**
@@ -120,4 +122,16 @@ fun JComponent.left(): JComponent {
 fun JLabel.bold(): JLabel {
     font = font.deriveFont(font.style or Font.BOLD)
     return this
+}
+
+fun TreeNode.path(): TreePath {
+    val nodes = ArrayList<Any>()
+    nodes.add(this)
+
+    var treeNode = parent
+    while (treeNode != null) {
+        nodes.add(0, treeNode)
+        treeNode = treeNode.parent
+    }
+    return TreePath(nodes.toTypedArray())
 }
