@@ -13,10 +13,44 @@ interface CheckedNode : TreeNode {
 
 }
 
-interface BlacklistRootNode : CheckedNode
+interface BlacklistRootNode : CheckedNode {
+
+    fun addBlacklistItem(regex: String)
+
+    fun isEnabled(regex: String): Boolean
+
+}
 
 interface DelaysConfigurationRootNode : CheckedNode
 
-interface BlacklistItemNode : CheckedNode
+interface BlacklistItemNode : CheckedNode {
 
-interface DefaultResponsesNode : CheckedNode
+    val regex: String
+
+    fun updateRegex(regex: String)
+
+}
+
+interface DefaultResponseRootNode : CheckedNode
+
+interface ConfigurationRootNode : TreeNode {
+
+    val delaysRoot: DelaysConfigurationRootNode
+
+    val blacklistRoot: BlacklistRootNode
+
+}
+
+interface NodeBuilder {
+
+    fun createBlacklistRootNode(isChecked: Boolean): BlacklistRootNode
+
+    fun createDelaysConfigurationNode(isChecked: Boolean): DelaysConfigurationRootNode
+
+    fun createBlacklistNode(regex: String, isChecked: Boolean): BlacklistItemNode
+
+    fun createDefaultResponseRootNode(isChecked: Boolean): DefaultResponseRootNode
+
+    fun createRootNode(): ConfigurationRootNode
+
+}

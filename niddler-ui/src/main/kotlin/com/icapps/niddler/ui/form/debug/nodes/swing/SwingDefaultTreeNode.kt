@@ -21,7 +21,7 @@ abstract class SwingDefaultTreeNode(userData: Any?,
 
     override fun setUserObject(obj: Any?) {
         if (this is CheckedNode && obj is CheckBoxNodeData) {
-            val newValue = obj.isChecked as Boolean
+            val newValue = obj.isChecked
             if (newValue != nodeCheckState) {
                 nodeCheckState = newValue
                 changeListener(this)

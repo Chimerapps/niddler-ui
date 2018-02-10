@@ -1,19 +1,20 @@
 package com.icapps.niddler.ui.form.debug
 
-import com.icapps.niddler.ui.form.debug.nodes.CheckedNode
-import com.icapps.niddler.ui.form.debug.nodes.swing.SwingConfigurationRootNode
+import com.icapps.niddler.ui.form.debug.nodes.ConfigurationRootNode
+import com.icapps.niddler.ui.form.debug.nodes.NodeBuilder
 import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.TreeNode
 
 /**
  * @author nicolaverbeeck
  */
-class ConfigurationModel(changeListener: (node: CheckedNode) -> Unit) {
+class ConfigurationModel(nodeBuilder: NodeBuilder) {
 
     val treeModel: DefaultTreeModel
-    val root: SwingConfigurationRootNode = SwingConfigurationRootNode(changeListener)
+    val root: ConfigurationRootNode = nodeBuilder.createRootNode()
 
     init {
-        treeModel = DefaultTreeModel(root, true)
+        treeModel = DefaultTreeModel(root as TreeNode, true)
     }
 
     fun isDelaysEnabled(): Boolean {

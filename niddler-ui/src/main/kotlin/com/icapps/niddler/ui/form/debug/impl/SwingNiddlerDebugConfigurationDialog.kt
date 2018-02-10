@@ -15,6 +15,7 @@ import com.icapps.niddler.ui.form.debug.nodes.CheckedNode
 import com.icapps.niddler.ui.form.debug.nodes.swing.SwingBlacklistNode
 import com.icapps.niddler.ui.form.debug.nodes.swing.SwingBlacklistRootNode
 import com.icapps.niddler.ui.form.debug.nodes.swing.SwingDelaysConfigurationRootNode
+import com.icapps.niddler.ui.form.debug.nodes.swing.SwingNodeBuilder
 import com.icapps.niddler.ui.plusAssign
 import org.scijava.swing.checkboxtree.CheckBoxNodeEditor
 import org.scijava.swing.checkboxtree.CheckBoxNodeRenderer
@@ -68,11 +69,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
         isModal = true
 
-        configurationModel = ConfigurationModel {
-            updateConfigurationModel()
-            updatePanelCheckedStateIfRequired(it)
-            isChanged = true
-        }
+        createConfigurationModel()
         configurationTree = initConfigurationTree()
         initTreeListener()
 
@@ -213,6 +210,14 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     protected open fun updateConfigurationModel() {
         configurationModel.treeModel.reload()
         configurationTree.repaint()
+    }
+
+    protected open fun createConfigurationModel() {
+        configurationModel = ConfigurationModel(SwingNodeBuilder {
+            updateConfigurationModel()
+            updatePanelCheckedStateIfRequired(it)
+            isChanged = true
+        })
     }
 
     enum class CurrentDetailPanelType {

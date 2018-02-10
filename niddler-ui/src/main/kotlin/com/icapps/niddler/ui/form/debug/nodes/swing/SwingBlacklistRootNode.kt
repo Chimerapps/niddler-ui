@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.form.debug.nodes.swing
 
+import com.icapps.niddler.ui.form.debug.nodes.BlacklistRootNode
 import com.icapps.niddler.ui.form.debug.nodes.CheckedNode
 
 /**
@@ -7,17 +8,17 @@ import com.icapps.niddler.ui.form.debug.nodes.CheckedNode
  */
 class SwingBlacklistRootNode(isChecked: Boolean,
                              private val changeListener: (node: CheckedNode) -> Unit)
-    : SwingCheckedNode("Blacklist", isChecked, changeListener) {
+    : BlacklistRootNode, SwingCheckedNode("Blacklist", isChecked, changeListener) {
 
     private val nodes: MutableList<SwingBlacklistNode> = mutableListOf()
 
-    fun addBlacklistItem(regex: String) {
+    override fun addBlacklistItem(regex: String) {
         val node = SwingBlacklistNode(regex, true, changeListener)
         nodes.add(node)
         addChild(node)
     }
 
-    fun isEnabled(regex: String): Boolean {
+    override fun isEnabled(regex: String): Boolean {
         return nodes.find { it.regex == regex }?.nodeCheckState == true
     }
 
