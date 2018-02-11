@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form.debug
 
 import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfiguration
+import com.icapps.niddler.ui.form.debug.nodes.ConfigurationNode
 import com.icapps.niddler.ui.form.debug.nodes.ConfigurationRootNode
 import com.icapps.niddler.ui.form.debug.nodes.NodeBuilder
 import com.icapps.niddler.ui.path
@@ -51,5 +52,10 @@ open class ConfigurationModel(configuration: TemporaryDebuggerConfiguration,
         tree.invalidate()
         tree.validate()
         tree.repaint()
+    }
+
+    fun forEachLeafNode(function: (configurationNode: ConfigurationNode) -> Unit) {
+        function(configurationRoot.delaysRoot)
+        configurationRoot.blacklistRoot.forEachNode(function)
     }
 }

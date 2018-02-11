@@ -54,6 +54,11 @@ class BlacklistRootNode(isChecked: Boolean,
     fun findNode(regex: String): BlacklistItemNode? {
         return nodes.find { it.regex == regex }
     }
+
+    fun forEachNode(function: (BlacklistItemNode) -> Unit) {
+        nodes.forEach(function)
+    }
+
 }
 
 class DelaysConfigurationRootNode(isChecked: Boolean,

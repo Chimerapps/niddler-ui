@@ -153,6 +153,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         }
         right.enableListener = {
             configurationModel.setDelaysEnabled(it)
+            syncConfigWithTreeState()
         }
         currentDetailPanel = right
         splitPane.right = right
@@ -176,7 +177,10 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         currentDetailPayload = regex
 
         val right = BlacklistPanel(changingConfiguration)
-        right.enableListener = { configurationModel.setBlacklistEnabled(regex, it) }
+        right.enableListener = {
+            configurationModel.setBlacklistEnabled(regex, it)
+            syncConfigWithTreeState()
+        }
         currentDetailPanel = right
         splitPane.right = right.apply {
             init(changingConfiguration.blacklistConfiguration.first { it.item == regex })
@@ -209,7 +213,11 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
             is DelaysConfigurationRootNode -> if (currentDetailPanelType == CurrentDetailPanelType.DELAYS) {
                 currentDetailPanel?.updateEnabledFlag(node.nodeCheckState)
             }
-            is BlacklistRootNode -> if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST) {
+            is BlacklistRootNode -> {
+                configurationModel.configurationRoot.blacklistRoot.forEachNode {
+                    it.treeNode.nodeCheckState = node.nodeCheckState
+                    configurationModel.nodeChanged(it.treeNode)
+                }
                 currentDetailPanel?.updateEnabledFlag(node.nodeCheckState)
             }
             is BlacklistItemNode ->
@@ -224,10 +232,38 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         configurationModel.nodeChanged(treeNode)
     }
 
+    protected open fun syncConfigWithTreeState() {
+        println("Updating config")
+        configurationModel.forEachLeafNode { configurationNode ->
+            when (configurationNode) {
+                is DelaysConfigurationRootNode ->
+                    changingConfiguration.delayConfiguration.enabled = configurationNode.treeNode.nodeCheckState
+                is BlacklistItemNode ->
+                    changingConfiguration.blacklistConfiguration.find {
+                        it.item == configurationNode.regex
+                    }?.enabled = configurationNode.treeNode.nodeCheckState
+            }
+        }
+        var enabledCount = 0
+        var count = 0
+        configurationModel.configurationRoot.blacklistRoot.forEachNode {
+            if (it.treeNode.nodeCheckState) ++enabledCount
+            ++count
+        }
+        if (enabledCount == 0 || enabledCount != count) {
+            configurationModel.configurationRoot.blacklistRoot.treeNode.nodeCheckState = false
+            updateConfigurationModel(configurationModel.configurationRoot.blacklistRoot.treeNode)
+        } else if (enabledCount == count) {
+            configurationModel.configurationRoot.blacklistRoot.treeNode.nodeCheckState = true
+            updateConfigurationModel(configurationModel.configurationRoot.blacklistRoot.treeNode)
+        }
+    }
+
     protected open fun createConfigurationModel() {
         configurationModel = ConfigurationModel(changingConfiguration, SwingNodeBuilder {
             updateConfigurationModel(it)
             updatePanelCheckedStateIfRequired(it)
+            syncConfigWithTreeState()
             isChanged = true
         })
     }
