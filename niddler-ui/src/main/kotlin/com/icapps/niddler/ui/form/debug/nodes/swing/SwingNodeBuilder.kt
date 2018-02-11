@@ -1,33 +1,22 @@
 package com.icapps.niddler.ui.form.debug.nodes.swing
 
-import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfiguration
-import com.icapps.niddler.ui.form.debug.nodes.*
+import com.icapps.niddler.ui.form.debug.nodes.CheckedNode
+import com.icapps.niddler.ui.form.debug.nodes.ConfigurationNode
+import com.icapps.niddler.ui.form.debug.nodes.NodeBuilder
+import com.icapps.niddler.ui.form.debug.nodes.TreeNode
 
 /**
  * @author nicolaverbeeck
  */
-class SwingNodeBuilder(private val configuration: TemporaryDebuggerConfiguration,
-                       private val changeListener: (node: CheckedNode) -> Unit) : NodeBuilder {
+class SwingNodeBuilder(private val changeListener: (node: CheckedNode) -> Unit) : NodeBuilder {
 
-    override fun createBlacklistRootNode(isChecked: Boolean): BlacklistRootNode {
-        return SwingBlacklistRootNode(isChecked, configuration, changeListener)
+    override fun createCheckedNode(title: String,
+                                   isChecked: Boolean,
+                                   configurationNode: ConfigurationNode): CheckedNode {
+        return SwingCheckedNode(title, isChecked, configurationNode, changeListener)
     }
 
-    override fun createDelaysConfigurationNode(isChecked: Boolean): DelaysConfigurationRootNode {
-        return SwingDelaysConfigurationRootNode(isChecked, changeListener)
+    override fun createNode(title: String, configurationNode: ConfigurationNode): TreeNode {
+        return SwingDefaultTreeNode(title, configurationNode, changeListener)
     }
-
-    override fun createBlacklistNode(regex: String, isChecked: Boolean): BlacklistItemNode {
-        return SwingBlacklistNode(regex, isChecked, changeListener)
-    }
-
-    override fun createDefaultResponseRootNode(isChecked: Boolean): DefaultResponseRootNode {
-        return SwingDefaultResponseRootNode(isChecked, changeListener)
-    }
-
-    override fun createRootNode(): ConfigurationRootNode {
-        return SwingConfigurationRootNode(configuration, changeListener)
-    }
-
-
 }

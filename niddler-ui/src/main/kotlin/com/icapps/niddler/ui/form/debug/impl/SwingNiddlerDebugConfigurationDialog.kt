@@ -12,11 +12,7 @@ import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationHelper
 import com.icapps.niddler.ui.form.debug.content.BlacklistPanel
 import com.icapps.niddler.ui.form.debug.content.ContentPanel
 import com.icapps.niddler.ui.form.debug.content.DelaysConfigurationPanel
-import com.icapps.niddler.ui.form.debug.nodes.CheckedNode
-import com.icapps.niddler.ui.form.debug.nodes.TreeNode
-import com.icapps.niddler.ui.form.debug.nodes.swing.SwingBlacklistNode
-import com.icapps.niddler.ui.form.debug.nodes.swing.SwingBlacklistRootNode
-import com.icapps.niddler.ui.form.debug.nodes.swing.SwingDelaysConfigurationRootNode
+import com.icapps.niddler.ui.form.debug.nodes.*
 import com.icapps.niddler.ui.form.debug.nodes.swing.SwingNodeBuilder
 import com.icapps.niddler.ui.path
 import com.icapps.niddler.ui.plusAssign
@@ -95,8 +91,8 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         isChanged = false
     }
 
-    override fun focusOnNode(node: TreeNode) {
-        configurationTree.selectionPath = (node as javax.swing.tree.TreeNode).path()
+    override fun focusOnNode(node: ConfigurationNode) {
+        configurationTree.selectionPath = (node.treeNode as javax.swing.tree.TreeNode).path()
     }
 
     protected open fun createActions() {
@@ -135,12 +131,13 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     }
 
     protected open fun initTreeListener() {
+        configurationModel.tree = configurationTree
         configurationTree.addTreeSelectionListener { _ ->
-            val component = configurationTree.lastSelectedPathComponent
+            val component = (configurationTree.lastSelectedPathComponent as? TreeNode)?.configurationNode
             when (component) {
-                is SwingDelaysConfigurationRootNode -> onDelaySelected()
-                is SwingBlacklistRootNode -> onBlacklistRootNodeSelected()
-                is SwingBlacklistNode -> onBlacklistNodeSelected(component.regex)
+                is DelaysConfigurationRootNode -> onDelaySelected()
+                is BlacklistRootNode -> onBlacklistRootNodeSelected()
+                is BlacklistItemNode -> onBlacklistNodeSelected(component.regex)
             }
         }
     }
@@ -179,6 +176,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         currentDetailPayload = regex
 
         val right = BlacklistPanel(changingConfiguration)
+        right.enableListener = { configurationModel.setBlacklistEnabled(regex, it) }
         currentDetailPanel = right
         splitPane.right = right.apply {
             init(changingConfiguration.blacklistConfiguration.first { it.item == regex })
@@ -206,27 +204,29 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     }
 
     protected open fun updatePanelCheckedStateIfRequired(node: CheckedNode) {
-        when (node) {
-            is SwingDelaysConfigurationRootNode -> if (currentDetailPanelType == CurrentDetailPanelType.DELAYS) {
+        val configurationNode = node.configurationNode
+        when (configurationNode) {
+            is DelaysConfigurationRootNode -> if (currentDetailPanelType == CurrentDetailPanelType.DELAYS) {
                 currentDetailPanel?.updateEnabledFlag(node.nodeCheckState)
             }
-            is SwingBlacklistRootNode -> if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST) {
+            is BlacklistRootNode -> if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST) {
                 currentDetailPanel?.updateEnabledFlag(node.nodeCheckState)
             }
-            is SwingBlacklistNode -> if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST && node.regex == currentDetailPayload) {
-                currentDetailPanel?.updateEnabledFlag(node.nodeCheckState)
-            }
+            is BlacklistItemNode ->
+                if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST
+                        && configurationNode.regex == currentDetailPayload) {
+                    currentDetailPanel?.updateEnabledFlag(node.nodeCheckState)
+                }
         }
     }
 
-    protected open fun updateConfigurationModel() {
-        configurationModel.treeModel.reload()
-        configurationTree.repaint()
+    protected open fun updateConfigurationModel(treeNode: TreeNode) {
+        configurationModel.nodeChanged(treeNode)
     }
 
     protected open fun createConfigurationModel() {
-        configurationModel = ConfigurationModel(SwingNodeBuilder(changingConfiguration) {
-            updateConfigurationModel()
+        configurationModel = ConfigurationModel(changingConfiguration, SwingNodeBuilder {
+            updateConfigurationModel(it)
             updatePanelCheckedStateIfRequired(it)
             isChanged = true
         })
