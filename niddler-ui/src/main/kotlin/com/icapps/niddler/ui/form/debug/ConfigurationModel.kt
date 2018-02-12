@@ -30,11 +30,9 @@ open class ConfigurationModel(configuration: TemporaryDebuggerConfiguration,
 
     open fun nodeChanged(node: com.icapps.niddler.ui.form.debug.nodes.TreeNode) {
         val path = (node as TreeNode).path()
+        treeModel.nodeChanged(node as TreeNode)
         tree.startEditingAtPath(path)
         tree.stopEditing()
-        tree.invalidate()
-        tree.validate()
-        tree.repaint()
     }
 
 }
