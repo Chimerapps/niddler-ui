@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.debug
 
+import com.icapps.niddler.ui.debugger.model.DebuggerConfigurationModelAdapter
 import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfiguration
-import com.icapps.niddler.ui.form.debug.nodes.ConfigurationNode
 import com.icapps.niddler.ui.form.debug.nodes.ConfigurationRootNode
 import com.icapps.niddler.ui.form.debug.nodes.NodeBuilder
 import com.icapps.niddler.ui.path
@@ -17,32 +17,15 @@ open class ConfigurationModel(configuration: TemporaryDebuggerConfiguration,
 
     lateinit var tree: JTree
     val treeModel: DefaultTreeModel
-    val configurationRoot: ConfigurationRootNode = ConfigurationRootNode(nodeBuilder, configuration)
+    val configurationRoot: ConfigurationRootNode = ConfigurationRootNode(nodeBuilder)
+    private val adapter = DebuggerConfigurationModelAdapter(configuration, this)
 
     init {
         treeModel = DefaultTreeModel(configurationRoot.treeNode as TreeNode, true)
     }
 
-    fun isDelaysEnabled(): Boolean {
-        return configurationRoot.delaysRoot.treeNode.nodeCheckState
-    }
-
-    fun isBlacklistEnabled(regex: String?): Boolean {
-        if (regex == null)
-            return false
-
-        return configurationRoot.blacklistRoot.findNode(regex)?.treeNode?.nodeCheckState == true
-    }
-
-    fun setDelaysEnabled(enabled: Boolean) {
-        configurationRoot.delaysRoot.treeNode.nodeCheckState = enabled
-        nodeChanged(configurationRoot.delaysRoot.treeNode)
-    }
-
-    fun setBlacklistEnabled(regex: String, enabled: Boolean) {
-        val node = configurationRoot.blacklistRoot.findNode(regex) ?: return
-        node.treeNode.nodeCheckState = enabled
-        nodeChanged(node.treeNode)
+    fun onConfigurationChanged() {
+        adapter.syncNodes()
     }
 
     open fun nodeChanged(node: com.icapps.niddler.ui.form.debug.nodes.TreeNode) {
@@ -54,8 +37,4 @@ open class ConfigurationModel(configuration: TemporaryDebuggerConfiguration,
         tree.repaint()
     }
 
-    fun forEachLeafNode(function: (configurationNode: ConfigurationNode) -> Unit) {
-        function(configurationRoot.delaysRoot)
-        configurationRoot.blacklistRoot.forEachNode(function)
-    }
 }

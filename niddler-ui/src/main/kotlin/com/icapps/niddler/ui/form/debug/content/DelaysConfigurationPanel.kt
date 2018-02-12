@@ -3,7 +3,7 @@ package com.icapps.niddler.ui.form.debug.content
 import com.icapps.niddler.ui.addChangeListener
 import com.icapps.niddler.ui.bold
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
-import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfiguration
+import com.icapps.niddler.ui.debugger.model.ModifiableDebuggerConfiguration
 import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.left
 import java.awt.BorderLayout
@@ -16,7 +16,7 @@ import javax.swing.text.NumberFormatter
 /**
  * @author nicolaverbeeck
  */
-class DelaysConfigurationPanel(private var configuration: TemporaryDebuggerConfiguration,
+class DelaysConfigurationPanel(private var configuration: ModifiableDebuggerConfiguration,
                                changeListener: () -> Unit)
     : JPanel(BorderLayout()), ContentPanel {
 
@@ -25,7 +25,6 @@ class DelaysConfigurationPanel(private var configuration: TemporaryDebuggerConfi
     private val ensureCallTime = DelayPanel("Ensure call time", changeListener)
 
     private val enabledFlag: JCheckBox = JCheckBox("Enabled")
-    override var enableListener: ((enabled: Boolean) -> Unit)? = null
 
     init {
         val rootBox = Box.createVerticalBox()
@@ -34,7 +33,6 @@ class DelaysConfigurationPanel(private var configuration: TemporaryDebuggerConfi
         rootBox.add(Box.createVerticalStrut(8))
 
         rootBox.add(enabledFlag.left())
-        enabledFlag.addActionListener { enableListener?.invoke(enabledFlag.isSelected) }
         rootBox.add(Box.createVerticalStrut(8))
 
         rootBox.add(preBlacklist.left())
@@ -54,6 +52,8 @@ class DelaysConfigurationPanel(private var configuration: TemporaryDebuggerConfi
         set(postBlacklist, currentConfig.postBlacklist)
         set(ensureCallTime, currentConfig.timePerCall)
 
+        enabledFlag.addActionListener { configuration.setDebuggerDelaysActive(enabledFlag.isSelected) }
+
         MainThreadDispatcher.dispatch {
             preBlacklist.initComplete()
             postBlacklist.initComplete()
@@ -63,16 +63,15 @@ class DelaysConfigurationPanel(private var configuration: TemporaryDebuggerConfi
 
     override fun updateEnabledFlag(enabled: Boolean) {
         enabledFlag.isSelected = enabled
+        configuration.setDebuggerDelaysActive(enabled)
     }
 
-    override fun apply(isEnabled: Boolean) {
+    override fun applyToModel() {
         val pre = extractTime(preBlacklist)
         val post = extractTime(postBlacklist)
         val ensureTime = extractTime(ensureCallTime)
 
-        configuration.delayConfiguration.item = DebuggerDelays(pre, post, ensureTime)
-        configuration.delayConfiguration.enabled = isEnabled
-        enabledFlag.isSelected = isEnabled
+        configuration.updateDebuggerDelays(DebuggerDelays(pre, post, ensureTime))
     }
 
     private fun extractTime(panel: DelayPanel): Long? {
@@ -84,7 +83,7 @@ class DelaysConfigurationPanel(private var configuration: TemporaryDebuggerConfi
     }
 
     private class DelayPanel(title: String,
-                             private var changeListener: () -> Unit) : JPanel(BorderLayout()) {
+                             private val changeListener: () -> Unit) : JPanel(BorderLayout()) {
 
         val field: JFormattedTextField = JFormattedTextField(numberFormatter())
         private var initComplete = false

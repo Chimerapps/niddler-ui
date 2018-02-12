@@ -9,9 +9,13 @@ interface TreeNode {
 
     fun updateText(text: String)
 
-    val configurationNode: ConfigurationNode
+    fun text(): String
+
+    val configurationNode: ConfigurationNode<*>
 
     fun setCanHaveChildren(canHaveChildren: Boolean)
+
+    fun removeChild(node: TreeNode)
 }
 
 interface CheckedNode : TreeNode {
@@ -20,8 +24,8 @@ interface CheckedNode : TreeNode {
 
 interface NodeBuilder {
 
-    fun createCheckedNode(title: String, isChecked: Boolean, configurationNode: ConfigurationNode): CheckedNode
+    fun createCheckedNode(title: String, isChecked: Boolean, configurationNode: ConfigurationNode<*>): CheckedNode
 
-    fun createNode(title: String, configurationNode: ConfigurationNode): TreeNode
+    fun createNode(title: String, configurationNode: ConfigurationNode<*>): TreeNode
 
 }

@@ -12,11 +12,11 @@ class SwingNodeBuilder(private val changeListener: (node: CheckedNode) -> Unit) 
 
     override fun createCheckedNode(title: String,
                                    isChecked: Boolean,
-                                   configurationNode: ConfigurationNode): CheckedNode {
+                                   configurationNode: ConfigurationNode<*>): CheckedNode {
         return SwingCheckedNode(title, isChecked, configurationNode, changeListener)
     }
 
-    override fun createNode(title: String, configurationNode: ConfigurationNode): TreeNode {
+    override fun createNode(title: String, configurationNode: ConfigurationNode<*>): TreeNode {
         return SwingDefaultTreeNode(title, configurationNode, changeListener)
     }
 }

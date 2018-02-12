@@ -1,7 +1,6 @@
 package com.icapps.niddler.ui.form.debug.content
 
-import com.icapps.niddler.ui.debugger.model.saved.DisableableItem
-import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfiguration
+import com.icapps.niddler.ui.debugger.model.ModifiableDebuggerConfiguration
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.*
@@ -10,20 +9,16 @@ import javax.swing.border.EmptyBorder
 /**
  * @author nicolaverbeeck
  */
-class BlacklistPanel(private val configuration: TemporaryDebuggerConfiguration) : JPanel(), ContentPanel {
+class BlacklistPanel(private val configuration: ModifiableDebuggerConfiguration) : JPanel(), ContentPanel {
 
     private val editField = JTextField()
-    private val testEditField = JTextField()
 
     private lateinit var startRegex: String
-    private var item: DisableableItem<String>? = null
 
     private val enabledFlag: JCheckBox = JCheckBox("Enabled")
-    override var enableListener: ((enabled: Boolean) -> Unit)? = null
 
     init {
         editField.maximumSize = Dimension(editField.maximumSize.width, editField.preferredSize.height)
-        testEditField.maximumSize = Dimension(testEditField.maximumSize.width, testEditField.preferredSize.height)
 
         val box = Box.createVerticalBox()
         layout = BorderLayout()
@@ -34,7 +29,9 @@ class BlacklistPanel(private val configuration: TemporaryDebuggerConfiguration) 
         })
 
         box.add(enabledFlag)
-        enabledFlag.addActionListener { enableListener?.invoke(enabledFlag.isSelected) }
+        enabledFlag.addActionListener {
+            configuration.setBlacklistActive(editField.text.trim(), enabledFlag.isSelected)
+        }
 
         val horizontalBox = Box.createHorizontalBox()
         horizontalBox.alignmentX = JComponent.LEFT_ALIGNMENT
@@ -48,31 +45,22 @@ class BlacklistPanel(private val configuration: TemporaryDebuggerConfiguration) 
 
     override fun updateEnabledFlag(enabled: Boolean) {
         enabledFlag.isSelected = enabled
+        configuration.setBlacklistActive(startRegex, enabled)
     }
 
-    fun init(item: DisableableItem<String>) {
-        startRegex = item.item
+    fun init(regex: String, checked: Boolean) {
+        startRegex = regex
         editField.text = startRegex
-        enabledFlag.isSelected = item.enabled
-        this.item = item
+        enabledFlag.isSelected = checked
     }
 
-    fun initNew() {
-        startRegex = ""
-        item = null
-        editField.text = startRegex
-        enabledFlag.isSelected = true
-    }
-
-    override fun apply(isEnabled: Boolean) {
+    override fun applyToModel() {
         val inEditor = editField.text.trim()
         if (inEditor == startRegex) {
-            item?.let { it.enabled = isEnabled }
             return
         }
 
-        item?.let { configuration.removeBlacklistItem(it) }
-        item = configuration.addBlacklistItem(inEditor, isEnabled)
+        configuration.changeRegex(startRegex, inEditor)
         startRegex = inEditor
     }
 }

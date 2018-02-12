@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.form.debug
 
+import com.icapps.niddler.ui.debugger.model.ModifiableDebuggerConfiguration
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.debug.dialog.EnterRegexDialog
 import java.awt.Window
@@ -11,6 +12,7 @@ import javax.swing.JOptionPane
 open class NiddlerDebugConfigurationHelper(private val owner: Window?,
                                            private val factory: ComponentsFactory,
                                            private val configurationDialog: NiddlerDebugConfigurationDialog,
+                                           private val configurationConfiguration: ModifiableDebuggerConfiguration,
                                            private val configurationModel: ConfigurationModel)
     : DebugToolbar.DebugToolbarListener {
 
@@ -18,12 +20,15 @@ open class NiddlerDebugConfigurationHelper(private val owner: Window?,
         val regex = EnterRegexDialog(owner, "Add new blacklist item", factory).show() ?: return
 
         try {
-            val node = configurationModel.configurationRoot.blacklistRoot.addBlacklistItem(regex)
-            configurationDialog.focusOnNode(node)
+            configurationConfiguration.addBlacklistItem(regex, true)
+            val node = configurationModel.configurationRoot.blacklistRoot.findNode {
+                it.regex == regex
+            }
+            if (node != null)
+                configurationDialog.focusOnNode(node)
         } catch (e: Exception) {
             showError(e)
         }
-
     }
 
     override fun onAddRequestInterceptor() {

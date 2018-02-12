@@ -48,7 +48,10 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     override lateinit var detailPanelContainer: JPanel
     override lateinit var configurationModel: ConfigurationModel
 
-    protected var changingConfiguration = TemporaryDebuggerConfiguration(initialConfig)
+    protected var changingConfiguration = TemporaryDebuggerConfiguration(initialConfig) {
+        isChanged = true
+        configurationModel.onConfigurationChanged()
+    }
 
     protected val rootPanel: JPanel = JPanel(BorderLayout())
     protected val splitPane: SplitPane = factory.createSplitPane()
@@ -87,11 +90,11 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         if (parent != null)
             setLocationRelativeTo(parent)
 
-        configurationModel.setDelaysEnabled(changingConfiguration.delayConfiguration.enabled)
+        configurationModel.onConfigurationChanged()
         isChanged = false
     }
 
-    override fun focusOnNode(node: ConfigurationNode) {
+    override fun focusOnNode(node: ConfigurationNode<*>) {
         configurationTree.selectionPath = (node.treeNode as javax.swing.tree.TreeNode).path()
     }
 
@@ -137,7 +140,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
             when (component) {
                 is DelaysConfigurationRootNode -> onDelaySelected()
                 is BlacklistRootNode -> onBlacklistRootNodeSelected()
-                is BlacklistItemNode -> onBlacklistNodeSelected(component.regex)
+                is BlacklistItemNode -> onBlacklistNodeSelected(component.nodeData!!)
             }
         }
     }
@@ -146,21 +149,17 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         if (currentDetailPanelType == CurrentDetailPanelType.DELAYS)
             return
 
-        currentDetailPanel?.apply(currentNodeEnabled())
+        currentDetailPanel?.applyToModel()
         currentDetailPanelType = CurrentDetailPanelType.DELAYS
         val right = DelaysConfigurationPanel(changingConfiguration) {
             isChanged = true
-        }
-        right.enableListener = {
-            configurationModel.setDelaysEnabled(it)
-            syncConfigWithTreeState()
         }
         currentDetailPanel = right
         splitPane.right = right
     }
 
     protected open fun onBlacklistRootNodeSelected() {
-        currentDetailPanel?.apply(currentNodeEnabled())
+        currentDetailPanel?.applyToModel()
         currentDetailPanel = null
         currentDetailPanelType = null
         splitPane.right = JPanel()
@@ -171,19 +170,16 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST && currentDetailPayload == regex)
             return
 
-        currentDetailPanel?.apply(currentNodeEnabled())
+        currentDetailPanel?.applyToModel()
 
         currentDetailPanelType = CurrentDetailPanelType.BLACKLIST
         currentDetailPayload = regex
 
         val right = BlacklistPanel(changingConfiguration)
-        right.enableListener = {
-            configurationModel.setBlacklistEnabled(regex, it)
-            syncConfigWithTreeState()
-        }
         currentDetailPanel = right
         splitPane.right = right.apply {
-            init(changingConfiguration.blacklistConfiguration.first { it.item == regex })
+            val item = changingConfiguration.blacklistConfiguration.first { it.item == regex }
+            init(item.item, item.enabled)
         }
     }
 
@@ -192,19 +188,9 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     }
 
     protected open fun onApply() {
-        currentDetailPanel?.apply(currentNodeEnabled())
+        currentDetailPanel?.applyToModel()
         isChanged = false
         applyListener(changingConfiguration)
-    }
-
-    protected open fun currentNodeEnabled(): Boolean {
-        return when (currentDetailPanelType) {
-            SwingNiddlerDebugConfigurationDialog.CurrentDetailPanelType.DELAYS ->
-                configurationModel.isDelaysEnabled()
-            SwingNiddlerDebugConfigurationDialog.CurrentDetailPanelType.BLACKLIST ->
-                configurationModel.isBlacklistEnabled(currentDetailPayload as? String?)
-            else -> false
-        }
     }
 
     protected open fun updatePanelCheckedStateIfRequired(node: CheckedNode) {
@@ -214,11 +200,9 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
                 currentDetailPanel?.updateEnabledFlag(node.nodeCheckState)
             }
             is BlacklistRootNode -> {
-                configurationModel.configurationRoot.blacklistRoot.forEachNode {
-                    it.treeNode.nodeCheckState = node.nodeCheckState
-                    configurationModel.nodeChanged(it.treeNode)
-                }
-                currentDetailPanel?.updateEnabledFlag(node.nodeCheckState)
+                val enabled = node.nodeCheckState
+                changingConfiguration.blacklistConfiguration.forEach { it.enabled = enabled }
+                configurationModel.onConfigurationChanged()
             }
             is BlacklistItemNode ->
                 if (currentDetailPanelType == CurrentDetailPanelType.BLACKLIST
@@ -232,44 +216,17 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         configurationModel.nodeChanged(treeNode)
     }
 
-    protected open fun syncConfigWithTreeState() {
-        println("Updating config")
-        configurationModel.forEachLeafNode { configurationNode ->
-            when (configurationNode) {
-                is DelaysConfigurationRootNode ->
-                    changingConfiguration.delayConfiguration.enabled = configurationNode.treeNode.nodeCheckState
-                is BlacklistItemNode ->
-                    changingConfiguration.blacklistConfiguration.find {
-                        it.item == configurationNode.regex
-                    }?.enabled = configurationNode.treeNode.nodeCheckState
-            }
-        }
-        var enabledCount = 0
-        var count = 0
-        configurationModel.configurationRoot.blacklistRoot.forEachNode {
-            if (it.treeNode.nodeCheckState) ++enabledCount
-            ++count
-        }
-        if (enabledCount == 0 || enabledCount != count) {
-            configurationModel.configurationRoot.blacklistRoot.treeNode.nodeCheckState = false
-            updateConfigurationModel(configurationModel.configurationRoot.blacklistRoot.treeNode)
-        } else if (enabledCount == count) {
-            configurationModel.configurationRoot.blacklistRoot.treeNode.nodeCheckState = true
-            updateConfigurationModel(configurationModel.configurationRoot.blacklistRoot.treeNode)
-        }
-    }
-
     protected open fun createConfigurationModel() {
         configurationModel = ConfigurationModel(changingConfiguration, SwingNodeBuilder {
             updateConfigurationModel(it)
             updatePanelCheckedStateIfRequired(it)
-            syncConfigWithTreeState()
             isChanged = true
         })
     }
 
     protected open fun createToolbarListener() {
-        debugToolbar.listener = NiddlerDebugConfigurationHelper(this, factory, this, configurationModel)
+        debugToolbar.listener = NiddlerDebugConfigurationHelper(this,
+                factory, this, changingConfiguration, configurationModel)
     }
 
     enum class CurrentDetailPanelType {

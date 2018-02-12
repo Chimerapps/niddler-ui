@@ -10,7 +10,7 @@ import javax.swing.tree.DefaultMutableTreeNode
  * @author nicolaverbeeck
  */
 open class SwingDefaultTreeNode(userData: Any?,
-                                override val configurationNode: ConfigurationNode,
+                                override val configurationNode: ConfigurationNode<*>,
                                 private val changeListener: (node: CheckedNode) -> Unit)
     : TreeNode, DefaultMutableTreeNode(userData) {
 
@@ -22,9 +22,20 @@ open class SwingDefaultTreeNode(userData: Any?,
         userObject = text
     }
 
+    override fun text(): String {
+        return toString()
+    }
+
     override fun addChild(node: TreeNode) {
         if (node is SwingDefaultTreeNode)
             add(node)
+        else
+            throw IllegalStateException("Wrong type!")
+    }
+
+    override fun removeChild(node: TreeNode) {
+        if (node is SwingDefaultTreeNode)
+            remove(node)
         else
             throw IllegalStateException("Wrong type!")
     }
@@ -43,7 +54,7 @@ open class SwingDefaultTreeNode(userData: Any?,
 
 open class SwingCheckedNode(text: String,
                             isChecked: Boolean,
-                            configurationNode: ConfigurationNode,
+                            configurationNode: ConfigurationNode<*>,
                             changeListener: (node: CheckedNode) -> Unit)
     : CheckedNode, SwingDefaultTreeNode(CheckBoxNodeData(text, isChecked), configurationNode, changeListener) {
 
@@ -56,4 +67,8 @@ open class SwingCheckedNode(text: String,
         set(value) {
             (userObject as CheckBoxNodeData).isChecked = value
         }
+
+    override fun text(): String {
+        return (userObject as CheckBoxNodeData).text
+    }
 }
