@@ -25,6 +25,12 @@ interface NiddlerMessageListener {
 
     fun onReady()
 
+    fun onDebuggerAttached()
+
+    fun onDebuggerActive()
+
+    fun onDebuggerInactive()
+
     fun onClosed()
 
 }

@@ -4,7 +4,6 @@ import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.model.MessageContainer
 import java.awt.Component
-import javax.swing.ImageIcon
 import javax.swing.JComponent
 
 /**
@@ -23,8 +22,7 @@ interface NiddlerUserInterface {
     val toolbar: NiddlerMainToolbar
     val disconnectButton: Component
 
-    fun setStatusText(statusText: String?)
-    fun setStatusIcon(icon: ImageIcon?)
+    val statusBar: NiddlerStatusbar
 
     val asComponent: JComponent
     val componentsFactory: ComponentsFactory

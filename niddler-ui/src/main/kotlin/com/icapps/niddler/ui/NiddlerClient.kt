@@ -107,4 +107,22 @@ class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI, Draft_17()), N
             clientListeners.forEach { it.onClosed() }
         }
     }
+
+    override fun onDebuggerAttached() {
+        synchronized(clientListeners) {
+            clientListeners.forEach { it.onDebuggerAttached() }
+        }
+    }
+
+    override fun onDebuggerActive() {
+        synchronized(clientListeners) {
+            clientListeners.forEach { it.onDebuggerActive() }
+        }
+    }
+
+    override fun onDebuggerInactive() {
+        synchronized(clientListeners) {
+            clientListeners.forEach { it.onDebuggerInactive() }
+        }
+    }
 }

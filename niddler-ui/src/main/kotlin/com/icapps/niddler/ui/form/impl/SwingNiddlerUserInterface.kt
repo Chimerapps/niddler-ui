@@ -7,6 +7,7 @@ import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.impl.SwingToolbar
 import com.icapps.niddler.ui.form.ui.NiddlerDetailUserInterface
 import com.icapps.niddler.ui.form.ui.NiddlerOverviewUserInterface
+import com.icapps.niddler.ui.form.ui.NiddlerStatusbar
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
 import com.icapps.niddler.ui.model.MessageContainer
 import java.awt.BorderLayout
@@ -14,7 +15,6 @@ import java.awt.Component
 import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.*
-import javax.swing.border.EmptyBorder
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
@@ -35,15 +35,14 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     override lateinit var overview: NiddlerOverviewUserInterface
     override lateinit var detail: NiddlerDetailUserInterface
     override lateinit var disconnectButton: Component
+    override lateinit var statusBar: NiddlerStatusbar
 
     protected val rootPanel: JPanel
 
     private lateinit var splitPane: SplitPane
-    private lateinit var statusBar: JPanel
     private lateinit var connectButton: JButton
     private lateinit var messagesScroller: JScrollPane
 
-    private lateinit var statusText: JLabel
 
     init {
         rootPanel = JPanel()
@@ -79,18 +78,9 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     }
 
     protected open fun initStatusbar() {
-        statusBar = JPanel()
-        statusBar.layout = BorderLayout(0, 0)
-        uiContainer().add(statusBar, BorderLayout.SOUTH)
-        statusBar.border = BorderFactory.createTitledBorder(BorderFactory.createLoweredBevelBorder(), null)
-        statusText = JLabel().apply {
-            isFocusable = false
-            text = ""
-            verifyInputWhenFocusTarget = false
-            putClientProperty("html.disable", java.lang.Boolean.FALSE)
-        }
-        statusBar.add(statusText, BorderLayout.CENTER)
-        statusBar.border = BorderFactory.createCompoundBorder(statusBar.border, EmptyBorder(1, 6, 1, 6))
+        val statusBar = SwingNiddlerStatusbar()
+        uiContainer().add(statusBar.statusBar, BorderLayout.SOUTH)
+        this.statusBar = statusBar
     }
 
     protected open fun initConnectPanel() {
@@ -145,14 +135,6 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
 
     protected open fun initToolbar() {
         toolbar = SwingToolbar(uiContainer())
-    }
-
-    override fun setStatusText(statusText: String?) {
-        this.statusText.text = statusText
-    }
-
-    override fun setStatusIcon(icon: ImageIcon?) {
-        this.statusText.icon = icon
     }
 
     protected open fun initDetail(messagesContainer: MessageContainer) {

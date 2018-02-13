@@ -120,6 +120,18 @@ class MessageContainer(private var bodyParser: NiddlerMessageBodyParser) : Niddl
         //Ignore
     }
 
+    override fun onDebuggerAttached() {
+        //Ignore
+    }
+
+    override fun onDebuggerActive() {
+        //Ignore
+    }
+
+    override fun onDebuggerInactive() {
+        //Ignore
+    }
+
     fun filtered(currentFilter: String): MessageContainer {
         this.currentFilter = currentFilter
         return this

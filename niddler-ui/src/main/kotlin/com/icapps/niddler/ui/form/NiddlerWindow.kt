@@ -24,7 +24,10 @@ import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
 import java.io.File
 import java.net.URI
-import javax.swing.*
+import javax.swing.JOptionPane
+import javax.swing.ListSelectionModel
+import javax.swing.SwingUtilities
+import javax.swing.Timer
 
 /**
  * @author Nicola Verbeeck
@@ -34,6 +37,10 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     : NiddlerMessageListener, ParsedNiddlerMessageListener, NiddlerMessagePopupMenu.Listener,
         NiddlerMainToolbar.ToolbarListener {
 
+    private companion object {
+        private const val PROTCOL_VERSION_DEBUGGING = 4
+    }
+
     private val messages = MessageContainer(NiddlerMessageBodyParser())
     private val messagePopupMenu = NiddlerMessagePopupMenu(this)
 
@@ -41,7 +48,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     private var messageMode = MessageMode.TIMELINE
     private var currentFilter: String = ""
     private var debuggerSession: DebuggingSession? = null
-    private var currentDebuggerConfiguration: DebuggerConfiguration?=null
+    private var currentDebuggerConfiguration: DebuggerConfiguration? = null
 
     fun init() {
         windowContents.init(messages)
@@ -95,8 +102,6 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
                 }
             }
         }
-
-        windowContents.setStatusText("<>")
 
         windowContents.toolbar.listener = this
 
@@ -194,17 +199,33 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
     override fun onReady() {
         MainThreadDispatcher.dispatch {
-            windowContents.setStatusText("Connected")
-            windowContents.setStatusIcon(ImageIcon(NiddlerWindow::class.java.getResource("/ic_connected.png")))
+            windowContents.statusBar.onConnected()
             windowContents.disconnectButton.isEnabled = true
         }
     }
 
     override fun onClosed() {
         MainThreadDispatcher.dispatch {
-            windowContents.setStatusText("Disconnected")
-            windowContents.setStatusIcon(ImageIcon(NiddlerWindow::class.java.getResource("/ic_disconnected.png")))
+            windowContents.statusBar.onDisconnected()
             windowContents.disconnectButton.isEnabled = false
+        }
+    }
+
+    override fun onDebuggerAttached() {
+        MainThreadDispatcher.dispatch {
+            windowContents.statusBar.onDebuggerAttached()
+        }
+    }
+
+    override fun onDebuggerActive() {
+        MainThreadDispatcher.dispatch {
+            windowContents.statusBar.onDebuggerStatusChanged(active = true)
+        }
+    }
+
+    override fun onDebuggerInactive() {
+        MainThreadDispatcher.dispatch {
+            windowContents.statusBar.onDebuggerStatusChanged(active = false)
         }
     }
 
@@ -296,11 +317,13 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     override fun onServerInfo(serverInfo: NiddlerServerInfo) {
         MainThreadDispatcher.dispatch {
             //TODO windowContents.updateProtocol(serverInfo.protocol)
-            windowContents.setStatusText("Connected to ${serverInfo.serverName} (${serverInfo.serverDescription})")
+            windowContents.statusBar.onApplicationInfo(serverInfo)
         }
-        if (serverInfo.protocol >= 1) { //TODO constant
-            val debuggerInterface = ServerDebuggerInterface(DebuggerService(NiddlerClientDebuggerInterface(niddlerClient!!)))
+        if (serverInfo.protocol >= PROTCOL_VERSION_DEBUGGING) {
+            val debuggerInterface = ServerDebuggerInterface(
+                    DebuggerService(NiddlerClientDebuggerInterface(niddlerClient!!)))
             debuggerSession = ConcreteDebuggingSession(debuggerInterface)
+            onDebuggerAttached()
             currentDebuggerConfiguration?.let { debuggerSession?.applyConfiguration(it) }
         }
     }
