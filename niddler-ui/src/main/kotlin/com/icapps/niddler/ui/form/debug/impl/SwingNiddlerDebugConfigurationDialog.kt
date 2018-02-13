@@ -232,7 +232,13 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     override fun removeCurrentItem() {
         val component = (configurationTree.lastSelectedPathComponent as? TreeNode)?.configurationNode
         when (component) {
-            is BlacklistItemNode -> changingConfiguration.removeBlacklistItem(component.regex)
+            is BlacklistItemNode -> {
+                changingConfiguration.removeBlacklistItem(component.regex)
+                currentDetailPanel = null
+                currentDetailPanelType = null
+                splitPane.right = JPanel()
+                configurationTree.clearSelection()
+            }
         }
     }
 
