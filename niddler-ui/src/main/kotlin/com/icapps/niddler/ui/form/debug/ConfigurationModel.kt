@@ -35,4 +35,8 @@ open class ConfigurationModel(configuration: TemporaryDebuggerConfiguration,
         tree.stopEditing()
     }
 
+    fun structureChanged(treeNode: com.icapps.niddler.ui.form.debug.nodes.TreeNode) {
+        treeModel.nodeStructureChanged(treeNode as TreeNode)
+    }
+
 }

@@ -9,6 +9,8 @@ import com.google.gson.annotations.Expose
 open class NiddlerClientMessage(val type: String)
 
 internal const val CONTROL_DEBUG = "controlDebug"
+internal const val MESSAGE_ACTIVATE = "activate"
+internal const val MESSAGE_DEACTIVATE = "deactivate"
 internal const val MESSAGE_MUTE_ACTIONS = "muteActions"
 internal const val MESSAGE_UNMUTE_ACTIONS = "unmuteActions"
 internal const val MESSAGE_ADD_BLACKLIST = "addBlacklist"

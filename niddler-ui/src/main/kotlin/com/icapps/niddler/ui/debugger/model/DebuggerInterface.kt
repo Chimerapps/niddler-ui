@@ -7,6 +7,10 @@ import com.google.gson.annotations.Expose
  */
 interface DebuggerInterface {
 
+    fun activate()
+
+    fun deactivate()
+
     fun updateBlacklist(active: Iterable<String>)
 
     fun updateDefaultResponses(items: Iterable<DefaultResponseAction>)

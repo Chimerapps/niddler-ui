@@ -117,4 +117,13 @@ internal class DebuggerServiceTest {
         verify { mockingedConnection.sendMessage("{\"controlType\":\"removeRequestOverride\",\"payload\":{\"id\":\"ww-ff-qq\"},\"type\":\"controlDebug\"}") }
     }
 
+    @Test
+    fun setActive() {
+        service.setActive(true)
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"activate\",\"type\":\"controlDebug\"}") }
+
+        service.setActive(false)
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"deactivate\",\"type\":\"controlDebug\"}") }
+    }
+
 }

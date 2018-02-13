@@ -27,7 +27,7 @@ abstract class ConfigurationNodeWithChildren<out T : ConfigurationNode<*>, V>(
 
     fun popNode() {
         treeNode.removeChild(children.last().treeNode)
-        children.dropLast(1)
+        children.removeAt(children.size - 1)
     }
 
     val childCount: Int

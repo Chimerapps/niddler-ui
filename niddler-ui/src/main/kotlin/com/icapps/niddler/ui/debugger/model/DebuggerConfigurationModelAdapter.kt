@@ -41,12 +41,18 @@ class DebuggerConfigurationModelAdapter(
         val enabledCount = items.count { it.enabled }
 
         updateCheckState(rootNode, text, enabledCount == items.size)
+        var structureChanged = false
         while (rootNode.childCount > items.size) {
             rootNode.popNode()
+            structureChanged = true
         }
         while (rootNode.childCount < items.size) {
             rootNode.pushNode()
+            structureChanged = true
         }
+        if (structureChanged)
+            configurationModel.structureChanged(rootNode.treeNode)
+
         rootNode.forEachNode { index, item ->
             val disableableItem = items[index]
             updateCheckState(item, disableableItem.item.toString(), disableableItem)

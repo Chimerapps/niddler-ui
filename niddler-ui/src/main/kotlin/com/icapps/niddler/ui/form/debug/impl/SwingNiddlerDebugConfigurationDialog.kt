@@ -229,6 +229,13 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
                 factory, this, changingConfiguration, configurationModel)
     }
 
+    override fun removeCurrentItem() {
+        val component = (configurationTree.lastSelectedPathComponent as? TreeNode)?.configurationNode
+        when (component) {
+            is BlacklistItemNode -> changingConfiguration.removeBlacklistItem(component.regex)
+        }
+    }
+
     enum class CurrentDetailPanelType {
         DELAYS,
         BLACKLIST

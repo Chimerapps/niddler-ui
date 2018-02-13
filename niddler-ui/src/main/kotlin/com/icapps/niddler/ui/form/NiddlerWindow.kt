@@ -5,9 +5,11 @@ import com.icapps.niddler.ui.NiddlerClientDebuggerInterface
 import com.icapps.niddler.ui.adb.ADBBootstrap
 import com.icapps.niddler.ui.codegen.CurlCodeGenerator
 import com.icapps.niddler.ui.connection.NiddlerMessageListener
-import com.icapps.niddler.ui.debugger.model.ActiveDebuggerConfiguration
-import com.icapps.niddler.ui.debugger.model.DebuggerInterface
+import com.icapps.niddler.ui.debugger.DebuggingSession
+import com.icapps.niddler.ui.debugger.model.ConcreteDebuggingSession
 import com.icapps.niddler.ui.debugger.model.DebuggerService
+import com.icapps.niddler.ui.debugger.model.ServerDebuggerInterface
+import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.ui.export.HarExport
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
@@ -38,7 +40,8 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     private lateinit var adbConnection: ADBBootstrap
     private var messageMode = MessageMode.TIMELINE
     private var currentFilter: String = ""
-    private var debuggerInterface: DebuggerInterface? = null
+    private var debuggerSession: DebuggingSession? = null
+    private var currentDebuggerConfiguration: DebuggerConfiguration?=null
 
     fun init() {
         windowContents.init(messages)
@@ -248,6 +251,8 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         dialog.init { debuggerConfiguration ->
             windowContents.componentsFactory.saveConfiguration(debuggerConfiguration)
 
+            currentDebuggerConfiguration = debuggerConfiguration
+            debuggerSession?.applyConfiguration(debuggerConfiguration)
             //TODO send new config to connection
         }
 
@@ -294,7 +299,9 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             windowContents.setStatusText("Connected to ${serverInfo.serverName} (${serverInfo.serverDescription})")
         }
         if (serverInfo.protocol >= 1) { //TODO constant
-            debuggerInterface = ActiveDebuggerConfiguration(DebuggerService(NiddlerClientDebuggerInterface(niddlerClient!!)))
+            val debuggerInterface = ServerDebuggerInterface(DebuggerService(NiddlerClientDebuggerInterface(niddlerClient!!)))
+            debuggerSession = ConcreteDebuggingSession(debuggerInterface)
+            currentDebuggerConfiguration?.let { debuggerSession?.applyConfiguration(it) }
         }
     }
 

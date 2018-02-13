@@ -11,7 +11,7 @@ import java.util.*
 /**
  * @author nicolaverbeeck
  */
-internal class ActiveDebuggerConfigurationTest {
+internal class ServerDebuggerInterfaceTest {
 
     private lateinit var mockedService: DebuggerService
     private lateinit var debuggerInterface: DebuggerInterface
@@ -19,7 +19,7 @@ internal class ActiveDebuggerConfigurationTest {
     @Before
     fun setUp() {
         mockedService = mockk()
-        debuggerInterface = ActiveDebuggerConfiguration(mockedService)
+        debuggerInterface = ServerDebuggerInterface(mockedService)
     }
 
     @Test
@@ -182,7 +182,8 @@ internal class ActiveDebuggerConfigurationTest {
 
     @Test
     fun updateDelaysDisable() {
-        every { mockedService.updateDelays(DebuggerDelays(null, null, null)) } just Runs
+        every { mockedService.updateDelays(any()) } just Runs
+        debuggerInterface.updateDelays(DebuggerDelays(123, 456, 789))
         debuggerInterface.updateDelays(null)
         verify(exactly = 1) { mockedService.updateDelays(DebuggerDelays(null, null, null)) }
         assertNull(debuggerInterface.debugDelays())
@@ -195,4 +196,19 @@ internal class ActiveDebuggerConfigurationTest {
         verify(exactly = 1) { mockedService.updateDelays(DebuggerDelays(123, 456, 789)) }
         assertEquals(DebuggerDelays(123, 456, 789), debuggerInterface.debugDelays())
     }
+
+    @Test
+    fun activate() {
+        every { mockedService.setActive(any()) } just Runs
+        debuggerInterface.activate()
+        verify(exactly = 1) { mockedService.setActive(true) }
+    }
+
+    @Test
+    fun deactivate() {
+        every { mockedService.setActive(any()) } just Runs
+        debuggerInterface.deactivate()
+        verify(exactly = 1) { mockedService.setActive(false) }
+    }
+
 }

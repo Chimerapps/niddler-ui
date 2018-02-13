@@ -111,6 +111,13 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
         }
     }
 
+    fun setActive(active: Boolean) {
+        if (active)
+            sendMessage(NiddlerDebugControlMessage(MESSAGE_ACTIVATE, payload = null))
+        else
+            sendMessage(NiddlerDebugControlMessage(MESSAGE_DEACTIVATE, payload = null))
+    }
+
 }
 
 private inline fun JsonObject.forEach(block: (String, JsonElement) -> Unit) {

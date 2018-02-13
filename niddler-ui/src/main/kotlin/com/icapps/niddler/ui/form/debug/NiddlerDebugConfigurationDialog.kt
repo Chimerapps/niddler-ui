@@ -22,6 +22,8 @@ interface NiddlerDebugConfigurationDialog {
 
     fun focusOnNode(node: ConfigurationNode<*>)
 
+    fun removeCurrentItem()
+
 }
 
 interface DebugToolbar {

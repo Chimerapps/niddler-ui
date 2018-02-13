@@ -5,7 +5,7 @@ import com.icapps.niddler.ui.split
 /**
  * @author nicolaverbeeck
  */
-class ActiveDebuggerConfiguration(private val service: DebuggerService) : DebuggerInterface {
+class ServerDebuggerInterface(private val service: DebuggerService) : DebuggerInterface {
 
     private val serverBlacklist: MutableSet<String> = mutableSetOf()
     private val knownDefaultResponses: MutableSet<String> = mutableSetOf()
@@ -65,5 +65,13 @@ class ActiveDebuggerConfiguration(private val service: DebuggerService) : Debugg
 
     override fun debugDelays(): DebuggerDelays? {
         return delays
+    }
+
+    override fun activate() {
+        service.setActive(true)
+    }
+
+    override fun deactivate() {
+        service.setActive(false)
     }
 }
