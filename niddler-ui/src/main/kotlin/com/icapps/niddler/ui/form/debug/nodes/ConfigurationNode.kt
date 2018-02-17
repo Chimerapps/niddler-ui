@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form.debug.nodes
 
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
+import com.icapps.niddler.ui.debugger.model.RequestOverride
 
 /**
  * @author nicolaverbeeck
@@ -57,6 +58,20 @@ class BlacklistItemNode(var regex: String,
         }
 }
 
+class RequestOverrideNode(var requestOverride: RequestOverride,
+                          isChecked: Boolean,
+                          nodeBuilder: NodeBuilder) : ConfigurationNode<RequestOverride> {
+    override val treeNode: CheckedNode = nodeBuilder.createCheckedNode(requestOverride.regex
+            ?: requestOverride.matchMethod ?: "", isChecked, this)
+            .apply { setCanHaveChildren(false) }
+
+    override var nodeData: RequestOverride?
+        get() = requestOverride
+        set(value) {
+            requestOverride = value!!
+        }
+}
+
 class BlacklistRootNode(isChecked: Boolean,
                         nodeBuilder: NodeBuilder)
     : ConfigurationNodeWithChildren<BlacklistItemNode, Any>(nodeBuilder) {
@@ -67,7 +82,17 @@ class BlacklistRootNode(isChecked: Boolean,
     override fun createNode(): BlacklistItemNode {
         return BlacklistItemNode("", false, nodeBuilder)
     }
+}
 
+class RequestOverrideRootNode(isChecked: Boolean,
+                              nodeBuilder: NodeBuilder)
+    : ConfigurationNodeWithChildren<RequestOverrideNode, Any>(nodeBuilder) {
+    override val treeNode: CheckedNode = nodeBuilder.createCheckedNode("Request overrides", isChecked, this)
+            .apply { setCanHaveChildren(true) }
+
+    override fun createNode(): RequestOverrideNode {
+        return RequestOverrideNode(RequestOverride(), false, nodeBuilder)
+    }
 }
 
 class DelaysConfigurationRootNode(isChecked: Boolean,
@@ -80,16 +105,18 @@ class DelaysConfigurationRootNode(isChecked: Boolean,
 
 class ConfigurationRootNode(nodeBuilder: NodeBuilder) : ConfigurationNode<Any> {
 
-    override val treeNode: TreeNode = nodeBuilder.createNode("Blacklist", this)
+    override val treeNode: TreeNode = nodeBuilder.createNode("", this)
             .apply { setCanHaveChildren(true) }
 
     override var nodeData: Any? = null
 
-    val delaysRoot: DelaysConfigurationRootNode = DelaysConfigurationRootNode(false, nodeBuilder)
-    val blacklistRoot: BlacklistRootNode = BlacklistRootNode(false, nodeBuilder)
+    val delaysRoot = DelaysConfigurationRootNode(false, nodeBuilder)
+    val blacklistRoot = BlacklistRootNode(false, nodeBuilder)
+    val requestOverrideRoot = RequestOverrideRootNode(false, nodeBuilder)
 
     init {
         treeNode.addChild(delaysRoot.treeNode)
         treeNode.addChild(blacklistRoot.treeNode)
+        treeNode.addChild(requestOverrideRoot.treeNode)
     }
 }

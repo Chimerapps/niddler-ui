@@ -3,6 +3,8 @@ package com.icapps.niddler.ui.debugger.model.saved
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
 import com.icapps.niddler.ui.debugger.model.DefaultResponseAction
 import com.icapps.niddler.ui.debugger.model.ModifiableDebuggerConfiguration
+import com.icapps.niddler.ui.debugger.model.RequestOverride
+import java.util.*
 
 /**
  * @author nicolaverbeeck
@@ -12,8 +14,9 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
     : ModifiableDebuggerConfiguration, DebuggerConfiguration {
 
     private val internalBlacklist: MutableList<DisableableItem<String>> = mutableListOf()
-    private var internalDelayConfiguration: DisableableItem<DebuggerDelays>
     private val internalDefaultResponses: MutableList<DisableableItem<DefaultResponseAction>> = mutableListOf()
+    private val internalRequestOverride: MutableList<DisableableItem<RequestOverride>> = mutableListOf()
+    private var internalDelayConfiguration: DisableableItem<DebuggerDelays>
 
     override var delayConfiguration: DisableableItem<DebuggerDelays>
         get() = internalDelayConfiguration
@@ -30,10 +33,16 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
         set(value) {
             throw IllegalStateException("Setting not allowed")
         }
+    override var requestOverride: List<DisableableItem<RequestOverride>>
+        get() = internalRequestOverride
+        set(value) {
+            throw IllegalStateException("Setting not allowed")
+        }
 
     init {
         delegate.blacklistConfiguration.mapTo(internalBlacklist) { it.copy() }
         delegate.defaultResponses.mapTo(internalDefaultResponses) { it.copy() }
+        delegate.requestOverride.mapTo(internalRequestOverride) { it.copy() }
         internalDelayConfiguration = delegate.delayConfiguration
     }
 
@@ -85,6 +94,29 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
 
         internalDelayConfiguration = internalDelayConfiguration.copy(item = delays.copy())
         notifyChange()
+    }
+
+    override fun addRequestOverride(urlRegex: String?, method: String?, enabled: Boolean): String {
+        val id = UUID.randomUUID().toString()
+
+        internalRequestOverride += DisableableItem(enabled, RequestOverride(id, enabled,
+                urlRegex, method, -1, debugRequest = null))
+
+        notifyChange()
+        return id
+    }
+
+    override fun removeRequestOverride(id: String) {
+        if (internalRequestOverride.removeIf { it.item.id == id })
+            notifyChange()
+    }
+
+    override fun setRequestOverrideActive(id: String, active: Boolean) {
+        val item = internalRequestOverride.find { it.item.id == id }
+        item?.let {
+            it.enabled = active
+            notifyChange()
+        }
     }
 
     private fun notifyChange() {

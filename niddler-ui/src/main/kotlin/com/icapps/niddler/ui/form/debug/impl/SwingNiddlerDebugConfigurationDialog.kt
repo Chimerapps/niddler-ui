@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form.debug.impl
 
 import com.icapps.niddler.ui.button
+import com.icapps.niddler.ui.debugger.model.RequestOverride
 import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfiguration
 import com.icapps.niddler.ui.form.ComponentsFactory
@@ -12,6 +13,7 @@ import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationHelper
 import com.icapps.niddler.ui.form.debug.content.BlacklistPanel
 import com.icapps.niddler.ui.form.debug.content.ContentPanel
 import com.icapps.niddler.ui.form.debug.content.DelaysConfigurationPanel
+import com.icapps.niddler.ui.form.debug.content.RequestOverridePanel
 import com.icapps.niddler.ui.form.debug.nodes.*
 import com.icapps.niddler.ui.form.debug.nodes.swing.SwingNodeBuilder
 import com.icapps.niddler.ui.path
@@ -19,6 +21,7 @@ import com.icapps.niddler.ui.plusAssign
 import org.scijava.swing.checkboxtree.CheckBoxNodeEditor
 import org.scijava.swing.checkboxtree.CheckBoxNodeRenderer
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.awt.Window
 import javax.swing.*
 import javax.swing.tree.TreeSelectionModel
@@ -74,7 +77,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         configurationTree = initConfigurationTree()
         initTreeListener()
 
-        leftComponent = JPanel(BorderLayout())
+        leftComponent = JPanel(BorderLayout()).apply { minimumSize = Dimension(180, minimumSize.height) }
         leftComponent.add(factory.createScrollPane().apply { setViewportView(configurationTree) }, BorderLayout.CENTER)
 
         splitPane.left = leftComponent
@@ -139,8 +142,9 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
             val component = (configurationTree.lastSelectedPathComponent as? TreeNode)?.configurationNode
             when (component) {
                 is DelaysConfigurationRootNode -> onDelaySelected()
-                is BlacklistRootNode -> onBlacklistRootNodeSelected()
+                is BlacklistRootNode, is RequestOverrideRootNode -> onRootNodeSelected()
                 is BlacklistItemNode -> onBlacklistNodeSelected(component.nodeData!!)
+                is RequestOverrideNode -> onRequestOverrideSelected(component.requestOverride)
             }
         }
     }
@@ -155,10 +159,10 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
             isChanged = true
         }
         currentDetailPanel = right
-        splitPane.right = right
+        splitPane.right = JScrollPane(right)
     }
 
-    protected open fun onBlacklistRootNodeSelected() {
+    protected open fun onRootNodeSelected() {
         currentDetailPanel?.applyToModel()
         currentDetailPanel = null
         currentDetailPanelType = null
@@ -177,10 +181,29 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
         val right = BlacklistPanel(changingConfiguration)
         currentDetailPanel = right
-        splitPane.right = right.apply {
+        splitPane.right = JScrollPane(right.apply {
             val item = changingConfiguration.blacklistConfiguration.first { it.item == regex }
             init(item.item, item.enabled)
+        })
+    }
+
+    protected open fun onRequestOverrideSelected(request: RequestOverride) {
+        if (currentDetailPanelType == CurrentDetailPanelType.REQUEST_OVERRIDE && currentDetailPayload == request)
+            return
+
+        currentDetailPanel?.applyToModel()
+
+        currentDetailPanelType = CurrentDetailPanelType.REQUEST_OVERRIDE
+        currentDetailPayload = request
+
+        val right = RequestOverridePanel(changingConfiguration) {
+            isChanged = true
         }
+        currentDetailPanel = right
+        splitPane.right = JScrollPane(right.apply {
+            val item = changingConfiguration.requestOverride.first { it.item.id == request.id }
+            init(item.item, item.enabled)
+        })
     }
 
     protected open fun onCancel() {
@@ -244,7 +267,8 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
     enum class CurrentDetailPanelType {
         DELAYS,
-        BLACKLIST
+        BLACKLIST,
+        REQUEST_OVERRIDE
     }
 
 }

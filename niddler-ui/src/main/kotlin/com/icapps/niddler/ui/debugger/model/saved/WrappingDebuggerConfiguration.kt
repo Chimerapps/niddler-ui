@@ -8,6 +8,7 @@ import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonWriter
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
 import com.icapps.niddler.ui.debugger.model.DefaultResponseAction
+import com.icapps.niddler.ui.debugger.model.RequestOverride
 import com.icapps.niddler.ui.util.createGsonListType
 import java.io.File
 import java.io.Reader
@@ -28,6 +29,9 @@ class WrappingDebuggerConfiguration : DebuggerConfiguration {
     }
     override var defaultResponses: List<DisableableItem<DefaultResponseAction>> by jsonWrapList("defaultResponses") {
         emptyList<DisableableItem<DefaultResponseAction>>()
+    }
+    override var requestOverride: List<DisableableItem<RequestOverride>> by jsonWrapList("requestOverrides") {
+        emptyList<DisableableItem<RequestOverride>>()
     }
 
     private val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().disableHtmlEscaping().create()

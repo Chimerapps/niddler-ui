@@ -20,6 +20,7 @@ class DebuggerConfigurationModelAdapter(
         updateCheckState(root.delaysRoot, "Delays", debuggerConfiguration.delayConfiguration)
 
         updateList(root.blacklistRoot, "Blacklist", debuggerConfiguration.blacklistConfiguration)
+        updateList(root.requestOverrideRoot, "Request override", debuggerConfiguration.requestOverride)
     }
 
     private fun <T> updateCheckState(node: ConfigurationNode<T>, text: String, disableableItem: DisableableItem<T>) {

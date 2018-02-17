@@ -39,7 +39,6 @@ class BlacklistPanel(private val configuration: ModifiableDebuggerConfiguration)
         horizontalBox.add(editField)
 
         box.add(horizontalBox)
-        box.add(Box.createGlue())
         add(box)
     }
 

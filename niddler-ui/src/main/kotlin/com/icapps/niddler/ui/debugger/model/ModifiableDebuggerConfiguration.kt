@@ -20,4 +20,11 @@ interface ModifiableDebuggerConfiguration : DebuggerConfiguration {
 
     fun updateDebuggerDelays(delays: DebuggerDelays)
 
+
+    fun addRequestOverride(urlRegex: String?, method: String?, enabled: Boolean): String
+
+    fun removeRequestOverride(id: String)
+
+    fun setRequestOverrideActive(id: String, active: Boolean)
+
 }

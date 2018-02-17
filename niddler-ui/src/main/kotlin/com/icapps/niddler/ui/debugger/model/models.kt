@@ -82,9 +82,9 @@ class RemoveRequestOverrideActionMessage(id: String)
 data class DebugReplyPayload(val messageId: String)
 
 abstract class DebugMessage(
-        @Expose val headers: Map<String, String>?,
-        @Expose val encodedBody: String?,
-        @Expose val bodyMimeType: String?)
+        @Expose var headers: Map<String, String>?,
+        @Expose var encodedBody: String?,
+        @Expose var bodyMimeType: String?)
 
 class DebugResponse(@Expose val code: Int,
                     @Expose val message: String,
@@ -92,11 +92,15 @@ class DebugResponse(@Expose val code: Int,
                     encodedBody: String?,
                     bodyMimeType: String?) : DebugMessage(headers, encodedBody, bodyMimeType)
 
-class DebugRequest(@Expose val url: String,
-                   @Expose val method: String,
-                   headers: Map<String, String>?,
-                   encodedBody: String?,
-                   bodyMimeType: String?) : DebugMessage(headers, encodedBody, bodyMimeType)
+class DebugRequest(@Expose var url: String = "",
+                   @Expose var method: String = "",
+                   headers: Map<String, String>? = null,
+                   encodedBody: String? = null,
+                   bodyMimeType: String? = null) : DebugMessage(headers, encodedBody, bodyMimeType) {
+    override fun toString(): String {
+        return url
+    }
+}
 
 data class DebuggerDelays(@Expose val preBlacklist: Long?,
                           @Expose val postBlacklist: Long?,
