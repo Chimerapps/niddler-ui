@@ -1,10 +1,9 @@
 package com.icapps.niddler.ui.debugger.model.saved
 
 import com.google.gson.annotations.Expose
-import com.icapps.niddler.ui.debugger.model.BaseActionPayload
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
-import com.icapps.niddler.ui.debugger.model.RequestOverride
 import com.icapps.niddler.ui.debugger.model.DefaultResponseAction
+import com.icapps.niddler.ui.debugger.model.RequestOverride
 
 /**
  * @author nicolaverbeeck

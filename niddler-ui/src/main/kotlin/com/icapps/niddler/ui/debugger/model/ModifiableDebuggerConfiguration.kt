@@ -27,4 +27,6 @@ interface ModifiableDebuggerConfiguration : DebuggerConfiguration {
 
     fun setRequestOverrideActive(id: String, active: Boolean)
 
+    fun modifyRequestOverrideAction(override: RequestOverride, enabled: Boolean)
+
 }

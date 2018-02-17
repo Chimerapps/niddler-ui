@@ -119,6 +119,11 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
         }
     }
 
+    override fun modifyRequestOverrideAction(override: RequestOverride, enabled: Boolean) {
+        val index = internalRequestOverride.indexOfFirst { it.item.id == override.id }
+        internalRequestOverride[index] = DisableableItem(enabled, override.copy())
+    }
+
     private fun notifyChange() {
         changeListener()
     }

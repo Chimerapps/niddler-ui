@@ -64,6 +64,7 @@ class WrappingDebuggerConfiguration : DebuggerConfiguration {
         delayConfiguration = source.delayConfiguration.copy()
         blacklistConfiguration = source.blacklistConfiguration.map { it.copy() }
         defaultResponses = source.defaultResponses.map { it.copy() }
+        requestOverride = source.requestOverride.map { it.copy() }
     }
 
     fun save(target: File) {

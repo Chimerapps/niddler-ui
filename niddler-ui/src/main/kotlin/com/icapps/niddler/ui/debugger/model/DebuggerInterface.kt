@@ -28,25 +28,18 @@ interface DebuggerInterface {
     fun disconnect()
 }
 
-open class BaseActionPayload(@Expose var id: String,
-                             @Expose var active: Boolean,
-                             @Expose var regex: String?,
-                             @Expose var matchMethod: String?,
-                             @Expose var repeatCount: Int?)
-
 data class DefaultResponseAction(var id: String?,
                                  var enabled: Boolean,
                                  @Expose val regex: String?,
                                  @Expose val method: String?,
                                  @Expose val response: DebugResponse)
 
-class RequestOverride(id: String = "",
-                      active: Boolean = false,
-                      regex: String? = null,
-                      matchMethod: String? = null,
-                      repeatCount: Int? = null,
-                      var debugRequest: DebugRequest? = null)
-    : BaseActionPayload(id, active, regex, matchMethod, repeatCount) {
+data class RequestOverride(@Expose var id: String = "",
+                           @Expose var active: Boolean = false,
+                           @Expose var regex: String? = null,
+                           @Expose var matchMethod: String? = null,
+                           @Expose var repeatCount: Int? = null,
+                           var debugRequest: DebugRequest? = null) {
     override fun toString(): String {
         return regex ?: matchMethod ?: ""
     }

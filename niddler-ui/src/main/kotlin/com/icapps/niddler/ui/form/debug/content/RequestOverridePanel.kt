@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form.debug.content
 
 import com.icapps.niddler.ui.*
+import com.icapps.niddler.ui.debugger.model.DebugRequest
 import com.icapps.niddler.ui.debugger.model.ModifiableDebuggerConfiguration
 import com.icapps.niddler.ui.debugger.model.RequestOverride
 import java.awt.BorderLayout
@@ -21,8 +22,11 @@ class RequestOverridePanel(private var configuration: ModifiableDebuggerConfigur
     private var request: RequestOverride? = null
 
     private val staticRequestPanel = JPanel()
+
     private val newUrlField = JTextField()
     private val newMethodField = JTextField()
+    private val newHeadersField = HeaderEditorPanel()
+
     private val staticRequestToggle = JCheckBox("Static override")
 
     init {
@@ -76,7 +80,9 @@ class RequestOverridePanel(private var configuration: ModifiableDebuggerConfigur
         staticRequestPanel += newUrlField.left()
         staticRequestPanel += JLabel("New method").left().offsetLeft()
         staticRequestPanel += newMethodField.left()
-        staticRequestPanel += Box.createVerticalStrut(4)
+        staticRequestPanel += JLabel("Headers").left().offsetLeft()
+        staticRequestPanel += newHeadersField.left().apply { border = EmptyBorder(4, 4, 0, 6) }
+        staticRequestPanel += Box.createVerticalStrut(6)
 
         box += Box.createVerticalStrut(8)
         box += staticRequestToggle.left()
@@ -95,6 +101,8 @@ class RequestOverridePanel(private var configuration: ModifiableDebuggerConfigur
     }
 
     override fun applyToModel() {
+        val request = request ?: return
+
         val regex = regexField.text.trim()
         val method = methodField.selectedItem.toString().trim()
 
@@ -102,6 +110,27 @@ class RequestOverridePanel(private var configuration: ModifiableDebuggerConfigur
             JOptionPane.showMessageDialog(this, "No matcher defined")
             return
         }
+
+        var override: DebugRequest? = null
+        if (staticRequestToggle.isSelected) {
+            val newUrl = newUrlField.text.trim()
+            val newMethod = newMethodField.text.trim()
+            val headers = newHeadersField.extractHeaders()
+            if (newUrl.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "New url required")
+                return
+            }
+            if (newMethod.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "New method required")
+                return
+            }
+            override = DebugRequest(newUrl, newMethod, headers, encodedBody = null, bodyMimeType = null)
+        }
+        request.regex = if (regex.isEmpty()) null else regex
+        request.matchMethod = if (method.isEmpty()) null else method
+        request.debugRequest = override
+        request.active = enabledFlag.isSelected
+        configuration.modifyRequestOverrideAction(request, request.active)
     }
 
     override fun updateEnabledFlag(enabled: Boolean) {
