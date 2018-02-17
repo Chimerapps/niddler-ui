@@ -89,7 +89,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         createButtons()
         createToolbarListener()
 
-        setSize(600, 300)
+        setSize(700, 400)
         if (parent != null)
             setLocationRelativeTo(parent)
 

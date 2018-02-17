@@ -41,7 +41,7 @@ class DebuggerConfigurationModelAdapter(
                                text: String, items: List<DisableableItem<T>>) {
         val enabledCount = items.count { it.enabled }
 
-        updateCheckState(rootNode, text, enabledCount == items.size)
+        updateCheckState(rootNode, text, enabledCount == items.size && enabledCount > 0)
         var structureChanged = false
         while (rootNode.childCount > items.size) {
             rootNode.popNode()

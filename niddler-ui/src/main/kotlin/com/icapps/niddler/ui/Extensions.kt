@@ -1,11 +1,13 @@
 package com.icapps.niddler.ui
 
 import com.icapps.niddler.ui.form.MainThreadDispatcher
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
 import java.beans.PropertyChangeEvent
 import java.util.*
 import javax.swing.*
+import javax.swing.border.EmptyBorder
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.text.Document
@@ -60,8 +62,6 @@ fun JLabel.setFixedWidth(width: Int) {
 }
 
 fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {
-    Objects.requireNonNull(text)
-    Objects.requireNonNull(changeListener)
     val dl = object : DocumentListener {
         private var lastChange = 0
         private var lastNotifiedChange = 0
@@ -110,11 +110,11 @@ fun button(title: String, listener: () -> Unit): JButton {
     }
 }
 
-operator fun JComponent.plusAssign(component: JComponent) {
+operator fun JComponent.plusAssign(component: Component) {
     add(component)
 }
 
-fun JComponent.left(): JComponent {
+fun <T : JComponent> T.left(): T {
     alignmentX = JComponent.LEFT_ALIGNMENT
     return this
 }
@@ -134,4 +134,20 @@ fun TreeNode.path(): TreePath {
         treeNode = treeNode.parent
     }
     return TreePath(nodes.toTypedArray())
+}
+
+fun <T : JComponent> T.singleLine(): T {
+    maximumSize = Dimension(maximumSize.width, preferredSize.height)
+    return this
+}
+
+fun JComponent.forEach(each: (Component) -> Unit) {
+    for (i in 0 until componentCount) {
+        each(getComponent(i))
+    }
+}
+
+fun JLabel.offsetLeft(): JLabel {
+    border = EmptyBorder(0, 4, 0, 0)
+    return this
 }
