@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.connection
 
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.icapps.niddler.ui.model.NiddlerMessage
 import org.java_websocket.client.WebSocketClient
@@ -11,7 +12,9 @@ import org.java_websocket.client.WebSocketClient
  */
 open class NiddlerV1ProtocolHandler(protected val messageListener: NiddlerMessageListener) : NiddlerProtocol {
 
-    protected val gson: Gson = Gson()
+    protected val gson: Gson = GsonBuilder()
+            .disableHtmlEscaping()
+            .create()
 
     init {
         messageListener.onReady()

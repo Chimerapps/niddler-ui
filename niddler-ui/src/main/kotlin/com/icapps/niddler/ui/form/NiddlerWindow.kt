@@ -322,6 +322,8 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         if (serverInfo.protocol >= PROTCOL_VERSION_DEBUGGING) {
             val debuggerInterface = ServerDebuggerInterface(
                     DebuggerService(NiddlerClientDebuggerInterface(niddlerClient!!)))
+            debuggerInterface.connect()
+
             debuggerSession = ConcreteDebuggingSession(debuggerInterface)
             onDebuggerAttached()
             currentDebuggerConfiguration?.let { debuggerSession?.applyConfiguration(it) }

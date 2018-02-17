@@ -1,10 +1,9 @@
 package com.icapps.niddler.ui
 
 import com.google.gson.JsonParser
-import com.icapps.niddler.ui.connection.NiddlerMessageListener
-import com.icapps.niddler.ui.connection.NiddlerProtocol
-import com.icapps.niddler.ui.connection.NiddlerV1ProtocolHandler
-import com.icapps.niddler.ui.connection.NiddlerV2ProtocolHandler
+import com.icapps.niddler.ui.connection.*
+import com.icapps.niddler.ui.debugger.model.DebugRequest
+import com.icapps.niddler.ui.debugger.model.DebugResponse
 import com.icapps.niddler.ui.model.NiddlerMessage
 import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
 import com.icapps.niddler.ui.util.logger
@@ -18,13 +17,16 @@ import java.util.*
  * @author Nicola Verbeeck
  * @date 14/11/2016.
  */
-class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI, Draft_17()), NiddlerMessageListener {
+class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI, Draft_17()),
+        NiddlerMessageListener, NiddlerDebugListener {
 
     companion object {
         private val log = logger<NiddlerClient>()
     }
 
     private val clientListeners: MutableSet<NiddlerMessageListener> = HashSet()
+    @Volatile
+    var debugListener: NiddlerDebugListener? = null
     private var protocolHandler: NiddlerProtocol? = null
 
     override fun onOpen(handshakeData: ServerHandshake?) {
@@ -70,6 +72,8 @@ class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI, Draft_17()), N
         when (protocolVersion) {
             1 -> protocolHandler = NiddlerV1ProtocolHandler(this)
             2, 3 -> protocolHandler = NiddlerV2ProtocolHandler(this, protocolVersion)
+            else -> protocolHandler = NiddlerV4ProtocolHandler(messageListener = this, debugListener = this,
+                    protocolVersion = protocolVersion)
         }
     }
 
@@ -124,5 +128,17 @@ class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI, Draft_17()), N
         synchronized(clientListeners) {
             clientListeners.forEach { it.onDebuggerInactive() }
         }
+    }
+
+    override fun onRequestOverride(message: NiddlerMessage): DebugRequest? {
+        return debugListener?.onRequestOverride(message)
+    }
+
+    override fun onRequestAction(messageId: String): DebugResponse? {
+        return debugListener?.onRequestAction(messageId)
+    }
+
+    override fun onResponseAction(messageId: String, response: NiddlerMessage): DebugResponse? {
+        return debugListener?.onResponseAction(messageId, response)
     }
 }

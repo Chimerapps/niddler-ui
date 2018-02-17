@@ -211,4 +211,17 @@ internal class ServerDebuggerInterfaceTest {
         verify(exactly = 1) { mockedService.setActive(false) }
     }
 
+    @Test
+    fun connect() {
+        every { mockedService.connect() } just Runs
+        debuggerInterface.connect()
+        verify(exactly = 1) { mockedService.connect() }
+    }
+
+    @Test
+    fun disconnect() {
+        every { mockedService.disconnect() } just Runs
+        debuggerInterface.disconnect()
+        verify(exactly = 1) { mockedService.disconnect() }
+    }
 }

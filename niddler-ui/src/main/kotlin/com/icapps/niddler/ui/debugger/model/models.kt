@@ -1,5 +1,8 @@
 package com.icapps.niddler.ui.debugger.model
 
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.annotations.Expose
 
 
@@ -8,6 +11,8 @@ import com.google.gson.annotations.Expose
  */
 open class NiddlerClientMessage(val type: String)
 
+internal const val MESSAGE_START_DEBUG = "startDebug"
+internal const val MESSAGE_END_DEBUG = "endDebug"
 internal const val CONTROL_DEBUG = "controlDebug"
 internal const val MESSAGE_ACTIVATE = "activate"
 internal const val MESSAGE_DEACTIVATE = "deactivate"
@@ -28,10 +33,11 @@ internal const val MESSAGE_ADD_DEFAULT_REQUEST_OVERRIDE = "addDefaultRequestOver
 internal const val MESSAGE_ADD_REQUEST_OVERRIDE = "addRequestOverride"
 internal const val MESSAGE_REMOVE_REQUEST_OVERRIDE = "removeRequestOverride"
 
-
 open class NiddlerDebugControlMessage(val controlType: String,
                                       val payload: Any?)
     : NiddlerClientMessage(CONTROL_DEBUG)
+
+class NiddlerRootMessage(val type: String)
 
 open class RegexPayload(val regex: String?)
 
@@ -95,3 +101,19 @@ class DebugRequest(@Expose val url: String,
 data class DebuggerDelays(@Expose val preBlacklist: Long?,
                           @Expose val postBlacklist: Long?,
                           @Expose val timePerCall: Long?)
+
+internal fun mergeToJson(gson: Gson, vararg messages: Any): JsonElement {
+    return messages.map { gson.toJsonTree(it) }.reduce { leftRaw, rightRaw ->
+        val left = leftRaw.asJsonObject
+        val right = rightRaw.asJsonObject
+        right.forEach { name, value ->
+            if (!left.has(name))
+                left.add(name, value)
+        }
+        left
+    }
+}
+
+private inline fun JsonObject.forEach(block: (String, JsonElement) -> Unit) {
+    entrySet().forEach { block(it.key, it.value) }
+}

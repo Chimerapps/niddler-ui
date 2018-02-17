@@ -11,7 +11,8 @@ import java.util.*
  * @author Nicola Verbeeck
  * @date 22/11/16.
  */
-open class NiddlerV2ProtocolHandler(messageListener: NiddlerMessageListener, private val protocolVersion: Int) : NiddlerV1ProtocolHandler(messageListener) {
+open class NiddlerV2ProtocolHandler(messageListener: NiddlerMessageListener,
+                                    protected val protocolVersion: Int) : NiddlerV1ProtocolHandler(messageListener) {
 
     companion object {
         private val log = logger<NiddlerV2ProtocolHandler>()

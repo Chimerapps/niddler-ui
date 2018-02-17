@@ -74,4 +74,12 @@ class ServerDebuggerInterface(private val service: DebuggerService) : DebuggerIn
     override fun deactivate() {
         service.setActive(false)
     }
+
+    override fun connect() {
+        service.connect()
+    }
+
+    override fun disconnect() {
+        service.disconnect()
+    }
 }

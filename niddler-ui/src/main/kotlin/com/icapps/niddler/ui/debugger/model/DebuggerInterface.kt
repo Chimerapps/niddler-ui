@@ -22,6 +22,10 @@ interface DebuggerInterface {
     fun updateDelays(delays: DebuggerDelays?)
 
     fun debugDelays(): DebuggerDelays?
+
+    fun connect()
+
+    fun disconnect()
 }
 
 data class DefaultResponseAction(var id: String?,

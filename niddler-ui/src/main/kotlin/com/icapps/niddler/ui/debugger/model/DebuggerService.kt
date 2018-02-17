@@ -1,8 +1,6 @@
 package com.icapps.niddler.ui.debugger.model
 
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import com.icapps.niddler.ui.NiddlerDebuggerConnection
 import java.util.*
 
@@ -26,28 +24,28 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
     fun addDefaultRequestOverride(regex: String?, method: String?, request: DebugRequest, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_DEFAULT_REQUEST_OVERRIDE,
-                merge(RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active), request)))
+                mergeToJson(gson, RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active), request)))
         return id
     }
 
     fun addDefaultResponse(regex: String?, method: String?, response: DebugResponse, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_DEFAULT_RESPONSE,
-                merge(RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active), response)))
+                mergeToJson(gson, RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active), response)))
         return id
     }
 
     fun addRequestIntercept(regex: String?, method: String?, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_REQUEST,
-                merge(RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active))))
+                mergeToJson(gson, RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active))))
         return id
     }
 
     fun addResponseIntercept(regex: String?, method: String?, responseCode: Int?, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_RESPONSE,
-                merge(RegexPayload(regex), MethodPayload(method), ResponseCodePayload(responseCode),
+                mergeToJson(gson, RegexPayload(regex), MethodPayload(method), ResponseCodePayload(responseCode),
                         ActionPayload(id), ActivePayload(active))))
         return id
     }
@@ -55,13 +53,13 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
     fun addRequestOverride(regex: String?, method: String?, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_REQUEST_OVERRIDE,
-                merge(RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active))))
+                mergeToJson(gson, RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active))))
         return id
     }
 
     fun respondTo(niddlerMessageId: String, response: DebugResponse) {
         sendMessage(NiddlerDebugControlMessage(MESSAGE_DEBUG_REPLY,
-                merge(DebugReplyPayload(niddlerMessageId), response)))
+                mergeToJson(gson, DebugReplyPayload(niddlerMessageId), response)))
     }
 
     fun muteAction(id: String) {
@@ -95,20 +93,16 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
             sendMessage(UnmuteActionsMessage())
     }
 
-    private fun sendMessage(msg: NiddlerDebugControlMessage) {
-        connection.sendMessage(gson.toJson(msg))
+    fun connect() {
+        sendMessage(NiddlerRootMessage(MESSAGE_START_DEBUG))
     }
 
-    private fun merge(vararg messages: Any): JsonElement {
-        return messages.map { gson.toJsonTree(it) }.reduce { leftRaw, rightRaw ->
-            val left = leftRaw.asJsonObject
-            val right = rightRaw.asJsonObject
-            right.forEach { name, value ->
-                if (!left.has(name))
-                    left.add(name, value)
-            }
-            left
-        }
+    fun disconnect() {
+        sendMessage(NiddlerRootMessage(MESSAGE_END_DEBUG))
+    }
+
+    private fun sendMessage(msg: Any) {
+        connection.sendMessage(gson.toJson(msg))
     }
 
     fun setActive(active: Boolean) {
@@ -118,8 +112,4 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
             sendMessage(NiddlerDebugControlMessage(MESSAGE_DEACTIVATE, payload = null))
     }
 
-}
-
-private inline fun JsonObject.forEach(block: (String, JsonElement) -> Unit) {
-    entrySet().forEach { block(it.key, it.value) }
 }
