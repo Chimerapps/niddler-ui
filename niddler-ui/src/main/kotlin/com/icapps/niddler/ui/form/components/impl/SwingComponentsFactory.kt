@@ -8,6 +8,8 @@ import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.TabComponent
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialog
+import com.icapps.niddler.ui.form.ui.AbstractToolbar
+import com.icapps.niddler.ui.form.ui.SwingToolbar
 import net.harawata.appdirs.AppDirsFactory
 import java.awt.Window
 import java.io.File
@@ -62,6 +64,10 @@ class SwingComponentsFactory : ComponentsFactory {
     override fun saveConfiguration(config: DebuggerConfiguration) {
         val wrapped = config as? WrappingDebuggerConfiguration ?: WrappingDebuggerConfiguration(config)
         wrapped.save(getConfigFile(DEBUGGER_FILE))
+    }
+
+    override fun createHorizontalToolbar(): AbstractToolbar {
+        return SwingToolbar()
     }
 
     private fun getConfigFile(name: String): File {

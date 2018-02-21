@@ -5,16 +5,15 @@ import com.icapps.niddler.ui.form.components.HintTextField
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.impl.SwingToolbar
-import com.icapps.niddler.ui.form.ui.NiddlerDetailUserInterface
-import com.icapps.niddler.ui.form.ui.NiddlerOverviewUserInterface
-import com.icapps.niddler.ui.form.ui.NiddlerStatusbar
-import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
+import com.icapps.niddler.ui.form.ui.*
 import com.icapps.niddler.ui.model.MessageContainer
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
-import java.awt.FlowLayout
-import javax.swing.*
+import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.JScrollPane
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
@@ -34,13 +33,12 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
 
     override lateinit var overview: NiddlerOverviewUserInterface
     override lateinit var detail: NiddlerDetailUserInterface
-    override lateinit var disconnectButton: Component
     override lateinit var statusBar: NiddlerStatusbar
 
     protected val rootPanel: JPanel
 
     private lateinit var splitPane: SplitPane
-    private lateinit var connectButton: JButton
+    override lateinit var disconnectButton: Component
     private lateinit var messagesScroller: JScrollPane
 
 
@@ -88,22 +86,19 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         topPanel.layout = BorderLayout(5, 5)
         uiContainer().add(topPanel, BorderLayout.NORTH)
 
-        val buttonsPanel = JPanel().apply { layout = FlowLayout(FlowLayout.LEFT, 0, 0) }
-        topPanel.add(buttonsPanel, BorderLayout.WEST)
-
-        connectButton = JButton()
-        connectButton.text = "Connect"
-
-        connectButton.addActionListener { connectButtonListener?.invoke() }
-
-        disconnectButton = JButton().apply {
-            text = "Disconnect"
-            isEnabled = false
-            addActionListener { disconnectButtonListener?.invoke() }
+        val toolbar = componentsFactory.createHorizontalToolbar()
+        toolbar.addAction("/execute.png".loadIcon<AbstractToolbar>(), "Connect without debugger") {
+            connectButtonListener?.invoke()
+        }
+        toolbar.addAction("/startDebugger.png".loadIcon<AbstractToolbar>(), "Connect with debugger") {
+            //TODO
+        }
+        disconnectButton = toolbar.addAction("/suspend.png".loadIcon<AbstractToolbar>(), "Disconnect") {
+            it.isEnabled = false
+            disconnectButtonListener?.invoke()
         }
 
-        buttonsPanel.add(connectButton)
-        buttonsPanel.add(disconnectButton)
+        topPanel.add(toolbar.component, BorderLayout.WEST)
 
         initFilter(topPanel)
     }

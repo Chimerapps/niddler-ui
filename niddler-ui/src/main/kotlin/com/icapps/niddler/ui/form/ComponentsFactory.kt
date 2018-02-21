@@ -5,6 +5,7 @@ import com.icapps.niddler.ui.form.components.Dialog
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.TabComponent
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
+import com.icapps.niddler.ui.form.ui.AbstractToolbar
 import java.awt.Window
 import javax.swing.JComponent
 import javax.swing.JScrollPane
@@ -31,5 +32,8 @@ interface ComponentsFactory {
     fun loadSavedConfiguration(): DebuggerConfiguration
 
     fun saveConfiguration(config: DebuggerConfiguration)
+
+    fun createHorizontalToolbar(): AbstractToolbar
+
 }
 
