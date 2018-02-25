@@ -1,7 +1,9 @@
 package com.icapps.niddler.ui.form.debug.nodes
 
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
+import com.icapps.niddler.ui.debugger.model.RequestIntercept
 import com.icapps.niddler.ui.debugger.model.RequestOverride
+import com.icapps.niddler.ui.debugger.model.ResponseOverride
 
 /**
  * @author nicolaverbeeck
@@ -87,11 +89,64 @@ class BlacklistRootNode(isChecked: Boolean,
 class RequestOverrideRootNode(isChecked: Boolean,
                               nodeBuilder: NodeBuilder)
     : ConfigurationNodeWithChildren<RequestOverrideNode, Any>(nodeBuilder) {
+
     override val treeNode: CheckedNode = nodeBuilder.createCheckedNode("Request overrides", isChecked, this)
             .apply { setCanHaveChildren(true) }
 
     override fun createNode(): RequestOverrideNode {
         return RequestOverrideNode(RequestOverride(), false, nodeBuilder)
+    }
+}
+
+class ResponseOverrideNode(var responseOverride: ResponseOverride,
+                           isChecked: Boolean,
+                           nodeBuilder: NodeBuilder) : ConfigurationNode<ResponseOverride> {
+    override val treeNode: CheckedNode = nodeBuilder.createCheckedNode(responseOverride.regex
+            ?: responseOverride.matchMethod ?: "", isChecked, this)
+            .apply { setCanHaveChildren(false) }
+
+    override var nodeData: ResponseOverride?
+        get() = responseOverride
+        set(value) {
+            responseOverride = value!!
+        }
+}
+
+class ResponseOverrideRootNode(isChecked: Boolean,
+                               nodeBuilder: NodeBuilder)
+    : ConfigurationNodeWithChildren<ResponseOverrideNode, Any>(nodeBuilder) {
+
+    override val treeNode: CheckedNode = nodeBuilder.createCheckedNode("Response overrides", isChecked, this)
+            .apply { setCanHaveChildren(true) }
+
+    override fun createNode(): ResponseOverrideNode {
+        return ResponseOverrideNode(ResponseOverride(), false, nodeBuilder)
+    }
+}
+
+class ResponseInterceptNode(var requestIntercept: RequestIntercept,
+                            isChecked: Boolean,
+                            nodeBuilder: NodeBuilder) : ConfigurationNode<RequestIntercept> {
+    override val treeNode: CheckedNode = nodeBuilder.createCheckedNode(requestIntercept.regex
+            ?: requestIntercept.matchMethod ?: requestIntercept.responseCode?.toString() ?: "", isChecked, this)
+            .apply { setCanHaveChildren(false) }
+
+    override var nodeData: RequestIntercept?
+        get() = requestIntercept
+        set(value) {
+            requestIntercept = value!!
+        }
+}
+
+class ResponseInterceptRootNode(isChecked: Boolean,
+                                nodeBuilder: NodeBuilder)
+    : ConfigurationNodeWithChildren<ResponseInterceptNode, Any>(nodeBuilder) {
+
+    override val treeNode: CheckedNode = nodeBuilder.createCheckedNode("Response intercept", isChecked, this)
+            .apply { setCanHaveChildren(true) }
+
+    override fun createNode(): ResponseInterceptNode {
+        return ResponseInterceptNode(RequestIntercept(), false, nodeBuilder)
     }
 }
 
@@ -113,10 +168,14 @@ class ConfigurationRootNode(nodeBuilder: NodeBuilder) : ConfigurationNode<Any> {
     val delaysRoot = DelaysConfigurationRootNode(false, nodeBuilder)
     val blacklistRoot = BlacklistRootNode(false, nodeBuilder)
     val requestOverrideRoot = RequestOverrideRootNode(false, nodeBuilder)
+    val responseOverrideRoot = ResponseOverrideRootNode(false, nodeBuilder)
+    val responseInterceptRoot = ResponseInterceptRootNode(false, nodeBuilder)
 
     init {
         treeNode.addChild(delaysRoot.treeNode)
         treeNode.addChild(blacklistRoot.treeNode)
         treeNode.addChild(requestOverrideRoot.treeNode)
+        treeNode.addChild(responseOverrideRoot.treeNode)
+        treeNode.addChild(responseInterceptRoot.treeNode)
     }
 }

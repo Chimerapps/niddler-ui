@@ -44,3 +44,16 @@ data class RequestOverride(@Expose var id: String = "",
         return regex ?: matchMethod ?: ""
     }
 }
+
+data class ResponseOverride(@Expose var id: String = "",
+                            @Expose var active: Boolean = false,
+                            @Expose var regex: String? = null,
+                            @Expose var matchMethod: String? = null,
+                            @Expose var repeatCount: Int? = null,
+                            var debugResponse: DebugResponse? = null)
+
+data class RequestIntercept(@Expose var id: String = "",
+                            @Expose var active: Boolean = false,
+                            @Expose var regex: String? = null,
+                            @Expose var matchMethod: String? = null,
+                            @Expose var responseCode: Int?=null)
