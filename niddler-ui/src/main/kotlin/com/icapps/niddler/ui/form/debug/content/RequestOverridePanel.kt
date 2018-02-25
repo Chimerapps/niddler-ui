@@ -1,23 +1,22 @@
 package com.icapps.niddler.ui.form.debug.content
 
-import com.icapps.niddler.ui.*
+import com.icapps.niddler.ui.debugger.model.BaseMatcher
 import com.icapps.niddler.ui.debugger.model.DebugRequest
 import com.icapps.niddler.ui.debugger.model.LocalRequestOverride
 import com.icapps.niddler.ui.debugger.model.ModifiableDebuggerConfiguration
-import java.awt.BorderLayout
+import com.icapps.niddler.ui.left
+import com.icapps.niddler.ui.offsetLeft
+import com.icapps.niddler.ui.plusAssign
+import com.icapps.niddler.ui.singleLine
 import javax.swing.*
 import javax.swing.border.EmptyBorder
-import javax.swing.border.TitledBorder
 
 /**
  * @author nicolaverbeeck
  */
-class RequestOverridePanel(private var configuration: ModifiableDebuggerConfiguration,
-                           changeListener: () -> Unit) : JPanel(BorderLayout()), ContentPanel {
-
-    private val enabledFlag: JCheckBox = JCheckBox("Enabled")
-    private val regexField = JTextField()
-    private val methodField = JComboBox(arrayOf("", "GET", "PUT", "POST", "DELETE", "HEAD", "OPTIONS"))
+class RequestOverridePanel(configuration: ModifiableDebuggerConfiguration,
+                           changeListener: () -> Unit)
+    : BaseOverridePanel<BaseMatcher>(configuration, changeListener) {
 
     private var request: LocalRequestOverride? = null
 
@@ -30,44 +29,8 @@ class RequestOverridePanel(private var configuration: ModifiableDebuggerConfigur
     private val staticRequestToggle = JCheckBox("Static override")
 
     init {
-        regexField.singleLine()
-        methodField.singleLine()
         newUrlField.singleLine()
         newMethodField.singleLine()
-
-        methodField.isEditable = true
-
-        border = EmptyBorder(6, 12, 6, 12)
-
-        val matchingPanel = JPanel()
-        matchingPanel.layout = BoxLayout(matchingPanel, BoxLayout.Y_AXIS)
-        matchingPanel.border = TitledBorder("Matching")
-
-        enabledFlag.addActionListener {
-            request?.let {
-                configuration.setRequestOverrideActive(it.id, enabledFlag.isSelected)
-            }
-        }
-        methodField.addActionListener {
-            changeListener()
-        }
-        regexField.addChangeListener {
-            changeListener()
-        }
-        (methodField.editor.editorComponent as? JTextField)?.addChangeListener {
-            changeListener()
-        }
-
-        matchingPanel += JLabel("Url regex").left().offsetLeft()
-        matchingPanel += regexField.left()
-        matchingPanel += JLabel("Method").left().offsetLeft()
-        matchingPanel += methodField.left()
-
-        val box = Box.createVerticalBox()
-
-        box += enabledFlag.left()
-        box += Box.createVerticalStrut(8)
-        box += matchingPanel.left()
 
         staticRequestToggle.addActionListener {
             staticRequestPanel.isVisible = staticRequestToggle.isSelected
@@ -84,29 +47,40 @@ class RequestOverridePanel(private var configuration: ModifiableDebuggerConfigur
         staticRequestPanel += newHeadersField.left().apply { border = EmptyBorder(4, 4, 0, 6) }
         staticRequestPanel += Box.createVerticalStrut(6)
 
+        initUI()
+    }
+
+    override fun onEnableStateChanged(selected: Boolean) {
+        request?.let {
+            configuration.setRequestOverrideActive(it.id, selected)
+        }
+    }
+
+    override fun initContent(box: Box, matchingPanel: JPanel) {
+        super.initContent(box, matchingPanel)
         box += Box.createVerticalStrut(8)
         box += staticRequestToggle.left()
         box += Box.createVerticalStrut(8)
         box += staticRequestPanel
-
-        add(box)
     }
 
     fun init(override: LocalRequestOverride, checked: Boolean) {
+        initStarting()
+
+        initMatching(override)
         this.request = override
 
         enabledFlag.isSelected = checked
         staticRequestToggle.isSelected = override.debugRequest != null
         staticRequestPanel.isVisible = staticRequestToggle.isSelected
 
-        regexField.text = override.regex ?: ""
-        methodField.editor.item = override.matchMethod ?: ""
-
         override.debugRequest?.let {
             newUrlField.text = it.url
             newMethodField.text = it.method
             newHeadersField.init(it.headers)
         }
+
+        initComplete()
     }
 
     override fun applyToModel() {
@@ -142,6 +116,8 @@ class RequestOverridePanel(private var configuration: ModifiableDebuggerConfigur
     }
 
     override fun updateEnabledFlag(enabled: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        enabledFlag.isSelected = enabled
+        onEnableStateChanged(enabled)
     }
+
 }

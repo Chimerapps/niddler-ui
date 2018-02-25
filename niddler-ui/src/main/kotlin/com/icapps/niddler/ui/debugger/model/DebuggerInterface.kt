@@ -28,6 +28,15 @@ interface DebuggerInterface {
     fun disconnect()
 }
 
+interface BaseMatcher {
+    var regex: String?
+    var matchMethod: String?
+}
+
+interface ResponseMatcher : BaseMatcher {
+    var responseCode: Int?
+}
+
 data class DefaultResponseAction(var id: String?,
                                  var enabled: Boolean,
                                  @Expose val regex: String?,
@@ -35,10 +44,10 @@ data class DefaultResponseAction(var id: String?,
                                  val response: DebugResponse)
 
 data class LocalRequestOverride(@Expose var id: String = "",
-                                @Expose var regex: String? = null,
-                                @Expose var matchMethod: String? = null,
+                                @Expose override var regex: String? = null,
+                                @Expose override var matchMethod: String? = null,
                                 @Expose var repeatCount: Int? = null,
-                                @Expose var debugRequest: DebugRequest? = null) {
+                                @Expose var debugRequest: DebugRequest? = null) : BaseMatcher {
     override fun toString(): String {
         return regex ?: matchMethod ?: ""
     }
@@ -46,13 +55,13 @@ data class LocalRequestOverride(@Expose var id: String = "",
 
 data class LocalResponseOverride(@Expose var id: String = "",
                                  @Expose var active: Boolean = false,
-                                 @Expose var regex: String? = null,
-                                 @Expose var matchMethod: String? = null,
+                                 @Expose override var regex: String? = null,
+                                 @Expose override var matchMethod: String? = null,
                                  @Expose var repeatCount: Int? = null,
-                                 @Expose var debugResponse: DebugResponse? = null)
+                                 @Expose var debugResponse: DebugResponse? = null) : BaseMatcher
 
 data class LocalRequestIntercept(@Expose var id: String = "",
                                  @Expose var active: Boolean = false,
-                                 @Expose var regex: String? = null,
-                                 @Expose var matchMethod: String? = null,
-                                 @Expose var responseCode: Int? = null)
+                                 @Expose override var regex: String? = null,
+                                 @Expose override var matchMethod: String? = null,
+                                 @Expose override var responseCode: Int? = null) : ResponseMatcher
