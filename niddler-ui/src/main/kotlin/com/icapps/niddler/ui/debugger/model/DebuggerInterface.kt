@@ -32,28 +32,27 @@ data class DefaultResponseAction(var id: String?,
                                  var enabled: Boolean,
                                  @Expose val regex: String?,
                                  @Expose val method: String?,
-                                 @Expose val response: DebugResponse)
+                                 val response: DebugResponse)
 
-data class RequestOverride(@Expose var id: String = "",
-                           @Expose var active: Boolean = false,
-                           @Expose var regex: String? = null,
-                           @Expose var matchMethod: String? = null,
-                           @Expose var repeatCount: Int? = null,
-                           var debugRequest: DebugRequest? = null) {
+data class LocalRequestOverride(@Expose var id: String = "",
+                                @Expose var regex: String? = null,
+                                @Expose var matchMethod: String? = null,
+                                @Expose var repeatCount: Int? = null,
+                                @Expose var debugRequest: DebugRequest? = null) {
     override fun toString(): String {
         return regex ?: matchMethod ?: ""
     }
 }
 
-data class ResponseOverride(@Expose var id: String = "",
-                            @Expose var active: Boolean = false,
-                            @Expose var regex: String? = null,
-                            @Expose var matchMethod: String? = null,
-                            @Expose var repeatCount: Int? = null,
-                            var debugResponse: DebugResponse? = null)
+data class LocalResponseOverride(@Expose var id: String = "",
+                                 @Expose var active: Boolean = false,
+                                 @Expose var regex: String? = null,
+                                 @Expose var matchMethod: String? = null,
+                                 @Expose var repeatCount: Int? = null,
+                                 @Expose var debugResponse: DebugResponse? = null)
 
-data class RequestIntercept(@Expose var id: String = "",
-                            @Expose var active: Boolean = false,
-                            @Expose var regex: String? = null,
-                            @Expose var matchMethod: String? = null,
-                            @Expose var responseCode: Int?=null)
+data class LocalRequestIntercept(@Expose var id: String = "",
+                                 @Expose var active: Boolean = false,
+                                 @Expose var regex: String? = null,
+                                 @Expose var matchMethod: String? = null,
+                                 @Expose var responseCode: Int? = null)

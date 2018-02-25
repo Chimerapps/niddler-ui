@@ -3,7 +3,7 @@ package com.icapps.niddler.ui.debugger.model.saved
 import com.google.gson.annotations.Expose
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
 import com.icapps.niddler.ui.debugger.model.DefaultResponseAction
-import com.icapps.niddler.ui.debugger.model.RequestOverride
+import com.icapps.niddler.ui.debugger.model.LocalRequestOverride
 
 /**
  * @author nicolaverbeeck
@@ -14,7 +14,7 @@ interface DebuggerConfiguration {
 
     var blacklistConfiguration: List<DisableableItem<String>>
 
-    var requestOverride: List<DisableableItem<RequestOverride>>
+    var requestOverride: List<DisableableItem<LocalRequestOverride>>
 
     var defaultResponses: List<DisableableItem<DefaultResponseAction>>
 

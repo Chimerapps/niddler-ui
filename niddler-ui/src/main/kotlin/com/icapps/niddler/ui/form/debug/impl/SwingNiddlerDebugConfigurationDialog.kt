@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.debug.impl
 
 import com.icapps.niddler.ui.button
-import com.icapps.niddler.ui.debugger.model.RequestOverride
+import com.icapps.niddler.ui.debugger.model.LocalRequestOverride
 import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfiguration
 import com.icapps.niddler.ui.form.ComponentsFactory
@@ -187,7 +187,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         })
     }
 
-    protected open fun onRequestOverrideSelected(request: RequestOverride) {
+    protected open fun onRequestOverrideSelected(request: LocalRequestOverride) {
         if (currentDetailPanelType == CurrentDetailPanelType.REQUEST_OVERRIDE && currentDetailPayload == request)
             return
 

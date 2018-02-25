@@ -2,8 +2,8 @@ package com.icapps.niddler.ui.debugger.model.saved
 
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
 import com.icapps.niddler.ui.debugger.model.DefaultResponseAction
+import com.icapps.niddler.ui.debugger.model.LocalRequestOverride
 import com.icapps.niddler.ui.debugger.model.ModifiableDebuggerConfiguration
-import com.icapps.niddler.ui.debugger.model.RequestOverride
 import java.util.*
 
 /**
@@ -15,7 +15,7 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
 
     private val internalBlacklist: MutableList<DisableableItem<String>> = mutableListOf()
     private val internalDefaultResponses: MutableList<DisableableItem<DefaultResponseAction>> = mutableListOf()
-    private val internalRequestOverride: MutableList<DisableableItem<RequestOverride>> = mutableListOf()
+    private val internalRequestOverride: MutableList<DisableableItem<LocalRequestOverride>> = mutableListOf()
     private var internalDelayConfiguration: DisableableItem<DebuggerDelays>
 
     override var delayConfiguration: DisableableItem<DebuggerDelays>
@@ -33,7 +33,7 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
         set(value) {
             throw IllegalStateException("Setting not allowed")
         }
-    override var requestOverride: List<DisableableItem<RequestOverride>>
+    override var requestOverride: List<DisableableItem<LocalRequestOverride>>
         get() = internalRequestOverride
         set(value) {
             throw IllegalStateException("Setting not allowed")
@@ -99,7 +99,7 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
     override fun addRequestOverride(urlRegex: String?, method: String?, enabled: Boolean): String {
         val id = UUID.randomUUID().toString()
 
-        internalRequestOverride += DisableableItem(enabled, RequestOverride(id, enabled,
+        internalRequestOverride += DisableableItem(enabled, LocalRequestOverride(id,
                 urlRegex, method, -1, debugRequest = null))
 
         notifyChange()
@@ -119,7 +119,7 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
         }
     }
 
-    override fun modifyRequestOverrideAction(override: RequestOverride, enabled: Boolean) {
+    override fun modifyRequestOverrideAction(override: LocalRequestOverride, enabled: Boolean) {
         val index = internalRequestOverride.indexOfFirst { it.item.id == override.id }
         internalRequestOverride[index] = DisableableItem(enabled, override.copy())
     }

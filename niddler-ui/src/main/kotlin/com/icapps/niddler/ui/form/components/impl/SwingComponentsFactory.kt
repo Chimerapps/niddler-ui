@@ -63,7 +63,7 @@ class SwingComponentsFactory : ComponentsFactory {
 
     override fun saveConfiguration(config: DebuggerConfiguration) {
         val wrapped = config as? WrappingDebuggerConfiguration ?: WrappingDebuggerConfiguration(config)
-        wrapped.save(getConfigFile(DEBUGGER_FILE))
+        wrapped.save(getConfigFile(DEBUGGER_FILE), pretty = true)
     }
 
     override fun createHorizontalToolbar(): AbstractToolbar {

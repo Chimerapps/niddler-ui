@@ -15,7 +15,7 @@ import javax.swing.table.TableCellRenderer
 /**
  * @author nicolaverbeeck
  */
-class HeaderEditorPanel : JPanel(BorderLayout()) {
+class HeaderEditorPanel(private val changeListener: () -> Unit) : JPanel(BorderLayout()) {
 
     private companion object {
         private val alternateRowColor1 = Color(0xD6, 0xDF, 0xEB)
@@ -55,6 +55,9 @@ class HeaderEditorPanel : JPanel(BorderLayout()) {
         model.addColumn("Name")
         model.addColumn("Value")
         table.model = model
+        table.putClientProperty("terminateEditOnFocusLost", true)
+
+        model.addTableModelListener { changeListener() }
 
         maximumSize = Dimension(maximumSize.width, 100)
     }
@@ -73,6 +76,15 @@ class HeaderEditorPanel : JPanel(BorderLayout()) {
         }
 
         return map
+    }
+
+    fun init(headers: Map<String, String>?) {
+        val count = model.rowCount
+        for (i in 0 until count)
+            model.removeRow(0)
+        headers?.forEach { key, value ->
+            model.addRow(arrayOf(key, value))
+        }
     }
 
 }

@@ -2,8 +2,8 @@ package com.icapps.niddler.ui.form.debug.content
 
 import com.icapps.niddler.ui.*
 import com.icapps.niddler.ui.debugger.model.DebugRequest
+import com.icapps.niddler.ui.debugger.model.LocalRequestOverride
 import com.icapps.niddler.ui.debugger.model.ModifiableDebuggerConfiguration
-import com.icapps.niddler.ui.debugger.model.RequestOverride
 import java.awt.BorderLayout
 import javax.swing.*
 import javax.swing.border.EmptyBorder
@@ -19,13 +19,13 @@ class RequestOverridePanel(private var configuration: ModifiableDebuggerConfigur
     private val regexField = JTextField()
     private val methodField = JComboBox(arrayOf("", "GET", "PUT", "POST", "DELETE", "HEAD", "OPTIONS"))
 
-    private var request: RequestOverride? = null
+    private var request: LocalRequestOverride? = null
 
     private val staticRequestPanel = JPanel()
 
     private val newUrlField = JTextField()
     private val newMethodField = JTextField()
-    private val newHeadersField = HeaderEditorPanel()
+    private val newHeadersField = HeaderEditorPanel(changeListener)
 
     private val staticRequestToggle = JCheckBox("Static override")
 
@@ -92,12 +92,21 @@ class RequestOverridePanel(private var configuration: ModifiableDebuggerConfigur
         add(box)
     }
 
-    fun init(override: RequestOverride, checked: Boolean) {
+    fun init(override: LocalRequestOverride, checked: Boolean) {
         this.request = override
 
         enabledFlag.isSelected = checked
         staticRequestToggle.isSelected = override.debugRequest != null
         staticRequestPanel.isVisible = staticRequestToggle.isSelected
+
+        regexField.text = override.regex ?: ""
+        methodField.editor.item = override.matchMethod ?: ""
+
+        override.debugRequest?.let {
+            newUrlField.text = it.url
+            newMethodField.text = it.method
+            newHeadersField.init(it.headers)
+        }
     }
 
     override fun applyToModel() {
@@ -129,8 +138,7 @@ class RequestOverridePanel(private var configuration: ModifiableDebuggerConfigur
         request.regex = if (regex.isEmpty()) null else regex
         request.matchMethod = if (method.isEmpty()) null else method
         request.debugRequest = override
-        request.active = enabledFlag.isSelected
-        configuration.modifyRequestOverrideAction(request, request.active)
+        configuration.modifyRequestOverrideAction(request, enabledFlag.isSelected)
     }
 
     override fun updateEnabledFlag(enabled: Boolean) {

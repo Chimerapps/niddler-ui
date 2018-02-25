@@ -8,7 +8,7 @@ import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonWriter
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
 import com.icapps.niddler.ui.debugger.model.DefaultResponseAction
-import com.icapps.niddler.ui.debugger.model.RequestOverride
+import com.icapps.niddler.ui.debugger.model.LocalRequestOverride
 import com.icapps.niddler.ui.util.createGsonListType
 import java.io.File
 import java.io.Reader
@@ -30,8 +30,8 @@ class WrappingDebuggerConfiguration : DebuggerConfiguration {
     override var defaultResponses: List<DisableableItem<DefaultResponseAction>> by jsonWrapList("defaultResponses") {
         emptyList<DisableableItem<DefaultResponseAction>>()
     }
-    override var requestOverride: List<DisableableItem<RequestOverride>> by jsonWrapList("requestOverrides") {
-        emptyList<DisableableItem<RequestOverride>>()
+    override var requestOverride: List<DisableableItem<LocalRequestOverride>> by jsonWrapList("requestOverrides") {
+        emptyList<DisableableItem<LocalRequestOverride>>()
     }
 
     private val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().disableHtmlEscaping().create()
@@ -67,12 +67,20 @@ class WrappingDebuggerConfiguration : DebuggerConfiguration {
         requestOverride = source.requestOverride.map { it.copy() }
     }
 
-    fun save(target: File) {
-        target.writer(Charsets.UTF_8).use { save(it) }
+    fun save(target: File, pretty: Boolean) {
+        target.writer(Charsets.UTF_8).use { save(it, pretty) }
     }
 
-    fun save(writer: Writer) {
-        gson.toJson(configurationTree, JsonWriter(writer))
+    fun save(writer: Writer, pretty: Boolean) {
+        val jsonWriter = JsonWriter(writer)
+        if (pretty)
+            jsonWriter.apply {
+                isHtmlSafe = false
+                isLenient = false
+                setIndent("  ")
+            }
+        gson.toJson(configurationTree, jsonWriter)
+        jsonWriter.flush()
     }
 
     private fun getNode(name: String): JsonElement? {
