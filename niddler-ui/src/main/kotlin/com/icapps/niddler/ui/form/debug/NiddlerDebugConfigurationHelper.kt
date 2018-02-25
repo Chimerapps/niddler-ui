@@ -36,7 +36,7 @@ open class NiddlerDebugConfigurationHelper(private val owner: Window?,
         }
     }
 
-    override fun onAddRequestInterceptor() {
+    override fun onAddRequestOverride() {
         try {
             val id = configurationConfiguration.addRequestOverride(null, null, false)
             val node = configurationModel.configurationRoot.requestOverrideRoot.findNode {
@@ -49,7 +49,8 @@ open class NiddlerDebugConfigurationHelper(private val owner: Window?,
         }
     }
 
-    override fun onAddRequestOverride() {
+
+    override fun addResponseInterceptor() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 

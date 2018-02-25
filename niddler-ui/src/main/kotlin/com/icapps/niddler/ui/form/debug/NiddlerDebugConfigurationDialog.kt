@@ -36,7 +36,7 @@ interface DebugToolbar {
 
         fun onAddBlacklist()
 
-        fun onAddRequestInterceptor()
+        fun addResponseInterceptor()
 
         fun onAddRequestOverride()
 

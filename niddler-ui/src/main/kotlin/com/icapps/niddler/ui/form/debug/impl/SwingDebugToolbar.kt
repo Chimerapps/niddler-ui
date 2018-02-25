@@ -21,14 +21,14 @@ class SwingDebugToolbar : DebugToolbar, JToolBar(JToolBar.HORIZONTAL) {
         menu.add(simpleAction("Add blacklist") {
             listener?.onAddBlacklist()
         })
-        menu.add(simpleAction("Add request intercept") {
-            listener?.onAddRequestInterceptor()
-        })
         menu.add(simpleAction("Add request override") {
             listener?.onAddRequestOverride()
         })
         menu.add(simpleAction("Add response override") {
             listener?.onAddResponseOverride()
+        })
+        menu.add(simpleAction("Add response intercept") {
+            listener?.addResponseInterceptor()
         })
 
         addButton = add(simpleAction("Add", "/add.png") {
