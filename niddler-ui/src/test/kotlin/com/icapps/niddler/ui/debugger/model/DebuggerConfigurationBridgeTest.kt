@@ -26,12 +26,12 @@ class DebuggerConfigurationBridgeTest {
 
     @Test
     fun apply() {
-        val activeDefaultResponse = DefaultResponseAction(null, false, "reg1", null, DebugResponse(200, "OK", null, null, null))
+        val activeDefaultResponse = LocalRequestIntercept("1", false, "reg1", null, null, DebugResponse(200, "OK", null, null, null))
         every { configurationProvider.delayConfiguration } returns DisableableItem(enabled = true, item = DebuggerDelays(123, 456, 789))
         every { configurationProvider.blacklistConfiguration } returns listOf(DisableableItem(enabled = true, item = "reg1"),
                 DisableableItem(enabled = false, item = "reg2"))
-        every { configurationProvider.defaultResponses } returns listOf(DisableableItem(true, activeDefaultResponse),
-                DisableableItem(false, DefaultResponseAction(null, false, "reg2", "GET", DebugResponse(401, "Forbidden", null, null, null))))
+        every { configurationProvider.requestIntercept } returns listOf(DisableableItem(true, activeDefaultResponse),
+                DisableableItem(false, LocalRequestIntercept("2", false, "reg2", "GET", null, null)))
 
         bridge.apply()
 

@@ -23,25 +23,25 @@ class ServerDebuggerInterface(private val service: DebuggerService) : DebuggerIn
         serverBlacklist.addAll(active)
     }
 
-    override fun updateDefaultResponses(items: Iterable<DefaultResponseAction>) {
+    override fun updateDefaultResponses(items: Iterable<LocalRequestIntercept>) {
         val (unsentItems, knownItems) = items.split { !knownDefaultResponses.contains(it.id) }
         unsentItems.forEach {
-            val actionId = service.addDefaultResponse(it.regex, it.method, it.response, it.enabled)
-            if (it.enabled)
+            val actionId = service.addDefaultResponse(it.regex, it.matchMethod, it.debugResponse!!, it.active)
+            if (it.active)
                 enabledActions += actionId
             it.id = actionId
         }
         knownItems.forEach {
-            if (!it.enabled && enabledActions.contains(it.id))
-                service.muteAction(it.id!!)
-            else if (it.enabled && !enabledActions.contains(it.id))
-                service.unmuteAction(it.id!!)
+            if (!it.active && enabledActions.contains(it.id))
+                service.muteAction(it.id)
+            else if (it.active && !enabledActions.contains(it.id))
+                service.unmuteAction(it.id)
         }
 
         val removed = knownDefaultResponses.filterNot { id -> items.indexOfFirst { it.id == id } != -1 }
         removed.forEach(service::removeRequestAction)
         knownDefaultResponses.clear()
-        items.mapTo(knownDefaultResponses) { it.id!! }
+        items.mapTo(knownDefaultResponses) { it.id }
     }
 
     override fun mute() {

@@ -7,7 +7,7 @@ import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonWriter
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
-import com.icapps.niddler.ui.debugger.model.DefaultResponseAction
+import com.icapps.niddler.ui.debugger.model.LocalRequestIntercept
 import com.icapps.niddler.ui.debugger.model.LocalRequestOverride
 import com.icapps.niddler.ui.util.createGsonListType
 import java.io.File
@@ -27,8 +27,8 @@ class WrappingDebuggerConfiguration : DebuggerConfiguration {
     override var blacklistConfiguration: List<DisableableItem<String>> by jsonWrapList("blacklist") {
         emptyList<DisableableItem<String>>()
     }
-    override var defaultResponses: List<DisableableItem<DefaultResponseAction>> by jsonWrapList("defaultResponses") {
-        emptyList<DisableableItem<DefaultResponseAction>>()
+    override var requestIntercept: List<DisableableItem<LocalRequestIntercept>> by jsonWrapList("requestIntercepts") {
+        emptyList<DisableableItem<LocalRequestIntercept>>()
     }
     override var requestOverride: List<DisableableItem<LocalRequestOverride>> by jsonWrapList("requestOverrides") {
         emptyList<DisableableItem<LocalRequestOverride>>()
@@ -63,7 +63,7 @@ class WrappingDebuggerConfiguration : DebuggerConfiguration {
         configurationTree = JsonObject()
         delayConfiguration = source.delayConfiguration.copy()
         blacklistConfiguration = source.blacklistConfiguration.map { it.copy() }
-        defaultResponses = source.defaultResponses.map { it.copy() }
+        requestIntercept = source.requestIntercept.map { it.copy() }
         requestOverride = source.requestOverride.map { it.copy() }
     }
 

@@ -34,7 +34,8 @@ class RequestOverridePanel(configuration: ModifiableDebuggerConfiguration,
 
         staticRequestToggle.addActionListener {
             staticRequestPanel.isVisible = staticRequestToggle.isSelected
-            changeListener()
+            if (!duringInit)
+                changeListener()
         }
 
         staticRequestPanel.border = UIManager.getBorder("TitledBorder.border")

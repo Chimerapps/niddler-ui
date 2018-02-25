@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.debugger.model.saved
 
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
-import com.icapps.niddler.ui.debugger.model.DefaultResponseAction
+import com.icapps.niddler.ui.debugger.model.LocalRequestIntercept
 import com.icapps.niddler.ui.debugger.model.LocalRequestOverride
 import com.icapps.niddler.ui.debugger.model.ModifiableDebuggerConfiguration
 import java.util.*
@@ -14,7 +14,7 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
     : ModifiableDebuggerConfiguration, DebuggerConfiguration {
 
     private val internalBlacklist: MutableList<DisableableItem<String>> = mutableListOf()
-    private val internalDefaultResponses: MutableList<DisableableItem<DefaultResponseAction>> = mutableListOf()
+    private val internalRequestIntercept: MutableList<DisableableItem<LocalRequestIntercept>> = mutableListOf()
     private val internalRequestOverride: MutableList<DisableableItem<LocalRequestOverride>> = mutableListOf()
     private var internalDelayConfiguration: DisableableItem<DebuggerDelays>
 
@@ -28,8 +28,8 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
         set(value) {
             throw IllegalStateException("Setting not allowed")
         }
-    override var defaultResponses: List<DisableableItem<DefaultResponseAction>>
-        get() = internalDefaultResponses
+    override var requestIntercept: List<DisableableItem<LocalRequestIntercept>>
+        get() = internalRequestIntercept
         set(value) {
             throw IllegalStateException("Setting not allowed")
         }
@@ -41,7 +41,7 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
 
     init {
         delegate.blacklistConfiguration.mapTo(internalBlacklist) { it.copy() }
-        delegate.defaultResponses.mapTo(internalDefaultResponses) { it.copy() }
+        delegate.requestIntercept.mapTo(internalRequestIntercept) { it.copy() }
         delegate.requestOverride.mapTo(internalRequestOverride) { it.copy() }
         internalDelayConfiguration = delegate.delayConfiguration
     }
@@ -99,7 +99,7 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
     override fun addRequestOverride(urlRegex: String?, method: String?, enabled: Boolean): String {
         val id = UUID.randomUUID().toString()
 
-        internalRequestOverride += DisableableItem(enabled, LocalRequestOverride(id,
+        internalRequestOverride += DisableableItem(enabled, LocalRequestOverride(id, enabled,
                 urlRegex, method, -1, debugRequest = null))
 
         notifyChange()
@@ -122,6 +122,22 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
     override fun modifyRequestOverrideAction(override: LocalRequestOverride, enabled: Boolean) {
         val index = internalRequestOverride.indexOfFirst { it.item.id == override.id }
         internalRequestOverride[index] = DisableableItem(enabled, override.copy())
+    }
+
+    override fun addRequestIntercept(urlRegex: String?, method: String?, enabled: Boolean): String {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun removeRequestIntercept(id: String) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setRequestInterceptActive(id: String, active: Boolean) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun modifyRequestIntercept(intercept: LocalRequestIntercept, enabled: Boolean) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     private fun notifyChange() {

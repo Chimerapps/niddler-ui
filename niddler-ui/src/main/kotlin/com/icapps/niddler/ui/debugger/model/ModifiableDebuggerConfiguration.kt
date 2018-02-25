@@ -29,4 +29,13 @@ interface ModifiableDebuggerConfiguration : DebuggerConfiguration {
 
     fun modifyRequestOverrideAction(override: LocalRequestOverride, enabled: Boolean)
 
+
+    fun addRequestIntercept(urlRegex: String?, method: String?, enabled: Boolean): String
+
+    fun removeRequestIntercept(id: String)
+
+    fun setRequestInterceptActive(id: String, active: Boolean)
+
+    fun modifyRequestIntercept(intercept: LocalRequestIntercept, enabled: Boolean)
+
 }

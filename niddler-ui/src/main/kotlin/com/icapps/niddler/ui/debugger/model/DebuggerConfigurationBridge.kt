@@ -29,9 +29,8 @@ class DebuggerConfigurationBridge(private val configuration: DebuggerConfigurati
     }
 
     private fun applyDefaultResponses() {
-        val defaultResponses = configuration.defaultResponses
-        val activeResponses = defaultResponses.filter { it.enabled }.map { it.item }
-        debuggerInterface.updateDefaultResponses(activeResponses)
+        val defaultResponses = configuration.requestIntercept.filter { it.item.debugResponse != null }.map { it.item }
+        debuggerInterface.updateDefaultResponses(defaultResponses)
     }
 
 }

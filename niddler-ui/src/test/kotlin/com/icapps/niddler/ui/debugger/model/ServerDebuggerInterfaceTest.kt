@@ -66,13 +66,13 @@ internal class ServerDebuggerInterfaceTest {
             id
         }
 
-        val actions = listOf(DefaultResponseAction(null, true, ".*\\.png", "GET", DebugResponse(200, "OK", null, null, null)),
-                DefaultResponseAction(null, true, ".*\\.png", "POST", DebugResponse(404, "Not found", null, null, null)))
+        val actions = listOf(LocalRequestIntercept("1", true, ".*\\.png", "GET", null, DebugResponse(200, "OK", null, null, null)),
+                LocalRequestIntercept("2", true, ".*\\.png", "POST", null, DebugResponse(404, "Not found", null, null, null)))
 
         debuggerInterface.updateDefaultResponses(actions)
 
-        verify { mockedService.addDefaultResponse(actions[0].regex, actions[0].method, actions[0].response, actions[0].enabled) }
-        verify { mockedService.addDefaultResponse(actions[1].regex, actions[1].method, actions[1].response, actions[1].enabled) }
+        verify { mockedService.addDefaultResponse(actions[0].regex, actions[0].matchMethod, actions[0].debugResponse!!, actions[0].active) }
+        verify { mockedService.addDefaultResponse(actions[1].regex, actions[1].matchMethod, actions[1].debugResponse!!, actions[1].active) }
 
         assertEquals(uuids[0], actions[0].id)
         assertEquals(uuids[1], actions[1].id)
@@ -89,8 +89,8 @@ internal class ServerDebuggerInterfaceTest {
         }
         every { mockedService.removeRequestAction(any()) } just Runs
 
-        val actions = listOf(DefaultResponseAction(null, true, ".*\\.png", null, DebugResponse(200, "OK", null, null, null)),
-                DefaultResponseAction(null, true, ".*\\.png", "HEAD", DebugResponse(404, "Not found", null, null, null)))
+        val actions = listOf(LocalRequestIntercept("1", true, ".*\\.png", null, null, DebugResponse(200, "OK", null, null, null)),
+                LocalRequestIntercept("2", true, ".*\\.png", "HEAD", null, DebugResponse(404, "Not found", null, null, null)))
 
         debuggerInterface.updateDefaultResponses(actions)
 
@@ -99,8 +99,8 @@ internal class ServerDebuggerInterfaceTest {
 
         debuggerInterface.updateDefaultResponses(emptyList())
 
-        verify(exactly = 1) { mockedService.addDefaultResponse(actions[0].regex, actions[0].method, actions[0].response, actions[0].enabled) }
-        verify(exactly = 1) { mockedService.addDefaultResponse(actions[1].regex, actions[1].method, actions[1].response, actions[1].enabled) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(actions[0].regex, actions[0].matchMethod, actions[0].debugResponse!!, actions[0].active) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(actions[1].regex, actions[1].matchMethod, actions[1].debugResponse!!, actions[1].active) }
 
         verify { mockedService.removeRequestAction(or(uuids[0], uuids[1])) }
     }
@@ -116,20 +116,20 @@ internal class ServerDebuggerInterfaceTest {
         }
         every { mockedService.removeRequestAction(any()) } just Runs
 
-        val actions = listOf(DefaultResponseAction(null, true, ".*\\.png", "HEAD", DebugResponse(200, "OK", null, null, null)),
-                DefaultResponseAction(null, true, ".*\\.png", "GET", DebugResponse(404, "Not found", null, null, null)))
+        val actions = listOf(LocalRequestIntercept("1", true, ".*\\.png", "HEAD", null, DebugResponse(200, "OK", null, null, null)),
+                LocalRequestIntercept("2", true, ".*\\.png", "GET", null, DebugResponse(404, "Not found", null, null, null)))
 
         debuggerInterface.updateDefaultResponses(actions)
 
         assertEquals(uuids[0], actions[0].id)
         assertEquals(uuids[1], actions[1].id)
 
-        val secondActions = listOf(actions[1], DefaultResponseAction(null, true, ".*\\.png", "POST", DebugResponse(404, "Not found", null, null, null)))
+        val secondActions = listOf(actions[1], LocalRequestIntercept("3", true, ".*\\.png", "POST", null, DebugResponse(404, "Not found", null, null, null)))
         debuggerInterface.updateDefaultResponses(secondActions)
 
-        verify(exactly = 1) { mockedService.addDefaultResponse(actions[0].regex, actions[0].method, actions[0].response, actions[0].enabled) }
-        verify(exactly = 1) { mockedService.addDefaultResponse(actions[1].regex, actions[1].method, actions[1].response, actions[1].enabled) }
-        verify(exactly = 1) { mockedService.addDefaultResponse(secondActions[1].regex, secondActions[1].method, secondActions[1].response, secondActions[1].enabled) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(actions[0].regex, actions[0].matchMethod, actions[0].debugResponse!!, actions[0].active) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(actions[1].regex, actions[1].matchMethod, actions[1].debugResponse!!, actions[1].active) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(secondActions[1].regex, secondActions[1].matchMethod, secondActions[1].debugResponse!!, secondActions[1].active) }
 
         verify(exactly = 1) { mockedService.removeRequestAction(uuids[0]) }
     }
@@ -146,21 +146,21 @@ internal class ServerDebuggerInterfaceTest {
         every { mockedService.muteAction(any()) } just Runs
         every { mockedService.unmuteAction(any()) } just Runs
 
-        val actions = listOf(DefaultResponseAction(null, true, ".*\\.png", "DELETE", DebugResponse(200, "OK", null, null, null)),
-                DefaultResponseAction(null, false, ".*\\.png", "subscribe", DebugResponse(404, "Not found", null, null, null)))
+        val actions = listOf(LocalRequestIntercept("1", true, ".*\\.png", "DELETE", null, DebugResponse(200, "OK", null, null, null)),
+                LocalRequestIntercept("2", false, ".*\\.png", "subscribe", null, DebugResponse(404, "Not found", null, null, null)))
 
         debuggerInterface.updateDefaultResponses(actions)
 
         assertEquals(uuids[0], actions[0].id)
         assertEquals(uuids[1], actions[1].id)
 
-        actions[0].enabled = false
-        actions[1].enabled = true
+        actions[0].active = false
+        actions[1].active = true
 
         debuggerInterface.updateDefaultResponses(actions)
 
-        verify(exactly = 1) { mockedService.addDefaultResponse(actions[0].regex, actions[0].method, actions[0].response, any()) }
-        verify(exactly = 1) { mockedService.addDefaultResponse(actions[1].regex, actions[1].method, actions[1].response, any()) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(actions[0].regex, actions[0].matchMethod, actions[0].debugResponse!!, any()) }
+        verify(exactly = 1) { mockedService.addDefaultResponse(actions[1].regex, actions[1].matchMethod, actions[1].debugResponse!!, any()) }
 
         verify(exactly = 1) { mockedService.muteAction(uuids[0]) }
         verify(exactly = 1) { mockedService.unmuteAction(uuids[1]) }

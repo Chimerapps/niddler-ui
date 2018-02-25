@@ -2,8 +2,8 @@ package com.icapps.niddler.ui.debugger.model.saved
 
 import com.google.gson.annotations.Expose
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
-import com.icapps.niddler.ui.debugger.model.DefaultResponseAction
 import com.icapps.niddler.ui.debugger.model.LocalRequestOverride
+import com.icapps.niddler.ui.debugger.model.LocalRequestIntercept
 
 /**
  * @author nicolaverbeeck
@@ -16,7 +16,7 @@ interface DebuggerConfiguration {
 
     var requestOverride: List<DisableableItem<LocalRequestOverride>>
 
-    var defaultResponses: List<DisableableItem<DefaultResponseAction>>
+    var requestIntercept: List<DisableableItem<LocalRequestIntercept>>
 
 }
 

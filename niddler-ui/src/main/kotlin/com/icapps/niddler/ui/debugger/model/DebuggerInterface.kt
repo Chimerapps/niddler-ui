@@ -1,5 +1,7 @@
 package com.icapps.niddler.ui.debugger.model
 
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.google.gson.annotations.Expose
 
 /**
@@ -13,7 +15,7 @@ interface DebuggerInterface {
 
     fun updateBlacklist(active: Iterable<String>)
 
-    fun updateDefaultResponses(items: Iterable<DefaultResponseAction>)
+    fun updateDefaultResponses(items: Iterable<LocalRequestIntercept>)
 
     fun mute()
 
@@ -28,40 +30,72 @@ interface DebuggerInterface {
     fun disconnect()
 }
 
-interface BaseMatcher {
+interface BaseAction {
+    var id: String
+    var repeatCount: Int?
+    var active: Boolean
+
+    fun updateJson(json: JsonObject) {
+        json.addProperty("id", id)
+        json.addProperty("active", active)
+        json.addProperty("repeatCount", repeatCount)
+    }
+
+}
+
+interface BaseMatcher : BaseAction {
     var regex: String?
     var matchMethod: String?
+
+    override fun updateJson(json: JsonObject) {
+        super.updateJson(json)
+        json.addProperty("regex", regex)
+        json.addProperty("matchMethod", matchMethod)
+    }
 }
 
 interface ResponseMatcher : BaseMatcher {
     var responseCode: Int?
+
+    override fun updateJson(json: JsonObject) {
+        super.updateJson(json)
+        json.addProperty("responseCode", responseCode)
+    }
 }
 
-data class DefaultResponseAction(var id: String?,
-                                 var enabled: Boolean,
-                                 @Expose val regex: String?,
-                                 @Expose val method: String?,
-                                 val response: DebugResponse)
-
-data class LocalRequestOverride(@Expose var id: String = "",
+data class LocalRequestOverride(@Expose override var id: String = "",
+                                @Expose override var active: Boolean = false,
                                 @Expose override var regex: String? = null,
                                 @Expose override var matchMethod: String? = null,
-                                @Expose var repeatCount: Int? = null,
+                                @Expose override var repeatCount: Int? = null,
                                 @Expose var debugRequest: DebugRequest? = null) : BaseMatcher {
     override fun toString(): String {
         return regex ?: matchMethod ?: ""
     }
 }
 
-data class LocalResponseOverride(@Expose var id: String = "",
-                                 @Expose var active: Boolean = false,
+data class LocalRequestIntercept(@Expose override var id: String = "",
+                                 @Expose override var active: Boolean = false,
                                  @Expose override var regex: String? = null,
                                  @Expose override var matchMethod: String? = null,
-                                 @Expose var repeatCount: Int? = null,
-                                 @Expose var debugResponse: DebugResponse? = null) : BaseMatcher
+                                 @Expose override var repeatCount: Int? = null,
+                                 @Expose var debugResponse: DebugResponse? = null) : BaseMatcher {
 
-data class LocalRequestIntercept(@Expose var id: String = "",
-                                 @Expose var active: Boolean = false,
-                                 @Expose override var regex: String? = null,
-                                 @Expose override var matchMethod: String? = null,
-                                 @Expose override var responseCode: Int? = null) : ResponseMatcher
+    fun toServerJson(gson: Gson): JsonObject {
+        val json = JsonObject()
+        updateJson(json)
+
+        json.merge(gson, debugResponse)
+
+        return json
+    }
+
+}
+
+data class LocalResponseIntercept(@Expose override var id: String = "",
+                                  @Expose override var active: Boolean = false,
+                                  @Expose override var regex: String? = null,
+                                  @Expose override var matchMethod: String? = null,
+                                  @Expose override var repeatCount: Int? = null,
+                                  @Expose override var responseCode: Int? = null,
+                                  @Expose var response: DebugResponse? = null) : ResponseMatcher

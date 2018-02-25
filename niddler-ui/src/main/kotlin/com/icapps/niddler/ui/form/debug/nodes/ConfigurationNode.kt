@@ -3,7 +3,7 @@ package com.icapps.niddler.ui.form.debug.nodes
 import com.icapps.niddler.ui.debugger.model.DebuggerDelays
 import com.icapps.niddler.ui.debugger.model.LocalRequestIntercept
 import com.icapps.niddler.ui.debugger.model.LocalRequestOverride
-import com.icapps.niddler.ui.debugger.model.LocalResponseOverride
+import com.icapps.niddler.ui.debugger.model.LocalResponseIntercept
 
 /**
  * @author nicolaverbeeck
@@ -98,14 +98,14 @@ class RequestOverrideRootNode(isChecked: Boolean,
     }
 }
 
-class ResponseOverrideNode(var responseOverride: LocalResponseOverride,
+class ResponseOverrideNode(var responseOverride: LocalRequestIntercept,
                            isChecked: Boolean,
-                           nodeBuilder: NodeBuilder) : ConfigurationNode<LocalResponseOverride> {
+                           nodeBuilder: NodeBuilder) : ConfigurationNode<LocalRequestIntercept> {
     override val treeNode: CheckedNode = nodeBuilder.createCheckedNode(responseOverride.regex
             ?: responseOverride.matchMethod ?: "", isChecked, this)
             .apply { setCanHaveChildren(false) }
 
-    override var nodeData: LocalResponseOverride?
+    override var nodeData: LocalRequestIntercept?
         get() = responseOverride
         set(value) {
             responseOverride = value!!
@@ -120,21 +120,21 @@ class ResponseOverrideRootNode(isChecked: Boolean,
             .apply { setCanHaveChildren(true) }
 
     override fun createNode(): ResponseOverrideNode {
-        return ResponseOverrideNode(LocalResponseOverride(), false, nodeBuilder)
+        return ResponseOverrideNode(LocalRequestIntercept(), false, nodeBuilder)
     }
 }
 
-class ResponseInterceptNode(var requestIntercept: LocalRequestIntercept,
+class ResponseInterceptNode(var responseIntercept: LocalResponseIntercept,
                             isChecked: Boolean,
-                            nodeBuilder: NodeBuilder) : ConfigurationNode<LocalRequestIntercept> {
-    override val treeNode: CheckedNode = nodeBuilder.createCheckedNode(requestIntercept.regex
-            ?: requestIntercept.matchMethod ?: requestIntercept.responseCode?.toString() ?: "", isChecked, this)
+                            nodeBuilder: NodeBuilder) : ConfigurationNode<LocalResponseIntercept> {
+    override val treeNode: CheckedNode = nodeBuilder.createCheckedNode(responseIntercept.regex
+            ?: responseIntercept.matchMethod ?: responseIntercept.responseCode?.toString() ?: "", isChecked, this)
             .apply { setCanHaveChildren(false) }
 
-    override var nodeData: LocalRequestIntercept?
-        get() = requestIntercept
+    override var nodeData: LocalResponseIntercept?
+        get() = responseIntercept
         set(value) {
-            requestIntercept = value!!
+            responseIntercept = value!!
         }
 }
 
@@ -146,7 +146,7 @@ class ResponseInterceptRootNode(isChecked: Boolean,
             .apply { setCanHaveChildren(true) }
 
     override fun createNode(): ResponseInterceptNode {
-        return ResponseInterceptNode(LocalRequestIntercept(), false, nodeBuilder)
+        return ResponseInterceptNode(LocalResponseIntercept(), false, nodeBuilder)
     }
 }
 

@@ -118,6 +118,18 @@ internal fun mergeToJson(gson: Gson, vararg messages: Any): JsonElement {
     }
 }
 
+internal fun JsonObject.merge(gson: Gson, toAdd: Any?): JsonObject {
+    if (toAdd == null)
+        return this
+
+    val toAddJson = gson.toJsonTree(toAdd).asJsonObject
+    toAddJson.forEach { name, value ->
+        if (!has(name))
+            add(name, value)
+    }
+    return this
+}
+
 private inline fun JsonObject.forEach(block: (String, JsonElement) -> Unit) {
     entrySet().forEach { block(it.key, it.value) }
 }
