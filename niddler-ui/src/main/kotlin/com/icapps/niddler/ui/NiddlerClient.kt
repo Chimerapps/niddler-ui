@@ -69,7 +69,7 @@ class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI, Draft_17()), N
     private fun registerProtocolHandler(protocolVersion: Int) {
         when (protocolVersion) {
             1 -> protocolHandler = NiddlerV1ProtocolHandler(this)
-            2, 3 -> protocolHandler = NiddlerV2ProtocolHandler(this, protocolVersion)
+            else -> protocolHandler = NiddlerV2ProtocolHandler(this, protocolVersion)
         }
     }
 
