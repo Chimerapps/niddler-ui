@@ -9,6 +9,7 @@
     <change-notes><![CDATA[
     <b>1.0.0 - First 'public' release</b>
     <ul>
+        <li>1.0.2 - Do not fail on newer versions of the protocol</li>
         <li>1.0.1 - Filtering was not case insensitive</li>
         <li>1.0.0 - Disconnect button</li>
         <li>0.0.19 - Filtering on url</li>
