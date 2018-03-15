@@ -131,25 +131,24 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>) {
     }
 
     internal fun executeADBCommand(vararg commands: String) {
-        if (pathToAdb == null)
-            return
-        val builder = ProcessBuilder(pathToAdb?.prefixList(commands))
-        val process = builder.start()
-        process.waitFor()
-        println(process.inputStream.bufferedReader().readText().trim())
-        System.err.println(process.errorStream.bufferedReader().readText())
+        pathToAdb?.let {
+            val builder = ProcessBuilder(it.prefixList(commands))
+            val process = builder.start()
+            process.waitFor()
+            println(process.inputStream.bufferedReader().readText().trim())
+            System.err.println(process.errorStream.bufferedReader().readText())
+        }
     }
 
     internal fun executeAndGetADBCommand(vararg commands: String): String? {
-        if (pathToAdb == null)
-            return null
-        val builder = ProcessBuilder(pathToAdb?.prefixList(commands))
-        val process = builder.start()
-        process.waitFor()
-        val response = process.inputStream.bufferedReader().readText().trim()
-        println(response)
-        System.err.println(process.errorStream.bufferedReader().readText())
-        return response
+        return pathToAdb?.let {
+            val builder = ProcessBuilder(it.prefixList(commands))
+            val process = builder.start()
+            process.waitFor()
+            val response = process.inputStream.bufferedReader().readText().trim()
+            println(response)
+            System.err.println(process.errorStream.bufferedReader().readText())
+             response
+        }
     }
-
 }

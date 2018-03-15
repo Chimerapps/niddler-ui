@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.form
 
+import com.icapps.niddler.ui.getDeviceIcon
 import com.icapps.niddler.ui.model.AdbDevice
 import com.icapps.niddler.ui.toHex
 import java.awt.Color
@@ -29,13 +30,13 @@ class NiddlerConnectCellRenderer : DefaultListCellRenderer() {
 
     override fun getListCellRendererComponent(
             list: JList<*>,
-            value: Any?,
+            device: Any?,
             index: Int,
             selected: Boolean,
             expanded: Boolean): Component {
-        if (value !is AdbDevice)
+        if (device !is AdbDevice)
             return label
-        val iconResName = if (value.emulator) "/ic_device_emulator.png" else "/ic_device_real.png"
+        val iconResName = getDeviceIcon(device.emulator)
         label.icon = ImageIcon(javaClass.getResource(iconResName))
 
         val hexColor: String
@@ -48,8 +49,8 @@ class NiddlerConnectCellRenderer : DefaultListCellRenderer() {
             label.foreground = textNonSelectionColor
             hexColor = secondaryTextNonSelectionColor.toHex()
         }
-        label.text = String.format("<html>%s <font color='%s'>%s</font>", value.name, hexColor, value.extraInfo)
-        label.toolTipText = value.serialNr
+        label.text = String.format("<html>%s <font color='%s'>%s</font>", device.name, hexColor, device.extraInfo)
+        label.toolTipText = device.serialNr
         return label
     }
 }

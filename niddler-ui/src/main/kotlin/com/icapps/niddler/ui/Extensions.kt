@@ -93,6 +93,13 @@ fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {
 }
 
 fun Color.toHex(): String {
-    return String.format("#%02x%02x%02x", red, green, blue)
+    var hexColour = Integer.toHexString(rgb and 0xffffff)
+    if (hexColour.length < 6) {
+        hexColour = "000000".substring(0, 6 - hexColour.length) + hexColour
+    }
+    return "#$hexColour"
+}
 
+fun getDeviceIcon(emulator: Boolean): String {
+    return if (emulator) "/ic_device_emulator.png" else "/ic_device_real.png"
 }
