@@ -35,10 +35,8 @@ class NiddlerConnectCellRenderer : DefaultListCellRenderer() {
             expanded: Boolean): Component {
         if (value !is AdbDevice)
             return label
-        if (value.emulator)
-            label.icon = ImageIcon(javaClass.getResource("/ic_device_emulator.png"))
-        else
-            label.icon = ImageIcon(javaClass.getResource("/ic_device_real.png"))
+        val iconResName = if (value.emulator) "/ic_device_emulator.png" else "/ic_device_real.png"
+        label.icon = ImageIcon(javaClass.getResource(iconResName))
 
         val hexColor: String
         if (selected) {
