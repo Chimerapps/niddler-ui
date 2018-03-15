@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui
 
 import com.icapps.niddler.ui.form.MainThreadDispatcher
+import java.awt.Color
 import java.awt.Dimension
 import java.beans.PropertyChangeEvent
 import java.util.*
@@ -89,4 +90,9 @@ fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {
         dl.changedUpdate(null)
     }
     document?.addDocumentListener(dl)
+}
+
+fun Color.toHex(): String {
+    return String.format("#%02x%02x%02x", red, green, blue)
+
 }

@@ -5,7 +5,6 @@ import com.icapps.niddler.ui.addChangeListener
 import com.icapps.niddler.ui.model.AdbDevice
 import com.icapps.tools.aec.EmulatorFactory
 import se.vidstige.jadb.JadbConnection
-import se.vidstige.jadb.JadbDevice
 import java.awt.Window
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
