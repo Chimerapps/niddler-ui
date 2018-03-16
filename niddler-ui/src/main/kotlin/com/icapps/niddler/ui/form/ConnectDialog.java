@@ -1,5 +1,7 @@
 package com.icapps.niddler.ui.form;
 
+import com.icapps.niddler.ui.form.components.NiddlerIndeterminateProgressBar;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -13,6 +15,7 @@ public abstract class ConnectDialog extends JDialog {
 	protected JList adbList;
 	protected JTextField directIP;
 	protected JFormattedTextField port;
+	protected NiddlerIndeterminateProgressBar progressBar;
 
 	public ConnectDialog(final Window owner) {
 		super(owner, "Select a device to connect to", ModalityType.APPLICATION_MODAL);

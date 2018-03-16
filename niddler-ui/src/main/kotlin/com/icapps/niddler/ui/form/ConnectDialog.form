@@ -20,7 +20,7 @@
             <border type="none"/>
             <children>
               <grid id="f01ed" layout-manager="BorderLayout" hgap="0" vgap="0">
-                <constraints border-constraint="North"/>
+                <constraints border-constraint="Center"/>
                 <properties/>
                 <border type="none"/>
                 <children>
@@ -59,6 +59,30 @@
                     <properties>
                       <text value="6555"/>
                       <toolTipText value="Default: 6555"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="ff0fc" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="North"/>
+                <properties>
+                  <doubleBuffered value="true"/>
+                  <focusable value="false"/>
+                  <requestFocusEnabled value="false"/>
+                </properties>
+                <border type="none"/>
+                <children>
+                  <component id="4f18c" class="com.icapps.niddler.ui.form.components.NiddlerIndeterminateProgressBar" binding="progressBar">
+                    <constraints border-constraint="Center"/>
+                    <properties>
+                      <background color="-1250068"/>
+                      <focusable value="false"/>
+                      <minimumSize width="10" height="10"/>
+                      <opaque value="true"/>
+                      <preferredSize width="10" height="10"/>
+                      <requestFocusEnabled value="false"/>
+                      <verifyInputWhenFocusTarget value="false"/>
+                      <visible value="true"/>
                     </properties>
                   </component>
                 </children>
