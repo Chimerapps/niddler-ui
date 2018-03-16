@@ -151,6 +151,8 @@ fun JComponent.forEach(each: (Component) -> Unit) {
 fun JLabel.offsetLeft(): JLabel {
     border = EmptyBorder(0, 4, 0, 0)
     return this
+}
+
 fun Color.toHex(): String {
     return String.format("#%02x%02x%02x", red, green, blue)
 }
