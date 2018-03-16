@@ -1,19 +1,27 @@
 package com.icapps.niddler.ui.form
 
+import com.icapps.niddler.ui.adb.ADBBootstrap
 import com.icapps.niddler.ui.addChangeListener
+import com.icapps.niddler.ui.model.AdbDevice
+import com.icapps.tools.aec.EmulatorFactory
 import se.vidstige.jadb.JadbConnection
 import java.awt.Window
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.io.File
 import javax.swing.DefaultListModel
+import javax.swing.JList
 import javax.swing.JOptionPane
-import javax.swing.ListModel
+import javax.swing.SwingWorker
+
 
 /**
  * @author Nicola Verbeeck
  * @date 17/11/16.
  */
 class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, val previousIp: String?, val previousPort: Int?) : ConnectDialog(parent) {
+
+    private lateinit var swingWorker: NiddlerConnectSwingWorker
 
     companion object {
         @JvmStatic
@@ -31,15 +39,13 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
     private var selection: ConnectSelection? = null
 
     private fun initUI() {
-        val model = DefaultListModel<String>()
-        adbConnection.devices.forEach { model.addElement(it.serial) }
-
         port.addActionListener { onOK() }
         directIP.addActionListener { onOK() }
 
-        @Suppress("UNCHECKED_CAST")
-        adbList.model = model as ListModel<Any>
-
+        adbList.cellRenderer = NiddlerConnectCellRenderer()
+        swingWorker = NiddlerConnectSwingWorker(adbConnection, adbList, doneCallback = progressBar::stop)
+        progressBar.start()
+        swingWorker.execute()
         if (previousIp != null)
             directIP.text = previousIp
         if (previousPort != null)
@@ -48,9 +54,6 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
         adbList.addListSelectionListener {
             if (!adbList.isSelectionEmpty)
                 directIP.text = ""
-        }
-        if (!model.isEmpty) {
-            adbList.selectedIndex = 0
         }
         directIP.addChangeListener {
             if (!directIP.text.isNullOrBlank())
@@ -68,15 +71,15 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
     }
 
     override fun onOK() {
-        if (!validateContents())
+        val device = adbList.model.getElementAt(adbList.selectedIndex)
+        if (!validateContents() || device !is AdbDevice)
             return
-
-        selection = ConnectSelection(if (adbList.isSelectionEmpty) null else adbList.selectedValue as String, directIP.text, port.text.toInt())
-
+        selection = ConnectSelection(device.serialNr, directIP.text, port.text.toInt())
         dispose()
     }
 
     override fun onCancel() {
+        swingWorker.cancel(true)
         dispose()
     }
 
@@ -86,7 +89,7 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
             if (int <= 0 || int > 65535) {
                 return showError("Please enter a valid port number")
             }
-        } catch(e: NumberFormatException) {
+        } catch (e: NumberFormatException) {
             return showError("Please enter a valid port")
         }
         if (!adbList.isSelectionEmpty)
@@ -104,4 +107,58 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
 
     data class ConnectSelection(val serial: String?, val ip: String?, val port: Int)
 
+    private class NiddlerConnectSwingWorker(val adbConnection: JadbConnection, val adbList: JList<Any>, val doneCallback: () -> Unit) : SwingWorker<Boolean, Void>() {
+
+        private var authToken: String? = null
+
+
+        override fun doInBackground(): Boolean {
+            authToken = File("${System.getProperty("user.home")}/.emulator_console_auth_token").readText()
+
+            val model = DefaultListModel<Any>()
+            val adb = ADBBootstrap(emptyList())
+
+            adbList.model = model
+            adbConnection.devices.forEach {
+                val serial = it.serial
+                val emulated = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.characteristics") == "emulator"
+                val name = getCorrectName(adb, serial, emulated)
+                val sdkVersion = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.sdk")
+                val version = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.release")
+                val extraInfo = "(Android $version, API $sdkVersion)"
+                val device = AdbDevice(name ?: "", extraInfo, emulated, serial)
+                model.addElement(device)
+                if (adbList.selectedIndex == -1) {
+                    adbList.selectedIndex = 0
+                }
+            }
+            return true
+        }
+
+        private fun getCorrectName(adb: ADBBootstrap, serial: String, emulated: Boolean): String? {
+            return if (emulated) {
+                val port = serial.split("-").last().toIntOrNull()
+                        ?: return getName(adb, serial)
+                val authToken = authToken ?: return getName(adb, serial)
+                val emulator = EmulatorFactory.create(port, authToken)
+                emulator.connect()
+                val output = emulator.avdControl.name()
+                emulator.disconnect()
+                output.replace("_", " ").trim()
+            } else {
+                val name = getName(adb, serial)
+                val manufacturer = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.product.manufacturer")
+                "$manufacturer $name"
+            }
+        }
+
+        private fun getName(adb: ADBBootstrap, serial: String): String? {
+            return adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.product.model")
+        }
+
+        override fun done() {
+            super.done()
+            doneCallback.invoke()
+        }
+    }
 }
