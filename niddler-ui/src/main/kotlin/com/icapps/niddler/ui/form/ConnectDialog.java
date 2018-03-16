@@ -13,8 +13,9 @@ public abstract class ConnectDialog extends JDialog {
 	protected JList adbList;
 	protected JTextField directIP;
 	protected JFormattedTextField port;
+    private JProgressBar progressBar1;
 
-	public ConnectDialog(final Window owner) {
+    public ConnectDialog(final Window owner) {
 		super(owner, "Select a device to connect to", ModalityType.APPLICATION_MODAL);
 		setContentPane(contentPane);
 		getRootPane().setDefaultButton(buttonOK);

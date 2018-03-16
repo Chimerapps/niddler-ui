@@ -119,10 +119,10 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
             adbList.model = model
             adbConnection.devices.forEach {
                 val serial = it.serial
-                val emulated = adb.executeAndGetADBCommand("-s", serial, "shell", "getprop", "ro.build.characteristics") == "emulator"
+                val emulated = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.characteristics") == "emulator"
                 val name = getCorrectName(adb, serial, emulated)
-                val sdkVersion = adb.executeAndGetADBCommand("-s", serial, "shell", "getprop", "ro.build.version.sdk")
-                val version = adb.executeAndGetADBCommand("-s", serial, "shell", "getprop", "ro.build.version.release")
+                val sdkVersion = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.sdk")
+                val version = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.release")
                 val extraInfo = "(Android $version, API $sdkVersion)"
                 val device = AdbDevice(name ?: "", extraInfo, emulated, serial)
                 model.addElement(device)
@@ -145,13 +145,13 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
                 output.replace("_", " ").trim()
             } else {
                 val name = getName(adb, serial)
-                val manufacturer = adb.executeAndGetADBCommand("-s", serial, "shell", "getprop", "ro.product.manufacturer")
+                val manufacturer = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.product.manufacturer")
                 "$manufacturer $name"
             }
         }
 
         private fun getName(adb: ADBBootstrap, serial: String): String? {
-            return adb.executeAndGetADBCommand("-s", serial, "shell", "getprop", "ro.product.model")
+            return adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.product.model")
         }
     }
 }

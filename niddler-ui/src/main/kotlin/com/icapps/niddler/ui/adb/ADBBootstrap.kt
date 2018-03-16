@@ -130,11 +130,7 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>) {
         return ADBExt(serial, this)
     }
 
-    internal fun executeADBCommand(vararg commands: String) {
-        executeAndGetADBCommand(*commands)
-    }
-
-    internal fun executeAndGetADBCommand(vararg commands: String): String? {
+    internal fun executeADBCommand(vararg commands: String): String? {
         return pathToAdb?.let {
             val builder = ProcessBuilder(it.prefixList(commands))
             val process = builder.start()

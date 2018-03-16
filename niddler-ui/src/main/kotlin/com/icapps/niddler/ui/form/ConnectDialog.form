@@ -20,7 +20,7 @@
             <border type="none"/>
             <children>
               <grid id="f01ed" layout-manager="BorderLayout" hgap="0" vgap="0">
-                <constraints border-constraint="North"/>
+                <constraints border-constraint="Center"/>
                 <properties/>
                 <border type="none"/>
                 <children>
@@ -59,6 +59,25 @@
                     <properties>
                       <text value="6555"/>
                       <toolTipText value="Default: 6555"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+              <grid id="ff0fc" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints border-constraint="North"/>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="c06de" class="javax.swing.JProgressBar" binding="progressBar1" default-binding="true">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <enabled value="true"/>
+                      <foreground color="-16101424"/>
+                      <indeterminate value="true"/>
+                      <stringPainted value="false"/>
                     </properties>
                   </component>
                 </children>
