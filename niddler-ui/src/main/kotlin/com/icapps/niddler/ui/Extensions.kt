@@ -96,6 +96,12 @@ fun Color.toHex(): String {
     return String.format("#%02x%02x%02x", red, green, blue)
 }
 
+fun String.hexToColor(): Color {
+    return Color(Integer.valueOf(substring(1, 3), 16),
+            Integer.valueOf(substring(3, 5), 16),
+            Integer.valueOf(substring(5, 7), 16))
+}
+
 fun getDeviceIcon(emulator: Boolean): String {
     return if (emulator) "/ic_device_emulator.png" else "/ic_device_real.png"
 }

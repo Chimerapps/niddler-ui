@@ -43,7 +43,8 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
         directIP.addActionListener { onOK() }
 
         adbList.cellRenderer = NiddlerConnectCellRenderer()
-        swingWorker = NiddlerConnectSwingWorker(adbConnection, adbList)
+        swingWorker = NiddlerConnectSwingWorker(adbConnection, adbList, doneCallback = progressBar::stop)
+        progressBar.start()
         swingWorker.execute()
         if (previousIp != null)
             directIP.text = previousIp
@@ -106,9 +107,10 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
 
     data class ConnectSelection(val serial: String?, val ip: String?, val port: Int)
 
-    private class NiddlerConnectSwingWorker(val adbConnection: JadbConnection, val adbList: JList<Any>) : SwingWorker<Boolean, Void>() {
+    private class NiddlerConnectSwingWorker(val adbConnection: JadbConnection, val adbList: JList<Any>, val doneCallback: () -> Unit) : SwingWorker<Boolean, Void>() {
 
         private var authToken: String? = null
+
 
         override fun doInBackground(): Boolean {
             authToken = File("${System.getProperty("user.home")}/.emulator_console_auth_token").readText()
@@ -152,6 +154,11 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
 
         private fun getName(adb: ADBBootstrap, serial: String): String? {
             return adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.product.model")
+        }
+
+        override fun done() {
+            super.done()
+            doneCallback.invoke()
         }
     }
 }
