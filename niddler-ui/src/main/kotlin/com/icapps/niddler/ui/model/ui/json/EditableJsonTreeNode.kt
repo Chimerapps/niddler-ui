@@ -50,9 +50,8 @@ class EditableJsonTreeNode(override val jsonElement: JsonElement, private val pa
                 var invalid = false
                 parent?.children()?.iterator()?.forEach {
                     if (it is JsonNode<*>) {
-                        if (it.name == newObject.key) {
+                        if (it.name == newObject.key && !invalid) {
                             invalid = true
-                            return
                         }
                     }
                 }
