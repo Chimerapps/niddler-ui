@@ -36,30 +36,27 @@ class JsonTreeRenderer : DefaultTreeCellRenderer() {
     }
 
     override fun getTreeCellRendererComponent(tree: JTree?, value: Any?, sel: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean): Component {
-        super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus)
-
-        icon = null
-        font = regularFont
-        if (value is JsonTreeNode) {
-            when (value.actualType()) {
-                JsonTreeNode.JsonDataType.ARRAY -> {
-                    icon = arrayIcon
-                    if (value.isAnonymous())
-                    font = italicFont
-                }
-                JsonTreeNode.JsonDataType.OBJECT -> {
-                    icon = objectIcon
+        if (value is JsonNode<*>) {
+            font = regularFont
+            text = value.toString()
+            icon = when (value.actualType()) {
+                JsonNode.JsonDataType.ARRAY -> {
                     if (value.isAnonymous())
                         font = italicFont
+                    arrayIcon
                 }
-                JsonTreeNode.JsonDataType.BOOLEAN -> icon = booleanIcon
-                JsonTreeNode.JsonDataType.INT -> icon = intIcon
-                JsonTreeNode.JsonDataType.STRING -> icon = stringIcon
-                JsonTreeNode.JsonDataType.DOUBLE -> icon = doubleIcon
-                JsonTreeNode.JsonDataType.NULL -> icon = null
+                JsonNode.JsonDataType.OBJECT -> {
+                    if (value.isAnonymous())
+                        font = italicFont
+                    objectIcon
+                }
+                JsonNode.JsonDataType.BOOLEAN -> booleanIcon
+                JsonNode.JsonDataType.INT -> intIcon
+                JsonNode.JsonDataType.STRING -> stringIcon
+                JsonNode.JsonDataType.DOUBLE -> doubleIcon
+                JsonNode.JsonDataType.NULL -> null
             }
         }
         return this
     }
-
 }
