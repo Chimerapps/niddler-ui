@@ -18,6 +18,7 @@ import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
 import com.icapps.niddler.ui.model.ui.*
 import com.icapps.niddler.ui.setColumnFixedWidth
 import com.icapps.niddler.ui.setColumnMinWidth
+import com.icapps.niddler.ui.util.BodyFormatType
 import com.icapps.niddler.ui.util.ClipboardUtil
 import com.icapps.niddler.ui.util.WideSelectionTreeUI
 import java.awt.datatransfer.StringSelection
