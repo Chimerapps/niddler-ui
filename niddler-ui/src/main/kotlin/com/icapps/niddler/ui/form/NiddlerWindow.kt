@@ -182,6 +182,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         if (niddlerClient != null) {
             //TODO Remove previous port mapping, this could cause conflicts, to check
         }
+        onClearSelected()
         onClosed()
     }
 

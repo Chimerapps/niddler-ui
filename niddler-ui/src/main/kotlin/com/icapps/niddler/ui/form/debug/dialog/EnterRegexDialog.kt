@@ -42,7 +42,7 @@ class EnterRegexDialog(owner: Window?, title: String, componentsFactory: Compone
     }
 
     fun show(): String? {
-        if (dialog.show(::validateInput) == Dialog.ACCEPTED)
+        if (dialog.show(this::validateInput) == Dialog.ACCEPTED)
             return textField.text.trim()
         return null
     }
