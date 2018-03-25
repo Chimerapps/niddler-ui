@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui
 
+import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.debugger.NiddlerDebuggerConnection
 
 /**

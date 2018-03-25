@@ -1,4 +1,4 @@
-package com.icapps.niddler.ui.debugger.model
+package com.icapps.niddler.lib.debugger.model
 
 import com.google.gson.Gson
 import com.google.gson.JsonElement

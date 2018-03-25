@@ -1,4 +1,4 @@
-package com.icapps.niddler.ui.debugger.model.saved
+package com.icapps.niddler.lib.debugger.model.saved
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
@@ -6,10 +6,10 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonWriter
-import com.icapps.niddler.ui.debugger.model.DebuggerDelays
-import com.icapps.niddler.ui.debugger.model.LocalRequestIntercept
-import com.icapps.niddler.ui.debugger.model.LocalRequestOverride
-import com.icapps.niddler.ui.util.createGsonListType
+import com.icapps.niddler.lib.debugger.model.DebuggerDelays
+import com.icapps.niddler.lib.debugger.model.LocalRequestIntercept
+import com.icapps.niddler.lib.debugger.model.LocalRequestOverride
+import com.icapps.niddler.lib.utils.createGsonListType
 import java.io.File
 import java.io.Reader
 import java.io.Writer

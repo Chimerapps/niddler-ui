@@ -1,7 +1,7 @@
-package com.icapps.niddler.ui.debugger.model
+package com.icapps.niddler.lib.debugger.model
 
-import com.icapps.niddler.ui.debugger.DebuggingSession
-import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
+import com.icapps.niddler.lib.debugger.DebuggingSession
+import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 
 /**
  * @author nicolaverbeeck

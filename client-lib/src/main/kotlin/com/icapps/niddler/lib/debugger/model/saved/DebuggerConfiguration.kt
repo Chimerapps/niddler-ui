@@ -1,9 +1,9 @@
-package com.icapps.niddler.ui.debugger.model.saved
+package com.icapps.niddler.lib.debugger.model.saved
 
 import com.google.gson.annotations.Expose
-import com.icapps.niddler.ui.debugger.model.DebuggerDelays
-import com.icapps.niddler.ui.debugger.model.LocalRequestOverride
-import com.icapps.niddler.ui.debugger.model.LocalRequestIntercept
+import com.icapps.niddler.lib.debugger.model.DebuggerDelays
+import com.icapps.niddler.lib.debugger.model.LocalRequestOverride
+import com.icapps.niddler.lib.debugger.model.LocalRequestIntercept
 
 /**
  * @author nicolaverbeeck

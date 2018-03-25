@@ -1,7 +1,7 @@
-package com.icapps.niddler.ui.debugger.model
+package com.icapps.niddler.lib.debugger.model
 
 import com.google.gson.GsonBuilder
-import com.icapps.niddler.ui.NiddlerDebuggerConnection
+import com.icapps.niddler.lib.debugger.NiddlerDebuggerConnection
 import java.util.*
 
 /**
@@ -24,42 +24,60 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
     fun addDefaultRequestOverride(regex: String?, method: String?, request: DebugRequest, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_DEFAULT_REQUEST_OVERRIDE,
-                mergeToJson(gson, RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active), request)))
+                mergeToJson(gson, RegexPayload(regex),
+                        MethodPayload(method),
+                        ActionPayload(id),
+                        ActivePayload(active),
+                        request)))
         return id
     }
 
     fun addDefaultResponse(regex: String?, method: String?, response: DebugResponse, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_DEFAULT_RESPONSE,
-                mergeToJson(gson, RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active), response)))
+                mergeToJson(gson, RegexPayload(regex),
+                        MethodPayload(method),
+                        ActionPayload(id),
+                        ActivePayload(active),
+                        response)))
         return id
     }
 
     fun addRequestIntercept(regex: String?, method: String?, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_REQUEST,
-                mergeToJson(gson, RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active))))
+                mergeToJson(gson, RegexPayload(regex),
+                        MethodPayload(method),
+                        ActionPayload(id),
+                        ActivePayload(active))))
         return id
     }
 
     fun addResponseIntercept(regex: String?, method: String?, responseCode: Int?, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_RESPONSE,
-                mergeToJson(gson, RegexPayload(regex), MethodPayload(method), ResponseCodePayload(responseCode),
-                        ActionPayload(id), ActivePayload(active))))
+                mergeToJson(gson, RegexPayload(regex),
+                        MethodPayload(method),
+                        ResponseCodePayload(responseCode),
+                        ActionPayload(id),
+                        ActivePayload(active))))
         return id
     }
 
     fun addRequestOverride(regex: String?, method: String?, active: Boolean): String {
         val id = UUID.randomUUID().toString()
         sendMessage(NiddlerDebugControlMessage(MESSAGE_ADD_REQUEST_OVERRIDE,
-                mergeToJson(gson, RegexPayload(regex), MethodPayload(method), ActionPayload(id), ActivePayload(active))))
+                mergeToJson(gson, RegexPayload(regex),
+                        MethodPayload(method),
+                        ActionPayload(id),
+                        ActivePayload(active))))
         return id
     }
 
     fun respondTo(niddlerMessageId: String, response: DebugResponse) {
         sendMessage(NiddlerDebugControlMessage(MESSAGE_DEBUG_REPLY,
-                mergeToJson(gson, DebugReplyPayload(niddlerMessageId), response)))
+                mergeToJson(gson, DebugReplyPayload(niddlerMessageId),
+                        response)))
     }
 
     fun muteAction(id: String) {

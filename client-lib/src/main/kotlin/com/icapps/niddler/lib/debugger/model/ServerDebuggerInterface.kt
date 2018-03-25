@@ -1,6 +1,6 @@
-package com.icapps.niddler.ui.debugger.model
+package com.icapps.niddler.lib.debugger.model
 
-import com.icapps.niddler.ui.split
+import com.icapps.niddler.lib.utils.split
 
 /**
  * @author nicolaverbeeck

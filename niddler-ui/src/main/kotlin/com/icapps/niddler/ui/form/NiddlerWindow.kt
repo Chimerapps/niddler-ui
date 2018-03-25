@@ -2,7 +2,7 @@ package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.lib.adb.ADBBootstrap
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
-import com.icapps.niddler.ui.NiddlerClient
+import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.ui.NiddlerClientDebuggerInterface
 import com.icapps.niddler.ui.codegen.CurlCodeGenerator
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener

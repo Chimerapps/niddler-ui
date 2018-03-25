@@ -1,7 +1,7 @@
-package com.icapps.niddler.ui.debugger.model
+package com.icapps.niddler.ui.debugger
 
-import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
-import com.icapps.niddler.ui.debugger.model.saved.DisableableItem
+import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
+import com.icapps.niddler.lib.debugger.model.saved.DisableableItem
 import com.icapps.niddler.ui.form.debug.ConfigurationModel
 import com.icapps.niddler.ui.form.debug.nodes.CheckedNode
 import com.icapps.niddler.ui.form.debug.nodes.ConfigurationNode
