@@ -2,7 +2,7 @@ package com.icapps.niddler.ui.form.ui
 
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
-import com.icapps.niddler.ui.model.MessageContainer
+import com.icapps.niddler.lib.model.MessageContainer
 import java.awt.Component
 import javax.swing.JComponent
 

@@ -1,10 +1,7 @@
-package com.icapps.niddler.ui.model
+package com.icapps.niddler.lib.model
 
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
-import com.icapps.niddler.ui.util.BodyFormatType
-import com.icapps.niddler.ui.util.BodyTools
-import com.icapps.niddler.ui.util.ConcreteBody
-import com.icapps.niddler.ui.util.logger
+import com.icapps.niddler.lib.utils.*
 import org.apache.http.entity.ContentType
 
 /**
@@ -57,7 +54,7 @@ class NiddlerMessageBodyParser {
         if (contentTypeHeader != null && !contentTypeHeader.isEmpty()) {
             val contentTypeString = contentTypeHeader[0]
             val parsedContentType = ContentType.parse(contentTypeString)
-            return BodyTools(parsedContentType.mimeType, message.getBodyAsBytes).determineBodyType()
+            return BodyClassifier(parsedContentType.mimeType, message.getBodyAsBytes).determineBodyType()
         }
         return null
     }

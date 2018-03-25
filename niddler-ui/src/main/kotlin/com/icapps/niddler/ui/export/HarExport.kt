@@ -1,8 +1,8 @@
 package com.icapps.niddler.ui.export
 
 import com.icapps.niddler.ui.export.har.*
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
-import com.icapps.niddler.ui.util.BodyFormatType
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.utils.BodyFormatType
 import com.icapps.niddler.ui.util.UrlUtil
 import java.io.File
 import java.io.FileOutputStream

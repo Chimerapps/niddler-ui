@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.detail
 
-import com.icapps.niddler.ui.model.MessageContainer
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.MessageContainer
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.util.ClipboardUtil
 import com.jgoodies.forms.layout.CellConstraints
 import com.jgoodies.forms.layout.FormLayout

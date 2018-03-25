@@ -16,10 +16,14 @@ import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
 import com.icapps.niddler.ui.model.*
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
+import com.icapps.niddler.lib.model.MessageContainer
+import com.icapps.niddler.lib.model.NiddlerMessageBodyParser
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessageListener
 import com.icapps.niddler.ui.model.ui.*
 import com.icapps.niddler.ui.setColumnFixedWidth
 import com.icapps.niddler.ui.setColumnMinWidth
-import com.icapps.niddler.ui.util.BodyFormatType
+import com.icapps.niddler.lib.utils.BodyFormatType
 import com.icapps.niddler.ui.util.ClipboardUtil
 import com.icapps.niddler.ui.util.WideSelectionTreeUI
 import java.awt.datatransfer.StringSelection

@@ -1,4 +1,4 @@
-package com.icapps.niddler.ui.model
+package com.icapps.niddler.lib.model
 
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 
@@ -9,7 +9,7 @@ import com.icapps.niddler.lib.connection.model.NiddlerMessage
 class ParsedNiddlerMessage(val bodyFormat: BodyFormat,
                            val bodyData: Any?,
                            val message: NiddlerMessage,
-                           val parsedNetworkRequest:ParsedNiddlerMessage?,
+                           val parsedNetworkRequest: ParsedNiddlerMessage?,
                            val parsedNetworkReply: ParsedNiddlerMessage?) {
 
     val requestId: String

@@ -5,9 +5,9 @@ import com.icapps.niddler.ui.form.components.TabComponent
 import com.icapps.niddler.ui.form.detail.MessageDetailPanel
 import com.icapps.niddler.ui.form.detail.body.*
 import com.icapps.niddler.ui.form.ui.NiddlerDetailUserInterface
-import com.icapps.niddler.ui.model.MessageContainer
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
-import com.icapps.niddler.ui.util.BodyFormatType
+import com.icapps.niddler.lib.model.MessageContainer
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.utils.BodyFormatType
 import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.JLabel

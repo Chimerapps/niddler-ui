@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.model.ui
 
-import com.icapps.niddler.ui.model.MessageContainer
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.MessageContainer
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import java.util.*
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel

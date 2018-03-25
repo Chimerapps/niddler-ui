@@ -6,7 +6,7 @@ import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.impl.SwingToolbar
 import com.icapps.niddler.ui.form.ui.*
-import com.icapps.niddler.ui.model.MessageContainer
+import com.icapps.niddler.lib.model.MessageContainer
 import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.awt.Component

@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.model.ui
 
-import com.icapps.niddler.ui.model.MessageContainer
+import com.icapps.niddler.lib.model.MessageContainer
 
 /**
  * @author Nicola Verbeeck

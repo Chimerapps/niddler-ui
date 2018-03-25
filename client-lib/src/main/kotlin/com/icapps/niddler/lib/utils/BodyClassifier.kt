@@ -1,4 +1,4 @@
-package com.icapps.niddler.ui.util
+package com.icapps.niddler.lib.utils
 
 import com.google.gson.JsonParser
 import java.io.ByteArrayInputStream
@@ -10,7 +10,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 /**
  * @author nicolaverbeeck
  */
-class BodyTools(private val contentType: String?, private val bodyBytes: ByteArray?) {
+class BodyClassifier(private val contentType: String?, private val bodyBytes: ByteArray?) {
 
     private companion object {
         private const val SPACE = 32.toByte()
