@@ -20,7 +20,7 @@ interface NiddlerMessageStorage {
     fun clear()
 
     interface Filter {
-        fun messageFilter(message: ParsedNiddlerMessage): Boolean
+        fun messageFilter(message: ParsedNiddlerMessage, storage: NiddlerMessageStorage): Boolean
     }
 
 }

@@ -10,11 +10,11 @@ import com.icapps.niddler.lib.debugger.model.ConcreteDebuggingSession
 import com.icapps.niddler.lib.debugger.model.DebuggerService
 import com.icapps.niddler.lib.debugger.model.ServerDebuggerInterface
 import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
+import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.*
 import com.icapps.niddler.lib.utils.BodyFormatType
 import com.icapps.niddler.ui.NiddlerClientDebuggerInterface
 import com.icapps.niddler.ui.codegen.CurlCodeGenerator
-import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
 import com.icapps.niddler.ui.model.MessageMode
@@ -49,7 +49,11 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
     private lateinit var adbConnection: ADBBootstrap
     private var messageMode = MessageMode.TIMELINE
-    private var currentFilter: String = "" //TODO set -> change
+    private var currentFilter: String = ""
+        set(value) {
+            field = value
+            messages.storage.filter = SimpleUrlMatchFilter(field)
+        }
     private var debuggerSession: DebuggingSession? = null
     private var currentDebuggerConfiguration: DebuggerConfiguration? = null
 
