@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.model.ui
 
-import com.icapps.niddler.lib.model.MessageContainer
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import java.util.*
 import javax.swing.tree.DefaultMutableTreeNode
@@ -14,10 +14,10 @@ import javax.swing.tree.TreeNode
 class LinkedMessagesModel : DefaultTreeModel(DefaultMutableTreeNode()), MessagesModel {
 
     private var messages: Map<String, List<ParsedNiddlerMessage>> = Collections.emptyMap()
-    private lateinit var container: MessageContainer
+    private lateinit var container: NiddlerMessageStorage
 
-    override fun updateMessages(messages: MessageContainer) {
-        this.messages = messages.getMessagesLinked()
+    override fun updateMessages(messages: NiddlerMessageStorage) {
+        this.messages = messages.messagesLinked
         container = messages
 
         setRoot(MessageRootNode(this.messages))

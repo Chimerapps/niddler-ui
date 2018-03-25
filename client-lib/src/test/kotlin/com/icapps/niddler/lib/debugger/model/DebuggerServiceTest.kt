@@ -1,6 +1,6 @@
 package com.icapps.niddler.lib.debugger.model
 
-import com.icapps.niddler.ui.NiddlerDebuggerConnection
+import com.icapps.niddler.lib.debugger.NiddlerDebuggerConnection
 import io.mockk.*
 import org.junit.Before
 import org.junit.Test

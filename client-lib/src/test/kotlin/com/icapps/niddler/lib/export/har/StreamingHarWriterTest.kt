@@ -1,4 +1,4 @@
-package com.icapps.niddler.ui.export.har
+package com.icapps.niddler.lib.export.har
 
 import org.junit.Assert
 import org.junit.Test

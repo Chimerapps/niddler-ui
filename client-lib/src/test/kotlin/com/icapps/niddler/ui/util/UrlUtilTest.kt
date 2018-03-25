@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.util
 
+import com.icapps.niddler.lib.utils.UrlUtil
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

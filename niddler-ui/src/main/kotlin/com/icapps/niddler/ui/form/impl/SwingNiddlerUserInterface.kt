@@ -1,12 +1,12 @@
 package com.icapps.niddler.ui.form.impl
 
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.HintTextField
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.impl.SwingToolbar
 import com.icapps.niddler.ui.form.ui.*
-import com.icapps.niddler.lib.model.MessageContainer
 import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.awt.Component
@@ -21,7 +21,8 @@ import javax.swing.event.DocumentListener
  * @author Nicola Verbeeck
  * @date 14/11/2017.
  */
-open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsFactory) : NiddlerUserInterface, SwingNiddlerOverviewUserInterface.NiddlerOverviewParent {
+open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsFactory)
+    : NiddlerUserInterface, SwingNiddlerOverviewUserInterface.NiddlerOverviewParent {
 
     override var connectButtonListener: (() -> Unit)? = null
     override var filterListener: ((String?) -> Unit)? = null
@@ -52,7 +53,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         return rootPanel
     }
 
-    override fun init(messageContainer: MessageContainer) {
+    override fun init(messageContainer: NiddlerMessageStorage) {
         initStatusbar()
         initDetail(messageContainer)
         initOverview()
@@ -132,7 +133,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         toolbar = SwingToolbar(uiContainer())
     }
 
-    protected open fun initDetail(messagesContainer: MessageContainer) {
+    protected open fun initDetail(messagesContainer: NiddlerMessageStorage) {
         detail = SwingNiddlerDetailUserInterface(componentsFactory, messagesContainer)
         detail.init()
     }

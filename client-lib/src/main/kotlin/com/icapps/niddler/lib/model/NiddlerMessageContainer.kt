@@ -1,17 +1,14 @@
-package com.icapps.niddler.lib
+package com.icapps.niddler.lib.model
 
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.NiddlerMessageListenerAdapter
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
-import com.icapps.niddler.lib.model.NiddlerMessageBodyParser
-import com.icapps.niddler.lib.model.NiddlerMessageStorage
-import com.icapps.niddler.lib.model.ParsedNiddlerMessageListener
 
 /**
  * @author nicolaverbeeck
  */
 class NiddlerMessageContainer(private val bodyParser: NiddlerMessageBodyParser,
-                              private val storage: NiddlerMessageStorage) {
+                              val storage: NiddlerMessageStorage) {
 
     private val listeners: MutableSet<ParsedNiddlerMessageListener> = hashSetOf()
 
@@ -44,4 +41,10 @@ class NiddlerMessageContainer(private val bodyParser: NiddlerMessageBodyParser,
             listeners.remove(listener)
         }
     }
+}
+
+interface ParsedNiddlerMessageListener {
+
+    fun onMessage(message: ParsedNiddlerMessage)
+
 }

@@ -1,4 +1,4 @@
-package com.icapps.niddler.ui.util
+package com.icapps.niddler.lib.utils
 
 import java.net.URL
 import java.net.URLDecoder
