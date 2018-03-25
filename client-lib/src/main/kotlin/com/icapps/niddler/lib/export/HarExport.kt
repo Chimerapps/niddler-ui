@@ -1,6 +1,7 @@
 package com.icapps.niddler.lib.export
 
 import com.icapps.niddler.lib.export.har.*
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.utils.BodyFormatType
 import com.icapps.niddler.lib.utils.UrlUtil
@@ -12,13 +13,13 @@ import java.util.*
  * @author Nicola Verbeeck
  * @date 09/11/2017.
  */
-class HarExport(private val targetFile: File) {
+class HarExport(private val targetFile: File) : Exporter {
 
-    fun export(messages: Map<String, List<ParsedNiddlerMessage>>) {
+    override fun export(messages: NiddlerMessageStorage) {
         val writer = StreamingHarWriter(target = FileOutputStream(targetFile).buffered(),
                 creator = Creator("Niddler", "1.0"))
 
-        exportTo(messages, writer)
+        exportTo(messages.messagesLinkedWithFilter(filter = null), writer)
 
         writer.close()
     }

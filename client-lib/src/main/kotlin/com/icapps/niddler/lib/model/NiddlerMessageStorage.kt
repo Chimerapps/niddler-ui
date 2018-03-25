@@ -9,6 +9,8 @@ interface NiddlerMessageStorage {
     val messagesLinked: Map<String, List<ParsedNiddlerMessage>>
     var filter: Filter?
 
+    fun messagesLinkedWithFilter(filter: Filter?): Map<String, List<ParsedNiddlerMessage>>
+
     fun addMessage(message: ParsedNiddlerMessage)
 
     fun getMessagesWithRequestId(requestId: String): List<ParsedNiddlerMessage>
@@ -20,7 +22,10 @@ interface NiddlerMessageStorage {
     fun clear()
 
     interface Filter {
+
         fun messageFilter(message: ParsedNiddlerMessage, storage: NiddlerMessageStorage): Boolean
+
+        fun messageFilter(relatedMessages: List<ParsedNiddlerMessage>): List<ParsedNiddlerMessage>
     }
 
 }
@@ -28,17 +33,21 @@ interface NiddlerMessageStorage {
 class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
 
     private val messagesList: MutableList<ParsedNiddlerMessage> = arrayListOf()
-    private val messagesMapped: MutableMap<String, MutableList<ParsedNiddlerMessage>> = hashMapOf()
+    private val messagesMapped: MutableMap<String, MutableList<ParsedNiddlerMessage>> = LinkedHashMap()
 
     override val messagesChronological: List<ParsedNiddlerMessage>
         get() = synchronized(messagesList) { ArrayList(messagesList) }
 
     override val messagesLinked: Map<String, List<ParsedNiddlerMessage>>
-        get() = synchronized(messagesList) {
-            messagesList.groupBy { it.requestId }
-        }
+        get() = messagesLinkedWithFilter(filter)
 
     override var filter: NiddlerMessageStorage.Filter? = null
+        set(value) {
+            synchronized(messagesList) {
+                field = value
+            }
+        }
+        get() = synchronized(messagesList) { field }
 
     override fun clear() {
         synchronized(messagesList) {
@@ -90,4 +99,22 @@ class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
         return getMessagesWithRequestId(message.requestId).find(ParsedNiddlerMessage::isRequest)
     }
 
+    override fun messagesLinkedWithFilter(filter: NiddlerMessageStorage.Filter?)
+            : Map<String, List<ParsedNiddlerMessage>> {
+        if (filter == null) {
+            return synchronized(messagesList) {
+                messagesMapped.filter { true }
+            }
+        }
+
+        val target = LinkedHashMap<String, List<ParsedNiddlerMessage>>()
+        synchronized(messagesList) {
+            messagesMapped.forEach { key, value ->
+                val filtered = filter.messageFilter(value)
+                if (filtered.isNotEmpty())
+                    target[key] = filtered
+            }
+        }
+        return target
+    }
 }

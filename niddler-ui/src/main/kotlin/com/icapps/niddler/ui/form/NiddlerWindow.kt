@@ -392,7 +392,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         var exportLocation = windowContents.componentsFactory.showSaveDialog("Save export to", ".har") ?: return
         if (!exportLocation.endsWith(".har"))
             exportLocation += ".har"
-        HarExport(File(exportLocation)).export(messages.storage.messagesLinked)
+        HarExport(File(exportLocation)).export(messages.storage)
     }
 
     private fun applyFilter(filter: String) {

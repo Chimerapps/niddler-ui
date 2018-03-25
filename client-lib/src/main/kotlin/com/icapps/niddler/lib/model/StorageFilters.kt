@@ -18,4 +18,13 @@ class SimpleUrlMatchFilter(toMatch: String) : NiddlerMessageStorage.Filter {
         return url?.contains(toMatch, ignoreCase = true) == true
     }
 
+    override fun messageFilter(relatedMessages: List<ParsedNiddlerMessage>): List<ParsedNiddlerMessage> {
+        if (toMatch.isEmpty())
+            return ArrayList(relatedMessages)
+
+        if (relatedMessages.firstOrNull { it.url?.contains(toMatch, ignoreCase = true) == true } == null)
+            return emptyList()
+
+        return ArrayList(relatedMessages)
+    }
 }
