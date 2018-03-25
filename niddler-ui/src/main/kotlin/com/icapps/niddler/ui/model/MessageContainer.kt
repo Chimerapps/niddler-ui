@@ -1,7 +1,8 @@
 package com.icapps.niddler.ui.model
 
-import com.icapps.niddler.ui.connection.NiddlerMessageListener
-import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
+import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
+import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 import java.util.*
 
 /**

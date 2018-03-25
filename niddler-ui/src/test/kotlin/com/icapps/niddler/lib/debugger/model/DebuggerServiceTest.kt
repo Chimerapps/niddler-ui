@@ -1,4 +1,4 @@
-package com.icapps.niddler.ui.debugger.model
+package com.icapps.niddler.lib.debugger.model
 
 import com.icapps.niddler.ui.NiddlerDebuggerConnection
 import io.mockk.*

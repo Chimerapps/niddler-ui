@@ -1,11 +1,11 @@
 package com.icapps.niddler.ui
 
 import com.google.gson.JsonParser
-import com.icapps.niddler.ui.connection.*
-import com.icapps.niddler.ui.debugger.model.DebugRequest
-import com.icapps.niddler.ui.debugger.model.DebugResponse
-import com.icapps.niddler.ui.model.NiddlerMessage
-import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
+import com.icapps.niddler.lib.connection.protocol.*
+import com.icapps.niddler.lib.debugger.model.DebugRequest
+import com.icapps.niddler.lib.debugger.model.DebugResponse
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
+import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 import com.icapps.niddler.ui.util.logger
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.drafts.Draft_17

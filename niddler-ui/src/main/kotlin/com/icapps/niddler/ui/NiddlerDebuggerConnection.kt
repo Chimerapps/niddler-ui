@@ -1,14 +1,10 @@
 package com.icapps.niddler.ui
 
+import com.icapps.niddler.lib.debugger.NiddlerDebuggerConnection
+
 /**
  * @author nicolaverbeeck
  */
-interface NiddlerDebuggerConnection {
-
-    fun sendMessage(message: String)
-
-}
-
 class NiddlerClientDebuggerInterface(private val niddlerClient: NiddlerClient) : NiddlerDebuggerConnection {
 
     override fun sendMessage(message: String) {

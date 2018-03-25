@@ -1,6 +1,6 @@
-package com.icapps.niddler.ui.debugger.model.saved
+package com.icapps.niddler.lib.debugger.model.saved
 
-import com.icapps.niddler.ui.debugger.model.DebuggerDelays
+import com.icapps.niddler.lib.debugger.model.DebuggerDelays
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test

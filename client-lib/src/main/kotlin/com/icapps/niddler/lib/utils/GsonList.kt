@@ -1,4 +1,4 @@
-package com.icapps.niddler.ui.util
+package com.icapps.niddler.lib.utils
 
 import com.google.gson.reflect.TypeToken
 import java.lang.reflect.ParameterizedType

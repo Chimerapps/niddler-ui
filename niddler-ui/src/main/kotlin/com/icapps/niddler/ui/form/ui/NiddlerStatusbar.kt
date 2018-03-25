@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.form.ui
 
-import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
+import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 
 /**
  * @author nicolaverbeeck

@@ -1,10 +1,11 @@
 package com.icapps.niddler.ui.form
 
-import com.icapps.niddler.ui.adb.ADBBootstrap
+import com.icapps.niddler.lib.adb.ADBBootstrap
+import com.icapps.niddler.lib.adb.ADBDevice
+import com.icapps.niddler.lib.adb.ADBInterface
 import com.icapps.niddler.ui.addChangeListener
-import com.icapps.niddler.ui.model.AdbDevice
+import com.icapps.niddler.ui.model.AdbDeviceModel
 import com.icapps.tools.aec.EmulatorFactory
-import se.vidstige.jadb.JadbConnection
 import java.awt.Window
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -19,13 +20,17 @@ import javax.swing.SwingWorker
  * @author Nicola Verbeeck
  * @date 17/11/16.
  */
-class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, val previousIp: String?, val previousPort: Int?) : ConnectDialog(parent) {
+class NiddlerConnectDialog(parent: Window?,
+                           private val adbConnection: ADBInterface,
+                           private val previousIp: String?,
+                           private val previousPort: Int?) : ConnectDialog(parent) {
 
     private lateinit var swingWorker: NiddlerConnectSwingWorker
 
     companion object {
         @JvmStatic
-        fun showDialog(parent: Window?, adbConnection: JadbConnection, previousIp: String?, previousPort: Int?): ConnectSelection? {
+        fun showDialog(parent: Window?, adbConnection: ADBInterface,
+                       previousIp: String?, previousPort: Int?): ConnectSelection? {
             val dialog = NiddlerConnectDialog(parent, adbConnection, previousIp, previousPort)
             dialog.initUI()
             dialog.pack()
@@ -72,9 +77,10 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
 
     override fun onOK() {
         val device = adbList.model.getElementAt(adbList.selectedIndex)
-        if (!validateContents() || device !is AdbDevice)
+        if (!validateContents())
             return
-        selection = ConnectSelection(device.serialNr, directIP.text, port.text.toInt())
+
+        selection = ConnectSelection((device as? AdbDeviceModel)?.device, directIP.text, port.text.toInt())
         dispose()
     }
 
@@ -105,9 +111,10 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
         return false
     }
 
-    data class ConnectSelection(val serial: String?, val ip: String?, val port: Int)
+    data class ConnectSelection(val device: ADBDevice?, val ip: String?, val port: Int)
 
-    private class NiddlerConnectSwingWorker(val adbConnection: JadbConnection, val adbList: JList<Any>, val doneCallback: () -> Unit) : SwingWorker<Boolean, Void>() {
+    private class NiddlerConnectSwingWorker(val adbConnection: ADBInterface, val adbList: JList<Any>,
+                                            val doneCallback: () -> Unit) : SwingWorker<Boolean, Void>() {
 
         private var authToken: String? = null
 
@@ -126,7 +133,7 @@ class NiddlerConnectDialog(parent: Window?, val adbConnection: JadbConnection, v
                 val sdkVersion = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.sdk")
                 val version = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.release")
                 val extraInfo = "(Android $version, API $sdkVersion)"
-                val device = AdbDevice(name ?: "", extraInfo, emulated, serial)
+                val device = AdbDeviceModel(name ?: "", extraInfo, emulated, serial, it)
                 model.addElement(device)
                 if (adbList.selectedIndex == -1) {
                     adbList.selectedIndex = 0

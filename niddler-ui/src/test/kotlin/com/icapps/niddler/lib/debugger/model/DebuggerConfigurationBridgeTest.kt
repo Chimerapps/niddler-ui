@@ -1,7 +1,7 @@
-package com.icapps.niddler.ui.debugger.model
+package com.icapps.niddler.lib.debugger.model
 
-import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
-import com.icapps.niddler.ui.debugger.model.saved.DisableableItem
+import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
+import com.icapps.niddler.lib.debugger.model.saved.DisableableItem
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

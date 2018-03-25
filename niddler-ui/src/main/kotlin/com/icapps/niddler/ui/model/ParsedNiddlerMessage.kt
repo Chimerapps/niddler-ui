@@ -1,5 +1,7 @@
 package com.icapps.niddler.ui.model
 
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
+
 /**
  * @author Nicola Verbeeck
  * @date 15/11/16.

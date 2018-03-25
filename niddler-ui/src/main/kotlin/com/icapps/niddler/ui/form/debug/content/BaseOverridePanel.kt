@@ -1,8 +1,8 @@
 package com.icapps.niddler.ui.form.debug.content
 
 import com.icapps.niddler.ui.*
-import com.icapps.niddler.ui.debugger.model.BaseMatcher
-import com.icapps.niddler.ui.debugger.model.ModifiableDebuggerConfiguration
+import com.icapps.niddler.lib.debugger.model.BaseMatcher
+import com.icapps.niddler.lib.debugger.model.ModifiableDebuggerConfiguration
 import java.awt.BorderLayout
 import javax.swing.*
 import javax.swing.border.EmptyBorder

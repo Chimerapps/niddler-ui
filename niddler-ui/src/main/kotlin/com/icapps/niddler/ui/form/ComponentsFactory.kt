@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.form
 
-import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
+import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.ui.form.components.Dialog
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.TabComponent

@@ -1,20 +1,21 @@
 package com.icapps.niddler.ui.form
 
+import com.icapps.niddler.lib.adb.ADBBootstrap
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.ui.NiddlerClient
 import com.icapps.niddler.ui.NiddlerClientDebuggerInterface
-import com.icapps.niddler.ui.adb.ADBBootstrap
 import com.icapps.niddler.ui.codegen.CurlCodeGenerator
-import com.icapps.niddler.ui.connection.NiddlerMessageListener
-import com.icapps.niddler.ui.debugger.DebuggingSession
-import com.icapps.niddler.ui.debugger.model.ConcreteDebuggingSession
-import com.icapps.niddler.ui.debugger.model.DebuggerService
-import com.icapps.niddler.ui.debugger.model.ServerDebuggerInterface
-import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
+import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
+import com.icapps.niddler.lib.debugger.DebuggingSession
+import com.icapps.niddler.lib.debugger.model.ConcreteDebuggingSession
+import com.icapps.niddler.lib.debugger.model.DebuggerService
+import com.icapps.niddler.lib.debugger.model.ServerDebuggerInterface
+import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.ui.export.HarExport
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
 import com.icapps.niddler.ui.model.*
-import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
+import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 import com.icapps.niddler.ui.model.ui.*
 import com.icapps.niddler.ui.setColumnFixedWidth
 import com.icapps.niddler.ui.setColumnMinWidth
@@ -109,7 +110,8 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         windowContents.detail.message = null
 
         windowContents.connectButtonListener = {
-            val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent), adbConnection.bootStrap(), null, null)
+            val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent),
+                    adbConnection.bootStrap(), null, null)
             if (selection != null)
                 onDeviceSelectionChanged(selection)
         }
@@ -164,8 +166,8 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     }
 
     private fun onDeviceSelectionChanged(params: NiddlerConnectDialog.ConnectSelection) {
-        val ip = if (params.serial != null) {
-            adbConnection.extend(params.serial)?.forwardTCPPort(6555, params.port)
+        val ip = if (params.device != null) {
+            params.device.forwardTCPPort(6555, params.port)
             "127.0.0.1"
         } else
             params.ip!!

@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.model
 
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.ui.util.BodyFormatType
 import com.icapps.niddler.ui.util.BodyTools
 import com.icapps.niddler.ui.util.ConcreteBody

@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.form.debug
 
-import com.icapps.niddler.ui.debugger.model.ModifiableDebuggerConfiguration
+import com.icapps.niddler.lib.debugger.model.ModifiableDebuggerConfiguration
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.debug.dialog.EnterRegexDialog
 import com.icapps.niddler.ui.util.logger
