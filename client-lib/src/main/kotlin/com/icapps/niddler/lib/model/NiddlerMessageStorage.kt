@@ -33,7 +33,7 @@ interface NiddlerMessageStorage {
 class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
 
     private val messagesList: MutableList<ParsedNiddlerMessage> = arrayListOf()
-    private val messagesMapped: MutableMap<String, MutableList<ParsedNiddlerMessage>> = LinkedHashMap()
+    private val messagesMapped = SemiOrderedMappingStorage()
 
     override val messagesChronological: List<ParsedNiddlerMessage>
         get() = synchronized(messagesList) { ArrayList(messagesList) }
@@ -76,10 +76,7 @@ class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
                 return
             }
             messagesList.add(insertIndex, message)
-            messagesMapped.getOrPut(message.messageId, { arrayListOf() }).apply {
-                add(message)
-                sortBy { it.timestamp }
-            }
+            messagesMapped.add(message.messageId, message)
         }
     }
 
@@ -103,18 +100,60 @@ class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
             : Map<String, List<ParsedNiddlerMessage>> {
         if (filter == null) {
             return synchronized(messagesList) {
-                messagesMapped.filter { true }
+                messagesMapped.toMap()
             }
         }
 
-        val target = LinkedHashMap<String, List<ParsedNiddlerMessage>>()
-        synchronized(messagesList) {
-            messagesMapped.forEach { key, value ->
-                val filtered = filter.messageFilter(value)
-                if (filtered.isNotEmpty())
-                    target[key] = filtered
-            }
+        return synchronized(messagesList) {
+            messagesMapped.toMap(filter)
         }
-        return target
     }
 }
+
+private class SemiOrderedMappingStorage {
+
+    private val data = mutableListOf<MappingEntry>()
+
+    fun add(key: String, message: ParsedNiddlerMessage) {
+        val toFind = data.lastOrNull { it.key == key }
+        if (toFind == null) {
+            data += MappingEntry(message.timestamp, key, mutableListOf())
+            data.sortBy(MappingEntry::time)
+            return
+        }
+        toFind.items += message
+        toFind.items.sortBy(ParsedNiddlerMessage::timestamp)
+        if (toFind.time > message.timestamp) {
+            toFind.time = message.timestamp
+            data.sortBy(MappingEntry::time)
+        }
+    }
+
+    fun clear() {
+        data.clear()
+    }
+
+    operator fun get(key: String): List<ParsedNiddlerMessage>? {
+        return data.find { it.key == key }?.items
+    }
+
+    fun toMap(): Map<String, List<ParsedNiddlerMessage>> {
+        val map = LinkedHashMap<String, List<ParsedNiddlerMessage>>()
+        data.forEach {
+            map[it.key] = ArrayList(it.items)
+        }
+        return map
+    }
+
+    fun toMap(filter: NiddlerMessageStorage.Filter): Map<String, List<ParsedNiddlerMessage>> {
+        val map = LinkedHashMap<String, List<ParsedNiddlerMessage>>()
+        data.forEach {
+            val copy = filter.messageFilter(it.items)
+            if (copy.isNotEmpty())
+                map[it.key] = copy
+        }
+        return map
+    }
+}
+
+private data class MappingEntry(var time: Long, val key: String, val items: MutableList<ParsedNiddlerMessage>)
