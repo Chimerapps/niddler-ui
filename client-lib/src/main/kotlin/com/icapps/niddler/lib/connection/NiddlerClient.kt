@@ -4,6 +4,7 @@ import com.google.gson.JsonParser
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 import com.icapps.niddler.lib.connection.protocol.*
+import com.icapps.niddler.lib.debugger.NiddlerDebuggerConnection
 import com.icapps.niddler.lib.debugger.model.DebugRequest
 import com.icapps.niddler.lib.debugger.model.DebugResponse
 import com.icapps.niddler.lib.utils.debug
@@ -19,7 +20,7 @@ import java.util.*
  * @date 14/11/2016.
  */
 class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI, Draft_17()),
-        NiddlerMessageListener, NiddlerDebugListener {
+        NiddlerMessageListener, NiddlerDebugListener, NiddlerDebuggerConnection {
 
     companion object {
         private val log = logger<NiddlerClient>()
@@ -141,5 +142,9 @@ class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI, Draft_17()),
 
     override fun onResponseAction(messageId: String, response: NiddlerMessage): DebugResponse? {
         return debugListener?.onResponseAction(messageId, response)
+    }
+
+    override fun sendMessage(message: String) {
+        send(message)
     }
 }

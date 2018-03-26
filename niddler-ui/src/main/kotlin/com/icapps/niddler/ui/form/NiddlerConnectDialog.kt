@@ -21,19 +21,20 @@ import javax.swing.SwingWorker
  * @date 17/11/16.
  */
 class NiddlerConnectDialog(parent: Window?,
-                           private val adbConnection: ADBInterface,
+                           private val adbBootstrap: ADBBootstrap,
                            private val previousIp: String?,
                            private val previousPort: Int?) : ConnectDialog(parent) {
 
-    private lateinit var swingWorker: NiddlerConnectSwingWorker
+    private lateinit var initSwingWorker: NiddlerConnectSwingWorker
 
     companion object {
         @JvmStatic
-        fun showDialog(parent: Window?, adbConnection: ADBInterface,
+        fun showDialog(parent: Window?, adbBootstrap: ADBBootstrap,
                        previousIp: String?, previousPort: Int?): ConnectSelection? {
-            val dialog = NiddlerConnectDialog(parent, adbConnection, previousIp, previousPort)
+            val dialog = NiddlerConnectDialog(parent, adbBootstrap, previousIp, previousPort)
             dialog.initUI()
             dialog.pack()
+            dialog.setSize(500, 350)
             if (parent != null)
                 dialog.setLocationRelativeTo(parent)
             dialog.isVisible = true
@@ -44,13 +45,16 @@ class NiddlerConnectDialog(parent: Window?,
     private var selection: ConnectSelection? = null
 
     private fun initUI() {
+        initSwingWorker = NiddlerConnectSwingWorker(adbBootstrap, doneCallback = ::onBootstrapFinished)
+
         port.addActionListener { onOK() }
         directIP.addActionListener { onOK() }
 
         adbList.cellRenderer = NiddlerConnectCellRenderer()
-        swingWorker = NiddlerConnectSwingWorker(adbConnection, adbList, doneCallback = progressBar::stop)
+
         progressBar.start()
-        swingWorker.execute()
+        initSwingWorker.execute()
+
         if (previousIp != null)
             directIP.text = previousIp
         if (previousPort != null)
@@ -85,7 +89,7 @@ class NiddlerConnectDialog(parent: Window?,
     }
 
     override fun onCancel() {
-        swingWorker.cancel(true)
+        initSwingWorker.cancel(true)
         dispose()
     }
 
@@ -111,42 +115,56 @@ class NiddlerConnectDialog(parent: Window?,
         return false
     }
 
+    private fun onBootstrapFinished(adbInterface: ADBInterface) {
+        adbInterface.createDeviceWatcher {
+            val reload = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, adbList, progressBar::stop)
+            val devices = reload.executeOnBackgroundThread()
+            MainThreadDispatcher.dispatch {
+                reload.onExecutionDone(devices)
+            }
+        }
+    }
+
     data class ConnectSelection(val device: ADBDevice?, val ip: String?, val port: Int)
 
-    private class NiddlerConnectSwingWorker(val adbConnection: ADBInterface, val adbList: JList<Any>,
-                                            val doneCallback: () -> Unit) : SwingWorker<Boolean, Void>() {
+    private class NiddlerReloadSwingWorker(private val adbInterface: ADBInterface,
+                                           private val adbBootstrap: ADBBootstrap,
+                                           val adbList: JList<Any>,
+                                           val doneCallback: () -> Unit) : SwingWorker<List<AdbDeviceModel>, Void>() {
 
-        private var authToken: String? = null
+        private lateinit var authToken: String
 
+        override fun doInBackground(): List<AdbDeviceModel> {
+            return executeOnBackgroundThread()
+        }
 
-        override fun doInBackground(): Boolean {
+        fun executeOnBackgroundThread(): List<AdbDeviceModel> {
             authToken = File("${System.getProperty("user.home")}/.emulator_console_auth_token").readText()
 
-            val model = DefaultListModel<Any>()
-            val adb = ADBBootstrap(emptyList())
-
-            adbList.model = model
-            adbConnection.devices.forEach {
+            return adbInterface.devices.map {
                 val serial = it.serial
-                val emulated = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.characteristics") == "emulator"
-                val name = getCorrectName(adb, serial, emulated)
-                val sdkVersion = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.sdk")
-                val version = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.release")
+                val emulated = adbBootstrap.executeADBCommand("-s", serial,
+                        "shell", "getprop", "ro.build.characteristics") == "emulator"
+
+                val name = getCorrectName(adbBootstrap, serial, emulated)
+                val sdkVersion = adbBootstrap.executeADBCommand("-s", serial,
+                        "shell", "getprop", "ro.build.version.sdk")
+
+                val version = adbBootstrap.executeADBCommand("-s", serial,
+                        "shell", "getprop", "ro.build.version.release")
+
                 val extraInfo = "(Android $version, API $sdkVersion)"
-                val device = AdbDeviceModel(name ?: "", extraInfo, emulated, serial, it)
-                model.addElement(device)
-                if (adbList.selectedIndex == -1) {
-                    adbList.selectedIndex = 0
-                }
+                AdbDeviceModel(name ?: "", extraInfo, emulated, serial, it)
             }
-            return true
         }
 
         private fun getCorrectName(adb: ADBBootstrap, serial: String, emulated: Boolean): String? {
             return if (emulated) {
                 val port = serial.split("-").last().toIntOrNull()
                         ?: return getName(adb, serial)
-                val authToken = authToken ?: return getName(adb, serial)
+                if (authToken.isBlank())
+                    return getName(adb, serial)
+
                 val emulator = EmulatorFactory.create(port, authToken)
                 emulator.connect()
                 val output = emulator.avdControl.name()
@@ -154,7 +172,8 @@ class NiddlerConnectDialog(parent: Window?,
                 output.replace("_", " ").trim()
             } else {
                 val name = getName(adb, serial)
-                val manufacturer = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.product.manufacturer")
+                val manufacturer = adb.executeADBCommand("-s", serial,
+                        "shell", "getprop", "ro.product.manufacturer")
                 "$manufacturer $name"
             }
         }
@@ -165,7 +184,40 @@ class NiddlerConnectDialog(parent: Window?,
 
         override fun done() {
             super.done()
-            doneCallback.invoke()
+
+            onExecutionDone(get())
+        }
+
+        fun onExecutionDone(devices: List<AdbDeviceModel>) {
+            val previousItem = adbList.selectedValue
+
+            val model = DefaultListModel<Any>()
+            devices.forEach(model::addElement)
+            adbList.model = model
+
+            if (previousItem != null) {
+                adbList.clearSelection()
+                adbList.selectedIndex = devices.indexOf(previousItem)
+            } else if (devices.isNotEmpty()) {
+                adbList.selectedIndex = 0
+            }
+
+            doneCallback()
+        }
+    }
+
+    private class NiddlerConnectSwingWorker(val adbBootstrap: ADBBootstrap,
+                                            val doneCallback: (ADBInterface) -> Unit)
+        : SwingWorker<ADBInterface, Void>() {
+
+
+        override fun doInBackground(): ADBInterface {
+            return adbBootstrap.bootStrap()
+        }
+
+        override fun done() {
+            super.done()
+            doneCallback(get())
         }
     }
 }

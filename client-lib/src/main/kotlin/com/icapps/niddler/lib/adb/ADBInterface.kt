@@ -25,6 +25,9 @@ class ADBInterface(private val bootstrap: ADBBootstrap, private val connection: 
             }
         } ?: emptyList()
 
+    /**
+     * Callbacks happen on a BACKGROUND THREAD
+     */
     fun createDeviceWatcher(deviceListener: (ADBInterface) -> Unit): Cancelable {
         val watcher = connection?.createDeviceWatcher(object : DeviceDetectionListener {
             override fun onException(e: Exception?) {

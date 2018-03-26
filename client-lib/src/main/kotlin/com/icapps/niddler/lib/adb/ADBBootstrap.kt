@@ -105,8 +105,9 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>) {
             val process = builder.start()
             process.waitFor()
             val response = process.inputStream.bufferedReader().readText().trim()
-            println(response)
-            System.err.println(process.errorStream.bufferedReader().readText())
+            val error = process.errorStream.bufferedReader().readText()
+            if (error.isNotBlank())
+                System.err.println(error)
             response
         }
     }

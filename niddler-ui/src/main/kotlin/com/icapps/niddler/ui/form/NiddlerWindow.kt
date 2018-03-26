@@ -13,7 +13,6 @@ import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.*
 import com.icapps.niddler.lib.utils.BodyFormatType
-import com.icapps.niddler.ui.NiddlerClientDebuggerInterface
 import com.icapps.niddler.ui.codegen.CurlCodeGenerator
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
@@ -116,7 +115,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
         windowContents.connectButtonListener = {
             val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent),
-                    adbConnection.bootStrap(), null, null)
+                    adbConnection, null, null)
             if (selection != null)
                 onDeviceSelectionChanged(selection)
         }
@@ -334,7 +333,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         }
         if (serverInfo.protocol >= PROTCOL_VERSION_DEBUGGING) {
             val debuggerInterface = ServerDebuggerInterface(
-                    DebuggerService(NiddlerClientDebuggerInterface(niddlerClient!!)))
+                    DebuggerService(niddlerClient!!))
             debuggerInterface.connect()
 
             debuggerSession = ConcreteDebuggingSession(debuggerInterface)
