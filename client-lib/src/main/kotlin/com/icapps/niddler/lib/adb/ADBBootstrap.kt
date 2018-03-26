@@ -73,15 +73,12 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>) {
 
         private fun currentPlatform(): Int {
             val os = System.getProperty("os.name")
-            if (os.startsWith("Mac OS")) {
-                return PLATFORM_DARWIN
-            } else if (os.startsWith("Windows")) {
-                return PLATFORM_WINDOWS
-            } else if (os.startsWith("Linux")) {
-                return PLATFORM_LINUX
+            return when {
+                os.startsWith("Mac OS") -> PLATFORM_DARWIN
+                os.startsWith("Windows") -> PLATFORM_WINDOWS
+                os.startsWith("Linux") -> PLATFORM_LINUX
+                else -> PLATFORM_UNKNOWN
             }
-
-            return PLATFORM_UNKNOWN
         }
 
     }
