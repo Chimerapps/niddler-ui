@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.detail.body
 
 import com.google.gson.JsonElement
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.model.ui.json.EditableJsonTreeNode
 import com.icapps.niddler.ui.model.ui.json.JsonTreeEditor
 import com.icapps.niddler.ui.model.ui.json.JsonTreeEditorTransferHandler
