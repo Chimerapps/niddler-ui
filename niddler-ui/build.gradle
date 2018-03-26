@@ -2,7 +2,7 @@ group 'com.icapps'
 version '0.0.1'
 
 buildscript {
-    ext.kotlin_version = '1.2.30'
+    ext.kotlin_version = '1.2.31'
 
     repositories {
         jcenter()
@@ -40,15 +40,18 @@ repositories {
 }
 
 dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    compile "com.github.vidstige:jadb:v1.0.1"
-    compile 'org.java-websocket:Java-WebSocket:1.3.0'
     compile 'com.jgoodies:jgoodies-forms:1.9.0'
-    compile 'com.google.code.gson:gson:2.8.0'
-    compile 'com.github.icapps:android-emulator-control:0.1.1'
+    compile 'com.github.icapps:android-emulator-control:0.1.2'
 
-    compile group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.5'
+    compile 'org.scijava:swing-checkbox-tree:1.0.2'
+    compile project(':client-lib')
+
+    compile group: 'net.harawata', name: 'appdirs', version: '1.0.1'
 
     testCompile 'junit:junit:4.12'
+    testCompile 'io.mockk:mockk:1.7'
 }

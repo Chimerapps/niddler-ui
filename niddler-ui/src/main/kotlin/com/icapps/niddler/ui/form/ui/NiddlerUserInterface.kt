@@ -1,10 +1,9 @@
 package com.icapps.niddler.ui.form.ui
 
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.ui.form.ComponentsFactory
-import com.icapps.niddler.ui.form.components.NiddlerToolbar
-import com.icapps.niddler.ui.model.MessageContainer
+import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import java.awt.Component
-import javax.swing.ImageIcon
 import javax.swing.JComponent
 
 /**
@@ -14,17 +13,16 @@ import javax.swing.JComponent
 
 interface NiddlerUserInterface {
 
-    fun init(messageContainer: MessageContainer)
+    fun init(messageContainer: NiddlerMessageStorage)
 
     var connectButtonListener: (() -> Unit)?
     var filterListener: ((String?) -> Unit)?
     var disconnectButtonListener: (() -> Unit)?
 
-    val toolbar: NiddlerToolbar
+    val toolbar: NiddlerMainToolbar
     val disconnectButton: Component
 
-    fun setStatusText(statusText: String?)
-    fun setStatusIcon(icon: ImageIcon?)
+    val statusBar: NiddlerStatusbar
 
     val asComponent: JComponent
     val componentsFactory: ComponentsFactory

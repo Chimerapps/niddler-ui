@@ -1,7 +1,11 @@
 package com.icapps.niddler.ui.form.detail.body
 
 import com.google.gson.GsonBuilder
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.google.gson.JsonElement
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.ui.model.ui.json.JsonTreeNode
+import com.icapps.niddler.ui.model.ui.json.JsonTreeRenderer
+import javax.swing.JTree
 import javax.swing.text.Document
 
 /**

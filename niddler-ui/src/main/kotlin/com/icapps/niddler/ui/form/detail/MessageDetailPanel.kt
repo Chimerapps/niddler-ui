@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.detail
 
-import com.icapps.niddler.ui.model.MessageContainer
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.util.ClipboardUtil
 import com.jgoodies.forms.layout.CellConstraints
 import com.jgoodies.forms.layout.FormLayout
@@ -20,7 +20,7 @@ import javax.swing.border.TitledBorder
  * @author Nicola Verbeeck
  * @date 18/11/16.
  */
-class MessageDetailPanel(private val messages: MessageContainer) : JPanel(BorderLayout()) {
+class MessageDetailPanel(private val messages: NiddlerMessageStorage) : JPanel(BorderLayout()) {
 
     private val generalPanel = JPanel(BorderLayout())
     private val headersPanel = JPanel(BorderLayout())
@@ -37,8 +37,10 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
         border = EmptyBorder(5, 5, 5, 5)
         containerPanel.layout = BoxLayout(containerPanel, BoxLayout.Y_AXIS)
 
-        generalPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0), "General", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
-        headersPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0), "Headers", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
+        generalPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0),
+                "General", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
+        headersPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0),
+                "Headers", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
 
         generalContentPanel = JPanel(FormLayout("left:default, 3dlu, pref", "pref, pref, pref, pref, pref"))
         generalContentPanel.border = EmptyBorder(5, 5, 5, 5)
@@ -78,7 +80,8 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
         generalContentPanel.add(selectableLabel(message.url ?: other?.url), constraints.xy(3, 3))
 
         generalContentPanel.add(boldLabel("Status"), constraints.xy(1, 4))
-        generalContentPanel.add(selectableLabel((message.statusCode ?: other?.statusCode)?.toString()), constraints.xy(3, 4))
+        generalContentPanel.add(selectableLabel((message.statusCode
+                ?: other?.statusCode)?.toString()), constraints.xy(3, 4))
 
         generalContentPanel.add(boldLabel("Execution time"), constraints.xy(1, 5))
         generalContentPanel.add(makeExecutionTimeLabel(message, other), constraints.xy(3, 5))

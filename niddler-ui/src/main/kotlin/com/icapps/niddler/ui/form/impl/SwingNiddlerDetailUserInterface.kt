@@ -1,13 +1,13 @@
 package com.icapps.niddler.ui.form.impl
 
-import com.icapps.niddler.ui.form.*
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
+import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.TabComponent
 import com.icapps.niddler.ui.form.detail.MessageDetailPanel
 import com.icapps.niddler.ui.form.detail.body.*
 import com.icapps.niddler.ui.form.ui.NiddlerDetailUserInterface
-import com.icapps.niddler.ui.model.BodyFormatType
-import com.icapps.niddler.ui.model.MessageContainer
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.utils.BodyFormatType
 import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.JLabel
@@ -20,7 +20,7 @@ import javax.swing.SwingConstants
  * @date 14/11/2017.
  */
 open class SwingNiddlerDetailUserInterface(componentsFactory: ComponentsFactory,
-                                           messageContainer: MessageContainer) : NiddlerDetailUserInterface {
+                                           messageContainer: NiddlerMessageStorage) : NiddlerDetailUserInterface {
 
     override var message: ParsedNiddlerMessage? = null
         set(value) {

@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.model.ui
 
-import com.icapps.niddler.ui.model.NiddlerMessage
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.setFixedWidth
 import com.icapps.niddler.ui.util.getStatusCodeString
 import java.awt.Color

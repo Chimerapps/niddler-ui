@@ -1,16 +1,19 @@
 package com.icapps.niddler.ui
 
 import com.icapps.niddler.ui.form.MainThreadDispatcher
+import java.awt.Component
 import java.awt.Color
 import java.awt.Dimension
+import java.awt.Font
 import java.beans.PropertyChangeEvent
 import java.util.*
-import javax.swing.JLabel
-import javax.swing.JTable
-import javax.swing.JTextField
+import javax.swing.*
+import javax.swing.border.EmptyBorder
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.text.Document
+import javax.swing.tree.TreeNode
+import javax.swing.tree.TreePath
 
 
 /**
@@ -60,8 +63,6 @@ fun JLabel.setFixedWidth(width: Int) {
 }
 
 fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {
-    Objects.requireNonNull(text)
-    Objects.requireNonNull(changeListener)
     val dl = object : DocumentListener {
         private var lastChange = 0
         private var lastNotifiedChange = 0
@@ -90,6 +91,55 @@ fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {
         dl.changedUpdate(null)
     }
     document?.addDocumentListener(dl)
+}
+
+
+fun button(title: String, listener: () -> Unit): JButton {
+    return JButton(title).apply {
+        addActionListener { listener() }
+    }
+}
+
+operator fun JComponent.plusAssign(component: Component) {
+    add(component)
+}
+
+fun <T : JComponent> T.left(): T {
+    alignmentX = JComponent.LEFT_ALIGNMENT
+    return this
+}
+
+fun JLabel.bold(): JLabel {
+    font = font.deriveFont(font.style or Font.BOLD)
+    return this
+}
+
+fun TreeNode.path(): TreePath {
+    val nodes = ArrayList<Any>()
+    nodes.add(this)
+
+    var treeNode = parent
+    while (treeNode != null) {
+        nodes.add(0, treeNode)
+        treeNode = treeNode.parent
+    }
+    return TreePath(nodes.toTypedArray())
+}
+
+fun <T : JComponent> T.singleLine(): T {
+    maximumSize = Dimension(maximumSize.width, preferredSize.height)
+    return this
+}
+
+fun JComponent.forEach(each: (Component) -> Unit) {
+    for (i in 0 until componentCount) {
+        each(getComponent(i))
+    }
+}
+
+fun JLabel.offsetLeft(): JLabel {
+    border = EmptyBorder(0, 4, 0, 0)
+    return this
 }
 
 fun Color.toHex(): String {

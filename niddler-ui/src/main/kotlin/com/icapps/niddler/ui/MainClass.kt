@@ -20,7 +20,9 @@ import javax.swing.WindowConstants
 fun main(args: Array<String>) {
     MainThreadDispatcher.instance = SwingMainThreadDispatcher()
 
-    val ui = SwingNiddlerUserInterface(SwingComponentsFactory())
+    val factory = SwingComponentsFactory()
+
+    val ui = SwingNiddlerUserInterface(factory)
     val window = NiddlerWindow(ui, emptyList())
 
     val panel = JPanel(BorderLayout())

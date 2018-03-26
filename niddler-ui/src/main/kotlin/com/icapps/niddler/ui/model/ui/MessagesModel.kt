@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.model.ui
 
-import com.icapps.niddler.ui.model.MessageContainer
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
 
 /**
  * @author Nicola Verbeeck
@@ -8,6 +8,6 @@ import com.icapps.niddler.ui.model.MessageContainer
  */
 interface MessagesModel {
 
-    fun updateMessages(messages: MessageContainer)
+    fun updateMessages(messages: NiddlerMessageStorage)
 
 }
