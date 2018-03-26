@@ -1,7 +1,9 @@
 package com.icapps.niddler.lib.utils
 
 import com.google.gson.JsonParser
+import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
+import java.io.File
 import java.io.InputStreamReader
 import java.net.URLDecoder
 import javax.imageio.ImageIO
@@ -26,7 +28,7 @@ class BodyClassifier(private val contentType: String?, private val bodyBytes: By
         val fromMime = determineFromMime(contentType, bodyBytes)
         if (fromMime == null || fromMime.type == BodyFormatType.FORMAT_BINARY)
             return determineBodyFromContent(bodyBytes) ?: fromMime
-        return null
+        return fromMime
     }
 
     private fun determineFromMime(contentType: String?, bytes: ByteArray?): ConcreteBody? {
@@ -46,9 +48,15 @@ class BodyClassifier(private val contentType: String?, private val bodyBytes: By
                 return ConcreteBody(BodyFormatType.FORMAT_PLAIN, contentType, bytes?.let { String(it) })
             "application/x-www-form-urlencoded" ->
                 return ConcreteBody(BodyFormatType.FORMAT_FORM_ENCODED, contentType, examineFormEncoded(bytes))
-            "image/bmp", "image/png", "image/tiff", "image/jpg", "image/jpeg", "image/gif", "image/webp" ->
+            "image/bmp", "image/png", "image/tiff", "image/jpg", "image/jpeg", "image/gif" ->
                 return ConcreteBody(BodyFormatType.FORMAT_IMAGE, contentType,
-                        bytes?.let { ImageIO.read(ByteArrayInputStream(it)) })
+                        bytes?.let {
+                            ImageIO.read(ByteArrayInputStream(it))
+                        })
+            "image/webp" ->
+                return ConcreteBody(BodyFormatType.FORMAT_IMAGE, contentType, bytes?.let {
+                    readWebPImage(it)
+                })
             "application/svg+xml" ->
                 return ConcreteBody(BodyFormatType.FORMAT_IMAGE, contentType, examineXML(bytes)) //TODO render SVG
         }
@@ -109,6 +117,24 @@ class BodyClassifier(private val contentType: String?, private val bodyBytes: By
 
     private fun firstBytesContainHtml(bytes: ByteArray, string: String): Boolean {
         return String(bytes, 0, Math.min(bytes.size, 32)).contains(string, true)
+    }
+
+    private fun readWebPImage(bytes: ByteArray): BufferedImage? {
+        if (!File("/usr/local/bin/webp").exists())
+            return null
+        val source = File.createTempFile("tmp_img", "dat")
+        source.writeBytes(bytes)
+        val converted = File.createTempFile("tmp_img", "png")
+        val proc = ProcessBuilder()
+                .command("/usr/local/bin/dwebp", source.absolutePath, "-o", converted.absolutePath) //TODO fix
+                .start()
+        proc.waitFor()
+        try {
+            return ImageIO.read(converted)
+        } finally {
+            source.delete()
+            converted.delete()
+        }
     }
 }
 

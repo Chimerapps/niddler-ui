@@ -76,7 +76,7 @@ class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
                 return
             }
             messagesList.add(insertIndex, message)
-            messagesMapped.add(message.messageId, message)
+            messagesMapped.add(message.requestId, message)
         }
     }
 
@@ -117,7 +117,7 @@ private class SemiOrderedMappingStorage {
     fun add(key: String, message: ParsedNiddlerMessage) {
         val toFind = data.lastOrNull { it.key == key }
         if (toFind == null) {
-            data += MappingEntry(message.timestamp, key, mutableListOf())
+            data += MappingEntry(message.timestamp, key, mutableListOf(message))
             data.sortBy(MappingEntry::time)
             return
         }

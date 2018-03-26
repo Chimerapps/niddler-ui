@@ -44,6 +44,10 @@ class NiddlerMessageBodyParser {
         if (contentType != null) {
             return parseBodyWithType(message, contentType)
         }
+        if (message.body.isNullOrEmpty()) {
+            return ParsedNiddlerMessage(BodyFormat.NONE, null, message,
+                    parseBody(message.networkRequest), parseBody(message.networkReply))
+        }
         return ParsedNiddlerMessage(BodyFormat.UNKNOWN, message.getBodyAsBytes, message,
                 parseBody(message.networkRequest),
                 parseBody(message.networkReply))
