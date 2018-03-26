@@ -36,6 +36,7 @@ class JsonTreeRenderer : DefaultTreeCellRenderer() {
     }
 
     override fun getTreeCellRendererComponent(tree: JTree?, value: Any?, sel: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean): Component {
+        super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus)
         if (value is JsonNode<*>) {
             font = regularFont
             text = value.toString()
