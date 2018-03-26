@@ -8,13 +8,12 @@ import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeNode
 
 /**
- * @author Nicola Verbeeck
- * @date 15/11/16.
+ * @author Koen Van Looveren
  */
-class EditableJsonTreeNode(override val jsonElement: JsonElement, private val parent: TreeNode?, override var name: String?) : MutableTreeNode, JsonNode<EditableJsonTreeNode> {
+class EditableJsonTreeNode(override val jsonElement: JsonElement, private var parent: TreeNode?, override var name: String?) : MutableTreeNode, JsonNode<EditableJsonTreeNode> {
 
     override var value: String? = null
-    override val children: MutableList<EditableJsonTreeNode> = arrayListOf()
+    override var children: MutableList<EditableJsonTreeNode> = arrayListOf()
     override var type: JsonNode.Type = JsonNode.Type.PRIMITIVE
     override lateinit var primitiveNumber: Number
 
@@ -37,11 +36,18 @@ class EditableJsonTreeNode(override val jsonElement: JsonElement, private val pa
 
     //region MutableTreeNode
     override fun insert(child: MutableTreeNode?, index: Int) {
+        if (child == null) {
+            return
+        }
+        val oldParent = child.getParent() as MutableTreeNode
+
+        oldParent.remove(child)
+        child.setParent(this)
         children.add(index, child as EditableJsonTreeNode)
     }
 
     override fun setParent(newParent: MutableTreeNode?) {
-
+        parent = newParent
     }
 
     override fun setUserObject(newObject: Any?) {
@@ -66,14 +72,23 @@ class EditableJsonTreeNode(override val jsonElement: JsonElement, private val pa
     }
 
     override fun remove(index: Int) {
+        val child = getChildAt(index) as MutableTreeNode
         children.removeAt(index)
+        child.setParent(null)
     }
 
     override fun remove(node: MutableTreeNode?) {
-        children.remove(node)
+        if (node != null) {
+            return
+        }
+        remove(getIndex(node))
     }
 
     override fun removeFromParent() {
+        val parent = parent
+        if (parent != null && parent is MutableTreeNode) {
+            parent.remove(this)
+        }
     }
     //endregion
 
