@@ -120,7 +120,7 @@ class BodyClassifier(private val contentType: String?, private val bodyBytes: By
     }
 
     private fun readWebPImage(bytes: ByteArray): BufferedImage? {
-        if (!File("/usr/local/bin/webp").exists())
+        if (!File("/usr/local/bin/dwebp").exists())
             return null
         val source = File.createTempFile("tmp_img", "dat")
         source.writeBytes(bytes)

@@ -51,7 +51,11 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     private var currentFilter: String = ""
         set(value) {
             field = value
-            messages.storage.filter = SimpleUrlMatchFilter(field)
+            if (field.isBlank())
+                messages.storage.filter = null
+            else
+                messages.storage.filter = SimpleUrlMatchFilter(field)
+            updateMessages()
         }
     private var debuggerSession: DebuggingSession? = null
     private var currentDebuggerConfiguration: DebuggerConfiguration? = null

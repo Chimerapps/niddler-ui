@@ -36,7 +36,11 @@ class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
     private val messagesMapped = SemiOrderedMappingStorage()
 
     override val messagesChronological: List<ParsedNiddlerMessage>
-        get() = synchronized(messagesList) { ArrayList(messagesList) }
+        get() = synchronized(messagesList) {
+            filter?.let { activeFilter ->
+                messagesList.filter { activeFilter.messageFilter(it, this) }
+            } ?: ArrayList(messagesList)
+        }
 
     override val messagesLinked: Map<String, List<ParsedNiddlerMessage>>
         get() = messagesLinkedWithFilter(filter)
