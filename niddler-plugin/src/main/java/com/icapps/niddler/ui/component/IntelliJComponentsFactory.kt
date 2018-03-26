@@ -3,7 +3,6 @@ package com.icapps.niddler.ui.component
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.TabComponent
-import com.intellij.ide.customize.CustomizeUIThemeStepPanel
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
