@@ -6,37 +6,25 @@ import com.icapps.niddler.lib.connection.model.NiddlerMessage
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-class ParsedNiddlerMessage(val bodyFormat: BodyFormat,
+class ParsedNiddlerMessage(val message: NiddlerMessage,
+                           val bodyFormat: BodyFormat,
                            val bodyData: Any?,
-                           val message: NiddlerMessage,
                            val parsedNetworkRequest: ParsedNiddlerMessage?,
-                           val parsedNetworkReply: ParsedNiddlerMessage?) {
+                           val parsedNetworkReply: ParsedNiddlerMessage?) : NiddlerMessage by message {
 
-    val requestId: String
-        get() = message.requestId
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other?.javaClass != javaClass) return false
 
-    val messageId: String
-        get() = message.messageId
+        other as NiddlerMessage
 
-    val timestamp: Long
-        get() = message.timestamp
+        if (messageId != other.messageId) return false
 
-    val url: String?
-        get() = message.url
+        return true
+    }
 
-    val method: String?
-        get() = message.method
-
-    val body: String?
-        get() = message.body
-
-    val headers: Map<String, List<String>>?
-        get() = message.headers
-
-    val statusCode: Int?
-        get() = message.statusCode
-
-    val isRequest: Boolean
-        get() = message.isRequest
+    override fun hashCode(): Int {
+        return messageId.hashCode()
+    }
 
 }
