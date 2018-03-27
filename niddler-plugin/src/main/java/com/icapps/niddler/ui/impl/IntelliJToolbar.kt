@@ -135,7 +135,7 @@ private class ClearAction(private val toolbar: IntelliJToolbar) : DumbAwareActio
 
 private class ConfigureBreakpointsAction(private val toolbar: IntelliJToolbar) :
         DumbAwareAction("Configure debugger", "Configure debugger",
-                "/viewBreakpoints".loadIcon<ConfigureBreakpointsAction>()) {
+                "/viewBreakpoints.png".loadIcon<ConfigureBreakpointsAction>()) {
 
     override fun actionPerformed(e: AnActionEvent?) {
         toolbar.listener?.onConfigureBreakpointsSelected()

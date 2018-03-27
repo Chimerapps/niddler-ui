@@ -11,6 +11,7 @@ import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.ui.AbstractToolbar
 import com.icapps.niddler.ui.form.ui.SwingToolbar
+import com.icapps.niddler.ui.util.logger
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.project.isDirectoryBased
@@ -30,6 +31,7 @@ class IntelliJComponentsFactory(val project: Project?, val parent: Disposable) :
 
     private companion object {
         private const val DEBUGGER_FILE = "debuggerConfig"
+        private val log = logger<IntelliJComponentsFactory>()
     }
 
     override fun createSplitPane(): SplitPane {
@@ -76,15 +78,14 @@ class IntelliJComponentsFactory(val project: Project?, val parent: Disposable) :
     }
 
     private fun getConfigFile(name: String): File {
+        log.debug("Getting config file with name: $name. Is dir based: ${project?.isDirectoryBased}")
         if (project?.isDirectoryBased == true) {
             val parent = project.workspaceFile?.parent
             var niddlerDir = parent?.findChild("niddler")
-            if (niddlerDir?.isDirectory == false) {
+            if (niddlerDir == null) {
                 niddlerDir = parent!!.createChildDirectory(this, "niddler")
             }
-            niddlerDir?.let {
-                return File(parent!!.findOrCreateChildData(this, name).canonicalPath)
-            }
+            return File(niddlerDir.findOrCreateChildData(this, name).canonicalPath)
         }
 
         val rootDir = File(AppDirsFactory.getInstance().getUserConfigDir("Niddler", null, null))
