@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.debug
 
-import com.icapps.niddler.ui.debugger.model.DebuggerConfigurationModelAdapter
-import com.icapps.niddler.ui.debugger.model.saved.TemporaryDebuggerConfiguration
+import com.icapps.niddler.ui.debugger.DebuggerConfigurationModelAdapter
+import com.icapps.niddler.lib.debugger.model.saved.TemporaryDebuggerConfiguration
 import com.icapps.niddler.ui.form.debug.nodes.ConfigurationRootNode
 import com.icapps.niddler.ui.form.debug.nodes.NodeBuilder
 import com.icapps.niddler.ui.path

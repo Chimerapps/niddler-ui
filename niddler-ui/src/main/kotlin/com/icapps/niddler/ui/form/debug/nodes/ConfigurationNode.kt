@@ -1,9 +1,9 @@
 package com.icapps.niddler.ui.form.debug.nodes
 
-import com.icapps.niddler.ui.debugger.model.DebuggerDelays
-import com.icapps.niddler.ui.debugger.model.LocalRequestIntercept
-import com.icapps.niddler.ui.debugger.model.LocalRequestOverride
-import com.icapps.niddler.ui.debugger.model.LocalResponseIntercept
+import com.icapps.niddler.lib.debugger.model.DebuggerDelays
+import com.icapps.niddler.lib.debugger.model.LocalRequestIntercept
+import com.icapps.niddler.lib.debugger.model.LocalRequestOverride
+import com.icapps.niddler.lib.debugger.model.LocalResponseIntercept
 
 /**
  * @author nicolaverbeeck

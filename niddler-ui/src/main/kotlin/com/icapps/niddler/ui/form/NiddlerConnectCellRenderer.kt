@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.ui.getDeviceIcon
-import com.icapps.niddler.ui.model.AdbDevice
+import com.icapps.niddler.ui.model.AdbDeviceModel
 import com.icapps.niddler.ui.toHex
 import java.awt.Color
 import java.awt.Component
@@ -34,7 +34,7 @@ class NiddlerConnectCellRenderer : DefaultListCellRenderer() {
             index: Int,
             selected: Boolean,
             expanded: Boolean): Component {
-        if (device !is AdbDevice)
+        if (device !is AdbDeviceModel)
             return label
         val iconResName = getDeviceIcon(device.emulator)
         label.icon = ImageIcon(javaClass.getResource(iconResName))

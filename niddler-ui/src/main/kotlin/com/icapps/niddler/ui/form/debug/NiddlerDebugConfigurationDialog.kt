@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.form.debug
 
-import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
+import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.ui.form.debug.nodes.ConfigurationNode
 import javax.swing.JPanel
 import javax.swing.JTree

@@ -1,24 +1,26 @@
 package com.icapps.niddler.ui.form
 
-import com.icapps.niddler.ui.NiddlerClient
-import com.icapps.niddler.ui.NiddlerClientDebuggerInterface
-import com.icapps.niddler.ui.adb.ADBBootstrap
+import com.icapps.niddler.lib.adb.ADBBootstrap
+import com.icapps.niddler.lib.connection.NiddlerClient
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
+import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
+import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
+import com.icapps.niddler.lib.debugger.DebuggingSession
+import com.icapps.niddler.lib.debugger.model.ConcreteDebuggingSession
+import com.icapps.niddler.lib.debugger.model.DebuggerService
+import com.icapps.niddler.lib.debugger.model.ServerDebuggerInterface
+import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
+import com.icapps.niddler.lib.export.HarExport
+import com.icapps.niddler.lib.model.*
+import com.icapps.niddler.lib.model.classifier.BodyFormatType
+import com.icapps.niddler.lib.model.classifier.HeaderBodyClassifier
 import com.icapps.niddler.ui.codegen.CurlCodeGenerator
-import com.icapps.niddler.ui.connection.NiddlerMessageListener
-import com.icapps.niddler.ui.debugger.DebuggingSession
-import com.icapps.niddler.ui.debugger.model.ConcreteDebuggingSession
-import com.icapps.niddler.ui.debugger.model.DebuggerService
-import com.icapps.niddler.ui.debugger.model.ServerDebuggerInterface
-import com.icapps.niddler.ui.debugger.model.saved.DebuggerConfiguration
-import com.icapps.niddler.ui.export.HarExport
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
-import com.icapps.niddler.ui.model.*
-import com.icapps.niddler.ui.model.messages.NiddlerServerInfo
+import com.icapps.niddler.ui.model.MessageMode
 import com.icapps.niddler.ui.model.ui.*
 import com.icapps.niddler.ui.setColumnFixedWidth
 import com.icapps.niddler.ui.setColumnMinWidth
-import com.icapps.niddler.ui.util.BodyFormatType
 import com.icapps.niddler.ui.util.ClipboardUtil
 import com.icapps.niddler.ui.util.WideSelectionTreeUI
 import java.awt.datatransfer.StringSelection
@@ -35,24 +37,33 @@ import javax.swing.Timer
  * @date 14/11/16.
  */
 class NiddlerWindow(private val windowContents: NiddlerUserInterface, private val sdkPathGuesses: Collection<String>)
-    : NiddlerMessageListener, ParsedNiddlerMessageListener, NiddlerMessagePopupMenu.Listener,
+    : NiddlerMessageListener, ParsedNiddlerMessageListener<ParsedNiddlerMessage>, NiddlerMessagePopupMenu.Listener,
         NiddlerMainToolbar.ToolbarListener {
 
     private companion object {
         private const val PROTCOL_VERSION_DEBUGGING = 4
     }
 
-    private val messages = MessageContainer(NiddlerMessageBodyParser())
+    private val bodyParser = NiddlerMessageBodyParser(HeaderBodyClassifier())
+    private val messages = NiddlerMessageContainer(bodyParser::parseBody, InMemoryNiddlerMessageStorage())
     private val messagePopupMenu = NiddlerMessagePopupMenu(this)
 
     private lateinit var adbConnection: ADBBootstrap
     private var messageMode = MessageMode.TIMELINE
     private var currentFilter: String = ""
+        set(value) {
+            field = value
+            if (field.isBlank())
+                messages.storage.filter = null
+            else
+                messages.storage.filter = SimpleUrlMatchFilter(field)
+            updateMessages()
+        }
     private var debuggerSession: DebuggingSession? = null
     private var currentDebuggerConfiguration: DebuggerConfiguration? = null
 
     fun init() {
-        windowContents.init(messages)
+        windowContents.init(messages.storage)
         adbConnection = ADBBootstrap(sdkPathGuesses)
 
         windowContents.overview.messagesAsTable.apply {
@@ -109,7 +120,8 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         windowContents.detail.message = null
 
         windowContents.connectButtonListener = {
-            val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent), adbConnection.bootStrap(), null, null)
+            val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent),
+                    adbConnection, null, null)
             if (selection != null)
                 onDeviceSelectionChanged(selection)
         }
@@ -164,8 +176,8 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     }
 
     private fun onDeviceSelectionChanged(params: NiddlerConnectDialog.ConnectSelection) {
-        val ip = if (params.serial != null) {
-            adbConnection.extend(params.serial)?.forwardTCPPort(6555, params.port)
+        val ip = if (params.device != null) {
+            params.device.forwardTCPPort(6555, params.port)
             "127.0.0.1"
         } else
             params.ip!!
@@ -176,9 +188,11 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     private var niddlerClient: NiddlerClient? = null
 
     private fun disconnect() {
-        niddlerClient?.close()
-        niddlerClient?.unregisterMessageListener(this)
-        niddlerClient?.unregisterMessageListener(messages)
+        niddlerClient?.let { client ->
+            client.close()
+            client.unregisterMessageListener(this)
+            messages.detach(client)
+        }
         if (niddlerClient != null) {
             //TODO Remove previous port mapping, this could cause conflicts, to check
         }
@@ -188,15 +202,16 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
     private fun initNiddlerOnDevice(ip: String) {
         disconnect()
-        messages.clear()
+        messages.storage.clear()
 
         val tempUri = URI.create("sis://$ip")
         val port = if (tempUri.port == -1) 6555 else tempUri.port
 
-        niddlerClient = NiddlerClient(URI.create("ws://${tempUri.host}:$port"))
-        niddlerClient?.registerMessageListener(this)
-        niddlerClient?.registerMessageListener(messages)
-        niddlerClient?.connectBlocking()
+        niddlerClient = NiddlerClient(URI.create("ws://${tempUri.host}:$port")).apply {
+            registerMessageListener(this@NiddlerWindow)
+            messages.attach(this)
+            connectBlocking()
+        }
     }
 
     override fun onReady() {
@@ -246,21 +261,21 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     override fun onTimelineSelected() {
         windowContents.overview.showTable()
         messageMode = MessageMode.TIMELINE
-        (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
+        (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages.storage)
     }
 
     override fun onLinkedSelected() {
         windowContents.overview.showLinked()
         messageMode = MessageMode.LINKED
-        (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
+        (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages.storage)
     }
 
     override fun onClearSelected() {
-        messages.clear()
+        messages.storage.clear()
         if (messageMode == MessageMode.TIMELINE)
-            (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages)
+            (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages.storage)
         else
-            (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages)
+            (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages.storage)
 
         windowContents.overview.messagesAsTable.clearSelection()
         windowContents.overview.messagesAsTree.clearSelection()
@@ -296,16 +311,17 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
             if (messageMode == MessageMode.TIMELINE) {
                 val previousSelection = windowContents.overview.messagesAsTable.selectedRow
-                (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages.filtered(currentFilter))
+                (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages.storage)
                 if (previousSelection != -1) {
                     try {
-                        windowContents.overview.messagesAsTable.addRowSelectionInterval(previousSelection, previousSelection)
+                        windowContents.overview.messagesAsTable.addRowSelectionInterval(previousSelection,
+                                previousSelection)
                     } catch (ignored: IllegalArgumentException) {
                     }
                 }
             } else {
                 val previousSelection = windowContents.overview.messagesAsTree.selectionPath
-                (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages.filtered(currentFilter))
+                (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages.storage)
                 if (previousSelection != null) {
                     try {
                         windowContents.overview.messagesAsTree.selectionPath = previousSelection
@@ -323,7 +339,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         }
         if (serverInfo.protocol >= PROTCOL_VERSION_DEBUGGING) {
             val debuggerInterface = ServerDebuggerInterface(
-                    DebuggerService(NiddlerClientDebuggerInterface(niddlerClient!!)))
+                    DebuggerService(niddlerClient!!))
             debuggerInterface.connect()
 
             debuggerSession = ConcreteDebuggingSession(debuggerInterface)
@@ -338,7 +354,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             if (message.isRequest) {
                 ClipboardUtil.copyToClipboard(StringSelection(message.url))
             } else {
-                ClipboardUtil.copyToClipboard(StringSelection(messages.findRequest(message)?.url))
+                ClipboardUtil.copyToClipboard(StringSelection(messages.storage.findRequest(message)?.url))
             }
         }
     }
@@ -369,7 +385,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
     override fun onExportCurlRequestClicked() {
         val message = windowContents.detail.message ?: return
-        val request = messages.findRequest(message)
+        val request = messages.storage.findRequest(message)
         if (request == null) {
             JOptionPane.showConfirmDialog(null, "Could not find request.", "Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE)
             return
@@ -381,7 +397,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         var exportLocation = windowContents.componentsFactory.showSaveDialog("Save export to", ".har") ?: return
         if (!exportLocation.endsWith(".har"))
             exportLocation += ".har"
-        HarExport(File(exportLocation)).export(messages.getMessagesLinked())
+        HarExport<ParsedNiddlerMessage>(File(exportLocation), HeaderBodyClassifier()).export(messages.storage)
     }
 
     private fun applyFilter(filter: String) {

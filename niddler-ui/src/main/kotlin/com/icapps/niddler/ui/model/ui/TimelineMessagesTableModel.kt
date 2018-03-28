@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.model.ui
 
-import com.icapps.niddler.ui.model.MessageContainer
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.util.getStatusCodeString
 import java.text.SimpleDateFormat
 import java.util.*
@@ -32,15 +32,15 @@ class TimelineMessagesTableModel : TableModel, MessagesModel {
 
     private val upIcon: Icon
     private val downIcon: Icon
-    private lateinit var container: MessageContainer
+    private lateinit var container: NiddlerMessageStorage<ParsedNiddlerMessage>
 
     init {
         upIcon = ImageIcon(javaClass.getResource("/ic_up.png"))
         downIcon = ImageIcon(javaClass.getResource("/ic_down.png"))
     }
 
-    override fun updateMessages(messages: MessageContainer) {
-        this.messages = messages.getMessagesChronological()
+    override fun updateMessages(messages: NiddlerMessageStorage<ParsedNiddlerMessage>) {
+        this.messages = messages.messagesChronological
         container = messages
 
         val e = TableModelEvent(this)

@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.form.debug.content
 
-import com.icapps.niddler.ui.debugger.model.ModifiableDebuggerConfiguration
+import com.icapps.niddler.lib.debugger.model.ModifiableDebuggerConfiguration
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.*
