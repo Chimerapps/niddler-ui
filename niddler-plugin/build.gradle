@@ -20,8 +20,10 @@ plugins {
 
 apply plugin: 'kotlin'
 
+def actualPluginVersion = hasProperty("internalBuildNumber") ? "$pluginVersion-$internalBuildNumber" : "$pluginVersion"
+
 group 'com.icapps'
-version '1.0.2'
+version actualPluginVersion
 sourceCompatibility = 1.8
 
 intellij {
@@ -36,9 +38,47 @@ repositories {
     }
 }
 
+configurations {
+    ftpAntTask
+}
+
 dependencies {
     compile(project(':niddler-ui')) {
         exclude group: 'org.slf4j', module: 'slf4j-api'
     }
+    ftpAntTask("org.apache.ant:ant-commons-net:1.8.4") {
+        module("commons-net:commons-net:1.4.1") {
+            dependencies "oro:oro:2.0.8:jar"
+        }
+    }
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 }
+
+task uploadToInternalServer << {
+    ant {
+        taskdef(name: 'ftp',
+                classname: 'org.apache.tools.ant.taskdefs.optional.net.FTP',
+                classpath: configurations.ftpAntTask.asPath)
+
+        def properties = new Properties()
+        properties.load(new File("local.properties").newDataInputStream())
+        def internalServer = properties.internalServer
+        def internalServerUser = properties.internalServerUser
+        def internalServerPassword = properties.internalServerPassword
+        def internalServerDir = properties.internalServerDir
+        def publicPath = properties.internalServerPublicPath
+
+        def pluginFileContents = "<plugins><plugin id=\"com.icapps.niddler\" url=\"$publicPath/versions/niddler-plugin-${actualPluginVersion}.zip\" version=\"$actualPluginVersion\"/></plugins>"
+        def pluginDescriptorFile = new File("niddler-plugin/build/distributions/updatePlugins.xml")
+        pluginDescriptorFile.write pluginFileContents
+
+        ftp(server: "$internalServer", userid: "$internalServerUser", password: "$internalServerPassword",
+                remoteDir: "$internalServerDir") {
+            fileset(dir: "build/distributions") {
+                include(name: "niddler-plugin-${actualPluginVersion}.zip")
+                include(name: "updatePlugins.xml")
+            }
+        }
+    }
+}
+

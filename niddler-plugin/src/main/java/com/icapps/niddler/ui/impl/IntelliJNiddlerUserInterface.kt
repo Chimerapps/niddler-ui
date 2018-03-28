@@ -18,10 +18,9 @@ class IntelliJNiddlerUserInterface(componentsFactory: ComponentsFactory) : Swing
     override val asComponent: JComponent
         get() = toolWindowPanel.component
 
-    val toolWindowPanel: SimpleToolWindowPanel
+    private val toolWindowPanel = SimpleToolWindowPanel(false, true)
 
     init {
-        toolWindowPanel = SimpleToolWindowPanel(false, true)
         toolWindowPanel.setContent(rootPanel)
     }
 

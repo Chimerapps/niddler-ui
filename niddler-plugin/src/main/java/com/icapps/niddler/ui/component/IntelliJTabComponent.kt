@@ -37,11 +37,11 @@ class IntelliJTabComponent(project: Project?,
         get() = titles.size
 
     override fun get(index: Int): Component {
-        return (layoutUI.findContent(titles[index] + "-contentId") as ContentImpl).component
+        return (layoutUI.findContent( "${titles[index]}-contentId") as ContentImpl).component
     }
 
     private fun addTab(layoutUi: RunnerLayoutUi, component: JComponent, name: String, defaultPlace: PlaceInGrid): Content {
-        val content = layoutUi.createContent(name + "-contentId", component, name, null, null)
+        val content = layoutUi.createContent("$name-contentId", component, name, null, null)
         content.isCloseable = false
         layoutUi.addContent(content, -1, defaultPlace, false)
         return content
