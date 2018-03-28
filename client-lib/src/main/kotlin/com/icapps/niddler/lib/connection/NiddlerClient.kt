@@ -10,7 +10,7 @@ import com.icapps.niddler.lib.debugger.model.DebugResponse
 import com.icapps.niddler.lib.utils.debug
 import com.icapps.niddler.lib.utils.logger
 import org.java_websocket.client.WebSocketClient
-import org.java_websocket.drafts.Draft_17
+import org.java_websocket.drafts.Draft_6455
 import org.java_websocket.handshake.ServerHandshake
 import java.net.URI
 import java.util.*
@@ -19,7 +19,7 @@ import java.util.*
  * @author Nicola Verbeeck
  * @date 14/11/2016.
  */
-class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI, Draft_17()),
+class NiddlerClient(serverURI: URI?) : WebSocketClient(serverURI, Draft_6455()),
         NiddlerMessageListener, NiddlerDebugListener, NiddlerDebuggerConnection {
 
     companion object {

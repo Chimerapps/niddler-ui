@@ -9,11 +9,13 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.3'
     }
 }
+
 plugins {
-    id "org.jetbrains.intellij" version "0.2.7"
+    id "org.jetbrains.intellij" version "0.3.1"
+    id "com.github.ben-manes.versions" version "0.17.0"
 }
 
 apply plugin: 'kotlin'
@@ -35,6 +37,8 @@ repositories {
 }
 
 dependencies {
-    compile project(':niddler-ui')
+    compile(project(':niddler-ui')) {
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+    }
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 }
