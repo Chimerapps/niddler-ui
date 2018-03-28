@@ -14,9 +14,9 @@ import javax.swing.tree.TreeNode
 class LinkedMessagesModel : DefaultTreeModel(DefaultMutableTreeNode()), MessagesModel {
 
     private var messages: Map<String, List<ParsedNiddlerMessage>> = Collections.emptyMap()
-    private lateinit var container: NiddlerMessageStorage
+    private lateinit var container: NiddlerMessageStorage<ParsedNiddlerMessage>
 
-    override fun updateMessages(messages: NiddlerMessageStorage) {
+    override fun updateMessages(messages: NiddlerMessageStorage<ParsedNiddlerMessage>) {
         this.messages = messages.messagesLinked
         container = messages
 

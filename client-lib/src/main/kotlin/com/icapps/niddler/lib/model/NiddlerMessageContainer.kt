@@ -7,14 +7,14 @@ import com.icapps.niddler.lib.connection.model.NiddlerMessage
 /**
  * @author nicolaverbeeck
  */
-class NiddlerMessageContainer(private val bodyParser: NiddlerMessageBodyParser,
-                              val storage: NiddlerMessageStorage) {
+class NiddlerMessageContainer<T : NiddlerMessage>(private val converter: (NiddlerMessage) -> T,
+                                                  val storage: NiddlerMessageStorage<T>) {
 
-    private val listeners: MutableSet<ParsedNiddlerMessageListener> = hashSetOf()
+    private val listeners: MutableSet<ParsedNiddlerMessageListener<T>> = hashSetOf()
 
     private val messageAdapter = object : NiddlerMessageListenerAdapter() {
         override fun onServiceMessage(niddlerMessage: NiddlerMessage) {
-            val parsedMessage = bodyParser.parseBody(niddlerMessage) ?: return
+            val parsedMessage = converter(niddlerMessage)
             storage.addMessage(parsedMessage)
             synchronized(listeners) {
                 listeners.forEach { it.onMessage(parsedMessage) }
@@ -30,21 +30,21 @@ class NiddlerMessageContainer(private val bodyParser: NiddlerMessageBodyParser,
         client.unregisterMessageListener(messageAdapter)
     }
 
-    fun registerListener(listener: ParsedNiddlerMessageListener) {
+    fun registerListener(listener: ParsedNiddlerMessageListener<T>) {
         synchronized(listeners) {
             listeners.add(listener)
         }
     }
 
-    fun unregisterListener(listener: ParsedNiddlerMessageListener) {
+    fun unregisterListener(listener: ParsedNiddlerMessageListener<T>) {
         synchronized(listeners) {
             listeners.remove(listener)
         }
     }
 }
 
-interface ParsedNiddlerMessageListener {
+interface ParsedNiddlerMessageListener<in T : NiddlerMessage> {
 
-    fun onMessage(message: ParsedNiddlerMessage)
+    fun onMessage(message: T)
 
 }

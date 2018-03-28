@@ -1,18 +1,20 @@
-package com.icapps.niddler.lib.utils
+package com.icapps.niddler.lib.model.classifier
 
 import com.google.gson.JsonParser
+import com.icapps.niddler.lib.model.BodyFormat
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStreamReader
 import java.net.URLDecoder
+import java.nio.charset.Charset
 import javax.imageio.ImageIO
 import javax.xml.parsers.DocumentBuilderFactory
 
 /**
  * @author nicolaverbeeck
  */
-class BodyClassifier(private val contentType: String?, private val bodyBytes: ByteArray?) {
+class BodyParser(private val initialBodyFormat: BodyFormat, private val bodyBytes: ByteArray?) {
 
     private companion object {
         private const val SPACE = 32.toByte()
@@ -23,45 +25,29 @@ class BodyClassifier(private val contentType: String?, private val bodyBytes: By
 
     fun determineBodyType(): ConcreteBody? {
         if (bodyBytes == null || bodyBytes.isEmpty())
-            return determineFromMime(contentType, bytes = null)
+            return ConcreteBody(initialBodyFormat.type, initialBodyFormat.subtype, data = null)
 
-        val fromMime = determineFromMime(contentType, bodyBytes)
-        if (fromMime == null || fromMime.type == BodyFormatType.FORMAT_BINARY)
-            return determineBodyFromContent(bodyBytes) ?: fromMime
-        return fromMime
-    }
+        if (initialBodyFormat.type == BodyFormatType.FORMAT_BINARY)
+            return determineBodyFromContent(bodyBytes) ?: ConcreteBody(initialBodyFormat.type,
+                    initialBodyFormat.subtype,
+                    data = bodyBytes)
 
-    private fun determineFromMime(contentType: String?, bytes: ByteArray?): ConcreteBody? {
-        if (contentType == null || contentType.isEmpty())
-            return null
-
-        when (contentType.toLowerCase()) {
-            "application/json" ->
-                return ConcreteBody(BodyFormatType.FORMAT_JSON, contentType, examineJson(bytes))
-            "application/xml", "text/xml", "application/dash+xml" ->
-                return ConcreteBody(BodyFormatType.FORMAT_XML, contentType, examineXML(bytes))
-            "application/octet-stream" ->
-                return ConcreteBody(BodyFormatType.FORMAT_BINARY, contentType, bytes)
-            "text/html" ->
-                return ConcreteBody(BodyFormatType.FORMAT_HTML, contentType, examineXML(bytes))
-            "text/plain" ->
-                return ConcreteBody(BodyFormatType.FORMAT_PLAIN, contentType, bytes?.let { String(it) })
-            "application/x-www-form-urlencoded" ->
-                return ConcreteBody(BodyFormatType.FORMAT_FORM_ENCODED, contentType, examineFormEncoded(bytes))
-            "image/bmp", "image/png", "image/tiff", "image/jpg", "image/jpeg", "image/gif" ->
-                return ConcreteBody(BodyFormatType.FORMAT_IMAGE, contentType,
-                        bytes?.let {
-                            ImageIO.read(ByteArrayInputStream(it))
-                        })
-            "image/webp" ->
-                return ConcreteBody(BodyFormatType.FORMAT_IMAGE, contentType, bytes?.let {
-                    readWebPImage(it)
-                })
-            "application/svg+xml" ->
-                return ConcreteBody(BodyFormatType.FORMAT_IMAGE, contentType, examineXML(bytes)) //TODO render SVG
+        return when (initialBodyFormat.type) {
+            BodyFormatType.FORMAT_JSON -> ConcreteBody(initialBodyFormat.type, initialBodyFormat.subtype, examineJson(bodyBytes))
+            BodyFormatType.FORMAT_XML -> ConcreteBody(initialBodyFormat.type, initialBodyFormat.subtype, examineXML(bodyBytes))
+            BodyFormatType.FORMAT_PLAIN, BodyFormatType.FORMAT_HTML ->
+                ConcreteBody(initialBodyFormat.type, initialBodyFormat.subtype,
+                        String(bodyBytes, Charset.forName(initialBodyFormat.encoding ?: Charsets.UTF_8.name())))
+            BodyFormatType.FORMAT_IMAGE ->
+                createImage(bodyBytes)
+            BodyFormatType.FORMAT_EMPTY ->
+                ConcreteBody(initialBodyFormat.type, initialBodyFormat.subtype, null)
+            BodyFormatType.FORMAT_FORM_ENCODED ->
+                ConcreteBody(initialBodyFormat.type, initialBodyFormat.subtype, examineFormEncoded(bodyBytes))
+            else -> null
         }
-        return null
     }
+
 
     private fun determineBodyFromContent(content: ByteArray): ConcreteBody? {
         val firstReasonableTextByte = findFirstNonBlankByte(content)
@@ -119,6 +105,15 @@ class BodyClassifier(private val contentType: String?, private val bodyBytes: By
         return String(bytes, 0, Math.min(bytes.size, 32)).contains(string, true)
     }
 
+    private fun createImage(bytes: ByteArray): ConcreteBody? {
+        val body = when (initialBodyFormat.subtype!!) {
+            "image/webp" -> readWebPImage(bytes)
+            "application/svg+xml" -> return ConcreteBody(BodyFormatType.FORMAT_XML, initialBodyFormat.subtype, examineXML(bodyBytes))
+            else -> ImageIO.read(ByteArrayInputStream(bytes))
+        }
+        return ConcreteBody(initialBodyFormat.type, initialBodyFormat.subtype, body)
+    }
+
     private fun readWebPImage(bytes: ByteArray): BufferedImage? {
         if (!File("/usr/local/bin/dwebp").exists())
             return null
@@ -140,7 +135,7 @@ class BodyClassifier(private val contentType: String?, private val bodyBytes: By
 
 data class ConcreteBody(
         val type: BodyFormatType,
-        val rawType: String,
+        val rawType: String?,
         val data: Any?
 )
 

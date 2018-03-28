@@ -12,7 +12,8 @@ import com.icapps.niddler.lib.debugger.model.ServerDebuggerInterface
 import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.*
-import com.icapps.niddler.lib.utils.BodyFormatType
+import com.icapps.niddler.lib.model.classifier.BodyFormatType
+import com.icapps.niddler.lib.model.classifier.HeaderBodyClassifier
 import com.icapps.niddler.ui.codegen.CurlCodeGenerator
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
@@ -36,14 +37,15 @@ import javax.swing.Timer
  * @date 14/11/16.
  */
 class NiddlerWindow(private val windowContents: NiddlerUserInterface, private val sdkPathGuesses: Collection<String>)
-    : NiddlerMessageListener, ParsedNiddlerMessageListener, NiddlerMessagePopupMenu.Listener,
+    : NiddlerMessageListener, ParsedNiddlerMessageListener<ParsedNiddlerMessage>, NiddlerMessagePopupMenu.Listener,
         NiddlerMainToolbar.ToolbarListener {
 
     private companion object {
         private const val PROTCOL_VERSION_DEBUGGING = 4
     }
 
-    private val messages = NiddlerMessageContainer(NiddlerMessageBodyParser(), InMemoryNiddlerMessageStorage())
+    private val bodyParser = NiddlerMessageBodyParser(HeaderBodyClassifier())
+    private val messages = NiddlerMessageContainer(bodyParser::parseBody, InMemoryNiddlerMessageStorage())
     private val messagePopupMenu = NiddlerMessagePopupMenu(this)
 
     private lateinit var adbConnection: ADBBootstrap
@@ -395,7 +397,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         var exportLocation = windowContents.componentsFactory.showSaveDialog("Save export to", ".har") ?: return
         if (!exportLocation.endsWith(".har"))
             exportLocation += ".har"
-        HarExport(File(exportLocation)).export(messages.storage)
+        HarExport<ParsedNiddlerMessage>(File(exportLocation), HeaderBodyClassifier()).export(messages.storage)
     }
 
     private fun applyFilter(filter: String) {

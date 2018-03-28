@@ -20,7 +20,7 @@ import javax.swing.border.TitledBorder
  * @author Nicola Verbeeck
  * @date 18/11/16.
  */
-class MessageDetailPanel(private val messages: NiddlerMessageStorage) : JPanel(BorderLayout()) {
+class MessageDetailPanel(private val messages: NiddlerMessageStorage<ParsedNiddlerMessage>) : JPanel(BorderLayout()) {
 
     private val generalPanel = JPanel(BorderLayout())
     private val headersPanel = JPanel(BorderLayout())
@@ -134,13 +134,13 @@ class MessageDetailPanel(private val messages: NiddlerMessageStorage) : JPanel(B
     }
 
     private fun findResponse(message: ParsedNiddlerMessage): ParsedNiddlerMessage? {
-        return messages.getMessagesWithRequestId(message.requestId)?.find {
+        return messages.getMessagesWithRequestId(message.requestId).find {
             !it.isRequest
         }
     }
 
     private fun findRequest(message: ParsedNiddlerMessage): ParsedNiddlerMessage? {
-        return messages.getMessagesWithRequestId(message.requestId)?.find(ParsedNiddlerMessage::isRequest)
+        return messages.getMessagesWithRequestId(message.requestId).find(ParsedNiddlerMessage::isRequest)
     }
 
     private fun boldLabel(text: String?): JComponent {

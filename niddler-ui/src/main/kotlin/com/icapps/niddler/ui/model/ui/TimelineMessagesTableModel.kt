@@ -32,14 +32,14 @@ class TimelineMessagesTableModel : TableModel, MessagesModel {
 
     private val upIcon: Icon
     private val downIcon: Icon
-    private lateinit var container: NiddlerMessageStorage
+    private lateinit var container: NiddlerMessageStorage<ParsedNiddlerMessage>
 
     init {
         upIcon = ImageIcon(javaClass.getResource("/ic_up.png"))
         downIcon = ImageIcon(javaClass.getResource("/ic_down.png"))
     }
 
-    override fun updateMessages(messages: NiddlerMessageStorage) {
+    override fun updateMessages(messages: NiddlerMessageStorage<ParsedNiddlerMessage>) {
         this.messages = messages.messagesChronological
         container = messages
 

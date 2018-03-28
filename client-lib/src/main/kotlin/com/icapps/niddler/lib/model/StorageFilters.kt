@@ -1,13 +1,15 @@
 package com.icapps.niddler.lib.model
 
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
+
 /**
  * @author nicolaverbeeck
  */
-class SimpleUrlMatchFilter(toMatch: String) : NiddlerMessageStorage.Filter {
+class SimpleUrlMatchFilter<T : NiddlerMessage>(toMatch: String) : NiddlerMessageStorage.Filter<T> {
 
     private val toMatch = toMatch.trim()
 
-    override fun messageFilter(message: ParsedNiddlerMessage, storage: NiddlerMessageStorage): Boolean {
+    override fun messageFilter(message: T, storage: NiddlerMessageStorage<T>): Boolean {
         if (toMatch.isEmpty())
             return true
 
@@ -18,7 +20,7 @@ class SimpleUrlMatchFilter(toMatch: String) : NiddlerMessageStorage.Filter {
         return url?.contains(toMatch, ignoreCase = true) == true
     }
 
-    override fun messageFilter(relatedMessages: List<ParsedNiddlerMessage>): List<ParsedNiddlerMessage> {
+    override fun messageFilter(relatedMessages: List<T>): List<T> {
         if (toMatch.isEmpty())
             return ArrayList(relatedMessages)
 

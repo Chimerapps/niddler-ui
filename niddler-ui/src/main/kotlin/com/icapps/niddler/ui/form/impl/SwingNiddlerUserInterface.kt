@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form.impl
 
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.HintTextField
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
@@ -53,7 +54,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         return rootPanel
     }
 
-    override fun init(messageContainer: NiddlerMessageStorage) {
+    override fun init(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) {
         initStatusbar()
         initDetail(messageContainer)
         initOverview()
@@ -133,7 +134,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         toolbar = SwingToolbar(uiContainer())
     }
 
-    protected open fun initDetail(messagesContainer: NiddlerMessageStorage) {
+    protected open fun initDetail(messagesContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) {
         detail = SwingNiddlerDetailUserInterface(componentsFactory, messagesContainer)
         detail.init()
     }

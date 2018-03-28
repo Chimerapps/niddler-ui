@@ -1,20 +1,28 @@
 package com.icapps.niddler.lib.model
 
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
-import com.icapps.niddler.lib.utils.*
-import org.apache.http.entity.ContentType
+import com.icapps.niddler.lib.model.classifier.BodyFormatType
+import com.icapps.niddler.lib.model.classifier.BodyParser
+import com.icapps.niddler.lib.model.classifier.ConcreteBody
+import com.icapps.niddler.lib.model.classifier.SimpleBodyClassifier
+import com.icapps.niddler.lib.utils.error
+import com.icapps.niddler.lib.utils.logger
 
 /**
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-class NiddlerMessageBodyParser {
+class NiddlerMessageBodyParser(private val classifier: SimpleBodyClassifier) {
 
     companion object {
         private val log = logger<NiddlerMessageBodyParser>()
     }
 
-    fun parseBody(message: NiddlerMessage?): ParsedNiddlerMessage? {
+    fun parseBody(message: NiddlerMessage): ParsedNiddlerMessage {
+        return parseBodyInternal(message)!!
+    }
+
+    private fun parseBodyInternal(message: NiddlerMessage?): ParsedNiddlerMessage? {
         if (message == null)
             return null
         try {
@@ -28,15 +36,15 @@ class NiddlerMessageBodyParser {
                             encoding = null),
                     bodyData = message.getBodyAsBytes,
                     message = message,
-                    parsedNetworkRequest = parseBody(message.networkRequest),
-                    parsedNetworkReply = parseBody(message.networkReply))
+                    parsedNetworkRequest = parseBodyInternal(message.networkRequest),
+                    parsedNetworkReply = parseBodyInternal(message.networkReply))
         }
     }
 
-    fun parseBodyWithType(message: NiddlerMessage, content: ConcreteBody?): ParsedNiddlerMessage {
-        return ParsedNiddlerMessage(asFormat(content), content?.data, message,
-                parseBody(message.networkRequest),
-                parseBody(message.networkReply))
+    private fun parseBodyWithType(message: NiddlerMessage, content: ConcreteBody?): ParsedNiddlerMessage {
+        return ParsedNiddlerMessage(message, asFormat(content), content?.data,
+                parseBodyInternal(message.networkRequest),
+                parseBodyInternal(message.networkReply))
     }
 
     private fun parseMessage(message: NiddlerMessage): ParsedNiddlerMessage {
@@ -45,22 +53,16 @@ class NiddlerMessageBodyParser {
             return parseBodyWithType(message, contentType)
         }
         if (message.body.isNullOrEmpty()) {
-            return ParsedNiddlerMessage(BodyFormat.NONE, null, message,
-                    parseBody(message.networkRequest), parseBody(message.networkReply))
+            return ParsedNiddlerMessage(message, BodyFormat.NONE, null,
+                    parseBodyInternal(message.networkRequest), parseBodyInternal(message.networkReply))
         }
-        return ParsedNiddlerMessage(BodyFormat.UNKNOWN, message.getBodyAsBytes, message,
-                parseBody(message.networkRequest),
-                parseBody(message.networkReply))
+        return ParsedNiddlerMessage(message, BodyFormat.UNKNOWN, message.getBodyAsBytes,
+                parseBodyInternal(message.networkRequest),
+                parseBodyInternal(message.networkReply))
     }
 
     private fun classifyFormatFromHeaders(message: NiddlerMessage): ConcreteBody? {
-        val contentTypeHeader = message.headers?.get("content-type")
-        if (contentTypeHeader != null && !contentTypeHeader.isEmpty()) {
-            val contentTypeString = contentTypeHeader[0]
-            val parsedContentType = ContentType.parse(contentTypeString)
-            return BodyClassifier(parsedContentType.mimeType, message.getBodyAsBytes).determineBodyType()
-        }
-        return null
+        return BodyParser(classifier.classifyFormat(message), message.getBodyAsBytes).determineBodyType()
     }
 
     private fun asFormat(content: ConcreteBody?): BodyFormat {

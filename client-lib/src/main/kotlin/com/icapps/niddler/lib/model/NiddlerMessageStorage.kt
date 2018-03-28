@@ -1,51 +1,53 @@
 package com.icapps.niddler.lib.model
 
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
+
 /**
  * @author nicolaverbeeck
  */
-interface NiddlerMessageStorage {
+interface NiddlerMessageStorage<T : NiddlerMessage> {
 
-    val messagesChronological: List<ParsedNiddlerMessage>
-    val messagesLinked: Map<String, List<ParsedNiddlerMessage>>
-    var filter: Filter?
+    val messagesChronological: List<T>
+    val messagesLinked: Map<String, List<T>>
+    var filter: Filter<T>?
 
-    fun messagesLinkedWithFilter(filter: Filter?): Map<String, List<ParsedNiddlerMessage>>
+    fun messagesLinkedWithFilter(filter: Filter<T>?): Map<String, List<T>>
 
-    fun addMessage(message: ParsedNiddlerMessage)
+    fun addMessage(message: T)
 
-    fun getMessagesWithRequestId(requestId: String): List<ParsedNiddlerMessage>
+    fun getMessagesWithRequestId(requestId: String): List<T>
 
-    fun findResponse(message: ParsedNiddlerMessage): ParsedNiddlerMessage?
+    fun findResponse(message: T): T?
 
-    fun findRequest(message: ParsedNiddlerMessage): ParsedNiddlerMessage?
+    fun findRequest(message: T): T?
 
     fun clear()
 
-    interface Filter {
+    interface Filter<T : NiddlerMessage> {
 
-        fun messageFilter(message: ParsedNiddlerMessage, storage: NiddlerMessageStorage): Boolean
+        fun messageFilter(message: T, storage: NiddlerMessageStorage<T>): Boolean
 
-        fun messageFilter(relatedMessages: List<ParsedNiddlerMessage>): List<ParsedNiddlerMessage>
+        fun messageFilter(relatedMessages: List<T>): List<T>
     }
 
 }
 
-class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
+class InMemoryNiddlerMessageStorage<T : NiddlerMessage> : NiddlerMessageStorage<T> {
 
-    private val messagesList: MutableList<ParsedNiddlerMessage> = arrayListOf()
-    private val messagesMapped = SemiOrderedMappingStorage()
+    private val messagesList: MutableList<T> = arrayListOf()
+    private val messagesMapped = SemiOrderedMappingStorage<T>()
 
-    override val messagesChronological: List<ParsedNiddlerMessage>
+    override val messagesChronological: List<T>
         get() = synchronized(messagesList) {
             filter?.let { activeFilter ->
                 messagesList.filter { activeFilter.messageFilter(it, this) }
             } ?: ArrayList(messagesList)
         }
 
-    override val messagesLinked: Map<String, List<ParsedNiddlerMessage>>
+    override val messagesLinked: Map<String, List<T>>
         get() = messagesLinkedWithFilter(filter)
 
-    override var filter: NiddlerMessageStorage.Filter? = null
+    override var filter: NiddlerMessageStorage.Filter<T>? = null
         set(value) {
             synchronized(messagesList) {
                 field = value
@@ -60,7 +62,7 @@ class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
         }
     }
 
-    override fun addMessage(message: ParsedNiddlerMessage) {
+    override fun addMessage(message: T) {
         synchronized(messagesList) {
             val size = messagesList.size
             var insertIndex = 0
@@ -84,24 +86,24 @@ class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
         }
     }
 
-    override fun getMessagesWithRequestId(requestId: String): List<ParsedNiddlerMessage> {
+    override fun getMessagesWithRequestId(requestId: String): List<T> {
         return synchronized(messagesList) {
             messagesMapped[requestId] ?: emptyList()
         }
     }
 
-    override fun findResponse(message: ParsedNiddlerMessage): ParsedNiddlerMessage? {
+    override fun findResponse(message: T): T? {
         return getMessagesWithRequestId(message.requestId).find {
             !it.isRequest
         }
     }
 
-    override fun findRequest(message: ParsedNiddlerMessage): ParsedNiddlerMessage? {
-        return getMessagesWithRequestId(message.requestId).find(ParsedNiddlerMessage::isRequest)
+    override fun findRequest(message: T): T? {
+        return getMessagesWithRequestId(message.requestId).find(NiddlerMessage::isRequest)
     }
 
-    override fun messagesLinkedWithFilter(filter: NiddlerMessageStorage.Filter?)
-            : Map<String, List<ParsedNiddlerMessage>> {
+    override fun messagesLinkedWithFilter(filter: NiddlerMessageStorage.Filter<T>?)
+            : Map<String, List<T>> {
         if (filter == null) {
             return synchronized(messagesList) {
                 messagesMapped.toMap()
@@ -114,22 +116,22 @@ class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
     }
 }
 
-private class SemiOrderedMappingStorage {
+private class SemiOrderedMappingStorage<T : NiddlerMessage> {
 
-    private val data = mutableListOf<MappingEntry>()
+    private val data = mutableListOf<MappingEntry<T>>()
 
-    fun add(key: String, message: ParsedNiddlerMessage) {
+    fun add(key: String, message: T) {
         val toFind = data.lastOrNull { it.key == key }
         if (toFind == null) {
             data += MappingEntry(message.timestamp, key, mutableListOf(message))
-            data.sortBy(MappingEntry::time)
+            data.sortBy(MappingEntry<T>::time)
             return
         }
         toFind.items += message
-        toFind.items.sortBy(ParsedNiddlerMessage::timestamp)
+        toFind.items.sortBy(NiddlerMessage::timestamp)
         if (toFind.time > message.timestamp) {
             toFind.time = message.timestamp
-            data.sortBy(MappingEntry::time)
+            data.sortBy(MappingEntry<T>::time)
         }
     }
 
@@ -137,20 +139,20 @@ private class SemiOrderedMappingStorage {
         data.clear()
     }
 
-    operator fun get(key: String): List<ParsedNiddlerMessage>? {
+    operator fun get(key: String): List<T>? {
         return data.find { it.key == key }?.items
     }
 
-    fun toMap(): Map<String, List<ParsedNiddlerMessage>> {
-        val map = LinkedHashMap<String, List<ParsedNiddlerMessage>>()
+    fun toMap(): Map<String, List<T>> {
+        val map = LinkedHashMap<String, List<T>>()
         data.forEach {
             map[it.key] = ArrayList(it.items)
         }
         return map
     }
 
-    fun toMap(filter: NiddlerMessageStorage.Filter): Map<String, List<ParsedNiddlerMessage>> {
-        val map = LinkedHashMap<String, List<ParsedNiddlerMessage>>()
+    fun toMap(filter: NiddlerMessageStorage.Filter<T>): Map<String, List<T>> {
+        val map = LinkedHashMap<String, List<T>>()
         data.forEach {
             val copy = filter.messageFilter(it.items)
             if (copy.isNotEmpty())
@@ -160,4 +162,4 @@ private class SemiOrderedMappingStorage {
     }
 }
 
-private data class MappingEntry(var time: Long, val key: String, val items: MutableList<ParsedNiddlerMessage>)
+private data class MappingEntry<T : NiddlerMessage>(var time: Long, val key: String, val items: MutableList<T>)
