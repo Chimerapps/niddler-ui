@@ -3,12 +3,10 @@ package com.icapps.niddler.ui.form
 import com.icapps.niddler.ui.getDeviceIcon
 import com.icapps.niddler.ui.model.AdbDeviceModel
 import com.icapps.niddler.ui.toHex
+import org.apache.http.util.TextUtils
 import java.awt.Color
 import java.awt.Component
-import javax.swing.DefaultListCellRenderer
-import javax.swing.ImageIcon
-import javax.swing.JLabel
-import javax.swing.JList
+import javax.swing.*
 
 /**
  * @author Koen Van Looveren
@@ -17,12 +15,10 @@ class NiddlerConnectCellRenderer : DefaultListCellRenderer() {
 
     private var label: JLabel = JLabel()
     private val textSelectionColor = Color.WHITE
-    private val secondaryTextSelectionColor = Color.WHITE
-    private val backgroundSelectionColor = Color(10, 79, 208)
+    private val backgroundSelectionColor: Color = UIManager.getDefaults().getColor("List.selectionBackground")
 
-    private val textNonSelectionColor = Color.BLACK
-    private val secondaryTextNonSelectionColor = Color(150, 150, 150)
-    private val backgroundNonSelectionColor = Color.WHITE
+    private val textNonSelectionColor: Color = UIManager.getDefaults().getColor("Label.foreground")
+    private val secondaryTextNonSelectionColor: Color = Color(150, 150, 150)
 
     init {
         label.isOpaque = true
@@ -43,14 +39,18 @@ class NiddlerConnectCellRenderer : DefaultListCellRenderer() {
         if (selected) {
             label.background = backgroundSelectionColor
             label.foreground = textSelectionColor
-            hexColor = secondaryTextSelectionColor.toHex()
+            hexColor = textSelectionColor.toHex()
         } else {
-            label.background = backgroundNonSelectionColor
+            label.background = null
             label.foreground = textNonSelectionColor
             hexColor = secondaryTextNonSelectionColor.toHex()
         }
-        label.text = String.format("<html>%s <font color='%s'>%s</font>", device.name, hexColor, device.extraInfo)
-        label.toolTipText = device.serialNr
+        if (TextUtils.isEmpty(device.name)) {
+            label.text = device.serialNr
+        } else {
+            label.text = String.format("<html>%s <font color='%s'>%s</font>", device.name, hexColor, device.extraInfo)
+            label.toolTipText = device.serialNr
+        }
         return label
     }
 }
