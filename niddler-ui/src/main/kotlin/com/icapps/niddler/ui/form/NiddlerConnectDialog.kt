@@ -4,17 +4,20 @@ import com.icapps.niddler.lib.adb.ADBBootstrap
 import com.icapps.niddler.lib.adb.ADBDevice
 import com.icapps.niddler.lib.adb.ADBInterface
 import com.icapps.niddler.ui.addChangeListener
+import com.icapps.niddler.ui.expandAllNodes
 import com.icapps.niddler.ui.model.AdbDeviceModel
+import com.icapps.niddler.ui.util.WideSelectionTreeUI
 import com.icapps.tools.aec.EmulatorFactory
 import java.awt.Window
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
-import javax.swing.DefaultListModel
-import javax.swing.JList
 import javax.swing.JOptionPane
+import javax.swing.JTree
 import javax.swing.SwingWorker
-
+import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.TreeSelectionModel
 
 /**
  * @author Nicola Verbeeck
@@ -49,9 +52,12 @@ class NiddlerConnectDialog(parent: Window?,
 
         port.addActionListener { onOK() }
         directIP.addActionListener { onOK() }
-
-        adbList.cellRenderer = NiddlerConnectCellRenderer()
-
+        tree1.ui = WideSelectionTreeUI()
+        tree1.model = DefaultTreeModel(DefaultMutableTreeNode(null))
+        tree1.showsRootHandles = true
+        tree1.isLargeModel = true
+        tree1.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
+        tree1.cellRenderer = NiddlerConnectCellRenderer()
         progressBar.start()
         initSwingWorker.execute()
 
@@ -59,17 +65,16 @@ class NiddlerConnectDialog(parent: Window?,
             directIP.text = previousIp
         if (previousPort != null)
             port.text = previousPort.toString()
-
-        adbList.addListSelectionListener {
-            if (!adbList.isSelectionEmpty)
+        tree1.addTreeSelectionListener {
+            if (!tree1.isSelectionEmpty)
                 directIP.text = ""
         }
         directIP.addChangeListener {
             if (!directIP.text.isNullOrBlank())
-                adbList.clearSelection()
+                tree1.clearSelection()
         }
 
-        adbList.addMouseListener(object : MouseAdapter() {
+        tree1.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount == 2)
                     onOK()
@@ -80,11 +85,10 @@ class NiddlerConnectDialog(parent: Window?,
     }
 
     override fun onOK() {
-        val device = adbList.model.getElementAt(adbList.selectedIndex)
-        if (!validateContents())
+        val node = tree1.lastSelectedPathComponent
+        if (!validateContents() || node !is NiddlerConnectedDeviceTreeNode || node.device == null)
             return
-
-        selection = ConnectSelection((device as? AdbDeviceModel)?.device, directIP.text, port.text.toInt())
+        selection = ConnectSelection(node.device.device, directIP.text, port.text.toInt())
         dispose()
     }
 
@@ -102,7 +106,7 @@ class NiddlerConnectDialog(parent: Window?,
         } catch (e: NumberFormatException) {
             return showError("Please enter a valid port")
         }
-        if (!adbList.isSelectionEmpty)
+        if (!tree1.isSelectionEmpty)
             return true
 
         if (directIP.text.isNullOrBlank())
@@ -117,7 +121,7 @@ class NiddlerConnectDialog(parent: Window?,
 
     private fun onBootstrapFinished(adbInterface: ADBInterface) {
         adbInterface.createDeviceWatcher {
-            val reload = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, adbList, progressBar::stop)
+            val reload = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, tree1, progressBar::stop)
             val devices = reload.executeOnBackgroundThread()
             MainThreadDispatcher.dispatch {
                 reload.onExecutionDone(devices)
@@ -129,42 +133,41 @@ class NiddlerConnectDialog(parent: Window?,
 
     private class NiddlerReloadSwingWorker(private val adbInterface: ADBInterface,
                                            private val adbBootstrap: ADBBootstrap,
-                                           val adbList: JList<Any>,
+                                           val tree: JTree,
                                            val doneCallback: () -> Unit) : SwingWorker<List<AdbDeviceModel>, Void>() {
 
         private lateinit var authToken: String
 
         override fun doInBackground(): List<AdbDeviceModel> {
+            authToken = File("${System.getProperty("user.home")}/.emulator_console_auth_token").readText()
             return executeOnBackgroundThread()
         }
 
         fun executeOnBackgroundThread(): List<AdbDeviceModel> {
-            authToken = File("${System.getProperty("user.home")}/.emulator_console_auth_token").readText()
-
-            return adbInterface.devices.map {
-                val serial = it.serial
-                val emulated = adbBootstrap.executeADBCommand("-s", serial,
-                        "shell", "getprop", "ro.build.characteristics") == "emulator"
-
-                val name = getCorrectName(adbBootstrap, serial, emulated)
-                val sdkVersion = adbBootstrap.executeADBCommand("-s", serial,
-                        "shell", "getprop", "ro.build.version.sdk")
-
-                val version = adbBootstrap.executeADBCommand("-s", serial,
-                        "shell", "getprop", "ro.build.version.release")
-
+            val adb = ADBBootstrap(emptyList())
+            return adbInterface.devices.map { adbDevice ->
+                val serial = adbDevice.serial
+                val emulated = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.characteristics") == "emulator"
+                val name = getCorrectName(adb, serial, emulated)
+                val sdkVersion = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.sdk")
+                val version = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.release")
                 val extraInfo = "(Android $version, API $sdkVersion)"
-                AdbDeviceModel(name ?: "", extraInfo, emulated, serial, it)
+
+                //todo get processes
+                val processes = mutableListOf<String>()
+                processes.add("be.icapps.project1")
+                processes.add("be.icapps.project2")
+                processes.add("be.icapps.project3")
+
+                AdbDeviceModel(name ?: "", extraInfo, emulated, serial, processes, adbDevice)
             }
         }
 
         private fun getCorrectName(adb: ADBBootstrap, serial: String, emulated: Boolean): String? {
             return if (emulated) {
-                val port = serial.split("-").last().toIntOrNull()
-                        ?: return getName(adb, serial)
+                val port = serial.split("-").last().toIntOrNull() ?: return getName(adb, serial)
                 if (authToken.isBlank())
                     return getName(adb, serial)
-
                 val emulator = EmulatorFactory.create(port, authToken)
                 emulator.connect()
                 val output = emulator.avdControl.name()
@@ -183,25 +186,34 @@ class NiddlerConnectDialog(parent: Window?,
         }
 
         override fun done() {
-            super.done()
-
             onExecutionDone(get())
+            super.done()
         }
 
         fun onExecutionDone(devices: List<AdbDeviceModel>) {
-            val previousItem = adbList.selectedValue
-
-            val model = DefaultListModel<Any>()
-            devices.forEach(model::addElement)
-            adbList.model = model
-
-            if (previousItem != null) {
-                adbList.clearSelection()
-                adbList.selectedIndex = devices.indexOf(previousItem)
-            } else if (devices.isNotEmpty()) {
-                adbList.selectedIndex = 0
+            val model = DefaultTreeModel(NiddlerConnectedDeviceTreeNode(null))
+            var rows = 0
+            devices.forEach { device ->
+                val root = tree.model.root as NiddlerConnectedDeviceTreeNode
+                val deviceNode = NiddlerConnectedDeviceTreeNode(device)
+                model.insertNodeInto(deviceNode, root, root.childCount)
+                rows++
+                device.processes.forEach { process ->
+                    model.insertNodeInto(NiddlerConnectedProcessTreeNode(process), deviceNode, deviceNode.childCount)
+                    rows++
+                }
             }
-
+            tree.model = model
+/*
+            if (previousItem != null) {
+                tree.clearSelection()
+                tree.selectedIndex = devices.indexOf(previousItem)
+            } else if (devices.isNotEmpty()) {
+                tree.selectedIndex = 0
+            }
+*/
+            tree.expandAllNodes(0, rows)
+            tree.isRootVisible = false
             doneCallback()
         }
     }

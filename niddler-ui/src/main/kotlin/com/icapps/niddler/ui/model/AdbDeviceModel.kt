@@ -6,6 +6,7 @@ class AdbDeviceModel(val name: String,
                      val extraInfo: String,
                      val emulator: Boolean,
                      val serialNr: String,
+                     val processes: List<String>,
                      val device: ADBDevice) {
 
     override fun equals(other: Any?): Boolean {

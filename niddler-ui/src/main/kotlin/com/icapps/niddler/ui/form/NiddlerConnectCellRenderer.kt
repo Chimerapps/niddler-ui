@@ -6,51 +6,61 @@ import com.icapps.niddler.ui.toHex
 import org.apache.http.util.TextUtils
 import java.awt.Color
 import java.awt.Component
-import javax.swing.*
+import java.awt.Font
+import javax.swing.Icon
+import javax.swing.ImageIcon
+import javax.swing.JTree
+import javax.swing.tree.DefaultTreeCellRenderer
 
 /**
  * @author Koen Van Looveren
  */
-class NiddlerConnectCellRenderer : DefaultListCellRenderer() {
+class NiddlerConnectCellRenderer : DefaultTreeCellRenderer() {
 
-    private var label: JLabel = JLabel()
-    private val textSelectionColor = Color.WHITE
-    private val backgroundSelectionColor: Color = UIManager.getDefaults().getColor("List.selectionBackground")
-
-    private val textNonSelectionColor: Color = UIManager.getDefaults().getColor("Label.foreground")
     private val secondaryTextNonSelectionColor: Color = Color(150, 150, 150)
 
     init {
-        label.isOpaque = true
+        isOpaque = true
     }
 
-    override fun getListCellRendererComponent(
-            list: JList<*>,
-            device: Any?,
-            index: Int,
-            selected: Boolean,
-            expanded: Boolean): Component {
-        if (device !is AdbDeviceModel)
-            return label
-        val iconResName = getDeviceIcon(device.emulator)
-        label.icon = ImageIcon(javaClass.getResource(iconResName))
-
+    override fun getTreeCellRendererComponent(tree: JTree?, rowObject: Any?, sel: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean): Component {
+        super.getTreeCellRendererComponent(tree, rowObject, sel, expanded, leaf, row, hasFocus)
+        background = null
         val hexColor: String
         if (selected) {
-            label.background = backgroundSelectionColor
-            label.foreground = textSelectionColor
+            background = backgroundSelectionColor
+            foreground = textSelectionColor
             hexColor = textSelectionColor.toHex()
         } else {
-            label.background = null
-            label.foreground = textNonSelectionColor
+            background = null
+            foreground = textNonSelectionColor
             hexColor = secondaryTextNonSelectionColor.toHex()
         }
-        if (TextUtils.isEmpty(device.name)) {
-            label.text = device.serialNr
+        if (rowObject is NiddlerConnectedDeviceTreeNode) {
+            val adbDevice = rowObject.device
+            if (adbDevice == null) {
+                text = "No connected devices"
+                icon = null
+                toolTipText = null
+                return this
+            }
+            val iconResName = getDeviceIcon(adbDevice.emulator)
+            icon = ImageIcon(javaClass.getResource(iconResName))
+            if (TextUtils.isEmpty(adbDevice.name)) {
+                text = adbDevice.serialNr
+            } else {
+                text = String.format("<html>%s <font color='%s'>%s</font>", adbDevice.name, hexColor, adbDevice.extraInfo)
+                toolTipText = adbDevice.serialNr
+            }
+        } else if (rowObject is NiddlerConnectedProcessTreeNode) {
+            text = rowObject.processName
+            icon = null
+            toolTipText = null
         } else {
-            label.text = String.format("<html>%s <font color='%s'>%s</font>", device.name, hexColor, device.extraInfo)
-            label.toolTipText = device.serialNr
+            text = "No connected devices"
+            icon = null
+            toolTipText = null
         }
-        return label
+        return this
     }
 }
