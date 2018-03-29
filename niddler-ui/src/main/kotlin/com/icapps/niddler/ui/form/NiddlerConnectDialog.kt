@@ -3,6 +3,7 @@ package com.icapps.niddler.ui.form
 import com.icapps.niddler.lib.adb.ADBBootstrap
 import com.icapps.niddler.lib.adb.ADBDevice
 import com.icapps.niddler.lib.adb.ADBInterface
+import com.icapps.niddler.lib.adb.NiddlerSession
 import com.icapps.niddler.ui.addChangeListener
 import com.icapps.niddler.ui.model.AdbDeviceModel
 import com.icapps.tools.aec.EmulatorFactory
@@ -84,7 +85,10 @@ class NiddlerConnectDialog(parent: Window?,
         if (!validateContents())
             return
 
-        selection = ConnectSelection((device as? AdbDeviceModel)?.device, directIP.text, port.text.toInt())
+        selection = ConnectSelection(device = (device as? AdbDeviceModel)?.device,
+                session = null, //TODO use correct model value
+                ip = directIP.text,
+                port = port.text.toInt())
         dispose()
     }
 
@@ -125,7 +129,10 @@ class NiddlerConnectDialog(parent: Window?,
         }
     }
 
-    data class ConnectSelection(val device: ADBDevice?, val ip: String?, val port: Int)
+    data class ConnectSelection(val device: ADBDevice?,
+                                val session: NiddlerSession?,
+                                val ip: String?,
+                                val port: Int)
 
     private class NiddlerReloadSwingWorker(private val adbInterface: ADBInterface,
                                            private val adbBootstrap: ADBBootstrap,

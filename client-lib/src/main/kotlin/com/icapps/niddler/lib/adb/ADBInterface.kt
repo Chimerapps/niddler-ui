@@ -1,5 +1,7 @@
 package com.icapps.niddler.lib.adb
 
+import com.google.gson.Gson
+import com.icapps.niddler.lib.utils.createGsonListType
 import com.icapps.niddler.lib.utils.debug
 import com.icapps.niddler.lib.utils.error
 import com.icapps.niddler.lib.utils.logger
@@ -7,7 +9,11 @@ import se.vidstige.jadb.DeviceDetectionListener
 import se.vidstige.jadb.DeviceWatcher
 import se.vidstige.jadb.JadbConnection
 import se.vidstige.jadb.JadbDevice
+import java.io.IOException
 import java.lang.Exception
+import java.net.InetAddress
+import java.net.ServerSocket
+import java.net.Socket
 
 /**
  * @author nicolaverbeeck
@@ -63,16 +69,66 @@ class ADBInterface(private val bootstrap: ADBBootstrap, private val connection: 
     }
 }
 
-class ADBDevice(private val device: JadbDevice, private val bootstrap: ADBBootstrap) {
+class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) {
 
-    val serial = device.serial
+    private companion object {
+        private const val ANNOUNCEMENT_PORT = 6394
+        private const val REQUEST_QUERY = 0x01
+        private val log = logger<ADBDevice>()
+    }
+
+    val serial: String = device.serial
 
     fun forwardTCPPort(localPort: Int, remotePort: Int) {
-        val serial = device.serial
-        if (serial != null)
-            bootstrap.executeADBCommand("-s", serial, "forward", "tcp:$localPort", "tcp:$remotePort")
-        else
-            bootstrap.executeADBCommand("forward", "tcp:$localPort", "tcp:$remotePort")
+        bootstrap.executeADBCommand("-s", serial, "forward", "tcp:$localPort", "tcp:$remotePort")
+    }
+
+    fun removeTCPForward(localPort: Int) {
+        bootstrap.executeADBCommand("-s", serial, "forward", "--remove", "$localPort")
+    }
+
+    fun getNiddlerSessions(): List<NiddlerSession> {
+        val freePort: Int
+        try {
+            val serverSocket = ServerSocket(0)
+            freePort = serverSocket.localPort
+            serverSocket.close()
+            forwardTCPPort(freePort, ANNOUNCEMENT_PORT)
+        } catch (e: IOException) {
+            log.debug("Failed to find and forward free port", e)
+            return emptyList()
+        }
+
+        try {
+            Socket(InetAddress.getByName("127.0.0.1"), freePort).use { socket ->
+                socket.getOutputStream().apply {
+                    write(REQUEST_QUERY)
+                    flush()
+                }
+                return try {
+                    val line = socket.getInputStream().bufferedReader().readLine()
+                    val fromJson = Gson().fromJson<List<NiddlerAnnouncementMessage>>(line,
+                            createGsonListType<NiddlerAnnouncementMessage>())
+                    fromJson.map { NiddlerSession(this, it.packageName, it.port, it.pid) }
+                } catch (e: IOException) {
+                    log.debug("Failed to read announcement line", e)
+                    emptyList()
+                }
+            }
+        } finally {
+            removeTCPForward(freePort)
+        }
     }
 
 }
+
+data class NiddlerSession(val device: ADBDevice,
+                          val packageName: String,
+                          val port: Int,
+                          val pid: Int)
+
+private data class NiddlerAnnouncementMessage(
+        val packageName: String,
+        val port: Int,
+        val pid: Int
+)
