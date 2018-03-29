@@ -134,12 +134,11 @@ class NiddlerConnectDialog(parent: Window?,
     private class NiddlerReloadSwingWorker(private val adbInterface: ADBInterface,
                                            private val adbBootstrap: ADBBootstrap,
                                            val tree: JTree,
-                                           val doneCallback: () -> Unit) : SwingWorker<List<AdbDeviceModel>, Void>() {
+                                           val doneCallback: () -> Unit) : SwingWorker<List<AdbDeviceModel>, AdbDeviceModel>() {
 
-        private lateinit var authToken: String
+        private val authToken: String = File("${System.getProperty("user.home")}/.emulator_console_auth_token").readText()
 
         override fun doInBackground(): List<AdbDeviceModel> {
-            authToken = File("${System.getProperty("user.home")}/.emulator_console_auth_token").readText()
             return executeOnBackgroundThread()
         }
 
@@ -158,7 +157,6 @@ class NiddlerConnectDialog(parent: Window?,
                 processes.add("be.icapps.project1")
                 processes.add("be.icapps.project2")
                 processes.add("be.icapps.project3")
-
                 AdbDeviceModel(name ?: "", extraInfo, emulated, serial, processes, adbDevice)
             }
         }
@@ -191,19 +189,17 @@ class NiddlerConnectDialog(parent: Window?,
         }
 
         fun onExecutionDone(devices: List<AdbDeviceModel>) {
-            val model = DefaultTreeModel(NiddlerConnectedDeviceTreeNode(null))
             var rows = 0
             devices.forEach { device ->
-                val root = tree.model.root as NiddlerConnectedDeviceTreeNode
+                val root = tree.model.root as DefaultMutableTreeNode
                 val deviceNode = NiddlerConnectedDeviceTreeNode(device)
-                model.insertNodeInto(deviceNode, root, root.childCount)
+                (tree.model as DefaultTreeModel).insertNodeInto(deviceNode, root, root.childCount)
                 rows++
                 device.processes.forEach { process ->
-                    model.insertNodeInto(NiddlerConnectedProcessTreeNode(process), deviceNode, deviceNode.childCount)
+                    (tree.model as DefaultTreeModel).insertNodeInto(NiddlerConnectedProcessTreeNode(process), deviceNode, deviceNode.childCount)
                     rows++
                 }
             }
-            tree.model = model
 /*
             if (previousItem != null) {
                 tree.clearSelection()
@@ -221,7 +217,6 @@ class NiddlerConnectDialog(parent: Window?,
     private class NiddlerConnectSwingWorker(val adbBootstrap: ADBBootstrap,
                                             val doneCallback: (ADBInterface) -> Unit)
         : SwingWorker<ADBInterface, Void>() {
-
 
         override fun doInBackground(): ADBInterface {
             return adbBootstrap.bootStrap()
