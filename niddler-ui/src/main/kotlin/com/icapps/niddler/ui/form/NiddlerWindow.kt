@@ -26,6 +26,8 @@ import com.icapps.niddler.ui.util.WideSelectionTreeUI
 import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
 import java.io.File
+import java.net.InetAddress
+import java.net.Socket
 import java.net.URI
 import javax.swing.JOptionPane
 import javax.swing.ListSelectionModel
@@ -178,6 +180,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     private fun onDeviceSelectionChanged(params: NiddlerConnectDialog.ConnectSelection) {
         val ip = if (params.device != null) {
             params.device.forwardTCPPort(6555, params.port)
+            params.device.forwardTCPPort(6395, 6394)
             "127.0.0.1"
         } else
             params.ip!!
@@ -212,6 +215,14 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             messages.attach(this)
             connectBlocking()
         }
+
+        val socket = Socket(InetAddress.getByName("127.0.0.1"), 6395)
+        socket.getOutputStream().apply {
+            write(0x01)
+            flush()
+        }
+        println(socket.getInputStream().bufferedReader().readLine())
+        socket.close()
     }
 
     override fun onReady() {
