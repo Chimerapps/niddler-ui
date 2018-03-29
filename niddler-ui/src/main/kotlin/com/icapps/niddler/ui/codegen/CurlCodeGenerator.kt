@@ -59,8 +59,8 @@ class CurlCodeGenerator : CodeGenerator {
         val builder = StringBuilder(COMMAND_NAME)
         builder.append(" -i ")
         addHeaders(builder, request)
-        builder.append("-X \"").append(method.toUpperCase()).append("\" ")
-        builder.append(request.url!!)
+        builder.append("-X \"").append(method.toUpperCase()).append("\" \"")
+        builder.append(request.url!!).append('"')
         return builder.toString()
     }
 
@@ -77,7 +77,7 @@ class CurlCodeGenerator : CodeGenerator {
             builder.append("\" ")
         }
 
-        builder.append(request.url!!)
+        builder.append('"').append(request.url!!).append('"')
         return builder.toString()
     }
 
