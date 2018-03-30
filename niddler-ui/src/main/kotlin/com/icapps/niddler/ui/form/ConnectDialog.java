@@ -15,7 +15,7 @@ public abstract class ConnectDialog extends JDialog {
     protected JTextField directIP;
     protected JFormattedTextField port;
     protected NiddlerIndeterminateProgressBar progressBar;
-    protected JTree tree1;
+    protected JTree tree;
 
     public ConnectDialog(final Window owner) {
         super(owner, "Select a device to connect to", ModalityType.APPLICATION_MODAL);
@@ -108,8 +108,8 @@ public abstract class ConnectDialog extends JDialog {
         panel5.add(progressBar, BorderLayout.CENTER);
         final JScrollPane scrollPane1 = new JScrollPane();
         panel1.add(scrollPane1, BorderLayout.CENTER);
-        tree1 = new JTree();
-        scrollPane1.setViewportView(tree1);
+        tree = new JTree();
+        scrollPane1.setViewportView(tree);
         final JPanel panel6 = new JPanel();
         panel6.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
         contentPane.add(panel6, BorderLayout.SOUTH);

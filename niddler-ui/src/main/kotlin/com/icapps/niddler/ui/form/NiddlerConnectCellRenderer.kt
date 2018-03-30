@@ -1,13 +1,10 @@
 package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.ui.getDeviceIcon
-import com.icapps.niddler.ui.model.AdbDeviceModel
 import com.icapps.niddler.ui.toHex
 import org.apache.http.util.TextUtils
 import java.awt.Color
 import java.awt.Component
-import java.awt.Font
-import javax.swing.Icon
 import javax.swing.ImageIcon
 import javax.swing.JTree
 import javax.swing.tree.DefaultTreeCellRenderer
@@ -36,7 +33,7 @@ class NiddlerConnectCellRenderer : DefaultTreeCellRenderer() {
             foreground = textNonSelectionColor
             hexColor = secondaryTextNonSelectionColor.toHex()
         }
-        if (rowObject is NiddlerConnectedDeviceTreeNode) {
+        if (rowObject is NiddlerConnectDeviceTreeNode) {
             val adbDevice = rowObject.device
             if (adbDevice == null) {
                 text = "No connected devices"
@@ -52,7 +49,7 @@ class NiddlerConnectCellRenderer : DefaultTreeCellRenderer() {
                 text = String.format("<html>%s <font color='%s'>%s</font>", adbDevice.name, hexColor, adbDevice.extraInfo)
                 toolTipText = adbDevice.serialNr
             }
-        } else if (rowObject is NiddlerConnectedProcessTreeNode) {
+        } else if (rowObject is NiddlerConnectProcessTreeNode) {
             text = rowObject.processName
             icon = null
             toolTipText = null

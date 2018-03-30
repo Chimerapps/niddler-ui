@@ -17,6 +17,7 @@ import javax.swing.JTree
 import javax.swing.SwingWorker
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
 /**
@@ -52,12 +53,14 @@ class NiddlerConnectDialog(parent: Window?,
 
         port.addActionListener { onOK() }
         directIP.addActionListener { onOK() }
-        tree1.ui = WideSelectionTreeUI()
-        tree1.model = DefaultTreeModel(DefaultMutableTreeNode(null))
-        tree1.showsRootHandles = true
-        tree1.isLargeModel = true
-        tree1.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
-        tree1.cellRenderer = NiddlerConnectCellRenderer()
+        tree.apply {
+            ui = WideSelectionTreeUI()
+            model = DefaultTreeModel(DefaultMutableTreeNode(null))
+            showsRootHandles = true
+            isLargeModel = true
+            selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
+            cellRenderer = NiddlerConnectCellRenderer()
+        }
         progressBar.start()
         initSwingWorker.execute()
 
@@ -65,16 +68,16 @@ class NiddlerConnectDialog(parent: Window?,
             directIP.text = previousIp
         if (previousPort != null)
             port.text = previousPort.toString()
-        tree1.addTreeSelectionListener {
-            if (!tree1.isSelectionEmpty)
+        tree.addTreeSelectionListener {
+            if (!tree.isSelectionEmpty)
                 directIP.text = ""
         }
         directIP.addChangeListener {
             if (!directIP.text.isNullOrBlank())
-                tree1.clearSelection()
+                tree.clearSelection()
         }
 
-        tree1.addMouseListener(object : MouseAdapter() {
+        tree.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount == 2)
                     onOK()
@@ -85,10 +88,15 @@ class NiddlerConnectDialog(parent: Window?,
     }
 
     override fun onOK() {
-        val node = tree1.lastSelectedPathComponent
-        if (!validateContents() || node !is NiddlerConnectedDeviceTreeNode || node.device == null)
+        val node = tree.lastSelectedPathComponent
+        if (!validateContents())
             return
-        selection = ConnectSelection(node.device.device, directIP.text, port.text.toInt())
+        if (node is NiddlerConnectDeviceTreeNode && node.device != null) {
+            selection = ConnectSelection(node.device.device, directIP.text, port.text.toInt())
+        } else if (node is NiddlerConnectProcessTreeNode) {
+            //todo add the correct selection for processes
+            selection = ConnectSelection(node.device.device, directIP.text, port.text.toInt(), node.processName)
+        }
         dispose()
     }
 
@@ -106,7 +114,7 @@ class NiddlerConnectDialog(parent: Window?,
         } catch (e: NumberFormatException) {
             return showError("Please enter a valid port")
         }
-        if (!tree1.isSelectionEmpty)
+        if (!tree.isSelectionEmpty)
             return true
 
         if (directIP.text.isNullOrBlank())
@@ -121,7 +129,7 @@ class NiddlerConnectDialog(parent: Window?,
 
     private fun onBootstrapFinished(adbInterface: ADBInterface) {
         adbInterface.createDeviceWatcher {
-            val reload = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, tree1, progressBar::stop)
+            val reload = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, tree, progressBar::stop)
             val devices = reload.executeOnBackgroundThread()
             MainThreadDispatcher.dispatch {
                 reload.onExecutionDone(devices)
@@ -129,7 +137,7 @@ class NiddlerConnectDialog(parent: Window?,
         }
     }
 
-    data class ConnectSelection(val device: ADBDevice?, val ip: String?, val port: Int)
+    data class ConnectSelection(val device: ADBDevice?, val ip: String?, val port: Int, val processName: String? = null)
 
     private class NiddlerReloadSwingWorker(private val adbInterface: ADBInterface,
                                            private val adbBootstrap: ADBBootstrap,
@@ -144,6 +152,7 @@ class NiddlerConnectDialog(parent: Window?,
 
         fun executeOnBackgroundThread(): List<AdbDeviceModel> {
             val adb = ADBBootstrap(emptyList())
+            val niddlerConnectProcess = NiddlerProcessImplementation()
             return adbInterface.devices.map { adbDevice ->
                 val serial = adbDevice.serial
                 val emulated = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.characteristics") == "emulator"
@@ -152,12 +161,7 @@ class NiddlerConnectDialog(parent: Window?,
                 val version = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.release")
                 val extraInfo = "(Android $version, API $sdkVersion)"
 
-                //todo get processes
-                val processes = mutableListOf<String>()
-                processes.add("be.icapps.project1")
-                processes.add("be.icapps.project2")
-                processes.add("be.icapps.project3")
-                AdbDeviceModel(name ?: "", extraInfo, emulated, serial, processes, adbDevice)
+                AdbDeviceModel(name ?: "", extraInfo, emulated, serial, niddlerConnectProcess.getProcesses(), adbDevice)
             }
         }
 
@@ -189,25 +193,26 @@ class NiddlerConnectDialog(parent: Window?,
         }
 
         fun onExecutionDone(devices: List<AdbDeviceModel>) {
+            val previousItem = tree.lastSelectedPathComponent
             var rows = 0
             devices.forEach { device ->
                 val root = tree.model.root as DefaultMutableTreeNode
-                val deviceNode = NiddlerConnectedDeviceTreeNode(device)
+                val deviceNode = NiddlerConnectDeviceTreeNode(device)
                 (tree.model as DefaultTreeModel).insertNodeInto(deviceNode, root, root.childCount)
                 rows++
                 device.processes.forEach { process ->
-                    (tree.model as DefaultTreeModel).insertNodeInto(NiddlerConnectedProcessTreeNode(process), deviceNode, deviceNode.childCount)
+                    (tree.model as DefaultTreeModel).insertNodeInto(NiddlerConnectProcessTreeNode(process, device), deviceNode, deviceNode.childCount)
                     rows++
                 }
             }
-/*
-            if (previousItem != null) {
+
+            //todo there is still a selection bug (by default the first row is selected. when moving up and  down the first row keeps it selection)
+            if (previousItem != null && previousItem is DefaultMutableTreeNode) {
                 tree.clearSelection()
-                tree.selectedIndex = devices.indexOf(previousItem)
+                tree.selectionPath = TreePath(previousItem.path)
             } else if (devices.isNotEmpty()) {
-                tree.selectedIndex = 0
+                tree.selectionPath = TreePath((tree.model.root as DefaultMutableTreeNode).path);
             }
-*/
             tree.expandAllNodes(0, rows)
             tree.isRootVisible = false
             doneCallback()
