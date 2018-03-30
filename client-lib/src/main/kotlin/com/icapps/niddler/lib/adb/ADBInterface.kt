@@ -95,7 +95,7 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) {
             serverSocket.close()
             forwardTCPPort(freePort, ANNOUNCEMENT_PORT)
         } catch (e: IOException) {
-            log.debug("Failed to find and forward free port", e)
+            log.error("Failed to find and forward free port", e)
             return null
         }
 
