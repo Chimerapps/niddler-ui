@@ -67,7 +67,7 @@ class WideSelectionTreeUI : BasicTreeUI() {
 
         val containerWidth = if (this.tree.parent is JViewport) this.tree.parent.width else this.tree.width
         val xOffset = if (this.tree.parent is JViewport) (this.tree.parent as JViewport).viewPosition.x else 0
-        val bounds = g!!.clipBounds
+        val bounds = g.clipBounds
         val sourceList = this.tree.getClientProperty("mac.ui.source.list")
         if (sourceList != null && (sourceList as Boolean)) {
             val backgroundGraphics = g.create() as Graphics2D

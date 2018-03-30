@@ -9,6 +9,10 @@ import java.beans.PropertyChangeEvent
 import java.util.*
 import javax.swing.*
 import javax.swing.border.EmptyBorder
+import javax.swing.JLabel
+import javax.swing.JTable
+import javax.swing.JTextField
+import javax.swing.JTree
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.text.Document
@@ -154,4 +158,14 @@ fun String.hexToColor(): Color {
 
 fun getDeviceIcon(emulator: Boolean): String {
     return if (emulator) "/ic_device_emulator.png" else "/ic_device_real.png"
+}
+
+fun JTree.expandAllNodes(startingIndex: Int, rowCount: Int) {
+    for (i in startingIndex until rowCount) {
+        expandRow(i)
+    }
+
+    if (rowCount != rowCount) {
+        expandAllNodes(rowCount, rowCount)
+    }
 }
