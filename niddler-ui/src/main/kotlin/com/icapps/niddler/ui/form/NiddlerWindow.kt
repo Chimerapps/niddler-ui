@@ -375,7 +375,10 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
                 clipboardData = StringSelection(message.message.getBodyAsString(message.bodyFormat.encoding))
             }
             BodyFormatType.FORMAT_BINARY -> {
-                JOptionPane.showConfirmDialog(null, "Binary data cannot be copied to clipboard.", "Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE)
+                message.getBodyAsBytes?.let { data ->
+                    val exportLocation = windowContents.componentsFactory.showSaveDialog("Save data to", "") ?: return
+                    File(exportLocation).writeBytes(data)
+                }
             }
             else -> {
             } //Nothing to copy
