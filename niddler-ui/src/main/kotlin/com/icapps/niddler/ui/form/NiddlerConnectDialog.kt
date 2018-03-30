@@ -96,7 +96,7 @@ class NiddlerConnectDialog(parent: Window?,
             selection = ConnectSelection(device = node.device.device, session = null, ip = directIP.text, port = port.text.toInt())
         } else if (node is NiddlerConnectProcessTreeNode) {
             //todo add the correct selection for processes
-            selection = ConnectSelection(device = node.device.device, session = null, ip = directIP.text, port = port.text.toInt())
+            selection = ConnectSelection(device = node.device.device, session = node.session, ip = directIP.text, port = port.text.toInt())
         }
         dispose()
     }
