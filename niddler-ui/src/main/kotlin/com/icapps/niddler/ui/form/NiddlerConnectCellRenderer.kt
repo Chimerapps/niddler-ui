@@ -50,7 +50,7 @@ class NiddlerConnectCellRenderer : DefaultTreeCellRenderer() {
                 toolTipText = adbDevice.serialNr
             }
         } else if (rowObject is NiddlerConnectProcessTreeNode) {
-            text = rowObject.processName
+            text = String.format("<html>%s <font color='%s'>(Port: %s)</font>", rowObject.session.packageName, hexColor, rowObject.session.port)
             icon = null
             toolTipText = null
         } else {

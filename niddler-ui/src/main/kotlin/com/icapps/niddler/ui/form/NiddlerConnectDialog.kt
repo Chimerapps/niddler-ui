@@ -165,7 +165,8 @@ class NiddlerConnectDialog(parent: Window?,
                 val version = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.release")
                 val extraInfo = "(Android $version, API $sdkVersion)"
 
-                AdbDeviceModel(name ?: "", extraInfo, emulated, serial, niddlerConnectProcess.getProcesses(), adbDevice)
+                AdbDeviceModel(name
+                        ?: "", extraInfo, emulated, serial, niddlerConnectProcess.getProcesses(adbDevice), adbDevice)
             }
         }
 
@@ -204,8 +205,8 @@ class NiddlerConnectDialog(parent: Window?,
                 val deviceNode = NiddlerConnectDeviceTreeNode(device)
                 (tree.model as DefaultTreeModel).insertNodeInto(deviceNode, root, root.childCount)
                 rows++
-                device.processes.forEach { process ->
-                    (tree.model as DefaultTreeModel).insertNodeInto(NiddlerConnectProcessTreeNode(process, device), deviceNode, deviceNode.childCount)
+                device.sessions.forEach { session ->
+                    (tree.model as DefaultTreeModel).insertNodeInto(NiddlerConnectProcessTreeNode(session, device), deviceNode, deviceNode.childCount)
                     rows++
                 }
             }
