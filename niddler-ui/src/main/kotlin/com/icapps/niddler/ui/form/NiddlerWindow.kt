@@ -1,6 +1,8 @@
 package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.lib.adb.ADBBootstrap
+import com.icapps.niddler.lib.adb.ADBDevice
+import com.icapps.niddler.lib.adb.NiddlerSession
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
@@ -26,6 +28,8 @@ import com.icapps.niddler.ui.util.WideSelectionTreeUI
 import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
 import java.io.File
+import java.net.InetAddress
+import java.net.Socket
 import java.net.URI
 import javax.swing.JOptionPane
 import javax.swing.ListSelectionModel
@@ -61,6 +65,8 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         }
     private var debuggerSession: DebuggingSession? = null
     private var currentDebuggerConfiguration: DebuggerConfiguration? = null
+
+    private var niddlerClient: NiddlerClient? = null
 
     fun init() {
         windowContents.init(messages.storage)
@@ -174,18 +180,13 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             }
         }
     }
-
     private fun onDeviceSelectionChanged(params: NiddlerConnectDialog.ConnectSelection) {
-        val ip = if (params.device != null) {
-            params.device.forwardTCPPort(6555, params.port)
-            "127.0.0.1"
-        } else
-            params.ip!!
-
-        initNiddlerOnDevice(ip)
+        when {
+            params.session != null -> initNiddlerOnSession(params.session)
+            params.device != null -> initNiddlerOnDevice(params.device, params.port)
+            else -> initNiddlerOnDevice(params.ip!!)
+        }
     }
-
-    private var niddlerClient: NiddlerClient? = null
 
     private fun disconnect() {
         niddlerClient?.let { client ->
@@ -198,6 +199,16 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         }
         onClearSelected()
         onClosed()
+    }
+
+    private fun initNiddlerOnSession(session:NiddlerSession){
+        session.device.forwardTCPPort(6555, session.port)
+        initNiddlerOnDevice("127.0.0.1:6555")
+    }
+
+    private fun initNiddlerOnDevice(adbDevice:ADBDevice, port:Int){
+        adbDevice.forwardTCPPort(6555, port)
+        initNiddlerOnDevice("127.0.0.1:6555")
     }
 
     private fun initNiddlerOnDevice(ip: String) {

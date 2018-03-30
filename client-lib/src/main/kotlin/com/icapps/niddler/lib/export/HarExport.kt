@@ -5,8 +5,8 @@ import com.icapps.niddler.lib.export.har.*
 import com.icapps.niddler.lib.model.BodyFormat
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
-import com.icapps.niddler.lib.model.classifier.SimpleBodyClassifier
 import com.icapps.niddler.lib.model.classifier.BodyFormatType
+import com.icapps.niddler.lib.model.classifier.SimpleBodyClassifier
 import com.icapps.niddler.lib.utils.UrlUtil
 import java.io.File
 import java.io.FileOutputStream
@@ -44,7 +44,7 @@ class HarExport<T : NiddlerMessage>(private val targetFile: File,
                 request = makeRequest(request),
                 response = makeResponse(response),
                 cache = Cache(),
-                timings = extractTimings(request, response)
+                timings = extractTimings(response)
         )
 
         writer.addEntry(harEntry)
@@ -131,7 +131,7 @@ class HarExport<T : NiddlerMessage>(private val targetFile: File,
         return builder.build()
     }
 
-    fun extractTimings(request: T, response: T): Timings {
+    fun extractTimings(response: T): Timings {
         return Timings(
                 response.writeTime?.toLong() ?: 0L,
                 response.waitTime?.toLong() ?: 0L,
