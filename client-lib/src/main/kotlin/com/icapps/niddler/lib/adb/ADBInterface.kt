@@ -87,7 +87,7 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) {
         bootstrap.executeADBCommand("-s", serial, "forward", "--remove", "$localPort")
     }
 
-    fun getNiddlerSessions(): List<NiddlerSession> {
+    fun getNiddlerSessions(): List<NiddlerSession>? {
         val freePort: Int
         try {
             val serverSocket = ServerSocket(0)
@@ -96,7 +96,7 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) {
             forwardTCPPort(freePort, ANNOUNCEMENT_PORT)
         } catch (e: IOException) {
             log.debug("Failed to find and forward free port", e)
-            return emptyList()
+            return null
         }
 
         try {
@@ -112,7 +112,7 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) {
                     fromJson.map { NiddlerSession(this, it.packageName, it.port, it.pid) }
                 } catch (e: IOException) {
                     log.debug("Failed to read announcement line", e)
-                    emptyList()
+                    null
                 }
             }
         } finally {
