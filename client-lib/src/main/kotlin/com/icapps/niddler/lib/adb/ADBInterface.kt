@@ -107,9 +107,11 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) {
                 }
                 return try {
                     val line = socket.getInputStream().bufferedReader().readLine()
-                    val fromJson = Gson().fromJson<List<NiddlerAnnouncementMessage>>(line,
-                            createGsonListType<NiddlerAnnouncementMessage>())
-                    fromJson.map { NiddlerSession(this, it.packageName, it.port, it.pid) }
+                    line?.let {
+                        val fromJson = Gson().fromJson<List<NiddlerAnnouncementMessage>>(line,
+                                createGsonListType<NiddlerAnnouncementMessage>())
+                        fromJson.map { NiddlerSession(this, it.packageName, it.port, it.pid) }
+                    }
                 } catch (e: IOException) {
                     log.debug("Failed to read announcement line", e)
                     null
