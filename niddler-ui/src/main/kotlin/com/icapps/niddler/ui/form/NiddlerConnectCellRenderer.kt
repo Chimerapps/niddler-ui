@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.ui.getDeviceIcon
+import com.icapps.niddler.ui.isBright
 import com.icapps.niddler.ui.toHex
 import org.apache.http.util.TextUtils
 import java.awt.Color
@@ -14,10 +15,26 @@ import javax.swing.tree.DefaultTreeCellRenderer
  */
 class NiddlerConnectCellRenderer : DefaultTreeCellRenderer() {
 
-    private val secondaryTextNonSelectionColor: Color = Color(150, 150, 150)
+    private val secondaryTextNonSelectionColor: String
+    private val secondaryTextSelectionColor: String
 
     init {
         isOpaque = true
+
+        secondaryTextNonSelectionColor = if (textNonSelectionColor.isBright())
+            Color(0x41, 0x3F, 0x39).toHex()
+        else
+            textNonSelectionColor
+                    .brighter().brighter()
+                    .brighter().brighter().toHex()
+
+        secondaryTextSelectionColor = if (textSelectionColor.isBright())
+            Color(0xC2, 0xC2, 0xC2).toHex()
+        else
+            textSelectionColor
+                    .brighter().brighter()
+                    .brighter().brighter().toHex()
+
     }
 
     override fun getTreeCellRendererComponent(tree: JTree?, rowObject: Any?, sel: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean): Component {
@@ -27,11 +44,11 @@ class NiddlerConnectCellRenderer : DefaultTreeCellRenderer() {
         if (selected) {
             background = backgroundSelectionColor
             foreground = textSelectionColor
-            hexColor = textSelectionColor.toHex()
+            hexColor = secondaryTextSelectionColor
         } else {
             background = null
             foreground = textNonSelectionColor
-            hexColor = secondaryTextNonSelectionColor.toHex()
+            hexColor = secondaryTextNonSelectionColor
         }
         if (rowObject is NiddlerConnectDeviceTreeNode) {
             val adbDevice = rowObject.device

@@ -1,18 +1,14 @@
 package com.icapps.niddler.ui
 
 import com.icapps.niddler.ui.form.MainThreadDispatcher
-import java.awt.Component
 import java.awt.Color
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
 import java.beans.PropertyChangeEvent
 import java.util.*
 import javax.swing.*
 import javax.swing.border.EmptyBorder
-import javax.swing.JLabel
-import javax.swing.JTable
-import javax.swing.JTextField
-import javax.swing.JTree
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.text.Document
@@ -168,4 +164,9 @@ fun JTree.expandAllNodes(startingIndex: Int, rowCount: Int) {
     if (rowCount != rowCount) {
         expandAllNodes(rowCount, rowCount)
     }
+}
+
+fun Color.isBright(): Boolean {
+    val darkness = 1 - (0.299 * red + 0.587 * green + 0.114 * blue) / 255.0
+    return darkness <= 0.5
 }
