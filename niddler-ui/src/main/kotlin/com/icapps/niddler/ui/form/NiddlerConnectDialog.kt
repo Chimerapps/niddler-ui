@@ -155,18 +155,18 @@ class NiddlerConnectDialog(parent: Window?,
         }
 
         fun executeOnBackgroundThread(): List<AdbDeviceModel> {
-            val adb = ADBBootstrap(emptyList())
             val niddlerConnectProcess = NiddlerProcessImplementation()
-            return adbInterface.devices.map { adbDevice ->
+            val devices = adbInterface.devices
+            return devices.map { adbDevice ->
                 val serial = adbDevice.serial
-                val emulated = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.characteristics") == "emulator"
-                val name = getCorrectName(adb, serial, emulated)
-                val sdkVersion = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.sdk")
-                val version = adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.release")
+                val emulated = adbBootstrap.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.characteristics") == "emulator"
+                val name = getCorrectName(adbBootstrap, serial, emulated)
+                val sdkVersion = adbBootstrap.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.sdk")
+                val version = adbBootstrap.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.release")
                 val extraInfo = "(Android $version, API $sdkVersion)"
 
-                AdbDeviceModel(name
-                        ?: "", extraInfo, emulated, serial, niddlerConnectProcess.getProcesses(adbDevice), adbDevice)
+                val processes = niddlerConnectProcess.getProcesses(adbDevice)
+                AdbDeviceModel(name ?: "", extraInfo, emulated, serial, processes, adbDevice)
             }
         }
 
@@ -200,8 +200,9 @@ class NiddlerConnectDialog(parent: Window?,
         fun onExecutionDone(devices: List<AdbDeviceModel>) {
             val previousItem = tree.lastSelectedPathComponent
             var rows = 0
+            val root = tree.model.root as DefaultMutableTreeNode
+            root.removeAllChildren()
             devices.forEach { device ->
-                val root = tree.model.root as DefaultMutableTreeNode
                 val deviceNode = NiddlerConnectDeviceTreeNode(device)
                 (tree.model as DefaultTreeModel).insertNodeInto(deviceNode, root, root.childCount)
                 rows++
@@ -216,7 +217,7 @@ class NiddlerConnectDialog(parent: Window?,
                 tree.clearSelection()
                 tree.selectionPath = TreePath(previousItem.path)
             } else if (devices.isNotEmpty()) {
-                tree.selectionPath = TreePath((tree.model.root as DefaultMutableTreeNode).path);
+                tree.selectionPath = TreePath((tree.model.root as DefaultMutableTreeNode).path)
             }
             tree.expandAllNodes(0, rows)
             tree.isRootVisible = false
