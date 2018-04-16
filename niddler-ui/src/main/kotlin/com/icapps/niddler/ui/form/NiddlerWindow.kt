@@ -28,8 +28,6 @@ import com.icapps.niddler.ui.util.WideSelectionTreeUI
 import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
 import java.io.File
-import java.net.InetAddress
-import java.net.Socket
 import java.net.URI
 import javax.swing.JOptionPane
 import javax.swing.ListSelectionModel
@@ -180,6 +178,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             }
         }
     }
+
     private fun onDeviceSelectionChanged(params: NiddlerConnectDialog.ConnectSelection) {
         when {
             params.session != null -> initNiddlerOnSession(params.session)
@@ -201,12 +200,12 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         onClosed()
     }
 
-    private fun initNiddlerOnSession(session:NiddlerSession){
+    private fun initNiddlerOnSession(session: NiddlerSession) {
         session.device.forwardTCPPort(6555, session.port)
         initNiddlerOnDevice("127.0.0.1:6555")
     }
 
-    private fun initNiddlerOnDevice(adbDevice:ADBDevice, port:Int){
+    private fun initNiddlerOnDevice(adbDevice: ADBDevice, port: Int) {
         adbDevice.forwardTCPPort(6555, port)
         initNiddlerOnDevice("127.0.0.1:6555")
     }
@@ -218,11 +217,12 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         val tempUri = URI.create("sis://$ip")
         val port = if (tempUri.port == -1) 6555 else tempUri.port
 
-        niddlerClient = NiddlerClient(URI.create("ws://${tempUri.host}:$port")).apply {
+        val niddlerClient = NiddlerClient(URI.create("ws://${tempUri.host}:$port")).apply {
             registerMessageListener(this@NiddlerWindow)
             messages.attach(this)
-            connectBlocking()
         }
+        this.niddlerClient = niddlerClient
+        niddlerClient.connect()
     }
 
     override fun onReady() {
