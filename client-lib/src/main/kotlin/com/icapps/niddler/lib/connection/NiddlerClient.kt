@@ -19,7 +19,7 @@ import java.util.*
  * @author Nicola Verbeeck
  * @date 14/11/2016.
  */
-class NiddlerClient(serverURI: URI?, val widthDebugger: Boolean) : WebSocketClient(serverURI, Draft_6455()),
+class NiddlerClient(serverURI: URI?, val withDebugger: Boolean) : WebSocketClient(serverURI, Draft_6455()),
         NiddlerMessageListener, NiddlerDebugListener, NiddlerDebuggerConnection {
 
     companion object {

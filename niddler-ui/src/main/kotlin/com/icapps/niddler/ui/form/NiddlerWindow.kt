@@ -354,7 +354,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             //TODO windowContents.updateProtocol(serverInfo.protocol)
             windowContents.statusBar.onApplicationInfo(serverInfo)
         }
-        if (serverInfo.protocol >= PROTCOL_VERSION_DEBUGGING && niddlerClient!!.widthDebugger) {
+        if (serverInfo.protocol >= PROTCOL_VERSION_DEBUGGING && niddlerClient!!.withDebugger) {
             val debuggerInterface = ServerDebuggerInterface(
                     DebuggerService(niddlerClient!!))
             debuggerInterface.connect()
