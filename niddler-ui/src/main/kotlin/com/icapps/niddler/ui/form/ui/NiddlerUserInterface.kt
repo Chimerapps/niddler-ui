@@ -19,6 +19,7 @@ interface NiddlerUserInterface {
     var connectButtonListener: (() -> Unit)?
     var filterListener: ((String?) -> Unit)?
     var disconnectButtonListener: (() -> Unit)?
+    var debugButtonListener: (() -> Unit)?
 
     val toolbar: NiddlerMainToolbar
     val disconnectButton: Component

@@ -28,6 +28,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     override var connectButtonListener: (() -> Unit)? = null
     override var filterListener: ((String?) -> Unit)? = null
     override var disconnectButtonListener: (() -> Unit)? = null
+    override var debugButtonListener: (() -> Unit)? = null
 
     override val asComponent: JComponent
         get() = rootPanel
@@ -93,7 +94,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
             connectButtonListener?.invoke()
         }
         toolbar.addAction("/startDebugger.png".loadIcon<AbstractToolbar>(), "Connect with debugger") {
-            //TODO
+            debugButtonListener?.invoke()
         }
         disconnectButton = toolbar.addAction("/suspend.png".loadIcon<AbstractToolbar>(), "Disconnect") {
             it.isEnabled = false
