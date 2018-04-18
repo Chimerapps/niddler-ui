@@ -110,7 +110,7 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) {
                     line?.let {
                         val fromJson = Gson().fromJson<List<NiddlerAnnouncementMessage>>(line,
                                 createGsonListType<NiddlerAnnouncementMessage>())
-                        fromJson.map { NiddlerSession(this, it.packageName, it.port, it.pid) }
+                        fromJson.map { NiddlerSession(this, it.packageName, it.port, it.pid, it.protocol) }
                     }
                 } catch (e: IOException) {
                     log.debug("Failed to read announcement line", e)
@@ -127,10 +127,12 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) {
 data class NiddlerSession(val device: ADBDevice,
                           val packageName: String,
                           val port: Int,
-                          val pid: Int)
+                          val pid: Int,
+                          val protocolVersion: Int)
 
 private data class NiddlerAnnouncementMessage(
         val packageName: String,
         val port: Int,
-        val pid: Int
+        val pid: Int,
+        val protocol: Int
 )

@@ -16,6 +16,7 @@ import java.io.File
 import javax.swing.JOptionPane
 import javax.swing.JTree
 import javax.swing.SwingWorker
+import javax.swing.Timer
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreePath
@@ -28,15 +29,16 @@ import javax.swing.tree.TreeSelectionModel
 class NiddlerConnectDialog(parent: Window?,
                            private val adbBootstrap: ADBBootstrap,
                            private val previousIp: String?,
-                           private val previousPort: Int?) : ConnectDialog(parent) {
+                           private val previousPort: Int?,
+                           private val withDebugger: Boolean) : ConnectDialog(parent) {
 
     private lateinit var initSwingWorker: NiddlerConnectSwingWorker
 
     companion object {
         @JvmStatic
         fun showDialog(parent: Window?, adbBootstrap: ADBBootstrap,
-                       previousIp: String?, previousPort: Int?): ConnectSelection? {
-            val dialog = NiddlerConnectDialog(parent, adbBootstrap, previousIp, previousPort)
+                       previousIp: String?, previousPort: Int?, withDebugger: Boolean): ConnectSelection? {
+            val dialog = NiddlerConnectDialog(parent, adbBootstrap, previousIp, previousPort, withDebugger)
             dialog.initUI()
             dialog.pack()
             dialog.setSize(500, 350)
@@ -45,9 +47,14 @@ class NiddlerConnectDialog(parent: Window?,
             dialog.isVisible = true
             return dialog.selection
         }
+
+        const val REFRESH_PROCESS_DELAY = 2000
     }
 
     private var selection: ConnectSelection? = null
+    private var refreshTimer: Timer? = null
+    private lateinit var adbInterface: ADBInterface
+    private var reloadWorker: SwingWorker<*, *>? = null
 
     private fun initUI() {
         initSwingWorker = NiddlerConnectSwingWorker(adbBootstrap, doneCallback = ::onBootstrapFinished)
@@ -93,10 +100,14 @@ class NiddlerConnectDialog(parent: Window?,
         if (!validateContents())
             return
         if (node is NiddlerConnectDeviceTreeNode && node.device != null) {
-            selection = ConnectSelection(device = node.device.device, session = null, ip = directIP.text, port = port.text.toInt())
+            selection = ConnectSelection(device = node.device.device, session = null, ip = directIP.text, port = port.text.toInt(), withDebugger = withDebugger)
         } else if (node is NiddlerConnectProcessTreeNode) {
             //todo add the correct selection for processes
-            selection = ConnectSelection(device = node.device.device, session = node.session, ip = directIP.text, port = port.text.toInt())
+            if (withDebugger && node.session.protocolVersion < NiddlerWindow.PROTCOL_VERSION_DEBUGGING) {
+                JOptionPane.showConfirmDialog(this, "This process does not support debugging")
+                return
+            }
+            selection = ConnectSelection(device = node.device.device, session = node.session, ip = directIP.text, port = port.text.toInt(), withDebugger = withDebugger)
         }
         dispose()
     }
@@ -104,6 +115,14 @@ class NiddlerConnectDialog(parent: Window?,
     override fun onCancel() {
         initSwingWorker.cancel(true)
         dispose()
+    }
+
+    override fun dispose() {
+        reloadWorker?.cancel(true)
+        reloadWorker = null
+        refreshTimer?.stop()
+        refreshTimer = null
+        super.dispose()
     }
 
     private fun validateContents(): Boolean {
@@ -129,19 +148,40 @@ class NiddlerConnectDialog(parent: Window?,
     }
 
     private fun onBootstrapFinished(adbInterface: ADBInterface) {
+        this.adbInterface = adbInterface
+        scheduleRefresh()
         adbInterface.createDeviceWatcher {
+            reloadWorker?.cancel(true)
+            reloadWorker = null
             val reload = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, tree, progressBar::stop)
             val devices = reload.executeOnBackgroundThread()
             MainThreadDispatcher.dispatch {
+                refreshTimer?.stop()
+                refreshTimer = null
                 reload.onExecutionDone(devices)
+                scheduleRefresh()
             }
+        }
+    }
+
+    private fun scheduleRefresh() {
+        refreshTimer?.stop()
+        refreshTimer = null
+        refreshTimer = Timer(REFRESH_PROCESS_DELAY) {
+            reloadWorker?.cancel(true)
+            reloadWorker = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, tree, progressBar::stop)
+            reloadWorker?.execute()
+        }.apply {
+            isRepeats = true
+            isCoalesce = false
         }
     }
 
     data class ConnectSelection(val device: ADBDevice?,
                                 val session: NiddlerSession?,
                                 val ip: String?,
-                                val port: Int)
+                                val port: Int,
+                                val withDebugger: Boolean)
 
     private class NiddlerReloadSwingWorker(private val adbInterface: ADBInterface,
                                            private val adbBootstrap: ADBBootstrap,
@@ -212,7 +252,7 @@ class NiddlerConnectDialog(parent: Window?,
                 }
             }
 
-            //todo there is still a selection bug (by default the first row is selected. when moving up and  down the first row keeps it selection)
+            //TODO there is still a selection bug (by default the first row is selected. when moving up and  down the first row keeps it selection)
             if (previousItem != null && previousItem is DefaultMutableTreeNode) {
                 tree.clearSelection()
                 tree.selectionPath = TreePath(previousItem.path)
