@@ -1,11 +1,7 @@
 package com.icapps.niddler.ui.form.detail.body
 
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonElement
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
-import com.icapps.niddler.ui.model.ui.json.JsonTreeNode
-import com.icapps.niddler.ui.model.ui.json.JsonTreeRenderer
-import javax.swing.JTree
 import javax.swing.text.Document
 
 /**
@@ -19,18 +15,8 @@ class NiddlerJsonDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDat
     }
 
     override fun createStructuredView() {
-/*
-        //todo remove from comments
-        val structuredView = JTree()
-        structuredView.isEditable = false
-        structuredView.showsRootHandles = true
-        structuredView.isRootVisible = true
-        structuredView.model = DefaultTreeModel(JsonTreeNode(message.bodyData as JsonElement, null, null), false)
-
-        structuredView.cellRenderer = JsonTreeRenderer()
-        structuredView.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
-*/
-        this.structuredView = NiddlerEditableJsonTree(message)
+        this.structuredView = NiddlerJsonTree(message)
+        //this.structuredView = NiddlerEditableJsonTree(message)
     }
 
     override fun createPrettyPrintedView(doc: Document) {
