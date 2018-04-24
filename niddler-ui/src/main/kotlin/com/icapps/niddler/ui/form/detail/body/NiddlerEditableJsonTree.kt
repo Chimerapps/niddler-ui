@@ -34,6 +34,6 @@ class NiddlerEditableJsonTree(message: ParsedNiddlerMessage) : JTree() {
     }
 
     fun getEditedJson(): JsonElement {
-        return (model.root as JsonTreeEditableNode).getChildAt(0) as JsonElement
+        return (model.root as JsonTreeEditableNode).jsonElement
     }
 }
