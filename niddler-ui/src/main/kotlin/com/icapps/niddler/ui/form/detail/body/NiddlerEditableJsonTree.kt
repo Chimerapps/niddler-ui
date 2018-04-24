@@ -2,9 +2,9 @@ package com.icapps.niddler.ui.form.detail.body
 
 import com.google.gson.JsonElement
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
-import com.icapps.niddler.ui.model.ui.json.EditableJsonTreeNode
-import com.icapps.niddler.ui.model.ui.json.JsonTreeEditor
-import com.icapps.niddler.ui.model.ui.json.JsonTreeEditorTransferHandler
+import com.icapps.niddler.ui.model.ui.json.editor.JsonTreeEditableNode
+import com.icapps.niddler.ui.model.ui.json.editor.JsonTreeEditor
+import com.icapps.niddler.ui.model.ui.json.editor.JsonTreeEditorTransferHandler
 import com.icapps.niddler.ui.model.ui.json.JsonTreeRenderer
 import java.awt.event.KeyEvent
 import javax.swing.DropMode
@@ -24,7 +24,7 @@ class NiddlerEditableJsonTree(message: ParsedNiddlerMessage) : JTree() {
         dropMode = DropMode.ON_OR_INSERT
         setShowsRootHandles(true)
         isRootVisible = true
-        model = DefaultTreeModel(EditableJsonTreeNode(message.bodyData as JsonElement, null, null ), false)
+        model = DefaultTreeModel(JsonTreeEditableNode(message.bodyData as JsonElement, null, null), false)
 
         setCellEditor(JsonTreeEditor(this))
         setCellRenderer(JsonTreeRenderer())

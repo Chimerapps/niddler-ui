@@ -1,5 +1,6 @@
-package com.icapps.niddler.ui.model.ui.json
+package com.icapps.niddler.ui.model.ui.json.editor
 
+import com.icapps.niddler.ui.model.ui.json.JsonNode
 import java.awt.Color
 import java.awt.Component
 import java.awt.FlowLayout

@@ -1,7 +1,8 @@
-package com.icapps.niddler.ui.model.ui.json
+package com.icapps.niddler.ui.model.ui.json.editor
 
 import com.google.gson.JsonElement
 import com.icapps.niddler.ui.asEnumeration
+import com.icapps.niddler.ui.model.ui.json.JsonNode
 import org.apache.http.util.TextUtils
 import java.util.*
 import javax.swing.tree.MutableTreeNode
@@ -10,10 +11,10 @@ import javax.swing.tree.TreeNode
 /**
  * @author Koen Van Looveren
  */
-class EditableJsonTreeNode(override val jsonElement: JsonElement, private var parent: TreeNode?, override var name: String?) : MutableTreeNode, JsonNode<EditableJsonTreeNode> {
+class JsonTreeEditableNode(override val jsonElement: JsonElement, private var parent: TreeNode?, override var name: String?) : MutableTreeNode, JsonNode<JsonTreeEditableNode> {
 
     override var value: String? = null
-    override var children: MutableList<EditableJsonTreeNode> = arrayListOf()
+    override var children: MutableList<JsonTreeEditableNode> = arrayListOf()
     override var type: JsonNode.Type = JsonNode.Type.PRIMITIVE
     override lateinit var primitiveNumber: Number
 
@@ -29,8 +30,8 @@ class EditableJsonTreeNode(override val jsonElement: JsonElement, private var pa
     }
 
     //region JsonNode
-    override fun createElement(value: JsonElement, key: String?): EditableJsonTreeNode {
-        return EditableJsonTreeNode(value, this, key)
+    override fun createElement(value: JsonElement, key: String?): JsonTreeEditableNode {
+        return JsonTreeEditableNode(value, this, key)
     }
     //endregion
 
@@ -43,7 +44,7 @@ class EditableJsonTreeNode(override val jsonElement: JsonElement, private var pa
 
         oldParent.remove(child)
         child.setParent(this)
-        children.add(index, child as EditableJsonTreeNode)
+        children.add(index, child as JsonTreeEditableNode)
     }
 
     override fun setParent(newParent: MutableTreeNode?) {

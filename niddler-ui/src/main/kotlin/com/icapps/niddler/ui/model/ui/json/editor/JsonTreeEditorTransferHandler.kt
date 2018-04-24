@@ -1,5 +1,6 @@
-package com.icapps.niddler.ui.model.ui.json
+package com.icapps.niddler.ui.model.ui.json.editor
 
+import com.icapps.niddler.ui.model.ui.json.JsonNode
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException
@@ -14,12 +15,12 @@ import javax.swing.tree.DefaultTreeModel
 class JsonTreeEditorTransferHandler : TransferHandler() {
 
     lateinit var nodesFlavor: DataFlavor
-    lateinit var nodesToRemove: Array<EditableJsonTreeNode>
+    lateinit var nodesToRemove: Array<JsonTreeEditableNode>
     var flavors = arrayOfNulls<DataFlavor>(1)
 
     init {
         try {
-            val mimeType = DataFlavor.javaJVMLocalObjectMimeType + ";class=\"" + Array<EditableJsonTreeNode>::class.java.name + "\""
+            val mimeType = DataFlavor.javaJVMLocalObjectMimeType + ";class=\"" + Array<JsonTreeEditableNode>::class.java.name + "\""
             nodesFlavor = DataFlavor(mimeType)
             flavors[0] = nodesFlavor
         } catch (e: ClassNotFoundException) {
@@ -39,9 +40,9 @@ class JsonTreeEditorTransferHandler : TransferHandler() {
         if (action == TransferHandler.MOVE) {
             val dl = support.dropLocation as JTree.DropLocation
             val dest = dl.path
-            val target = dest.lastPathComponent as EditableJsonTreeNode
+            val target = dest.lastPathComponent as JsonTreeEditableNode
             val targetParent = dest.lastPathComponent
-            if (targetParent is EditableJsonTreeNode)
+            if (targetParent is JsonTreeEditableNode)
                 if (target.actualType() == JsonNode.JsonDataType.ARRAY) {
                     return true
                 }
@@ -51,8 +52,8 @@ class JsonTreeEditorTransferHandler : TransferHandler() {
 
     override fun createTransferable(c: JComponent): Transferable? {
         val tree = c as JTree
-        val target = tree.lastSelectedPathComponent as EditableJsonTreeNode
-        val parent = target.parent as? EditableJsonTreeNode ?: return null
+        val target = tree.lastSelectedPathComponent as JsonTreeEditableNode
+        val parent = target.parent as? JsonTreeEditableNode ?: return null
         if (parent.actualType() != JsonNode.JsonDataType.ARRAY) {
             return null
         }
@@ -61,14 +62,14 @@ class JsonTreeEditorTransferHandler : TransferHandler() {
             // Make up a node array of copies for transfer and
             // another for/of the nodes that will be removed in
             // exportDone after a successful drop.
-            val copies = ArrayList<EditableJsonTreeNode>()
-            val toRemove = ArrayList<EditableJsonTreeNode>()
-            val node = paths[0].lastPathComponent as EditableJsonTreeNode
+            val copies = ArrayList<JsonTreeEditableNode>()
+            val toRemove = ArrayList<JsonTreeEditableNode>()
+            val node = paths[0].lastPathComponent as JsonTreeEditableNode
             val copy = copy(node)
             copies.add(copy)
             toRemove.add(node)
             for (i in 1 until paths.size) {
-                val next = paths[i].lastPathComponent as EditableJsonTreeNode
+                val next = paths[i].lastPathComponent as JsonTreeEditableNode
                 copies.add(copy(next))
                 toRemove.add(next)
             }
@@ -80,8 +81,8 @@ class JsonTreeEditorTransferHandler : TransferHandler() {
     }
 
     /** Defensive copy used in createTransferable.  */
-    private fun copy(node: EditableJsonTreeNode): EditableJsonTreeNode {
-        return EditableJsonTreeNode(node.jsonElement, node.parent as EditableJsonTreeNode, node.name)
+    private fun copy(node: JsonTreeEditableNode): JsonTreeEditableNode {
+        return JsonTreeEditableNode(node.jsonElement, node.parent as JsonTreeEditableNode, node.name)
     }
 
     override fun exportDone(source: JComponent?, data: Transferable?, action: Int) {
@@ -101,10 +102,10 @@ class JsonTreeEditorTransferHandler : TransferHandler() {
             return false
         }
         // Extract transfer data.
-        var nodes: Array<EditableJsonTreeNode>? = null
+        var nodes: Array<JsonTreeEditableNode>? = null
         try {
             val t = support.transferable
-            nodes = t.getTransferData(nodesFlavor) as Array<EditableJsonTreeNode>
+            nodes = t.getTransferData(nodesFlavor) as Array<JsonTreeEditableNode>
         } catch (ufe: UnsupportedFlavorException) {
             println("UnsupportedFlavor: " + ufe.message)
         } catch (ioe: java.io.IOException) {
@@ -115,7 +116,7 @@ class JsonTreeEditorTransferHandler : TransferHandler() {
         val dl = support.dropLocation as JTree.DropLocation
         val childIndex = dl.childIndex
         val dest = dl.path
-        val parent = dest.lastPathComponent as EditableJsonTreeNode
+        val parent = dest.lastPathComponent as JsonTreeEditableNode
         val tree = support.component as JTree
         val model = tree.model as DefaultTreeModel
         // Configure for drop mode.
@@ -134,7 +135,7 @@ class JsonTreeEditorTransferHandler : TransferHandler() {
         return javaClass.name
     }
 
-    inner class NodesTransferable(internal var nodes: Array<EditableJsonTreeNode>) : Transferable {
+    inner class NodesTransferable(internal var nodes: Array<JsonTreeEditableNode>) : Transferable {
 
         @Throws(UnsupportedFlavorException::class)
         override fun getTransferData(flavor: DataFlavor): Any {
