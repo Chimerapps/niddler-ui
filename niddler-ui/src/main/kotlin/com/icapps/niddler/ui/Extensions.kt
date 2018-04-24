@@ -1,8 +1,8 @@
 package com.icapps.niddler.ui
 
 import com.icapps.niddler.ui.form.MainThreadDispatcher
-import java.awt.Component
 import java.awt.Color
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
 import java.beans.PropertyChangeEvent
@@ -154,4 +154,19 @@ fun String.hexToColor(): Color {
 
 fun getDeviceIcon(emulator: Boolean): String {
     return if (emulator) "/ic_device_emulator.png" else "/ic_device_real.png"
+}
+
+fun JTree.expandAllNodes(startingIndex: Int, rowCount: Int) {
+    for (i in startingIndex until rowCount) {
+        expandRow(i)
+    }
+
+    if (rowCount != rowCount) {
+        expandAllNodes(rowCount, rowCount)
+    }
+}
+
+fun Color.isBright(): Boolean {
+    val darkness = 1 - (0.299 * red + 0.587 * green + 0.114 * blue) / 255.0
+    return darkness <= 0.5
 }
