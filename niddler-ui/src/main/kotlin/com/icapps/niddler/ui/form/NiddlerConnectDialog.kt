@@ -10,13 +10,11 @@ import com.icapps.niddler.ui.model.AdbDeviceModel
 import com.icapps.niddler.ui.util.WideSelectionTreeUI
 import com.icapps.tools.aec.EmulatorFactory
 import java.awt.Window
+import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
-import javax.swing.JOptionPane
-import javax.swing.JTree
-import javax.swing.SwingWorker
-import javax.swing.Timer
+import javax.swing.*
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreePath
@@ -68,6 +66,26 @@ class NiddlerConnectDialog(parent: Window?,
             isLargeModel = true
             selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
             cellRenderer = NiddlerConnectCellRenderer()
+            registerKeyboardAction({ onOK() }, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_FOCUSED)
+            addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent) {
+                    if (e.clickCount == 2)
+                        onOK()
+                    else
+                        super.mouseClicked(e)
+                }
+            })
+            addTreeSelectionListener { event ->
+                if (!tree.isSelectionEmpty)
+                    directIP.text = ""
+
+                // Invalidate the nodes that were deselected
+                val treeModel = tree.model as DefaultTreeModel
+                event.paths.filter { !event.isAddedPath(it) }.forEach {
+                    treeModel.nodeChanged(it.lastPathComponent as DefaultMutableTreeNode)
+                }
+            }
+            requestFocusInWindow()
         }
         progressBar.start()
         initSwingWorker.execute()
@@ -76,23 +94,10 @@ class NiddlerConnectDialog(parent: Window?,
             directIP.text = previousIp
         if (previousPort != null)
             port.text = previousPort.toString()
-        tree.addTreeSelectionListener {
-            if (!tree.isSelectionEmpty)
-                directIP.text = ""
-        }
         directIP.addChangeListener {
             if (!directIP.text.isNullOrBlank())
                 tree.clearSelection()
         }
-
-        tree.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                if (e.clickCount == 2)
-                    onOK()
-                else
-                    super.mouseClicked(e)
-            }
-        })
     }
 
     override fun onOK() {
