@@ -19,7 +19,7 @@ class NiddlerJsonTree(message: ParsedNiddlerMessage) : JTree() {
         isRootVisible = true
         model = DefaultTreeModel(JsonTreeNode(message.bodyData as JsonElement, null, null), false)
 
-        cellRenderer = JsonTreeRenderer()
+        setCellRenderer(JsonTreeRenderer())
         selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
     }
 }
