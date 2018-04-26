@@ -1,22 +1,24 @@
-package com.icapps.niddler.ui.model.ui.xml
+package com.icapps.niddler.ui.model.ui.xml.editor
 
 import com.icapps.niddler.ui.asEnumeration
+import com.icapps.niddler.ui.model.ui.xml.XMLNode
+import org.apache.http.util.TextUtils
 import org.w3c.dom.Attr
 import org.w3c.dom.Node
 import org.w3c.dom.Text
 import java.util.*
+import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeNode
 
 /**
- * @author Nicola Verbeeck
- * @date 15/11/16.
+ * @author Koen Van Looveren
  */
-class XMLTreeNode(private val xmlElement: Node, private val parent: TreeNode?, override var name: String?) : TreeNode, XMLNode<XMLTreeNode> {
+class XMLTreeEditorNode(private val xmlElement: Node, private var parent: TreeNode?, override var name: String?) : MutableTreeNode, XMLNode<XMLTreeEditorNode> {
 
     override var value: String? = null
     override var type: XMLNode.Type = XMLNode.Type.NODE
 
-    private val children: MutableList<XMLTreeNode> = arrayListOf()
+    private val children: MutableList<XMLTreeEditorNode> = arrayListOf()
 
     init {
         name = xmlElement.asString()
@@ -39,10 +41,60 @@ class XMLTreeNode(private val xmlElement: Node, private val parent: TreeNode?, o
             val item = nodeList.item(i)
             if (item is Text && item.nodeValue.isBlank())
                 continue
-            children.add(XMLTreeNode(item, this, item.nodeName))
+            children.add(XMLTreeEditorNode(item, this, item.nodeName))
         }
     }
 
+    //region MutableTreeNode
+    override fun insert(child: MutableTreeNode?, index: Int) {
+        if (child == null) {
+            return
+        }
+        val oldParent = child.parent as MutableTreeNode
+
+        oldParent.remove(child)
+        child.setParent(this)
+        children.add(index, child as XMLTreeEditorNode)
+    }
+
+    override fun setParent(newParent: MutableTreeNode?) {
+        parent = newParent
+    }
+
+    override fun setUserObject(newObject: Any?) {
+        if (newObject is XMLTreeEditor.EditedXML) {
+            type = newObject.type
+            if (!TextUtils.isEmpty(newObject.name)) {
+                when (type) {
+                    XMLNode.Type.NODE -> name = newObject.name
+                    XMLNode.Type.TEXT -> value = newObject.name
+                }
+            }
+        }
+    }
+
+    override fun remove(index: Int) {
+        val child = getChildAt(index) as MutableTreeNode
+        children.removeAt(index)
+        child.setParent(null)
+    }
+
+    override fun remove(node: MutableTreeNode?) {
+        if (node != null) {
+            return
+        }
+        remove(getIndex(node))
+    }
+
+    override fun removeFromParent() {
+        val parent = parent
+        if (parent != null && parent is MutableTreeNode) {
+            parent.remove(this)
+        }
+    }
+    //endregion
+
+    //region TreeNode
     override fun children(): Enumeration<*> {
         return children.iterator().asEnumeration()
     }
@@ -70,15 +122,9 @@ class XMLTreeNode(private val xmlElement: Node, private val parent: TreeNode?, o
     override fun getAllowsChildren(): Boolean {
         return true //No idea?
     }
+    //endregion
 
-    override fun toString(): String {
-        return when (type) {
-            XMLNode.Type.TEXT -> value ?: ""
-            XMLNode.Type.NODE -> name ?: "node"
-        }
-    }
-
-    fun Node.asString(): String {
+    private fun Node.asString(): String {
         val stringBuilder = StringBuilder("");
         stringBuilder.append(nodeName)
 
@@ -98,5 +144,12 @@ class XMLTreeNode(private val xmlElement: Node, private val parent: TreeNode?, o
         }
 
         return stringBuilder.toString()
+    }
+
+    override fun toString(): String {
+        return when (type) {
+            XMLNode.Type.TEXT -> value ?: ""
+            XMLNode.Type.NODE -> name ?: "node"
+        }
     }
 }

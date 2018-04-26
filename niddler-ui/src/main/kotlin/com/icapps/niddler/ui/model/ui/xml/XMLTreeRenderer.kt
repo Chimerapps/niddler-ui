@@ -1,6 +1,5 @@
-package com.icapps.niddler.ui.model.ui.json
+package com.icapps.niddler.ui.model.ui.xml
 
-import com.icapps.niddler.ui.model.ui.xml.XMLTreeNode
 import java.awt.Component
 import java.awt.Font
 import javax.swing.Icon
@@ -26,19 +25,15 @@ class XMLTreeRenderer : DefaultTreeCellRenderer() {
         regularFont = Font("Monospaced", 0, 11)
     }
 
-    override fun getTreeCellRendererComponent(tree: JTree?, value: Any?, sel: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean): Component {
-        super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus)
+    override fun getTreeCellRendererComponent(tree: JTree?, value: Any?, isSelected: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean): Component {
+        super.getTreeCellRendererComponent(tree, value, isSelected, expanded, leaf, row, hasFocus)
 
         icon = null
         font = regularFont
-        if (value is XMLTreeNode) {
-            when (value.type) {
-                XMLTreeNode.Type.NODE -> {
-                    icon = nodeIcon
-                }
-                XMLTreeNode.Type.TEXT -> {
-                    icon = stringIcon
-                }
+        if (value is XMLNode<*>) {
+            icon = when (value.type) {
+                XMLNode.Type.NODE -> nodeIcon
+                XMLNode.Type.TEXT -> stringIcon
             }
         }
         return this

@@ -1,13 +1,8 @@
 package com.icapps.niddler.ui.form.detail.body
 
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
-import com.icapps.niddler.ui.model.ui.json.XMLTreeRenderer
-import com.icapps.niddler.ui.model.ui.xml.XMLTreeNode
 import java.io.StringWriter
-import javax.swing.JTree
 import javax.swing.text.Document
-import javax.swing.tree.DefaultTreeModel
-import javax.swing.tree.TreeSelectionModel
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
@@ -24,16 +19,8 @@ class NiddlerXMLDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredData
     }
 
     override fun createStructuredView() {
-        val structuredView = JTree()
-        structuredView.isEditable = false
-        structuredView.showsRootHandles = true
-        structuredView.isRootVisible = true
-        structuredView.model = DefaultTreeModel(XMLTreeNode((message.bodyData as org.w3c.dom.Document).documentElement, null), false)
-
-        structuredView.cellRenderer = XMLTreeRenderer()
-        structuredView.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
-
-        this.structuredView = structuredView
+        this.structuredView = NiddlerXMLEditableTree(message)
+        //this.structuredView = NiddlerXMLTree(message)
     }
 
     override fun createPrettyPrintedView(doc: Document) {

@@ -7,6 +7,7 @@ import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.TabComponent
 import com.icapps.niddler.ui.form.detail.MessageDetailPanel
 import com.icapps.niddler.ui.form.detail.body.*
+import com.icapps.niddler.ui.form.detail.body.NiddlerXMLDataPanel
 import com.icapps.niddler.ui.form.ui.NiddlerDetailUserInterface
 import java.awt.BorderLayout
 import java.awt.Component
@@ -57,7 +58,8 @@ open class SwingNiddlerDetailUserInterface(componentsFactory: ComponentsFactory,
             showEmptyMessageBody(currentMessage)
         } else {
             when (currentMessage.bodyFormat.type) {
-                BodyFormatType.FORMAT_JSON -> bodyRoot.add(NiddlerJsonDataPanel(currentMessage), BorderLayout.CENTER)
+                //BodyFormatType.FORMAT_JSON -> bodyRoot.add(NiddlerJsonDataPanel(currentMessage), BorderLayout.CENTER)
+                BodyFormatType.FORMAT_JSON -> bodyRoot.add(NiddlerXMLDataPanel(currentMessage), BorderLayout.CENTER)
                 BodyFormatType.FORMAT_XML -> bodyRoot.add(NiddlerXMLDataPanel(currentMessage), BorderLayout.CENTER)
                 BodyFormatType.FORMAT_PLAIN -> bodyRoot.add(NiddlerPlainDataPanel(currentMessage), BorderLayout.CENTER)
                 BodyFormatType.FORMAT_HTML -> bodyRoot.add(NiddlerHTMLDataPanel(currentMessage), BorderLayout.CENTER)
