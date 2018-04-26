@@ -1,9 +1,9 @@
 package com.icapps.niddler.ui.model.ui.json
 
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.Component
 import java.awt.Font
 import javax.swing.Icon
-import javax.swing.ImageIcon
 import javax.swing.JTree
 import javax.swing.tree.DefaultTreeCellRenderer
 
@@ -24,12 +24,12 @@ class JsonTreeRenderer : DefaultTreeCellRenderer() {
     private var regularFont: Font
 
     init {
-        stringIcon = ImageIcon(javaClass.getResource("/string.png"))
-        booleanIcon = ImageIcon(javaClass.getResource("/boolean.png"))
-        intIcon = ImageIcon(javaClass.getResource("/int.png"))
-        objectIcon = ImageIcon(javaClass.getResource("/object.png"))
-        arrayIcon = ImageIcon(javaClass.getResource("/array.png"))
-        doubleIcon = ImageIcon(javaClass.getResource("/double.png"))
+        stringIcon = loadIcon("/string.png")
+        booleanIcon = loadIcon("/boolean.png")
+        intIcon = loadIcon("/int.png")
+        objectIcon = loadIcon("/object.png")
+        arrayIcon = loadIcon("/array.png")
+        doubleIcon = loadIcon("/double.png")
 
         italicFont = Font("Monospaced", Font.ITALIC, 11)
         regularFont = Font("Monospaced", 0, 11)

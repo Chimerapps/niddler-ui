@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form.detail.body
 
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import javax.swing.text.Document
 
@@ -15,7 +16,7 @@ class NiddlerJsonDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDat
     }
 
     override fun createStructuredView() {
-        this.structuredView = NiddlerJsonTree(message)
+        this.structuredView = NiddlerJsonTree(message.bodyData as JsonElement)
     }
 
     override fun createPrettyPrintedView(doc: Document) {

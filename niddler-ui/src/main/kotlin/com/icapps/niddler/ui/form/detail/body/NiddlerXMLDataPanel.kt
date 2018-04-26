@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.detail.body
 
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
-import com.icapps.niddler.ui.model.ui.json.XMLTreeRenderer
+import com.icapps.niddler.ui.model.ui.xml.XMLTreeRenderer
 import com.icapps.niddler.ui.model.ui.xml.XMLTreeNode
 import java.io.StringWriter
 import javax.swing.JTree

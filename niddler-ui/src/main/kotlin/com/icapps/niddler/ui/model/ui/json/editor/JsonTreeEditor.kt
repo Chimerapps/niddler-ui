@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.model.ui.json.editor
 
 import com.icapps.niddler.ui.model.ui.json.JsonNode
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.Color
 import java.awt.Component
 import java.awt.FlowLayout
@@ -31,12 +32,12 @@ class JsonTreeEditor(var tree: JTree) : AbstractCellEditor(), TreeCellEditor {
     private var editType: JsonNode.Type = JsonNode.Type.PRIMITIVE
 
     init {
-        stringIcon = ImageIcon(javaClass.getResource("/string.png"))
-        booleanIcon = ImageIcon(javaClass.getResource("/boolean.png"))
-        intIcon = ImageIcon(javaClass.getResource("/int.png"))
-        objectIcon = ImageIcon(javaClass.getResource("/object.png"))
-        arrayIcon = ImageIcon(javaClass.getResource("/array.png"))
-        doubleIcon = ImageIcon(javaClass.getResource("/double.png"))
+        stringIcon = loadIcon("/string.png")
+        booleanIcon = loadIcon("/boolean.png")
+        intIcon = loadIcon("/int.png")
+        objectIcon = loadIcon("/object.png")
+        arrayIcon = loadIcon("/array.png")
+        doubleIcon = loadIcon("/double.png")
 
         italicFont = Font("Monospaced", Font.ITALIC, 11)
         regularFont = Font("Monospaced", 0, 11)

@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.components.impl
 
-import com.icapps.niddler.ui.form.NiddlerUIContainer
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.Insets
@@ -30,7 +30,7 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
 
         val buttonTimeline = JToggleButton().apply {
             isFocusPainted = true
-            icon = ImageIcon(NiddlerUIContainer::class.java.getResource("/ic_chronological.png"))
+            icon = loadIcon("/ic_chronological.png")
             inheritsPopupMenu = false
             margin = Insets(0, 2, 0, 2)
             maximumSize = Dimension(32, 32)
@@ -43,7 +43,7 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
 
         val buttonLinkedMode = JToggleButton().apply {
             isFocusPainted = true
-            icon = ImageIcon(NiddlerUIContainer::class.java.getResource("/ic_link.png"))
+            icon = loadIcon("/ic_link.png")
             margin = Insets(0, 2, 0, 2)
             maximumSize = Dimension(32, 32)
             minimumSize = Dimension(32, 32)
@@ -53,7 +53,7 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
         toolbar.add(buttonLinkedMode)
 
         val buttonClear = JButton().apply {
-            icon = ImageIcon(NiddlerUIContainer::class.java.getResource("/ic_delete.png"))
+            icon = loadIcon("/ic_delete.png")
             text = ""
             maximumSize = Dimension(32, 32)
             minimumSize = Dimension(32, 32)
@@ -63,14 +63,14 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
         toolbar.add(buttonClear)
 
         val buttonConfigureBreakpoints = JButton().apply {
-            icon = ImageIcon(NiddlerUIContainer::class.java.getResource("/viewBreakpoints.png"))
+            icon = loadIcon("/viewBreakpoints.png")
             text = ""
             maximumSize = Dimension(32, 32)
             minimumSize = Dimension(32, 32)
             preferredSize = Dimension(32, 32)
         }
         buttonMuteBreakpoints = JButton().apply {
-            icon = ImageIcon(NiddlerUIContainer::class.java.getResource("/muteBreakpoints.png"))
+            icon = loadIcon("/muteBreakpoints.png")
             text = ""
             maximumSize = Dimension(32, 32)
             minimumSize = Dimension(32, 32)
@@ -81,7 +81,7 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
         toolbar.add(buttonMuteBreakpoints)
 
         val buttonExport = JButton().apply {
-            icon = ImageIcon(NiddlerUIContainer::class.java.getResource("/ic_save.png"))
+            icon = loadIcon("/ic_save.png")
             text = ""
             maximumSize = Dimension(32, 32)
             minimumSize = Dimension(32, 32)
@@ -120,8 +120,8 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
 
     override fun onBreakpointsMuted(muted: Boolean) {
         buttonMuteBreakpoints.icon = if (muted)
-            ImageIcon(NiddlerUIContainer::class.java.getResource("/muteBreakpoints_muted.png"))
+            loadIcon("/muteBreakpoints_muted.png")
         else
-            ImageIcon(NiddlerUIContainer::class.java.getResource("/muteBreakpoints.png"))
+            loadIcon("/muteBreakpoints.png")
     }
 }

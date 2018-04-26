@@ -2,6 +2,7 @@ package com.icapps.niddler.ui.impl
 
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.util.loadIcon
+import com.intellij.ide.ui.laf.darcula.DarculaLaf.loadIcon
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -9,7 +10,6 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import javax.swing.Icon
-import javax.swing.ImageIcon
 import javax.swing.JComponent
 
 /**
@@ -30,11 +30,11 @@ class IntelliJToolbar(panel: SimpleToolWindowPanel) : NiddlerMainToolbar {
     init {
         val group = DefaultActionGroup()
 
-        val chronologicalIcon = ImageIcon(IntelliJToolbar::class.java.getResource("/ic_chronological.png"))
-        val chronologicalIconSelected = ImageIcon(IntelliJToolbar::class.java.getResource("/ic_chronological_selected.png"))
+        val chronologicalIcon = loadIcon("/ic_chronological.png")
+        val chronologicalIconSelected = loadIcon("/ic_chronological_selected.png")
 
-        val linkedIcon = ImageIcon(IntelliJToolbar::class.java.getResource("/ic_link.png"))
-        val linkedIconSelected = ImageIcon(IntelliJToolbar::class.java.getResource("/ic_link.png"))
+        val linkedIcon = loadIcon("/ic_link.png")
+        val linkedIconSelected = loadIcon("/ic_link.png")
 
         group.add(TimelineAction(this, chronologicalIcon, chronologicalIconSelected))
         group.add(LinkedAction(this, linkedIcon, linkedIconSelected))
@@ -43,8 +43,8 @@ class IntelliJToolbar(panel: SimpleToolWindowPanel) : NiddlerMainToolbar {
         group.add(ClearAction(this))
         group.addSeparator()
 
-        val muteBreakpointsIcon = "/muteBreakpoints.png".loadIcon<IntelliJToolbar>()
-        val mutedBreakpointsIcon = "/muteBreakpoints_muted.png".loadIcon<IntelliJToolbar>()
+        val muteBreakpointsIcon = loadIcon("/muteBreakpoints.png")
+        val mutedBreakpointsIcon = loadIcon("/muteBreakpoints_muted.png")
         group.add(ConfigureBreakpointsAction(this))
         group.add(MuteBreakpointsAction(this, muteBreakpointsIcon, mutedBreakpointsIcon))
 
@@ -116,7 +116,7 @@ private class LinkedAction(private val toolbar: IntelliJToolbar,
 
 
 private class ExportAction(private val toolbar: IntelliJToolbar) : DumbAwareAction("Export", "Export the session",
-        ImageIcon(IntelliJToolbar::class.java.getResource("/ic_save.png"))) {
+        loadIcon("/ic_save.png")) {
 
     override fun actionPerformed(e: AnActionEvent?) {
         toolbar.listener?.onExportSelected()
@@ -125,7 +125,7 @@ private class ExportAction(private val toolbar: IntelliJToolbar) : DumbAwareActi
 }
 
 private class ClearAction(private val toolbar: IntelliJToolbar) : DumbAwareAction("Clear", "Clear current session",
-        ImageIcon(IntelliJToolbar::class.java.getResource("/ic_delete.png"))) {
+        loadIcon("/ic_delete.png")) {
 
     override fun actionPerformed(e: AnActionEvent?) {
         toolbar.listener?.onClearSelected()
