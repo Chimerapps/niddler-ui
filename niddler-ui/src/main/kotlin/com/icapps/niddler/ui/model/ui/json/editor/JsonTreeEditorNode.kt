@@ -79,7 +79,7 @@ class JsonTreeEditorNode(override val jsonElement: JsonElement, private var pare
     }
 
     override fun remove(node: MutableTreeNode?) {
-        if (node != null) {
+        if (node == null) {
             return
         }
         remove(getIndex(node))
