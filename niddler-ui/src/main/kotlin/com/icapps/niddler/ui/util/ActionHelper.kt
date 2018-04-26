@@ -9,17 +9,17 @@ import javax.swing.ImageIcon
  * @author nicolaverbeeck
  */
 fun simpleAction(title: String = "", icon: String? = null, listener: (event: ActionEvent) -> Unit): Action {
-    return object : AbstractAction(title, icon?.loadIcon(listener.javaClass)) {
+    return object : AbstractAction(title, icon?.loadIcon<Any>()) {
         override fun actionPerformed(e: ActionEvent) {
             listener(e)
         }
     }
 }
 
-fun String.loadIcon(classContext: Class<*>): ImageIcon {
-    return ImageIcon(classContext.getResource(this))
+fun <T> String.loadIcon(): ImageIcon {
+    return loadIcon(this)
 }
 
-inline fun <reified T> String.loadIcon(): ImageIcon {
-    return ImageIcon(T::class.java.getResource(this))
+fun Any.loadIcon(path: String): ImageIcon {
+    return ImageIcon(javaClass.getResource(path))
 }

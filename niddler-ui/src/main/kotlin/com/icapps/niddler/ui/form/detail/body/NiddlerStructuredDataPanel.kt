@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form.detail.body
 
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.awt.Font
 import javax.swing.*
@@ -25,9 +26,9 @@ abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, 
     init {
         layout = BorderLayout()
 
-        treeButton = JToggleButton("Structure", ImageIcon(javaClass.getResource("/ic_as_tree.png")))
-        prettyButton = JToggleButton("Pretty", ImageIcon(javaClass.getResource("/ic_pretty.png")))
-        rawButton = JToggleButton("Raw", ImageIcon(javaClass.getResource("/ic_raw.png")))
+        treeButton = JToggleButton("Structure", loadIcon("/ic_as_tree.png"))
+        prettyButton = JToggleButton("Pretty", loadIcon("/ic_pretty.png"))
+        rawButton = JToggleButton("Raw", loadIcon("/ic_raw.png"))
 
         val buttonGroup = ButtonGroup()
         if (hasTree)

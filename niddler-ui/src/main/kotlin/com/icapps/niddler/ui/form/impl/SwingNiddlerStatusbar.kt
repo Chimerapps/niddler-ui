@@ -83,7 +83,7 @@ class SwingNiddlerStatusbar : NiddlerStatusbar {
             SwingNiddlerStatusbar.Status.DEBUGGER_ACTIVE -> "/ic_debug_active.png"
             SwingNiddlerStatusbar.Status.DEBUGGER_INACTIVE -> "/ic_debug_inactive.png"
         }
-        statusText.icon = resourceString.loadIcon<SwingNiddlerStatusbar>()
+        statusText.icon = loadIcon(resourceString)
     }
 
     private fun buildText(prefix: String, glue: String): String {

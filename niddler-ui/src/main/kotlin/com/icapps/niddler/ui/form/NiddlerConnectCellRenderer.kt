@@ -3,6 +3,7 @@ package com.icapps.niddler.ui.form
 import com.icapps.niddler.ui.getDeviceIcon
 import com.icapps.niddler.ui.isBright
 import com.icapps.niddler.ui.toHex
+import com.icapps.niddler.ui.util.loadIcon
 import org.apache.http.util.TextUtils
 import java.awt.Color
 import java.awt.Component
@@ -59,7 +60,7 @@ class NiddlerConnectCellRenderer : DefaultTreeCellRenderer() {
                 return this
             }
             val iconResName = getDeviceIcon(adbDevice.emulator)
-            icon = ImageIcon(javaClass.getResource(iconResName))
+            icon = loadIcon(iconResName)
             if (TextUtils.isEmpty(adbDevice.name)) {
                 text = adbDevice.serialNr
             } else {

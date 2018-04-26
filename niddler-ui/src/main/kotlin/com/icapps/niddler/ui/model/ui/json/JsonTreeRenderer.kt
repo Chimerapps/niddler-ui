@@ -1,9 +1,9 @@
 package com.icapps.niddler.ui.model.ui.json
 
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.Component
 import java.awt.Font
 import javax.swing.Icon
-import javax.swing.ImageIcon
 import javax.swing.JTree
 import javax.swing.tree.DefaultTreeCellRenderer
 
@@ -24,12 +24,12 @@ class JsonTreeRenderer : DefaultTreeCellRenderer() {
     private var regularFont: Font
 
     init {
-        stringIcon = ImageIcon(javaClass.getResource("/string.png"))
-        booleanIcon = ImageIcon(javaClass.getResource("/boolean.png"))
-        intIcon = ImageIcon(javaClass.getResource("/int.png"))
-        objectIcon = ImageIcon(javaClass.getResource("/object.png"))
-        arrayIcon = ImageIcon(javaClass.getResource("/array.png"))
-        doubleIcon = ImageIcon(javaClass.getResource("/double.png"))
+        stringIcon = loadIcon("/string.png")
+        booleanIcon = loadIcon("/boolean.png")
+        intIcon = loadIcon("/int.png")
+        objectIcon = loadIcon("/object.png")
+        arrayIcon = loadIcon("/array.png")
+        doubleIcon = loadIcon("/double.png")
 
         italicFont = Font("Monospaced", Font.ITALIC, 11)
         regularFont = Font("Monospaced", 0, 11)
@@ -37,29 +37,27 @@ class JsonTreeRenderer : DefaultTreeCellRenderer() {
 
     override fun getTreeCellRendererComponent(tree: JTree?, value: Any?, sel: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean): Component {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus)
-
-        icon = null
-        font = regularFont
-        if (value is JsonTreeNode) {
-            when (value.actualType()) {
-                JsonTreeNode.JsonDataType.ARRAY -> {
-                    icon = arrayIcon
-                    if (value.isAnonymous())
-                    font = italicFont
-                }
-                JsonTreeNode.JsonDataType.OBJECT -> {
-                    icon = objectIcon
+        if (value is JsonNode<*>) {
+            font = regularFont
+            text = value.toString()
+            icon = when (value.actualType()) {
+                JsonNode.JsonDataType.ARRAY -> {
                     if (value.isAnonymous())
                         font = italicFont
+                    arrayIcon
                 }
-                JsonTreeNode.JsonDataType.BOOLEAN -> icon = booleanIcon
-                JsonTreeNode.JsonDataType.INT -> icon = intIcon
-                JsonTreeNode.JsonDataType.STRING -> icon = stringIcon
-                JsonTreeNode.JsonDataType.DOUBLE -> icon = doubleIcon
-                JsonTreeNode.JsonDataType.NULL -> icon = null
+                JsonNode.JsonDataType.OBJECT -> {
+                    if (value.isAnonymous())
+                        font = italicFont
+                    objectIcon
+                }
+                JsonNode.JsonDataType.BOOLEAN -> booleanIcon
+                JsonNode.JsonDataType.INT -> intIcon
+                JsonNode.JsonDataType.STRING -> stringIcon
+                JsonNode.JsonDataType.DOUBLE -> doubleIcon
+                JsonNode.JsonDataType.NULL -> null
             }
         }
         return this
     }
-
 }

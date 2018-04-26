@@ -3,6 +3,7 @@ package com.icapps.niddler.ui.model.ui
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.util.getStatusCodeString
+import com.icapps.niddler.ui.util.loadIcon
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.Icon
@@ -35,8 +36,8 @@ class TimelineMessagesTableModel : TableModel, MessagesModel {
     private lateinit var container: NiddlerMessageStorage<ParsedNiddlerMessage>
 
     init {
-        upIcon = ImageIcon(javaClass.getResource("/ic_up.png"))
-        downIcon = ImageIcon(javaClass.getResource("/ic_down.png"))
+        upIcon = loadIcon("/ic_up.png")
+        downIcon = loadIcon("/ic_down.png")
     }
 
     override fun updateMessages(messages: NiddlerMessageStorage<ParsedNiddlerMessage>) {
