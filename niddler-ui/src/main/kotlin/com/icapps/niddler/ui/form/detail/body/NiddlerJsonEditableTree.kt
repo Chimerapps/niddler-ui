@@ -3,7 +3,7 @@ package com.icapps.niddler.ui.form.detail.body
 import com.google.gson.JsonElement
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.model.ui.json.JsonTreeRenderer
-import com.icapps.niddler.ui.model.ui.json.editor.JsonTreeEditableNode
+import com.icapps.niddler.ui.model.ui.json.editor.JsonTreeEditorNode
 import com.icapps.niddler.ui.model.ui.json.editor.JsonTreeEditor
 import com.icapps.niddler.ui.model.ui.json.editor.JsonTreeEditorTransferHandler
 import java.awt.event.KeyEvent
@@ -16,7 +16,7 @@ import javax.swing.tree.TreeSelectionModel
 /**
  * @author Koen Van Looveren
  */
-class NiddlerEditableJsonTree(message: ParsedNiddlerMessage) : JTree() {
+class NiddlerJsonEditableTree(message: ParsedNiddlerMessage) : JTree() {
 
     init {
         isEditable = true
@@ -24,7 +24,7 @@ class NiddlerEditableJsonTree(message: ParsedNiddlerMessage) : JTree() {
         dropMode = DropMode.ON_OR_INSERT
         setShowsRootHandles(true)
         isRootVisible = true
-        model = DefaultTreeModel(JsonTreeEditableNode(message.bodyData as JsonElement, null, null), false)
+        model = DefaultTreeModel(JsonTreeEditorNode(message.bodyData as JsonElement, null, null), false)
 
         setCellEditor(JsonTreeEditor(this))
         setCellRenderer(JsonTreeRenderer())
@@ -34,6 +34,6 @@ class NiddlerEditableJsonTree(message: ParsedNiddlerMessage) : JTree() {
     }
 
     fun getEditedJson(): JsonElement {
-        return (model.root as JsonTreeEditableNode).jsonElement
+        return (model.root as JsonTreeEditorNode).jsonElement
     }
 }

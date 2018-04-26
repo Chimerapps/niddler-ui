@@ -11,10 +11,10 @@ import javax.swing.tree.TreeNode
 /**
  * @author Koen Van Looveren
  */
-class JsonTreeEditableNode(override val jsonElement: JsonElement, private var parent: TreeNode?, override var name: String?) : MutableTreeNode, JsonNode<JsonTreeEditableNode> {
+class JsonTreeEditorNode(override val jsonElement: JsonElement, private var parent: TreeNode?, override var name: String?) : MutableTreeNode, JsonNode<JsonTreeEditorNode> {
 
     override var value: String? = null
-    override var children: MutableList<JsonTreeEditableNode> = arrayListOf()
+    override var children: MutableList<JsonTreeEditorNode> = arrayListOf()
     override var type: JsonNode.Type = JsonNode.Type.PRIMITIVE
     override lateinit var primitiveNumber: Number
 
@@ -30,8 +30,8 @@ class JsonTreeEditableNode(override val jsonElement: JsonElement, private var pa
     }
 
     //region JsonNode
-    override fun createElement(value: JsonElement, key: String?): JsonTreeEditableNode {
-        return JsonTreeEditableNode(value, this, key)
+    override fun createElement(value: JsonElement, key: String?): JsonTreeEditorNode {
+        return JsonTreeEditorNode(value, this, key)
     }
     //endregion
 
@@ -44,7 +44,7 @@ class JsonTreeEditableNode(override val jsonElement: JsonElement, private var pa
 
         oldParent.remove(child)
         child.setParent(this)
-        children.add(index, child as JsonTreeEditableNode)
+        children.add(index, child as JsonTreeEditorNode)
     }
 
     override fun setParent(newParent: MutableTreeNode?) {
