@@ -90,13 +90,13 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         uiContainer().add(topPanel, BorderLayout.NORTH)
 
         val toolbar = componentsFactory.createHorizontalToolbar()
-        toolbar.addAction("/execute.png".loadIcon<AbstractToolbar>(), "Connect without debugger") {
+        toolbar.addAction(loadIcon("/execute.png"), "Connect without debugger") {
             connectButtonListener?.invoke()
         }
-        toolbar.addAction("/startDebugger.png".loadIcon<AbstractToolbar>(), "Connect with debugger") {
+        toolbar.addAction(loadIcon("/startDebugger.png"), "Connect with debugger") {
             debugButtonListener?.invoke()
         }
-        disconnectButton = toolbar.addAction("/suspend.png".loadIcon<AbstractToolbar>(), "Disconnect") {
+        disconnectButton = toolbar.addAction(loadIcon("/suspend.png"), "Disconnect") {
             it.isEnabled = false
             disconnectButtonListener?.invoke()
         }

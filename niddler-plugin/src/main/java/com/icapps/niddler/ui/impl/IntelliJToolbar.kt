@@ -2,7 +2,6 @@ package com.icapps.niddler.ui.impl
 
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.util.loadIcon
-import com.intellij.ide.ui.laf.darcula.DarculaLaf.loadIcon
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -116,7 +115,7 @@ private class LinkedAction(private val toolbar: IntelliJToolbar,
 
 
 private class ExportAction(private val toolbar: IntelliJToolbar) : DumbAwareAction("Export", "Export the session",
-        loadIcon("/ic_save.png")) {
+        ExportAction::class.java.loadIcon("/ic_save.png")) {
 
     override fun actionPerformed(e: AnActionEvent?) {
         toolbar.listener?.onExportSelected()
@@ -125,7 +124,7 @@ private class ExportAction(private val toolbar: IntelliJToolbar) : DumbAwareActi
 }
 
 private class ClearAction(private val toolbar: IntelliJToolbar) : DumbAwareAction("Clear", "Clear current session",
-        loadIcon("/ic_delete.png")) {
+        ClearAction::class.java.loadIcon("/ic_delete.png")) {
 
     override fun actionPerformed(e: AnActionEvent?) {
         toolbar.listener?.onClearSelected()
@@ -135,7 +134,7 @@ private class ClearAction(private val toolbar: IntelliJToolbar) : DumbAwareActio
 
 private class ConfigureBreakpointsAction(private val toolbar: IntelliJToolbar) :
         DumbAwareAction("Configure debugger", "Configure debugger",
-                "/viewBreakpoints.png".loadIcon<ConfigureBreakpointsAction>()) {
+                ConfigureBreakpointsAction::class.java.loadIcon("/viewBreakpoints.png")) {
 
     override fun actionPerformed(e: AnActionEvent?) {
         toolbar.listener?.onConfigureBreakpointsSelected()
