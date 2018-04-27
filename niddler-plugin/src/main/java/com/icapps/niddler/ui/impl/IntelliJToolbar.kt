@@ -115,7 +115,7 @@ private class LinkedAction(private val toolbar: IntelliJToolbar,
 
 
 private class ExportAction(private val toolbar: IntelliJToolbar) : DumbAwareAction("Export", "Export the session",
-        ExportAction::class.java.loadIcon("/ic_save.png")) {
+        toolbar.loadIcon("/ic_save.png")) {
 
     override fun actionPerformed(e: AnActionEvent?) {
         toolbar.listener?.onExportSelected()
@@ -124,7 +124,7 @@ private class ExportAction(private val toolbar: IntelliJToolbar) : DumbAwareActi
 }
 
 private class ClearAction(private val toolbar: IntelliJToolbar) : DumbAwareAction("Clear", "Clear current session",
-        ClearAction::class.java.loadIcon("/ic_delete.png")) {
+        toolbar.loadIcon("/ic_delete.png")) {
 
     override fun actionPerformed(e: AnActionEvent?) {
         toolbar.listener?.onClearSelected()
@@ -134,7 +134,7 @@ private class ClearAction(private val toolbar: IntelliJToolbar) : DumbAwareActio
 
 private class ConfigureBreakpointsAction(private val toolbar: IntelliJToolbar) :
         DumbAwareAction("Configure debugger", "Configure debugger",
-                ConfigureBreakpointsAction::class.java.loadIcon("/viewBreakpoints.png")) {
+                toolbar.loadIcon("/viewBreakpoints.png")) {
 
     override fun actionPerformed(e: AnActionEvent?) {
         toolbar.listener?.onConfigureBreakpointsSelected()
