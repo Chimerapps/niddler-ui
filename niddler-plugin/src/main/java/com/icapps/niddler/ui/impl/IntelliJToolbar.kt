@@ -1,6 +1,9 @@
 package com.icapps.niddler.ui.impl
 
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
+import com.icapps.niddler.ui.impl.IntelliJToolbar.Companion.MODE_DEBUG
+import com.icapps.niddler.ui.impl.IntelliJToolbar.Companion.MODE_LINKED
+import com.icapps.niddler.ui.impl.IntelliJToolbar.Companion.MODE_TIMELINE
 import com.icapps.niddler.ui.util.loadIcon
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
@@ -17,9 +20,15 @@ import javax.swing.JComponent
  */
 class IntelliJToolbar(panel: SimpleToolWindowPanel) : NiddlerMainToolbar {
 
+    companion object {
+        const val MODE_TIMELINE = 0
+        const val MODE_LINKED = 1
+        const val MODE_DEBUG = 2
+    }
+
     override var listener: NiddlerMainToolbar.ToolbarListener? = null
 
-    internal var mode: Int = 0
+    internal var mode: Int = MODE_TIMELINE
     internal var breakpointsMuted = false
 
     internal val internal: ActionToolbar
@@ -33,10 +42,14 @@ class IntelliJToolbar(panel: SimpleToolWindowPanel) : NiddlerMainToolbar {
         val chronologicalIconSelected = loadIcon("/ic_chronological_selected.png")
 
         val linkedIcon = loadIcon("/ic_link.png")
-        val linkedIconSelected = loadIcon("/ic_link.png")
+        val linkedIconSelected = linkedIcon
+
+        val debugViewIcon = loadIcon("/ic_debug_active.png")
+        val debugViewIconSelected = debugViewIcon
 
         group.add(TimelineAction(this, chronologicalIcon, chronologicalIconSelected))
         group.add(LinkedAction(this, linkedIcon, linkedIconSelected))
+        group.add(DebugViewAction(this, debugViewIcon, debugViewIconSelected))
 
         group.addSeparator()
         group.add(ClearAction(this))
@@ -66,13 +79,13 @@ private class TimelineAction(private val toolbar: IntelliJToolbar,
                              private val selectedIcon: Icon) : DumbAwareAction("Chronological",
         "View messages in chronological order, showing them in order which they occurred", selectedIcon) {
 
-    private var lastMode = 0
+    private var lastMode = MODE_TIMELINE
 
     override fun update(e: AnActionEvent) {
         if (toolbar.mode == lastMode)
             return
 
-        if (toolbar.mode == 0) {
+        if (toolbar.mode == MODE_TIMELINE) {
             e.presentation.icon = selectedIcon
         } else {
             e.presentation.icon = defaultIcon
@@ -82,7 +95,7 @@ private class TimelineAction(private val toolbar: IntelliJToolbar,
 
     override fun actionPerformed(e: AnActionEvent) {
         toolbar.listener?.onTimelineSelected()
-        toolbar.mode = 0
+        toolbar.mode = MODE_TIMELINE
         toolbar.internal.updateActionsImmediately()
     }
 }
@@ -92,13 +105,13 @@ private class LinkedAction(private val toolbar: IntelliJToolbar,
                            private val selectedIcon: Icon) : DumbAwareAction("Linked mode",
         "View messages in linked mode. Showing the request and response grouped together. When supported, this mode will also show the actual network requests", defaultIcon) {
 
-    private var lastMode = 1
+    private var lastMode = MODE_LINKED
 
     override fun update(e: AnActionEvent) {
         if (toolbar.mode == lastMode)
             return
 
-        if (toolbar.mode == 1) {
+        if (toolbar.mode == MODE_LINKED) {
             e.presentation.icon = selectedIcon
         } else {
             e.presentation.icon = defaultIcon
@@ -109,6 +122,32 @@ private class LinkedAction(private val toolbar: IntelliJToolbar,
     override fun actionPerformed(e: AnActionEvent) {
         toolbar.listener?.onLinkedSelected()
         toolbar.mode = 1
+        toolbar.internal.updateActionsImmediately()
+    }
+}
+
+private class DebugViewAction(private val toolbar: IntelliJToolbar,
+                              private val defaultIcon: Icon,
+                              private val selectedIcon: Icon) : DumbAwareAction("Debug view",
+        "Show debugger view", defaultIcon) {
+
+    private var lastMode = MODE_DEBUG
+
+    override fun update(e: AnActionEvent) {
+        if (toolbar.mode == lastMode)
+            return
+
+        if (toolbar.mode == MODE_DEBUG) {
+            e.presentation.icon = selectedIcon
+        } else {
+            e.presentation.icon = defaultIcon
+        }
+        lastMode = toolbar.mode
+    }
+
+    override fun actionPerformed(e: AnActionEvent?) {
+        toolbar.listener?.onLinkedSelected()
+        toolbar.mode = MODE_DEBUG
         toolbar.internal.updateActionsImmediately()
     }
 }

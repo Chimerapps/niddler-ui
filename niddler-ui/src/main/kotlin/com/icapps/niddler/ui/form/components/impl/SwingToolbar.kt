@@ -52,6 +52,17 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
         }
         toolbar.add(buttonLinkedMode)
 
+        val buttonDebugView = JToggleButton().apply {
+            isFocusPainted = true
+            icon = loadIcon("/ic_debug_active.png")
+            margin = Insets(0, 2, 0, 2)
+            maximumSize = Dimension(32, 32)
+            minimumSize = Dimension(32, 32)
+            preferredSize = Dimension(32, 32)
+            text = ""
+        }
+        toolbar.add(buttonDebugView)
+
         val buttonClear = JButton().apply {
             icon = loadIcon("/ic_delete.png")
             text = ""
@@ -93,6 +104,7 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
         val buttonGroup = ButtonGroup()
         buttonGroup.add(buttonTimeline)
         buttonGroup.add(buttonLinkedMode)
+        buttonGroup.add(buttonDebugView)
 
         buttonTimeline.addItemListener { event ->
             if (event.stateChange == ItemEvent.SELECTED) {
@@ -102,6 +114,11 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
         buttonLinkedMode.addItemListener { event ->
             if (event.stateChange == ItemEvent.SELECTED) {
                 listener?.onLinkedSelected()
+            }
+        }
+        buttonDebugView.addItemListener { event ->
+            if (event.stateChange == ItemEvent.SELECTED) {
+                listener?.onDebuggerViewSelected()
             }
         }
         buttonClear.addActionListener {

@@ -16,6 +16,8 @@ interface NiddlerMainToolbar {
 
         fun onLinkedSelected()
 
+        fun onDebuggerViewSelected()
+
         fun onClearSelected()
 
         fun onExportSelected()

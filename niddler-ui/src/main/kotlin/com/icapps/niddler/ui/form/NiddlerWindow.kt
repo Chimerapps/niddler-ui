@@ -287,6 +287,10 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages.storage)
     }
 
+    override fun onDebuggerViewSelected() {
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun onClearSelected() {
         messages.storage.clear()
         if (messageMode == MessageMode.TIMELINE)

@@ -16,10 +16,10 @@ fun simpleAction(title: String = "", icon: String? = null, listener: (event: Act
     }
 }
 
-fun <T> String.loadIcon(): ImageIcon {
-    return loadIcon(this)
-}
-
 fun Any.loadIcon(path: String): ImageIcon {
     return ImageIcon(javaClass.getResource(path))
+}
+
+inline fun <reified T> String.loadIcon(): ImageIcon {
+    return ImageIcon(T::class.java.getResource(this))
 }
