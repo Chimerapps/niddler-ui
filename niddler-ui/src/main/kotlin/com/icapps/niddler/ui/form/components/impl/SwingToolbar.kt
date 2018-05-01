@@ -17,10 +17,29 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
     override var listener: NiddlerMainToolbar.ToolbarListener? = null
     private val buttonMuteBreakpoints: JButton
 
+    private val buttonDebugView: JToggleButton
+
+    private val debugViewIcon: Icon
+    private val debugWarningViewIcon: Icon
+
+    override var hasWaitingBreakpoint: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                buttonDebugView.icon = if (value)
+                    debugWarningViewIcon
+                else
+                    debugViewIcon
+            }
+        }
+
     init {
         val actionPanel = JPanel()
         actionPanel.layout = BorderLayout(0, 0)
         root.add(actionPanel, BorderLayout.WEST)
+
+        debugViewIcon = loadIcon("/ic_debug_active.png")
+        debugWarningViewIcon = loadIcon("/ic_debug_active_warning.png")
 
         val toolbar = JToolBar()
         toolbar.isFloatable = false
@@ -52,9 +71,9 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
         }
         toolbar.add(buttonLinkedMode)
 
-        val buttonDebugView = JToggleButton().apply {
+        buttonDebugView = JToggleButton().apply {
             isFocusPainted = true
-            icon = loadIcon("/ic_debug_active.png")
+            icon = debugViewIcon
             margin = Insets(0, 2, 0, 2)
             maximumSize = Dimension(32, 32)
             minimumSize = Dimension(32, 32)

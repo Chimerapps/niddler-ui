@@ -5,6 +5,8 @@ import com.icapps.niddler.ui.form.NiddlerWindow
 import com.icapps.niddler.ui.form.components.impl.SwingComponentsFactory
 import com.icapps.niddler.ui.form.impl.SwingMainThreadDispatcher
 import com.icapps.niddler.ui.form.impl.SwingNiddlerUserInterface
+import com.icapps.niddler.ui.util.SwingImageHelper
+import com.icapps.niddler.ui.util.iconLoader
 import java.awt.BorderLayout
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
@@ -19,6 +21,7 @@ import javax.swing.WindowConstants
  */
 fun main(args: Array<String>) {
     MainThreadDispatcher.instance = SwingMainThreadDispatcher()
+    iconLoader = SwingImageHelper()
 
     val factory = SwingComponentsFactory()
 

@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
 import javax.swing.JComponent
 
@@ -29,6 +30,14 @@ class IntelliJToolbar(panel: SimpleToolWindowPanel) : NiddlerMainToolbar {
     internal var mode: Int = MODE_TIMELINE
     internal var breakpointsMuted = false
 
+    override var hasWaitingBreakpoint: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                internal.updateActionsImmediately()
+            }
+        }
+
     internal val internal: ActionToolbar
     val component: JComponent
         get() = internal.component
@@ -39,10 +48,11 @@ class IntelliJToolbar(panel: SimpleToolWindowPanel) : NiddlerMainToolbar {
         val chronologicalIcon = loadIcon("/ic_chronological.png")
         val linkedIcon = loadIcon("/ic_link.png")
         val debugViewIcon = loadIcon("/ic_debug_active.png")
+        val debugWarningView = loadIcon("/ic_debug_active_warning.png")
 
         group.add(TimelineAction(this, chronologicalIcon))
         group.add(LinkedAction(this, linkedIcon))
-        group.add(DebugViewAction(this, debugViewIcon))
+        group.add(DebugViewAction(this, debugViewIcon, debugWarningView))
 
         group.addSeparator()
         group.add(ClearAction(this))
@@ -104,8 +114,23 @@ private class LinkedAction(private val toolbar: IntelliJToolbar,
 }
 
 private class DebugViewAction(private val toolbar: IntelliJToolbar,
-                              private val defaultIcon: Icon) : ToggleAction("Debug view",
+                              private val defaultIcon: Icon,
+                              private val warningIcon: Icon) : ToggleAction("Debug view",
         "Show debugger view", defaultIcon), DumbAware {
+
+    private var lastWarningStatus = false
+
+    override fun update(e: AnActionEvent) {
+        super.update(e)
+        if (toolbar.hasWaitingBreakpoint == lastWarningStatus)
+            return
+
+        lastWarningStatus = toolbar.hasWaitingBreakpoint
+        if (lastWarningStatus)
+            e.presentation.icon = warningIcon
+        else
+            e.presentation.icon = defaultIcon
+    }
 
     override fun isSelected(e: AnActionEvent?): Boolean {
         return toolbar.mode == MODE_DEBUG

@@ -15,6 +15,9 @@ object UIUtil {
 
     val DECORATED_ROW_BG_COLOR: Color = Color(242, 245, 249)
 
+    private var isRetinaChecked = false
+    private var isRetina = false
+
     fun getDecoratedRowColor(): Color {
         return DECORATED_ROW_BG_COLOR
     }
