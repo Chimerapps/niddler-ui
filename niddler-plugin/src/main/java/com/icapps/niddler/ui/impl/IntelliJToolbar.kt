@@ -5,10 +5,8 @@ import com.icapps.niddler.ui.impl.IntelliJToolbar.Companion.MODE_DEBUG
 import com.icapps.niddler.ui.impl.IntelliJToolbar.Companion.MODE_LINKED
 import com.icapps.niddler.ui.impl.IntelliJToolbar.Companion.MODE_TIMELINE
 import com.icapps.niddler.ui.util.loadIcon
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionToolbar
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import javax.swing.Icon
@@ -39,17 +37,12 @@ class IntelliJToolbar(panel: SimpleToolWindowPanel) : NiddlerMainToolbar {
         val group = DefaultActionGroup()
 
         val chronologicalIcon = loadIcon("/ic_chronological.png")
-        val chronologicalIconSelected = loadIcon("/ic_chronological_selected.png")
-
         val linkedIcon = loadIcon("/ic_link.png")
-        val linkedIconSelected = linkedIcon
-
         val debugViewIcon = loadIcon("/ic_debug_active.png")
-        val debugViewIconSelected = debugViewIcon
 
-        group.add(TimelineAction(this, chronologicalIcon, chronologicalIconSelected))
-        group.add(LinkedAction(this, linkedIcon, linkedIconSelected))
-        group.add(DebugViewAction(this, debugViewIcon, debugViewIconSelected))
+        group.add(TimelineAction(this, chronologicalIcon))
+        group.add(LinkedAction(this, linkedIcon))
+        group.add(DebugViewAction(this, debugViewIcon))
 
         group.addSeparator()
         group.add(ClearAction(this))
@@ -75,86 +68,61 @@ class IntelliJToolbar(panel: SimpleToolWindowPanel) : NiddlerMainToolbar {
 }
 
 private class TimelineAction(private val toolbar: IntelliJToolbar,
-                             private val defaultIcon: Icon,
-                             private val selectedIcon: Icon) : DumbAwareAction("Chronological",
-        "View messages in chronological order, showing them in order which they occurred", selectedIcon) {
+                             private val defaultIcon: Icon) : ToggleAction("Chronological",
+        "View messages in chronological order, showing them in order which they occurred", defaultIcon),
+        DumbAware {
 
-    private var lastMode = MODE_TIMELINE
-
-    override fun update(e: AnActionEvent) {
-        if (toolbar.mode == lastMode)
-            return
-
-        if (toolbar.mode == MODE_TIMELINE) {
-            e.presentation.icon = selectedIcon
-        } else {
-            e.presentation.icon = defaultIcon
-        }
-        lastMode = toolbar.mode
+    override fun isSelected(e: AnActionEvent?): Boolean {
+        return toolbar.mode == MODE_TIMELINE
     }
 
-    override fun actionPerformed(e: AnActionEvent) {
-        toolbar.listener?.onTimelineSelected()
-        toolbar.mode = MODE_TIMELINE
-        toolbar.internal.updateActionsImmediately()
+    override fun setSelected(e: AnActionEvent?, state: Boolean) {
+        if (state) {
+            toolbar.listener?.onTimelineSelected()
+            toolbar.mode = MODE_TIMELINE
+            toolbar.internal.updateActionsImmediately()
+        }
     }
 }
 
 private class LinkedAction(private val toolbar: IntelliJToolbar,
-                           private val defaultIcon: Icon,
-                           private val selectedIcon: Icon) : DumbAwareAction("Linked mode",
-        "View messages in linked mode. Showing the request and response grouped together. When supported, this mode will also show the actual network requests", defaultIcon) {
+                           private val defaultIcon: Icon) : ToggleAction("Linked mode",
+        "View messages in linked mode. Showing the request and response grouped together. When supported, this mode will also show the actual network requests", defaultIcon),
+        DumbAware {
 
-    private var lastMode = MODE_LINKED
-
-    override fun update(e: AnActionEvent) {
-        if (toolbar.mode == lastMode)
-            return
-
-        if (toolbar.mode == MODE_LINKED) {
-            e.presentation.icon = selectedIcon
-        } else {
-            e.presentation.icon = defaultIcon
-        }
-        lastMode = toolbar.mode
+    override fun isSelected(e: AnActionEvent?): Boolean {
+        return toolbar.mode == MODE_LINKED
     }
 
-    override fun actionPerformed(e: AnActionEvent) {
-        toolbar.listener?.onLinkedSelected()
-        toolbar.mode = 1
-        toolbar.internal.updateActionsImmediately()
+    override fun setSelected(e: AnActionEvent?, state: Boolean) {
+        if (state) {
+            toolbar.listener?.onLinkedSelected()
+            toolbar.mode = MODE_LINKED
+            toolbar.internal.updateActionsImmediately()
+        }
     }
 }
 
 private class DebugViewAction(private val toolbar: IntelliJToolbar,
-                              private val defaultIcon: Icon,
-                              private val selectedIcon: Icon) : DumbAwareAction("Debug view",
-        "Show debugger view", defaultIcon) {
+                              private val defaultIcon: Icon) : ToggleAction("Debug view",
+        "Show debugger view", defaultIcon), DumbAware {
 
-    private var lastMode = MODE_DEBUG
-
-    override fun update(e: AnActionEvent) {
-        if (toolbar.mode == lastMode)
-            return
-
-        if (toolbar.mode == MODE_DEBUG) {
-            e.presentation.icon = selectedIcon
-        } else {
-            e.presentation.icon = defaultIcon
-        }
-        lastMode = toolbar.mode
+    override fun isSelected(e: AnActionEvent?): Boolean {
+        return toolbar.mode == MODE_DEBUG
     }
 
-    override fun actionPerformed(e: AnActionEvent?) {
-        toolbar.listener?.onLinkedSelected()
-        toolbar.mode = MODE_DEBUG
-        toolbar.internal.updateActionsImmediately()
+    override fun setSelected(e: AnActionEvent?, state: Boolean) {
+        if (state) {
+            toolbar.listener?.onLinkedSelected()
+            toolbar.mode = MODE_DEBUG
+            toolbar.internal.updateActionsImmediately()
+        }
     }
 }
 
 
-private class ExportAction(private val toolbar: IntelliJToolbar) : DumbAwareAction("Export", "Export the session",
-        toolbar.loadIcon("/ic_save.png")) {
+private class ExportAction(private val toolbar: IntelliJToolbar)
+    : DumbAwareAction("Export", "Export the session", toolbar.loadIcon("/ic_save.png")) {
 
     override fun actionPerformed(e: AnActionEvent?) {
         toolbar.listener?.onExportSelected()
