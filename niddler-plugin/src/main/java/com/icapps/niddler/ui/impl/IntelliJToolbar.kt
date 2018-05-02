@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.SimpleToolWindowPanel
-import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
 import javax.swing.JComponent
 

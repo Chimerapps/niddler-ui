@@ -2,13 +2,12 @@ package com.icapps.niddler.ui.util
 
 import java.awt.Image
 import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
-import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.DataFlavor
+import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException
+import java.io.ByteArrayInputStream
 import java.io.IOException
 import javax.imageio.ImageIO
-import java.io.ByteArrayInputStream
 
 
 /**

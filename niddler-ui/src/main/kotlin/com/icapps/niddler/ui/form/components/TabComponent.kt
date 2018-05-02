@@ -13,6 +13,6 @@ interface TabComponent : UIComponent {
 
     val numTabs: Int
 
-    operator fun get(index: Int) : Component
+    operator fun get(index: Int): Component
 
 }

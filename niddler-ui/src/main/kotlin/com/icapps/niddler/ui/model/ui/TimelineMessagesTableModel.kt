@@ -7,7 +7,6 @@ import com.icapps.niddler.ui.util.loadIcon
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.Icon
-import javax.swing.ImageIcon
 import javax.swing.event.TableModelEvent
 import javax.swing.event.TableModelListener
 import javax.swing.table.TableModel
@@ -19,12 +18,18 @@ import javax.swing.table.TableModel
 class TimelineMessagesTableModel : TableModel, MessagesModel {
 
     companion object {
-        @JvmStatic private val INDEX_TIMESTAMP = 0
-        @JvmStatic private val INDEX_DIRECTION = 1
-        @JvmStatic private val INDEX_METHOD = 2
-        @JvmStatic private val INDEX_URL = 3
-        @JvmStatic private val INDEX_STATUS_CODE = 4
-        @JvmStatic private val INDEX_FORMAT = 5
+        @JvmStatic
+        private val INDEX_TIMESTAMP = 0
+        @JvmStatic
+        private val INDEX_DIRECTION = 1
+        @JvmStatic
+        private val INDEX_METHOD = 2
+        @JvmStatic
+        private val INDEX_URL = 3
+        @JvmStatic
+        private val INDEX_STATUS_CODE = 4
+        @JvmStatic
+        private val INDEX_FORMAT = 5
     }
 
     private val listeners: MutableSet<TableModelListener> = hashSetOf()

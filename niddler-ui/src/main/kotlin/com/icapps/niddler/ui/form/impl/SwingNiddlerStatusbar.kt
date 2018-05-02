@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.impl
 
-import com.icapps.niddler.ui.form.ui.NiddlerStatusbar
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
+import com.icapps.niddler.ui.form.ui.NiddlerStatusbar
 import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import javax.swing.BorderFactory

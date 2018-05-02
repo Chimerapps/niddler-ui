@@ -1,10 +1,8 @@
 package com.icapps.niddler.ui.form
 
-import com.icapps.niddler.ui.form.components.SplitPane
-import com.icapps.niddler.ui.model.ui.LinkedMessagesRenderer
-import java.awt.*
+import java.awt.Point
 import java.awt.event.MouseEvent
-import javax.swing.*
+import javax.swing.JTable
 
 /**
  * @author Nicola Verbeeck

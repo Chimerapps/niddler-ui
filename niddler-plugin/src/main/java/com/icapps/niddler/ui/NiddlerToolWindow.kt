@@ -16,7 +16,6 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import java.util.*
 import javax.swing.Icon
-import javax.swing.ImageIcon
 import javax.swing.event.AncestorEvent
 import javax.swing.event.AncestorListener
 

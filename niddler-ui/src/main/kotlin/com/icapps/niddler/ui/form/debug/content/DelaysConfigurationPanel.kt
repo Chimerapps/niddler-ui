@@ -1,9 +1,9 @@
 package com.icapps.niddler.ui.form.debug.content
 
-import com.icapps.niddler.ui.addChangeListener
-import com.icapps.niddler.ui.bold
 import com.icapps.niddler.lib.debugger.model.DebuggerDelays
 import com.icapps.niddler.lib.debugger.model.ModifiableDebuggerConfiguration
+import com.icapps.niddler.ui.addChangeListener
+import com.icapps.niddler.ui.bold
 import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.left
 import java.awt.BorderLayout

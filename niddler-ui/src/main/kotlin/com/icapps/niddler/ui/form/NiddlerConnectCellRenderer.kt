@@ -7,7 +7,6 @@ import com.icapps.niddler.ui.util.loadIcon
 import org.apache.http.util.TextUtils
 import java.awt.Color
 import java.awt.Component
-import javax.swing.ImageIcon
 import javax.swing.JTree
 import javax.swing.tree.DefaultTreeCellRenderer
 
