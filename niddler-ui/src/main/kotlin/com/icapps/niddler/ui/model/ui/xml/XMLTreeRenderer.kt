@@ -1,11 +1,9 @@
 package com.icapps.niddler.ui.model.ui.xml
 
-import com.icapps.niddler.ui.model.ui.xml.XMLTreeNode
 import com.icapps.niddler.ui.util.loadIcon
 import java.awt.Component
 import java.awt.Font
 import javax.swing.Icon
-import javax.swing.ImageIcon
 import javax.swing.JTree
 import javax.swing.tree.DefaultTreeCellRenderer
 

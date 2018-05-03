@@ -55,7 +55,7 @@ class NiddlerIndeterminateProgressBar : JPanel() {
 
     fun stop() {
         isVisible = false
-        if (indeterminateTimer.isRunning){
+        if (indeterminateTimer.isRunning) {
             indeterminateTimer.stop()
         }
     }

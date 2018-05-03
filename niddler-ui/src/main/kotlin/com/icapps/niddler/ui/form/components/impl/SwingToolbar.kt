@@ -17,10 +17,29 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
     override var listener: NiddlerMainToolbar.ToolbarListener? = null
     private val buttonMuteBreakpoints: JButton
 
+    private val buttonDebugView: JToggleButton
+
+    private val debugViewIcon: Icon
+    private val debugWarningViewIcon: Icon
+
+    override var hasWaitingBreakpoint: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                buttonDebugView.icon = if (value)
+                    debugWarningViewIcon
+                else
+                    debugViewIcon
+            }
+        }
+
     init {
         val actionPanel = JPanel()
         actionPanel.layout = BorderLayout(0, 0)
         root.add(actionPanel, BorderLayout.WEST)
+
+        debugViewIcon = loadIcon("/ic_debug_active.png")
+        debugWarningViewIcon = loadIcon("/ic_debug_active_warning.png")
 
         val toolbar = JToolBar()
         toolbar.isFloatable = false
@@ -51,6 +70,17 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
             text = ""
         }
         toolbar.add(buttonLinkedMode)
+
+        buttonDebugView = JToggleButton().apply {
+            isFocusPainted = true
+            icon = debugViewIcon
+            margin = Insets(0, 2, 0, 2)
+            maximumSize = Dimension(32, 32)
+            minimumSize = Dimension(32, 32)
+            preferredSize = Dimension(32, 32)
+            text = ""
+        }
+        toolbar.add(buttonDebugView)
 
         val buttonClear = JButton().apply {
             icon = loadIcon("/ic_delete.png")
@@ -93,6 +123,7 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
         val buttonGroup = ButtonGroup()
         buttonGroup.add(buttonTimeline)
         buttonGroup.add(buttonLinkedMode)
+        buttonGroup.add(buttonDebugView)
 
         buttonTimeline.addItemListener { event ->
             if (event.stateChange == ItemEvent.SELECTED) {
@@ -102,6 +133,11 @@ class SwingToolbar(root: JComponent) : NiddlerMainToolbar {
         buttonLinkedMode.addItemListener { event ->
             if (event.stateChange == ItemEvent.SELECTED) {
                 listener?.onLinkedSelected()
+            }
+        }
+        buttonDebugView.addItemListener { event ->
+            if (event.stateChange == ItemEvent.SELECTED) {
+                listener?.onDebuggerViewSelected()
             }
         }
         buttonClear.addActionListener {

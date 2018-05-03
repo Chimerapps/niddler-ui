@@ -1,9 +1,9 @@
 package com.icapps.niddler.ui.form.debug.impl
 
-import com.icapps.niddler.ui.button
 import com.icapps.niddler.lib.debugger.model.LocalRequestOverride
 import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.lib.debugger.model.saved.TemporaryDebuggerConfiguration
+import com.icapps.niddler.ui.button
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.debug.ConfigurationModel

@@ -99,7 +99,7 @@ abstract class LoggerRt {
                     override fun debug(message: String?, t: Throwable?) {
                         try {
                             myDebug.invoke(logger, message, t)
-                        } catch(ignored: Exception) {
+                        } catch (ignored: Exception) {
                         }
                     }
 

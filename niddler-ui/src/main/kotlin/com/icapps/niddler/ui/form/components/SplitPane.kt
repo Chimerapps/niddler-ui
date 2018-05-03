@@ -1,7 +1,6 @@
 package com.icapps.niddler.ui.form.components
 
 import java.awt.Component
-import javax.swing.JComponent
 
 /**
  * @author Nicola Verbeeck

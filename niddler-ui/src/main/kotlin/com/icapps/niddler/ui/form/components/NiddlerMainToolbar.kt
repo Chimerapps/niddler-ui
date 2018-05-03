@@ -8,6 +8,8 @@ interface NiddlerMainToolbar {
 
     var listener: ToolbarListener?
 
+    var hasWaitingBreakpoint: Boolean
+
     fun onBreakpointsMuted(muted: Boolean)
 
     interface ToolbarListener {
@@ -15,6 +17,8 @@ interface NiddlerMainToolbar {
         fun onTimelineSelected()
 
         fun onLinkedSelected()
+
+        fun onDebuggerViewSelected()
 
         fun onClearSelected()
 

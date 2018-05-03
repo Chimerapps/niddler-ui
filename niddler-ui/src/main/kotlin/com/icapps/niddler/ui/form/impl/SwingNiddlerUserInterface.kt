@@ -7,7 +7,10 @@ import com.icapps.niddler.ui.form.components.HintTextField
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.impl.SwingToolbar
-import com.icapps.niddler.ui.form.ui.*
+import com.icapps.niddler.ui.form.ui.NiddlerDetailUserInterface
+import com.icapps.niddler.ui.form.ui.NiddlerOverviewUserInterface
+import com.icapps.niddler.ui.form.ui.NiddlerStatusbar
+import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
 import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.awt.Component
