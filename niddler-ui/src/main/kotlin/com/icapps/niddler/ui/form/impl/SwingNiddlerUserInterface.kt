@@ -7,6 +7,7 @@ import com.icapps.niddler.ui.form.components.HintTextField
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.impl.SwingToolbar
+import com.icapps.niddler.ui.form.debug.view.DebugView
 import com.icapps.niddler.ui.form.ui.NiddlerDetailUserInterface
 import com.icapps.niddler.ui.form.ui.NiddlerOverviewUserInterface
 import com.icapps.niddler.ui.form.ui.NiddlerStatusbar
@@ -46,6 +47,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     private lateinit var splitPane: SplitPane
     override lateinit var disconnectButton: Component
     private lateinit var messagesScroller: JScrollPane
+    private val debugView = DebugView(componentsFactory)
 
 
     init {
@@ -149,10 +151,40 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     }
 
     override fun showTable() {
+        if (splitPane.asComponent.parent == null) {
+            uiContainer().let {
+                it.remove(debugView)
+                it.add(splitPane.asComponent)
+                it.invalidate()
+                it.repaint()
+                it.revalidate()
+            }
+        }
         messagesScroller.setViewportView(overview.messagesAsTable)
     }
 
     override fun showLinked() {
+        if (splitPane.asComponent.parent == null) {
+            uiContainer().let {
+                it.remove(debugView)
+                it.add(splitPane.asComponent)
+                it.invalidate()
+                it.repaint()
+                it.revalidate()
+            }
+        }
         messagesScroller.setViewportView(overview.messagesAsTree)
+    }
+
+    override fun showDebugView() {
+        if (splitPane.asComponent.parent != null) {
+            uiContainer().let {
+                it.remove(splitPane.asComponent)
+                it.add(debugView)
+                it.invalidate()
+                it.repaint()
+                it.revalidate()
+            }
+        }
     }
 }

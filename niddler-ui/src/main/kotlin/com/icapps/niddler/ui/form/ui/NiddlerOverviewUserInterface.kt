@@ -16,5 +16,6 @@ interface NiddlerOverviewUserInterface {
 
     fun showTable()
     fun showLinked()
+    fun showDebugView()
 
 }

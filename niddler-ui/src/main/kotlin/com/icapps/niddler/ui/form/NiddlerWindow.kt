@@ -288,7 +288,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     }
 
     override fun onDebuggerViewSelected() {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        windowContents.overview.showDebugView()
     }
 
     override fun onClearSelected() {
