@@ -39,10 +39,10 @@ class HeaderEditorPanel(private val changeListener: () -> Unit) : JPanel(BorderL
         add(JScrollPane(table), BorderLayout.CENTER)
         val toolbar = JToolBar()
         toolbar.isFloatable = false
-        toolbar.add(simpleAction(icon = "/add.png") {
+        toolbar.add(simpleAction<HeaderEditorPanel>(icon = "/add.png") {
             model.addRow(arrayOf("", ""))
         })
-        toolbar.add(simpleAction(icon = "/remove.png") {
+        toolbar.add(simpleAction<HeaderEditorPanel>(icon = "/remove.png") {
             if (model.rowCount == 0)
                 return@simpleAction
             if (table.selectedRow != -1)

@@ -9,8 +9,10 @@ import javax.swing.ImageIcon
 /**
  * @author nicolaverbeeck
  */
-fun simpleAction(title: String = "", icon: String? = null, listener: (event: ActionEvent) -> Unit): Action {
-    return object : AbstractAction(title, icon?.loadIcon<Any>()) {
+inline fun <reified T> simpleAction(title: String = "",
+                                    icon: String? = null,
+                                    crossinline listener: (event: ActionEvent) -> Unit): Action {
+    return object : AbstractAction(title, icon?.let { iconLoader.loadImage(T::class.java, it) }) {
         override fun actionPerformed(e: ActionEvent) {
             listener(e)
         }

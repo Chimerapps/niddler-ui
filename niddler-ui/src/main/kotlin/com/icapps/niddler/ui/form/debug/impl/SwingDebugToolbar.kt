@@ -18,23 +18,23 @@ class SwingDebugToolbar : DebugToolbar, JToolBar(JToolBar.HORIZONTAL) {
 
     init {
         isFloatable = false
-        menu.add(simpleAction("Add blacklist") {
+        menu.add(simpleAction<SwingDebugToolbar>("Add blacklist") {
             listener?.onAddBlacklist()
         })
-        menu.add(simpleAction("Add request override") {
+        menu.add(simpleAction<SwingDebugToolbar>("Add request override") {
             listener?.onAddRequestOverride()
         })
-        menu.add(simpleAction("Add request intercept") {
+        menu.add(simpleAction<SwingDebugToolbar>("Add request intercept") {
             listener?.onAddResponseOverride()
         })
-        menu.add(simpleAction("Add response intercept") {
+        menu.add(simpleAction<SwingDebugToolbar>("Add response intercept") {
             listener?.addResponseInterceptor()
         })
 
-        addButton = add(simpleAction("Add", "/add.png") {
+        addButton = add(simpleAction<SwingDebugToolbar>("Add", "/add.png") {
             menu.show(addButton, addButton.x, addButton.y)
         })
-        removeButton = add(simpleAction("Remove", "/remove.png") {
+        removeButton = add(simpleAction<SwingDebugToolbar>("Remove", "/remove.png") {
             listener?.onRemoveClicked()
         })
     }
