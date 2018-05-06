@@ -30,6 +30,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
 
     private val waitingMessagesModel = MessagesModel()
     private val waitingMessagesList = JTable(waitingMessagesModel)
+    private val detailView = DebugDetailView()
 
     private val splitter = componentsFactory.createSplitPane()
 
@@ -65,7 +66,8 @@ class DebugView(private val componentsFactory: ComponentsFactory,
 
         add(splitter.asComponent, BorderLayout.CENTER)
         splitter.left = scroller
-        splitter.resizePriority = 1.0
+        splitter.right = detailView
+        splitter.resizePriority = .2
         splitter.asComponent.revalidate()
     }
 
