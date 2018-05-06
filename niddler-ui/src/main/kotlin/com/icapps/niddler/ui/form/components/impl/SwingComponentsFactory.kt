@@ -58,7 +58,9 @@ class SwingComponentsFactory : ComponentsFactory {
     }
 
     override fun loadSavedConfiguration(): DebuggerConfiguration {
-        return WrappingDebuggerConfiguration(getConfigFile(DEBUGGER_FILE))
+        getConfigFile(DEBUGGER_FILE).reader().use {
+            return WrappingDebuggerConfiguration(it)
+        }
     }
 
     override fun saveConfiguration(config: DebuggerConfiguration) {

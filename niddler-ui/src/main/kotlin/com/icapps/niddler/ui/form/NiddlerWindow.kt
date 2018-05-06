@@ -366,6 +366,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             debuggerSession = ConcreteDebuggingSession(debuggerInterface)
             onDebuggerAttached()
             currentDebuggerConfiguration?.let { debuggerSession?.applyConfiguration(it) }
+            debuggerSession!!.startSession()
         }
     }
 

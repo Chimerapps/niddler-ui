@@ -17,6 +17,8 @@ interface DebuggerInterface {
 
     fun updateDefaultResponses(items: Iterable<LocalRequestIntercept>)
 
+    fun updateResponseIntercepts(items: List<LocalResponseIntercept>)
+
     fun mute()
 
     fun unmute()
@@ -26,7 +28,6 @@ interface DebuggerInterface {
     fun debugDelays(): DebuggerDelays?
 
     fun connect()
-
     fun disconnect()
 }
 

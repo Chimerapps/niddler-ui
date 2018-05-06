@@ -1,9 +1,6 @@
 package com.icapps.niddler.lib.debugger.model.saved
 
-import com.icapps.niddler.lib.debugger.model.DebuggerDelays
-import com.icapps.niddler.lib.debugger.model.LocalRequestIntercept
-import com.icapps.niddler.lib.debugger.model.LocalRequestOverride
-import com.icapps.niddler.lib.debugger.model.ModifiableDebuggerConfiguration
+import com.icapps.niddler.lib.debugger.model.*
 import java.util.*
 
 /**
@@ -16,6 +13,7 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
     private val internalBlacklist: MutableList<DisableableItem<String>> = mutableListOf()
     private val internalRequestIntercept: MutableList<DisableableItem<LocalRequestIntercept>> = mutableListOf()
     private val internalRequestOverride: MutableList<DisableableItem<LocalRequestOverride>> = mutableListOf()
+    private val internalResponseIntercept: MutableList<DisableableItem<LocalResponseIntercept>> = mutableListOf()
     private var internalDelayConfiguration: DisableableItem<DebuggerDelays>
 
     override var delayConfiguration: DisableableItem<DebuggerDelays>
@@ -38,11 +36,17 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
         set(value) {
             throw IllegalStateException("Setting not allowed")
         }
+    override var responseIntercept: List<DisableableItem<LocalResponseIntercept>>
+        get() = internalResponseIntercept
+        set(value) {
+            throw IllegalStateException("Setting not allowed")
+        }
 
     init {
         delegate.blacklistConfiguration.mapTo(internalBlacklist) { it.copy() }
         delegate.requestIntercept.mapTo(internalRequestIntercept) { it.copy() }
         delegate.requestOverride.mapTo(internalRequestOverride) { it.copy() }
+        delegate.responseIntercept.mapTo(internalResponseIntercept) { it.copy() }
         internalDelayConfiguration = delegate.delayConfiguration
     }
 
@@ -138,6 +142,34 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
 
     override fun modifyRequestIntercept(intercept: LocalRequestIntercept, enabled: Boolean) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun addResponseIntercept(urlRegex: String?, method: String?, enabled: Boolean): String {
+        val id = UUID.randomUUID().toString()
+
+        internalResponseIntercept += DisableableItem(enabled, LocalResponseIntercept(id, enabled,
+                urlRegex, method, -1, response = null))
+
+        notifyChange()
+        return id
+    }
+
+    override fun removeResponseIntercept(id: String) {
+        if (internalResponseIntercept.removeIf { it.item.id == id })
+            notifyChange()
+    }
+
+    override fun setResponseInterceptActive(id: String, active: Boolean) {
+        val item = internalResponseIntercept.find { it.item.id == id }
+        item?.let {
+            it.enabled = active
+            notifyChange()
+        }
+    }
+
+    override fun modifyResponseIntercept(intercept: LocalResponseIntercept, enabled: Boolean) {
+        val index = internalResponseIntercept.indexOfFirst { it.item.id == intercept.id }
+        internalResponseIntercept[index] = DisableableItem(enabled, intercept.copy())
     }
 
     private fun notifyChange() {

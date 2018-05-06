@@ -38,4 +38,12 @@ interface ModifiableDebuggerConfiguration : DebuggerConfiguration {
 
     fun modifyRequestIntercept(intercept: LocalRequestIntercept, enabled: Boolean)
 
+
+    fun addResponseIntercept(urlRegex: String?, method: String?, enabled: Boolean): String
+
+    fun removeResponseIntercept(id: String)
+
+    fun setResponseInterceptActive(id: String, active: Boolean)
+
+    fun modifyResponseIntercept(intercept: LocalResponseIntercept, enabled: Boolean)
 }

@@ -5,6 +5,7 @@ import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.lib.debugger.model.saved.TemporaryDebuggerConfiguration
 import com.icapps.niddler.ui.button
 import com.icapps.niddler.ui.form.ComponentsFactory
+import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.debug.ConfigurationModel
 import com.icapps.niddler.ui.form.debug.DebugToolbar
@@ -95,6 +96,12 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
         configurationModel.onConfigurationChanged()
         isChanged = false
+
+        if (changingConfiguration.responseIntercept.isEmpty()) {
+            MainThreadDispatcher.dispatch {
+                changingConfiguration.addResponseIntercept(".*bootstrap", "GET", true)
+            }
+        }
     }
 
     override fun focusOnNode(node: ConfigurationNode<*>) {
