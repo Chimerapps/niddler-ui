@@ -99,7 +99,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
         if (changingConfiguration.responseIntercept.isEmpty()) {
             MainThreadDispatcher.dispatch {
-                changingConfiguration.addResponseIntercept(".*bootstrap", "GET", true)
+                changingConfiguration.addResponseIntercept(".*bootstrap.*", "GET", true)
             }
         }
     }

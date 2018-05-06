@@ -20,6 +20,7 @@ import com.intellij.ui.components.JBScrollPane
 import net.harawata.appdirs.AppDirsFactory
 import java.awt.Window
 import java.io.File
+import java.io.IOException
 import java.io.Reader
 import javax.swing.JComponent
 import javax.swing.JFileChooser
@@ -109,13 +110,21 @@ class IntelliJComponentsFactory(val project: Project?, val parent: Disposable) :
                 }
                 return null
             } else {
-                return File(fileChild.canonicalPath).reader()
+                try {
+                    return File(fileChild.canonicalPath).reader()
+                } catch (e: IOException) {
+                    return null
+                }
             }
         }
 
         val rootDir = File(AppDirsFactory.getInstance().getUserConfigDir("Niddler", null, null))
         rootDir.mkdirs()
-        return File(rootDir, name).reader()
+        try {
+            return File(rootDir, name).reader()
+        } catch (e: IOException) {
+            return null
+        }
     }
 
     private fun writeDirectoryBased(wrappingDebuggerConfiguration: WrappingDebuggerConfiguration) {

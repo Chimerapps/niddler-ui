@@ -48,7 +48,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     private lateinit var splitPane: SplitPane
     override lateinit var disconnectButton: Component
     private lateinit var messagesScroller: JScrollPane
-    private lateinit var debugView: DebugView
+    override lateinit var debugView: DebugView
 
     init {
         rootPanel = JPanel()

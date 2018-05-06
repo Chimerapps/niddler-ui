@@ -227,6 +227,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             registerMessageListener(this@NiddlerWindow)
             messages.attach(this)
         }
+        niddlerClient.debugListener = windowContents.debugView
         this.niddlerClient = niddlerClient
         niddlerClient.connect()
     }
@@ -367,6 +368,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             onDebuggerAttached()
             currentDebuggerConfiguration?.let { debuggerSession?.applyConfiguration(it) }
             debuggerSession!!.startSession()
+            onDebuggerActive()
         }
     }
 
