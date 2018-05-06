@@ -41,8 +41,8 @@ interface NiddlerDebugListener {
 
     fun onRequestOverride(message: NiddlerMessage): DebugRequest?
 
-    fun onRequestAction(messageId: String): DebugResponse?
+    fun onRequestAction(requestId: String): DebugResponse?
 
-    fun onResponseAction(messageId: String, response: NiddlerMessage): DebugResponse?
+    fun onResponseAction(requestId: String, response: NiddlerMessage): DebugResponse?
 
 }

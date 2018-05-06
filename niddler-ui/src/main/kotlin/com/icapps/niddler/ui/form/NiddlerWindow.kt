@@ -67,7 +67,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     private var niddlerClient: NiddlerClient? = null
 
     fun init() {
-        windowContents.init(messages.storage)
+        windowContents.init(messages)
         adbConnection = ADBBootstrap(sdkPathGuesses)
 
         windowContents.overview.messagesAsTable.apply {

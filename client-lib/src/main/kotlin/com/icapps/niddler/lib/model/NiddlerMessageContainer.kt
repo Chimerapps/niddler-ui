@@ -7,7 +7,7 @@ import com.icapps.niddler.lib.connection.model.NiddlerMessage
 /**
  * @author nicolaverbeeck
  */
-class NiddlerMessageContainer<T : NiddlerMessage>(private val converter: (NiddlerMessage) -> T,
+class NiddlerMessageContainer<T : NiddlerMessage>(val converter: (NiddlerMessage) -> T,
                                                   val storage: NiddlerMessageStorage<T>) {
 
     private val listeners: MutableSet<ParsedNiddlerMessageListener<T>> = hashSetOf()

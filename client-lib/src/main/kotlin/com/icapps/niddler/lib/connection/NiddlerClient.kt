@@ -136,15 +136,16 @@ class NiddlerClient(serverURI: URI?, val withDebugger: Boolean) : WebSocketClien
         return debugListener?.onRequestOverride(message)
     }
 
-    override fun onRequestAction(messageId: String): DebugResponse? {
-        return debugListener?.onRequestAction(messageId)
+    override fun onRequestAction(requestId: String): DebugResponse? {
+        return debugListener?.onRequestAction(requestId)
     }
 
-    override fun onResponseAction(messageId: String, response: NiddlerMessage): DebugResponse? {
-        return debugListener?.onResponseAction(messageId, response)
+    override fun onResponseAction(requestId: String, response: NiddlerMessage): DebugResponse? {
+        return debugListener?.onResponseAction(requestId, response)
     }
 
     override fun sendMessage(message: String) {
         send(message)
     }
 }
+

@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.form.ui
 
+import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.form.ComponentsFactory
@@ -14,7 +15,7 @@ import javax.swing.JComponent
 
 interface NiddlerUserInterface {
 
-    fun init(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>)
+    fun init(messageContainer: NiddlerMessageContainer<ParsedNiddlerMessage>)
 
     var connectButtonListener: (() -> Unit)?
     var filterListener: ((String?) -> Unit)?

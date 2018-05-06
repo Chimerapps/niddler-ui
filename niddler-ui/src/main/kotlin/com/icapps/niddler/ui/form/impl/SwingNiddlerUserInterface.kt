@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.form.impl
 
+import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.form.ComponentsFactory
@@ -47,8 +48,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     private lateinit var splitPane: SplitPane
     override lateinit var disconnectButton: Component
     private lateinit var messagesScroller: JScrollPane
-    private val debugView = DebugView(componentsFactory)
-
+    private lateinit var debugView: DebugView
 
     init {
         rootPanel = JPanel()
@@ -60,9 +60,10 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         return rootPanel
     }
 
-    override fun init(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) {
+    override fun init(messageContainer: NiddlerMessageContainer<ParsedNiddlerMessage>) {
+        debugView = DebugView(componentsFactory, ::onDebugMessagesUpdated, messageContainer)
         initStatusbar()
-        initDetail(messageContainer)
+        initDetail(messageContainer.storage)
         initOverview()
         initScroller()
         initSplitPane()
@@ -186,5 +187,9 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
                 it.revalidate()
             }
         }
+    }
+
+    private fun onDebugMessagesUpdated(numItems: Int) {
+        //TODO
     }
 }

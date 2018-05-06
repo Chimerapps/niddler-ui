@@ -1,6 +1,8 @@
 package com.icapps.niddler.ui.form.debug.view
 
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.util.loadIcon
+import java.util.concurrent.CompletableFuture
 import javax.swing.Icon
 import javax.swing.table.AbstractTableModel
 
@@ -9,10 +11,10 @@ import javax.swing.table.AbstractTableModel
  */
 class MessagesModel : AbstractTableModel() {
 
-    private companion object {
-        private const val COL_ICON = 0
-        private const val COL_METHOD = 1
-        private const val COL_URL = 2
+    companion object {
+        const val COL_ICON = 0
+        const val COL_METHOD = 1
+        const val COL_URL = 2
     }
 
     private val upIcon = loadIcon("/ic_up.png")
@@ -59,10 +61,14 @@ class MessagesModel : AbstractTableModel() {
             else -> String::class.java
         }
     }
+
+    fun getMessageAt(index: Int): DebugMessageEntry {
+        return backingList[index]
+    }
 }
 
-class DebugMessageEntry(val method: String,
-                        val isRequest: Boolean,
-                        val url: String) {
-
-}
+data class DebugMessageEntry(val method: String,
+                             val isRequest: Boolean,
+                             val url: String,
+                             val future: CompletableFuture<*>,
+                             val response: ParsedNiddlerMessage? = null)

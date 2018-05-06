@@ -45,16 +45,6 @@ class WrappingDebuggerConfiguration : DebuggerConfiguration {
         }
     }
 
-    constructor(file: File) {
-        configurationTree = try {
-            file.reader(Charsets.UTF_8).use {
-                JsonParser().parse(it).asJsonObject
-            }
-        } catch (e: Throwable) {
-            JsonObject()
-        }
-    }
-
     constructor() {
         configurationTree = JsonObject()
     }
