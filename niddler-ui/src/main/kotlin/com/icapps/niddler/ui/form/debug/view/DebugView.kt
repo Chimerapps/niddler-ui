@@ -30,7 +30,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
 
     private val waitingMessagesModel = MessagesModel()
     private val waitingMessagesList = JTable(waitingMessagesModel)
-    private val detailView = DebugDetailView()
+    private val detailView = DebugDetailView(componentsFactory)
 
     private val splitter = componentsFactory.createSplitPane()
 
