@@ -12,6 +12,7 @@ import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialo
 import com.icapps.niddler.ui.form.ui.AbstractToolbar
 import com.icapps.niddler.ui.form.ui.SwingToolbar
 import com.icapps.niddler.ui.util.logger
+import com.icapps.niddler.ui.utils.runWriteAction
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.project.isDirectoryBased
@@ -19,6 +20,8 @@ import com.intellij.ui.components.JBScrollPane
 import net.harawata.appdirs.AppDirsFactory
 import java.awt.Window
 import java.io.File
+import java.io.IOException
+import java.io.Reader
 import javax.swing.JComponent
 import javax.swing.JFileChooser
 import javax.swing.JScrollPane
@@ -65,31 +68,77 @@ class IntelliJComponentsFactory(val project: Project?, val parent: Disposable) :
     }
 
     override fun loadSavedConfiguration(): DebuggerConfiguration {
-        return WrappingDebuggerConfiguration(getConfigFile(DEBUGGER_FILE))
+        val reader = getConfigFile(DEBUGGER_FILE) ?: return WrappingDebuggerConfiguration()
+        reader.use {
+            return WrappingDebuggerConfiguration(reader)
+        }
     }
 
     override fun saveConfiguration(config: DebuggerConfiguration) {
         val wrapped = config as? WrappingDebuggerConfiguration ?: WrappingDebuggerConfiguration(config)
-        wrapped.save(getConfigFile(DEBUGGER_FILE), pretty = true)
+
+        if (project?.isDirectoryBased == true) {
+            writeDirectoryBased(wrapped)
+        } else {
+            val rootDir = File(AppDirsFactory.getInstance().getUserConfigDir("Niddler", null, null))
+            rootDir.mkdirs()
+            File(rootDir, DEBUGGER_FILE).writer().use {
+                wrapped.save(it, pretty = true)
+            }
+        }
     }
 
     override fun createHorizontalToolbar(): AbstractToolbar {
         return SwingToolbar()
     }
 
-    private fun getConfigFile(name: String): File {
+    private fun getConfigFile(name: String): Reader? {
         log.debug("Getting config file with name: $name. Is dir based: ${project?.isDirectoryBased}")
         if (project?.isDirectoryBased == true) {
             val parent = project.workspaceFile?.parent
-            var niddlerDir = parent?.findChild("niddler")
+            val niddlerDir = parent?.findChild("niddler")
             if (niddlerDir == null) {
-                niddlerDir = parent!!.createChildDirectory(this, "niddler")
+                runWriteAction {
+                    parent!!.createChildDirectory(this, "niddler")
+                }
+                return null
             }
-            return File(niddlerDir.findOrCreateChildData(this, name).canonicalPath)
+            val fileChild = niddlerDir.findChild(name)
+            if (fileChild == null) {
+                runWriteAction {
+                    niddlerDir.createChildData(this, name)
+                }
+                return null
+            } else {
+                try {
+                    return File(fileChild.canonicalPath).reader()
+                } catch (e: IOException) {
+                    return null
+                }
+            }
         }
 
         val rootDir = File(AppDirsFactory.getInstance().getUserConfigDir("Niddler", null, null))
         rootDir.mkdirs()
-        return File(rootDir, name)
+        try {
+            return File(rootDir, name).reader()
+        } catch (e: IOException) {
+            return null
+        }
+    }
+
+    private fun writeDirectoryBased(wrappingDebuggerConfiguration: WrappingDebuggerConfiguration) {
+        runWriteAction {
+            val parent = project!!.workspaceFile?.parent
+            var niddlerDir = parent?.findChild("niddler")
+            if (niddlerDir == null) {
+                niddlerDir = parent!!.createChildDirectory(this, "niddler")
+            }
+            val fileToWrite = niddlerDir.findOrCreateChildData(this, DEBUGGER_FILE).canonicalPath
+
+            File(fileToWrite).writer().use {
+                wrappingDebuggerConfiguration.save(it, pretty = true)
+            }
+        }
     }
 }

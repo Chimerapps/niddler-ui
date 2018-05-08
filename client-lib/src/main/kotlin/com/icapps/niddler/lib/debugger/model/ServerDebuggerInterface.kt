@@ -9,6 +9,7 @@ class ServerDebuggerInterface(private val service: DebuggerService) : DebuggerIn
 
     private val serverBlacklist: MutableSet<String> = mutableSetOf()
     private val knownDefaultResponses: MutableSet<String> = mutableSetOf()
+    private val knownResponseIntercepts: MutableSet<String> = mutableSetOf()
     private val enabledActions: MutableSet<String> = mutableSetOf()
     private var delays: DebuggerDelays? = null
 
@@ -42,6 +43,27 @@ class ServerDebuggerInterface(private val service: DebuggerService) : DebuggerIn
         removed.forEach(service::removeRequestAction)
         knownDefaultResponses.clear()
         items.mapTo(knownDefaultResponses) { it.id }
+    }
+
+    override fun updateResponseIntercepts(items: List<LocalResponseIntercept>) {
+        val (unsetItems, knownItems) = items.split { !knownResponseIntercepts.contains(it.id) }
+        unsetItems.forEach {
+            val actionId = service.addResponseIntercept(it.regex, it.matchMethod, responseCode = null, active = it.active)
+            if (it.active)
+                enabledActions += actionId
+            it.id = actionId
+        }
+        knownItems.forEach {
+            if (!it.active && enabledActions.contains(it.id))
+                service.muteAction(it.id)
+            else if (it.active && !enabledActions.contains(it.id))
+                service.unmuteAction(it.id)
+        }
+
+        val removed = knownResponseIntercepts.filterNot { id -> items.indexOfFirst { it.id == id } != -1 }
+        removed.forEach(service::removeResponseAction)
+        knownResponseIntercepts.clear()
+        items.mapTo(knownResponseIntercepts) { it.id }
     }
 
     override fun mute() {

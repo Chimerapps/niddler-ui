@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.form.impl
 
+import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.form.ComponentsFactory
@@ -7,6 +8,7 @@ import com.icapps.niddler.ui.form.components.HintTextField
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.impl.SwingToolbar
+import com.icapps.niddler.ui.form.debug.view.DebugView
 import com.icapps.niddler.ui.form.ui.NiddlerDetailUserInterface
 import com.icapps.niddler.ui.form.ui.NiddlerOverviewUserInterface
 import com.icapps.niddler.ui.form.ui.NiddlerStatusbar
@@ -46,7 +48,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     private lateinit var splitPane: SplitPane
     override lateinit var disconnectButton: Component
     private lateinit var messagesScroller: JScrollPane
-
+    override lateinit var debugView: DebugView
 
     init {
         rootPanel = JPanel()
@@ -58,9 +60,10 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         return rootPanel
     }
 
-    override fun init(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) {
+    override fun init(messageContainer: NiddlerMessageContainer<ParsedNiddlerMessage>) {
+        debugView = DebugView(componentsFactory, ::onDebugMessagesUpdated, messageContainer)
         initStatusbar()
-        initDetail(messageContainer)
+        initDetail(messageContainer.storage)
         initOverview()
         initScroller()
         initSplitPane()
@@ -149,10 +152,44 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     }
 
     override fun showTable() {
+        if (splitPane.asComponent.parent == null) {
+            uiContainer().let {
+                it.remove(debugView)
+                it.add(splitPane.asComponent)
+                it.invalidate()
+                it.repaint()
+                it.revalidate()
+            }
+        }
         messagesScroller.setViewportView(overview.messagesAsTable)
     }
 
     override fun showLinked() {
+        if (splitPane.asComponent.parent == null) {
+            uiContainer().let {
+                it.remove(debugView)
+                it.add(splitPane.asComponent)
+                it.invalidate()
+                it.repaint()
+                it.revalidate()
+            }
+        }
         messagesScroller.setViewportView(overview.messagesAsTree)
+    }
+
+    override fun showDebugView() {
+        if (splitPane.asComponent.parent != null) {
+            uiContainer().let {
+                it.remove(splitPane.asComponent)
+                it.add(debugView)
+                it.invalidate()
+                it.repaint()
+                it.revalidate()
+            }
+        }
+    }
+
+    private fun onDebugMessagesUpdated(numItems: Int) {
+        //TODO
     }
 }

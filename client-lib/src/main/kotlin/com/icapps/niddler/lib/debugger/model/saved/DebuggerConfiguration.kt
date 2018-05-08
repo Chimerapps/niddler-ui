@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose
 import com.icapps.niddler.lib.debugger.model.DebuggerDelays
 import com.icapps.niddler.lib.debugger.model.LocalRequestIntercept
 import com.icapps.niddler.lib.debugger.model.LocalRequestOverride
+import com.icapps.niddler.lib.debugger.model.LocalResponseIntercept
 
 /**
  * @author nicolaverbeeck
@@ -17,6 +18,8 @@ interface DebuggerConfiguration {
     var requestOverride: List<DisableableItem<LocalRequestOverride>>
 
     var requestIntercept: List<DisableableItem<LocalRequestIntercept>>
+
+    var responseIntercept: List<DisableableItem<LocalResponseIntercept>>
 
 }
 

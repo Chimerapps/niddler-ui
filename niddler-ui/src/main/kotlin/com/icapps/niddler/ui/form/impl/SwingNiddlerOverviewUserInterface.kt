@@ -48,8 +48,13 @@ open class SwingNiddlerOverviewUserInterface(private val parent: NiddlerOverview
         parent.showLinked()
     }
 
+    override fun showDebugView() {
+        parent.showDebugView()
+    }
+
     interface NiddlerOverviewParent {
         fun showTable()
         fun showLinked()
+        fun showDebugView()
     }
 }

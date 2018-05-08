@@ -67,7 +67,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     private var niddlerClient: NiddlerClient? = null
 
     fun init() {
-        windowContents.init(messages.storage)
+        windowContents.init(messages)
         adbConnection = ADBBootstrap(sdkPathGuesses)
 
         windowContents.overview.messagesAsTable.apply {
@@ -227,6 +227,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             registerMessageListener(this@NiddlerWindow)
             messages.attach(this)
         }
+        niddlerClient.debugListener = windowContents.debugView
         this.niddlerClient = niddlerClient
         niddlerClient.connect()
     }
@@ -288,7 +289,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     }
 
     override fun onDebuggerViewSelected() {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        windowContents.overview.showDebugView()
     }
 
     override fun onClearSelected() {
@@ -366,6 +367,8 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             debuggerSession = ConcreteDebuggingSession(debuggerInterface)
             onDebuggerAttached()
             currentDebuggerConfiguration?.let { debuggerSession?.applyConfiguration(it) }
+            debuggerSession!!.startSession()
+            onDebuggerActive()
         }
     }
 

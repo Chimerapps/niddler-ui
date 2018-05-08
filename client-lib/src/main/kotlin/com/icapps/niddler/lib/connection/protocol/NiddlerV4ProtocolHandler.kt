@@ -37,7 +37,7 @@ open class NiddlerV4ProtocolHandler(messageListener: NiddlerMessageListener,
         } else if (message.has("requestId")) {
             val requestId = message.get("requestId").asString
             if (message.has("response")) {
-                onDebugResponseAction(socket, requestId, gson.fromJson(message, NiddlerMessage::class.java))
+                onDebugResponseAction(socket, requestId, gson.fromJson(message.get("response"), NiddlerMessage::class.java))
             } else {
                 onDebugRequestAction(socket, requestId)
             }

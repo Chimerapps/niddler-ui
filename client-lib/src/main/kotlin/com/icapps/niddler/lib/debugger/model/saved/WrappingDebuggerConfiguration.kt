@@ -9,6 +9,7 @@ import com.google.gson.stream.JsonWriter
 import com.icapps.niddler.lib.debugger.model.DebuggerDelays
 import com.icapps.niddler.lib.debugger.model.LocalRequestIntercept
 import com.icapps.niddler.lib.debugger.model.LocalRequestOverride
+import com.icapps.niddler.lib.debugger.model.LocalResponseIntercept
 import com.icapps.niddler.lib.utils.createGsonListType
 import java.io.File
 import java.io.Reader
@@ -33,6 +34,9 @@ class WrappingDebuggerConfiguration : DebuggerConfiguration {
     override var requestOverride: List<DisableableItem<LocalRequestOverride>> by jsonWrapList("requestOverrides") {
         emptyList<DisableableItem<LocalRequestOverride>>()
     }
+    override var responseIntercept: List<DisableableItem<LocalResponseIntercept>> by jsonWrapList("responseIntercepts") {
+        emptyList<DisableableItem<LocalResponseIntercept>>()
+    }
 
     private val gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().disableHtmlEscaping().create()
     private val configurationTree: JsonObject
@@ -40,16 +44,6 @@ class WrappingDebuggerConfiguration : DebuggerConfiguration {
     constructor(stream: Reader) {
         configurationTree = try {
             JsonParser().parse(stream).asJsonObject
-        } catch (e: Throwable) {
-            JsonObject()
-        }
-    }
-
-    constructor(file: File) {
-        configurationTree = try {
-            file.reader(Charsets.UTF_8).use {
-                JsonParser().parse(it).asJsonObject
-            }
         } catch (e: Throwable) {
             JsonObject()
         }
@@ -65,6 +59,7 @@ class WrappingDebuggerConfiguration : DebuggerConfiguration {
         blacklistConfiguration = source.blacklistConfiguration.map { it.copy() }
         requestIntercept = source.requestIntercept.map { it.copy() }
         requestOverride = source.requestOverride.map { it.copy() }
+        responseIntercept = source.responseIntercept.map { it.copy() }
     }
 
     fun save(target: File, pretty: Boolean) {

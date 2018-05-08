@@ -12,6 +12,7 @@ class DebuggerConfigurationBridge(private val configuration: DebuggerConfigurati
         applyDelays()
         applyBlacklist()
         applyDefaultResponses()
+        applyResponseIntercepts()
     }
 
     private fun applyDelays() {
@@ -31,6 +32,10 @@ class DebuggerConfigurationBridge(private val configuration: DebuggerConfigurati
     private fun applyDefaultResponses() {
         val defaultResponses = configuration.requestIntercept.filter { it.item.debugResponse != null }.map { it.item }
         debuggerInterface.updateDefaultResponses(defaultResponses)
+    }
+
+    private fun applyResponseIntercepts() {
+        debuggerInterface.updateResponseIntercepts(configuration.responseIntercept.map { it.item })
     }
 
 }

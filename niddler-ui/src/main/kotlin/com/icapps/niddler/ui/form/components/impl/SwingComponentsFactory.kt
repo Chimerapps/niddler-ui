@@ -13,6 +13,7 @@ import com.icapps.niddler.ui.form.ui.SwingToolbar
 import net.harawata.appdirs.AppDirsFactory
 import java.awt.Window
 import java.io.File
+import java.io.IOException
 import javax.swing.JComponent
 import javax.swing.JFileChooser
 import javax.swing.JScrollPane
@@ -58,7 +59,13 @@ class SwingComponentsFactory : ComponentsFactory {
     }
 
     override fun loadSavedConfiguration(): DebuggerConfiguration {
-        return WrappingDebuggerConfiguration(getConfigFile(DEBUGGER_FILE))
+        try {
+            getConfigFile(DEBUGGER_FILE).reader().use {
+                return WrappingDebuggerConfiguration(it)
+            }
+        } catch (e: IOException) {
+            return WrappingDebuggerConfiguration()
+        }
     }
 
     override fun saveConfiguration(config: DebuggerConfiguration) {
