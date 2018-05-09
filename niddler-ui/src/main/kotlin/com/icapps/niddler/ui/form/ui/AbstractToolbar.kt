@@ -1,10 +1,11 @@
 package com.icapps.niddler.ui.form.ui
 
 import java.awt.Component
-import java.awt.event.ActionEvent
-import javax.swing.AbstractAction
-import javax.swing.Action
+import java.awt.Dimension
+import java.awt.Insets
+import javax.swing.BorderFactory
 import javax.swing.Icon
+import javax.swing.JButton
 import javax.swing.JToolBar
 
 /**
@@ -14,18 +15,25 @@ interface AbstractToolbar {
 
     val component: Component
 
-    fun addAction(icon: Icon, tooltip: String, actionListener: (Action) -> Unit): Component
+    fun addAction(icon: Icon, tooltip: String, actionListener: (Component) -> Unit): Component
 
     fun addSeparator()
 
 }
 
-class SwingToolbar(orientation: Int = JToolBar.HORIZONTAL) : AbstractToolbar {
+class SwingToolbar(orientation: Int = JToolBar.HORIZONTAL, border: Boolean = false) : AbstractToolbar {
 
-    override val component: JToolBar = JToolBar(orientation).apply { isFloatable = false }
+    override val component: JToolBar = JToolBar(orientation).apply {
+        isFloatable = false
+        margin = Insets(0, 4, 0, 4)
+        if (border)
+            this.border = BorderFactory.createLoweredBevelBorder()
+    }
 
-    override fun addAction(icon: Icon, tooltip: String, actionListener: (Action) -> Unit): Component {
-        return component.add(makeAction(tooltip, icon) { actionListener(it) })
+    override fun addAction(icon: Icon, tooltip: String, actionListener: (Component) -> Unit): Component {
+        val button = makeAction(tooltip, icon, actionListener)
+        component.add(button)
+        return component
     }
 
     override fun addSeparator() {
@@ -34,12 +42,14 @@ class SwingToolbar(orientation: Int = JToolBar.HORIZONTAL) : AbstractToolbar {
 
 }
 
-private fun makeAction(toolTip: String, icon: Icon, listener: (event: Action) -> Unit): Action {
-    return object : AbstractAction(null, icon) {
-        override fun actionPerformed(e: ActionEvent) {
-            listener(this)
-        }
-    }.apply {
-        putValue(Action.SHORT_DESCRIPTION, toolTip)
+private fun makeAction(toolTip: String, icon: Icon, listener: (Component) -> Unit): JButton {
+    return JButton().apply {
+        this.icon = icon
+        text = ""
+        toolTipText = toolTip
+        maximumSize = Dimension(32, 32)
+        minimumSize = Dimension(32, 32)
+        preferredSize = Dimension(32, 32)
+        addActionListener { listener(this) }
     }
 }

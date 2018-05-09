@@ -1,7 +1,6 @@
 package com.icapps.niddler.ui.form.debug.view
 
 import com.icapps.niddler.ui.form.ComponentsFactory
-import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Graphics
@@ -23,16 +22,7 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel(BorderLayou
         transferHandler = handler
         dropTarget.addDropTargetListener(handler)
 
-        val toolbar = componentsFactory.createVerticalToolbar()
-        toolbar.addAction(loadIcon("/stepOut.png"), "Send to server") {
-            //TODO better tooltip
-            //TODO
-        }
-        toolbar.addAction(loadIcon("/cancel.png"), "Proceed without changes") {
-            //TODO better tooltip
-            //TODO
-        }
-        add(toolbar.component, BorderLayout.WEST)
+
     }
 
     override fun paint(g: Graphics) {

@@ -9,6 +9,7 @@ import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.setColumnFixedWidth
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.util.concurrent.CompletableFuture
 import javax.swing.JPanel
@@ -60,6 +61,17 @@ class DebugView(private val componentsFactory: ComponentsFactory,
                 }
             }
         }
+
+        val toolbar = componentsFactory.createVerticalToolbar()
+        toolbar.addAction(loadIcon("/stepOut.png"), "Send to server") {
+            //TODO better tooltip
+            //TODO
+        }
+        toolbar.addAction(loadIcon("/cancel.png"), "Proceed without changes") {
+            //TODO better tooltip
+            //TODO
+        }
+        add(toolbar.component, BorderLayout.WEST)
 
         val scroller = componentsFactory.createScrollPane()
         scroller.setViewportView(waitingMessagesList)

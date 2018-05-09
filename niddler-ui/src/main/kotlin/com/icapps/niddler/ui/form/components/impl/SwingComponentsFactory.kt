@@ -79,7 +79,7 @@ class SwingComponentsFactory : ComponentsFactory {
     }
 
     override fun createVerticalToolbar(): AbstractToolbar {
-        return SwingToolbar(JToolBar.VERTICAL)
+        return SwingToolbar(JToolBar.VERTICAL, border = true)
     }
 
     private fun getConfigFile(name: String): File {
