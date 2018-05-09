@@ -1,8 +1,10 @@
 package com.icapps.niddler.ui.form.debug.view
 
 import com.icapps.niddler.ui.form.ComponentsFactory
+import com.icapps.niddler.ui.form.debug.content.HeaderEditorPanel
 import java.awt.BorderLayout
 import java.awt.Color
+import java.awt.Dimension
 import java.awt.Graphics
 import javax.swing.JPanel
 
@@ -22,7 +24,12 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel(BorderLayou
         transferHandler = handler
         dropTarget.addDropTargetListener(handler)
 
+        val headerPanel = HeaderEditorPanel { }
+        headerPanel.preferredSize = Dimension(headerPanel.preferredSize.width, 100)
+        headerPanel.maximumSize = Dimension(headerPanel.maximumSize.width, 100)
+        headerPanel.minimumSize = Dimension(headerPanel.minimumSize.width, 100)
 
+        add(headerPanel, BorderLayout.NORTH)
     }
 
     override fun paint(g: Graphics) {

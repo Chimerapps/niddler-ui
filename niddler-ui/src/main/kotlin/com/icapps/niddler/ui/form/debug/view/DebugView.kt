@@ -13,6 +13,7 @@ import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.util.concurrent.CompletableFuture
 import javax.swing.JPanel
+import javax.swing.JScrollPane
 import javax.swing.JTable
 import javax.swing.ListSelectionModel
 import javax.swing.Timer
@@ -78,7 +79,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
 
         add(splitter.asComponent, BorderLayout.CENTER)
         splitter.left = scroller
-        splitter.right = detailView
+        splitter.right = JScrollPane(detailView)
         splitter.resizePriority = .2
         splitter.asComponent.revalidate()
     }
