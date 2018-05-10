@@ -4,6 +4,7 @@ import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.form.ComponentsFactory
+import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.components.HintTextField
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.components.SplitPane
@@ -190,6 +191,8 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     }
 
     private fun onDebugMessagesUpdated(numItems: Int) {
-        toolbar.hasWaitingBreakpoint = (numItems != 0)
+        MainThreadDispatcher.dispatch {
+            toolbar.hasWaitingBreakpoint = (numItems != 0)
+        }
     }
 }

@@ -10,7 +10,6 @@ import com.icapps.niddler.ui.form.components.impl.SwingDialog
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.ui.AbstractToolbar
-import com.icapps.niddler.ui.form.ui.SwingToolbar
 import com.icapps.niddler.ui.util.logger
 import com.icapps.niddler.ui.utils.runWriteAction
 import com.intellij.openapi.Disposable
@@ -25,7 +24,6 @@ import java.io.Reader
 import javax.swing.JComponent
 import javax.swing.JFileChooser
 import javax.swing.JScrollPane
-import javax.swing.JToolBar
 
 /**
  * @author Nicola Verbeeck
@@ -90,11 +88,11 @@ class IntelliJComponentsFactory(val project: Project?, val parent: Disposable) :
     }
 
     override fun createHorizontalToolbar(): AbstractToolbar {
-        return IntellijAbstractToolbar()
+        return IntellijAbstractToolbar(horizontal = true)
     }
 
     override fun createVerticalToolbar(): AbstractToolbar {
-        return IntellijAbstractToolbar(JToolBar.VERTICAL, true)
+        return IntellijAbstractToolbar(horizontal = false)
     }
 
     private fun getConfigFile(name: String): Reader? {

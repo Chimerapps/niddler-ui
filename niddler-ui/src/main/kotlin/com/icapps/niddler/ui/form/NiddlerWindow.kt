@@ -129,7 +129,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         }
 
         windowContents.toolbar.listener = this
-
+        windowContents.disconnectButton.isEnabled = false
         windowContents.detail.message = null
 
         windowContents.connectButtonListener = {
