@@ -20,6 +20,7 @@ class IntelliJTabComponent(project: Project?,
 
     private val layoutUI: RunnerLayoutUi
     private val titles: MutableList<String> = arrayListOf()
+    private val tabContents = arrayListOf<Content>()
 
     init {
         layoutUI = RunnerLayoutUi.Factory.getInstance(project).create("niddler-ui", "Detail tabs", "Some session name?", parent)
@@ -36,6 +37,9 @@ class IntelliJTabComponent(project: Project?,
     override val numTabs: Int
         get() = titles.size
 
+    override val currentTab: Int
+        get() = tabContents.indexOf(layoutUI.contentManager.selectedContent)
+
     override fun get(index: Int): Component {
         return (layoutUI.findContent("${titles[index]}-contentId") as ContentImpl).component
     }
@@ -44,6 +48,7 @@ class IntelliJTabComponent(project: Project?,
         val content = layoutUi.createContent("$name-contentId", component, name, null, null)
         content.isCloseable = false
         layoutUi.addContent(content, -1, defaultPlace, false)
+        tabContents += content
         return content
     }
 

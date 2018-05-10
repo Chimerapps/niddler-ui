@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form.debug.view
 
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.classifier.ConcreteBody
 import com.icapps.niddler.ui.util.loadIcon
 import java.util.concurrent.CompletableFuture
 import javax.swing.Icon
@@ -74,4 +75,5 @@ data class DebugMessageEntry(val method: String,
                              val url: String,
                              val future: CompletableFuture<in Any?>,
                              val response: ParsedNiddlerMessage? = null,
-                             var modifiedHeaders: Map<String, List<String>>? = null)
+                             var modifiedHeaders: Map<String, List<String>>? = null,
+                             var modifiedBody: ConcreteBody? = null)

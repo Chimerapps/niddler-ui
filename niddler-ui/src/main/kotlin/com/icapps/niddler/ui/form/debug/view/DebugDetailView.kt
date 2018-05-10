@@ -53,6 +53,10 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
         add(JLabel("Body").bold().left())
         add(Box.createVerticalStrut(2))
         add(bodyPanel.left())
+
+        bodyPanel.preferredSize = Dimension(headerPanel.preferredSize.width, 300)
+        bodyPanel.maximumSize = Dimension(headerPanel.maximumSize.width, 300)
+        bodyPanel.minimumSize = Dimension(headerPanel.minimumSize.width, 300)
     }
 
     override fun paint(g: Graphics) {
@@ -65,6 +69,7 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
 
     fun clearMessage() {
         currentMessage = null
+        bodyPanel.clear()
     }
 
     fun showDetails(debugMessageEntry: DebugMessageEntry) {
@@ -72,6 +77,7 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
             return
 
         currentMessage?.let { save(it) }
+        bodyPanel.initWith(debugMessageEntry)
 
         if (debugMessageEntry.isRequest)
             titleView.text = "Intercepted request"
@@ -83,6 +89,7 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
 
     fun save(into: DebugMessageEntry) {
         into.modifiedHeaders = headerPanel.extractHeaders()
+        into.modifiedBody = bodyPanel.saveBody()
     }
 
     private fun initHeaders(debugMessageEntry: DebugMessageEntry) {

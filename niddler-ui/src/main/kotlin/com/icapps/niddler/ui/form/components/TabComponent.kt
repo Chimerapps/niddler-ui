@@ -12,6 +12,7 @@ interface TabComponent : UIComponent {
     fun addTab(title: String, component: JComponent)
 
     val numTabs: Int
+    val currentTab: Int
 
     operator fun get(index: Int): Component
 
