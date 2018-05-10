@@ -32,11 +32,14 @@ class DebuggerConfigurationBridgeTest {
                 DisableableItem(enabled = false, item = "reg2"))
         every { configurationProvider.requestIntercept } returns listOf(DisableableItem(true, activeDefaultResponse),
                 DisableableItem(false, LocalRequestIntercept("2", false, "reg2", "GET", null, null)))
+        val activeResponseIntercept = LocalResponseIntercept("3", true, "reg3", "GET")
+        every { configurationProvider.responseIntercept } returns listOf(DisableableItem(true, activeResponseIntercept))
 
         bridge.apply()
 
         verify { debuggerInterface.updateDelays(DebuggerDelays(123, 456, 789)) }
         verify { debuggerInterface.updateBlacklist(listOf("reg1")) }
         verify { debuggerInterface.updateDefaultResponses(listOf(activeDefaultResponse)) }
+        verify { debuggerInterface.updateResponseIntercepts(listOf(activeResponseIntercept)) }
     }
 }
