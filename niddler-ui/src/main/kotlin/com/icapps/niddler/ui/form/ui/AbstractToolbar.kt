@@ -42,7 +42,7 @@ class SwingToolbar(orientation: Int = JToolBar.HORIZONTAL, border: Boolean = fal
 
 }
 
-private fun makeAction(toolTip: String, icon: Icon, listener: (Component) -> Unit): JButton {
+fun makeAction(toolTip: String, icon: Icon, listener: (Component) -> Unit): JButton {
     return JButton().apply {
         this.icon = icon
         text = ""

@@ -136,7 +136,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
     }
 
     private fun showDetailFor(debugMessageEntry: DebugMessageEntry) {
-        //TODO
+        detailView.showDetails(debugMessageEntry)
     }
 }
 

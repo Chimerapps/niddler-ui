@@ -8,7 +8,14 @@ import com.icapps.niddler.ui.left
 import com.icapps.niddler.ui.offsetLeft
 import com.icapps.niddler.ui.plusAssign
 import com.icapps.niddler.ui.singleLine
-import javax.swing.*
+import javax.swing.Box
+import javax.swing.BoxLayout
+import javax.swing.JCheckBox
+import javax.swing.JLabel
+import javax.swing.JOptionPane
+import javax.swing.JPanel
+import javax.swing.JTextField
+import javax.swing.UIManager
 import javax.swing.border.EmptyBorder
 
 /**
@@ -78,7 +85,7 @@ class RequestOverridePanel(configuration: ModifiableDebuggerConfiguration,
         override.debugRequest?.let {
             newUrlField.text = it.url
             newMethodField.text = it.method
-            newHeadersField.init(it.headers)
+            newHeadersField.initSingle(it.headers)
         }
 
         initComplete()

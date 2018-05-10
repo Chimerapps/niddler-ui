@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form.debug.content
 
-import com.icapps.niddler.ui.util.simpleAction
+import com.icapps.niddler.ui.form.ui.makeAction
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
@@ -37,19 +38,24 @@ class HeaderEditorPanel(private val changeListener: () -> Unit) : JPanel(BorderL
 
     init {
         add(JScrollPane(table), BorderLayout.CENTER)
+        table.rowHeight = 28
+        table.font = table.font.deriveFont(15.0f)
+
         val toolbar = JToolBar()
         toolbar.isFloatable = false
-        toolbar.add(simpleAction<HeaderEditorPanel>(icon = "/add.png") {
+
+        toolbar.add(makeAction("Add header", loadIcon("/add.png")) {
             model.addRow(arrayOf("", ""))
         })
-        toolbar.add(simpleAction<HeaderEditorPanel>(icon = "/remove.png") {
+        toolbar.add(makeAction("Add header", loadIcon("/remove.png")) {
             if (model.rowCount == 0)
-                return@simpleAction
+                return@makeAction
             if (table.selectedRow != -1)
                 model.removeRow(table.selectedRow)
             else
                 model.removeRow(table.rowCount - 1)
         })
+
         add(toolbar, BorderLayout.SOUTH)
 
         model.addColumn("Name")
@@ -78,12 +84,24 @@ class HeaderEditorPanel(private val changeListener: () -> Unit) : JPanel(BorderL
         return map
     }
 
-    fun init(headers: Map<String, String>?) {
+    fun init(headers: Map<String, List<String>>?) {
+        val count = model.rowCount
+        for (i in 0 until count)
+            model.removeRow(0)
+        headers?.forEach { key, value ->
+            value.forEach {
+                model.addRow(arrayOf(key, it))
+            }
+        }
+    }
+
+    fun initSingle(headers: Map<String, String>?) {
         val count = model.rowCount
         for (i in 0 until count)
             model.removeRow(0)
         headers?.forEach { key, value ->
             model.addRow(arrayOf(key, value))
+
         }
     }
 

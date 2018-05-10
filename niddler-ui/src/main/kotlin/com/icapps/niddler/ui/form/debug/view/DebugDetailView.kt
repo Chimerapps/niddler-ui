@@ -1,17 +1,21 @@
 package com.icapps.niddler.ui.form.debug.view
 
+import com.icapps.niddler.ui.bold
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.debug.content.HeaderEditorPanel
-import java.awt.BorderLayout
+import com.icapps.niddler.ui.left
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics
+import javax.swing.BorderFactory
+import javax.swing.BoxLayout
+import javax.swing.JLabel
 import javax.swing.JPanel
 
 /**
  * @author nicolaverbeeck
  */
-class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel(BorderLayout()) {
+class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
 
     private companion object {
         private val DROP_OVERLAY_COLOR = Color(0.75f, 0.42f, 0.0f, 0.3f)
@@ -19,17 +23,23 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel(BorderLayou
 
     internal var inDrop = false
 
+    private val headerPanel: HeaderEditorPanel
+
     init {
+        layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
+        border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+
         val handler = DebugDetailDropHandler(this)
         transferHandler = handler
         dropTarget.addDropTargetListener(handler)
 
-        val headerPanel = HeaderEditorPanel { }
-        headerPanel.preferredSize = Dimension(headerPanel.preferredSize.width, 100)
-        headerPanel.maximumSize = Dimension(headerPanel.maximumSize.width, 100)
-        headerPanel.minimumSize = Dimension(headerPanel.minimumSize.width, 100)
+        headerPanel = HeaderEditorPanel { }
+        headerPanel.preferredSize = Dimension(headerPanel.preferredSize.width, 200)
+        headerPanel.maximumSize = Dimension(headerPanel.maximumSize.width, 200)
+        headerPanel.minimumSize = Dimension(headerPanel.minimumSize.width, 200)
 
-        add(headerPanel, BorderLayout.NORTH)
+        add(JLabel("Headers").bold().left())
+        add(headerPanel.left())
     }
 
     override fun paint(g: Graphics) {
@@ -38,5 +48,14 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel(BorderLayou
             g.color = DROP_OVERLAY_COLOR
             g.fillRect(0, 0, width, height)
         }
+    }
+
+    fun showDetails(debugMessageEntry: DebugMessageEntry) {
+        initHeaders(debugMessageEntry)
+    }
+
+    private fun initHeaders(debugMessageEntry: DebugMessageEntry) {
+        val headers = debugMessageEntry.response?.headers ?: return
+        headerPanel.init(headers)
     }
 }
