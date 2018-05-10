@@ -6,6 +6,7 @@ import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
+import javax.swing.BorderFactory
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTable
@@ -37,7 +38,9 @@ class HeaderEditorPanel(private val changeListener: () -> Unit) : JPanel(BorderL
     private val model = DefaultTableModel()
 
     init {
-        add(JScrollPane(table), BorderLayout.CENTER)
+        val tableScroller = JScrollPane(table)
+        tableScroller.border = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0,0,0,2),tableScroller.border)
+        add(tableScroller, BorderLayout.CENTER)
         table.rowHeight = 28
         table.font = table.font.deriveFont(15.0f)
 
@@ -56,7 +59,9 @@ class HeaderEditorPanel(private val changeListener: () -> Unit) : JPanel(BorderL
                 model.removeRow(table.rowCount - 1)
         })
 
-        add(toolbar, BorderLayout.SOUTH)
+        val toolbarFrame = JPanel(BorderLayout())
+        toolbarFrame.add(toolbar, BorderLayout.EAST)
+        add(toolbarFrame, BorderLayout.SOUTH)
 
         model.addColumn("Name")
         model.addColumn("Value")

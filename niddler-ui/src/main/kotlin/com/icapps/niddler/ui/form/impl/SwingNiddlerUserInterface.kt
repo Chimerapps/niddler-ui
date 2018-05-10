@@ -190,6 +190,6 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     }
 
     private fun onDebugMessagesUpdated(numItems: Int) {
-        //TODO
+        toolbar.hasWaitingBreakpoint = (numItems != 0)
     }
 }

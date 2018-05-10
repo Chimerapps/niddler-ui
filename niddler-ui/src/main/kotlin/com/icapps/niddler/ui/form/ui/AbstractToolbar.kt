@@ -33,7 +33,7 @@ class SwingToolbar(orientation: Int = JToolBar.HORIZONTAL, border: Boolean = fal
     override fun addAction(icon: Icon, tooltip: String, actionListener: (Component) -> Unit): Component {
         val button = makeAction(tooltip, icon, actionListener)
         component.add(button)
-        return component
+        return button
     }
 
     override fun addSeparator() {

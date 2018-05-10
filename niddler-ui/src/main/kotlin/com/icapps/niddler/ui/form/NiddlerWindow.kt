@@ -13,14 +13,23 @@ import com.icapps.niddler.lib.debugger.model.DebuggerService
 import com.icapps.niddler.lib.debugger.model.ServerDebuggerInterface
 import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.lib.export.HarExport
-import com.icapps.niddler.lib.model.*
+import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
+import com.icapps.niddler.lib.model.NiddlerMessageBodyParser
+import com.icapps.niddler.lib.model.NiddlerMessageContainer
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessageListener
+import com.icapps.niddler.lib.model.SimpleUrlMatchFilter
 import com.icapps.niddler.lib.model.classifier.BodyFormatType
 import com.icapps.niddler.lib.model.classifier.HeaderBodyClassifier
 import com.icapps.niddler.ui.codegen.CurlCodeGenerator
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
 import com.icapps.niddler.ui.model.MessageMode
-import com.icapps.niddler.ui.model.ui.*
+import com.icapps.niddler.ui.model.ui.LinkedMessagesModel
+import com.icapps.niddler.ui.model.ui.MessagesModel
+import com.icapps.niddler.ui.model.ui.RequestNode
+import com.icapps.niddler.ui.model.ui.ResponseNode
+import com.icapps.niddler.ui.model.ui.TimelineMessagesTableModel
 import com.icapps.niddler.ui.setColumnFixedWidth
 import com.icapps.niddler.ui.setColumnMinWidth
 import com.icapps.niddler.ui.util.ClipboardUtil
@@ -307,7 +316,8 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     override fun onConfigureBreakpointsSelected() {
         val parent = SwingUtilities.getWindowAncestor(windowContents.asComponent)
         val dialog = windowContents.componentsFactory
-                .createDebugConfigurationDialog(parent, windowContents.componentsFactory.loadSavedConfiguration())
+                .createDebugConfigurationDialog(parent, currentDebuggerConfiguration
+                        ?: windowContents.componentsFactory.loadSavedConfiguration())
         dialog.init { debuggerConfiguration ->
             windowContents.componentsFactory.saveConfiguration(debuggerConfiguration)
 
@@ -366,6 +376,8 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
             debuggerSession = ConcreteDebuggingSession(debuggerInterface)
             onDebuggerAttached()
+            if (currentDebuggerConfiguration == null)
+                currentDebuggerConfiguration = windowContents.componentsFactory.loadSavedConfiguration()
             currentDebuggerConfiguration?.let { debuggerSession?.applyConfiguration(it) }
             debuggerSession!!.startSession()
             onDebuggerActive()

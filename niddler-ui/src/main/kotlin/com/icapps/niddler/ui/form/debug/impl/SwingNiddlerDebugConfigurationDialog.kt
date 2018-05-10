@@ -15,7 +15,14 @@ import com.icapps.niddler.ui.form.debug.content.BlacklistPanel
 import com.icapps.niddler.ui.form.debug.content.ContentPanel
 import com.icapps.niddler.ui.form.debug.content.DelaysConfigurationPanel
 import com.icapps.niddler.ui.form.debug.content.RequestOverridePanel
-import com.icapps.niddler.ui.form.debug.nodes.*
+import com.icapps.niddler.ui.form.debug.nodes.BlacklistItemNode
+import com.icapps.niddler.ui.form.debug.nodes.BlacklistRootNode
+import com.icapps.niddler.ui.form.debug.nodes.CheckedNode
+import com.icapps.niddler.ui.form.debug.nodes.ConfigurationNode
+import com.icapps.niddler.ui.form.debug.nodes.DelaysConfigurationRootNode
+import com.icapps.niddler.ui.form.debug.nodes.RequestOverrideNode
+import com.icapps.niddler.ui.form.debug.nodes.RequestOverrideRootNode
+import com.icapps.niddler.ui.form.debug.nodes.TreeNode
 import com.icapps.niddler.ui.form.debug.nodes.swing.SwingNodeBuilder
 import com.icapps.niddler.ui.path
 import com.icapps.niddler.ui.plusAssign
@@ -24,7 +31,12 @@ import org.scijava.swing.checkboxtree.CheckBoxNodeRenderer
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.Window
-import javax.swing.*
+import javax.swing.Box
+import javax.swing.JComponent
+import javax.swing.JDialog
+import javax.swing.JPanel
+import javax.swing.JScrollPane
+import javax.swing.JTree
 import javax.swing.tree.TreeSelectionModel
 
 

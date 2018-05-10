@@ -11,6 +11,7 @@ import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.setColumnFixedWidth
 import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
+import java.awt.Component
 import java.util.concurrent.CompletableFuture
 import javax.swing.JPanel
 import javax.swing.JScrollPane
@@ -35,6 +36,8 @@ class DebugView(private val componentsFactory: ComponentsFactory,
     private val detailView = DebugDetailView(componentsFactory)
 
     private val splitter = componentsFactory.createSplitPane()
+    private val sendButton: Component
+    private val cancelButton: Component
 
     init {
         waitingMessagesList.apply {
@@ -64,14 +67,16 @@ class DebugView(private val componentsFactory: ComponentsFactory,
         }
 
         val toolbar = componentsFactory.createVerticalToolbar()
-        toolbar.addAction(loadIcon("/stepOut.png"), "Send to server") {
+        sendButton = toolbar.addAction(loadIcon("/stepOut.png"), "Send to server") {
+            println("Clicked step out")
             //TODO better tooltip
             //TODO
         }
-        toolbar.addAction(loadIcon("/cancel.png"), "Proceed without changes") {
-            //TODO better tooltip
-            //TODO
+        cancelButton = toolbar.addAction(loadIcon("/cancel.png"), "Proceed without changes") {
+            onCancelClicked()
         }
+        sendButton.isEnabled = false
+        cancelButton.isEnabled = false
         add(toolbar.component, BorderLayout.WEST)
 
         val scroller = componentsFactory.createScrollPane()
@@ -129,6 +134,8 @@ class DebugView(private val componentsFactory: ComponentsFactory,
     private fun checkRowSelectionState() {
         val index = waitingMessagesList.selectedRow
         if (index < 0) {
+            cancelButton.isEnabled = false
+            sendButton.isEnabled = false
             //TODO clear right
             return
         }
@@ -136,7 +143,24 @@ class DebugView(private val componentsFactory: ComponentsFactory,
     }
 
     private fun showDetailFor(debugMessageEntry: DebugMessageEntry) {
+        cancelButton.isEnabled = true
+        sendButton.isEnabled = true
         detailView.showDetails(debugMessageEntry)
+    }
+
+    private fun onCancelClicked() {
+        val index = waitingMessagesList.selectedRow
+        if (index < 0) {
+            cancelButton.isEnabled = false
+            sendButton.isEnabled = false
+            return
+        }
+        val model = waitingMessagesModel.getMessageAt(index)
+        waitingMessagesModel.removeMessage(model)
+        if (waitingMessagesModel.rowCount == 0)
+            waitingMessagesList.clearSelection()
+
+        model.future.complete(null)
     }
 }
 

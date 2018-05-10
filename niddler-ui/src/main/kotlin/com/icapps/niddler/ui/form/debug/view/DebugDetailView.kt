@@ -8,6 +8,7 @@ import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics
 import javax.swing.BorderFactory
+import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -23,6 +24,8 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
 
     internal var inDrop = false
 
+    private val titleView = JLabel("<>")
+    private var currentMessage: DebugMessageEntry? = null
     private val headerPanel: HeaderEditorPanel
 
     init {
@@ -38,8 +41,15 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
         headerPanel.maximumSize = Dimension(headerPanel.maximumSize.width, 200)
         headerPanel.minimumSize = Dimension(headerPanel.minimumSize.width, 200)
 
+        add(titleView.bold().left())
+        add(Box.createVerticalStrut(5))
         add(JLabel("Headers").bold().left())
+        add(Box.createVerticalStrut(2))
         add(headerPanel.left())
+        add(Box.createVerticalStrut(5))
+
+        add(JLabel("Body").bold().left())
+        add(Box.createVerticalStrut(2))
     }
 
     override fun paint(g: Graphics) {
@@ -50,8 +60,26 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
         }
     }
 
+    fun clearMessage() {
+        currentMessage = null
+    }
+
     fun showDetails(debugMessageEntry: DebugMessageEntry) {
+        if (currentMessage === debugMessageEntry)
+            return
+
+        currentMessage?.let { save(it) }
+
+        if (debugMessageEntry.isRequest)
+            titleView.text = "Intercepted request"
+        else
+            titleView.text = "Intercepted response"
+
         initHeaders(debugMessageEntry)
+    }
+
+    private fun save(into: DebugMessageEntry) {
+
     }
 
     private fun initHeaders(debugMessageEntry: DebugMessageEntry) {
