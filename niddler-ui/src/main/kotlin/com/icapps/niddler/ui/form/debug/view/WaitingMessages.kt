@@ -9,7 +9,7 @@ import javax.swing.table.AbstractTableModel
 /**
  * @author nicolaverbeeck
  */
-class MessagesModel : AbstractTableModel() {
+class MessagesModel(private val messagesUpdateListener: (numMessagesWaiting: Int) -> Unit) : AbstractTableModel() {
 
     companion object {
         const val COL_ICON = 0
@@ -28,12 +28,14 @@ class MessagesModel : AbstractTableModel() {
 
         backingList.removeAt(messageIndex)
         fireTableRowsInserted(messageIndex, messageIndex)
+        messagesUpdateListener(backingList.size)
     }
 
     fun addMessage(message: DebugMessageEntry) {
         val index = backingList.size
         backingList += message
         fireTableRowsDeleted(index, index)
+        messagesUpdateListener(backingList.size)
     }
 
     override fun getRowCount(): Int = backingList.size
@@ -70,5 +72,6 @@ class MessagesModel : AbstractTableModel() {
 data class DebugMessageEntry(val method: String,
                              val isRequest: Boolean,
                              val url: String,
-                             val future: CompletableFuture<*>,
-                             val response: ParsedNiddlerMessage? = null)
+                             val future: CompletableFuture<in Any?>,
+                             val response: ParsedNiddlerMessage? = null,
+                             var modifiedHeaders: Map<String, List<String>>? = null)

@@ -78,12 +78,12 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
         initHeaders(debugMessageEntry)
     }
 
-    private fun save(into: DebugMessageEntry) {
-        headerPanel.extractHeaders()
+    fun save(into: DebugMessageEntry) {
+        into.modifiedHeaders = headerPanel.extractHeaders()
     }
 
     private fun initHeaders(debugMessageEntry: DebugMessageEntry) {
-        val headers = debugMessageEntry.response?.headers ?: return
+        val headers = debugMessageEntry.modifiedHeaders ?: debugMessageEntry.response?.headers ?: emptyMap()
         headerPanel.init(headers)
     }
 }

@@ -31,7 +31,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
         private val logger = com.icapps.niddler.ui.util.logger<DebugView>()
     }
 
-    private val waitingMessagesModel = MessagesModel()
+    private val waitingMessagesModel = MessagesModel(messagesUpdateListener)
     private val waitingMessagesList = JTable(waitingMessagesModel)
     private val detailView = DebugDetailView(componentsFactory)
 
@@ -68,9 +68,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
 
         val toolbar = componentsFactory.createVerticalToolbar()
         sendButton = toolbar.addAction(loadIcon("/stepOut.png"), "Send to server") {
-            println("Clicked step out")
-            //TODO better tooltip
-            //TODO
+            onSubmitClicked()
         }
         cancelButton = toolbar.addAction(loadIcon("/cancel.png"), "Proceed without changes") {
             onCancelClicked()
@@ -116,13 +114,13 @@ class DebugView(private val componentsFactory: ComponentsFactory,
 
         val future = CompletableFuture<DebugResponse?>()
 
+        @Suppress("UNCHECKED_CAST")
         waitingMessagesModel.addMessage(DebugMessageEntry(method,
                 isRequest = false,
                 url = url,
                 response = parsedResponse,
-                future = future
+                future = future as CompletableFuture<Any?>
         ))
-        messagesUpdateListener(waitingMessagesList.rowCount)
         try {
             return future.get()
         } catch (e: Throwable) {
@@ -136,7 +134,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
         if (index < 0) {
             cancelButton.isEnabled = false
             sendButton.isEnabled = false
-            //TODO clear right
+            detailView.clearMessage()
             return
         }
         showDetailFor(waitingMessagesModel.getMessageAt(index))
@@ -153,6 +151,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
         if (index < 0) {
             cancelButton.isEnabled = false
             sendButton.isEnabled = false
+            detailView.clearMessage()
             return
         }
         val model = waitingMessagesModel.getMessageAt(index)
@@ -161,6 +160,40 @@ class DebugView(private val componentsFactory: ComponentsFactory,
             waitingMessagesList.clearSelection()
 
         model.future.complete(null)
+    }
+
+    private fun onSubmitClicked() {
+        val index = waitingMessagesList.selectedRow
+        if (index < 0) {
+            cancelButton.isEnabled = false
+            sendButton.isEnabled = false
+            detailView.clearMessage()
+            return
+        }
+        val model = waitingMessagesModel.getMessageAt(index)
+        waitingMessagesModel.removeMessage(model)
+        if (waitingMessagesModel.rowCount == 0)
+            waitingMessagesList.clearSelection()
+
+        detailView.save(model)
+
+        model.future.complete(buildDebuggerReply(model))
+    }
+
+    private fun buildDebuggerReply(waitingMessageEntry: DebugMessageEntry): Any? {
+        return if (waitingMessageEntry.isRequest)
+            null
+        else
+            buildResponse(waitingMessageEntry)
+    }
+
+    private fun buildResponse(waitingMessageEntry: DebugMessageEntry): DebugResponse? {
+        val resp = waitingMessageEntry.response ?: return null
+        return DebugResponse(resp.statusCode ?: 200,
+                resp.statusLine ?: "OK",
+                waitingMessageEntry.modifiedHeaders ?: resp.headers,
+                resp.bodyAsNormalBase64,
+                resp.bodyFormat.subtype)
     }
 }
 
