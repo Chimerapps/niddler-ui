@@ -79,7 +79,7 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
     }
 
     private fun save(into: DebugMessageEntry) {
-
+        headerPanel.extractHeaders()
     }
 
     private fun initHeaders(debugMessageEntry: DebugMessageEntry) {

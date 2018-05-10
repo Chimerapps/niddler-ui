@@ -85,7 +85,7 @@ class RequestOverridePanel(configuration: ModifiableDebuggerConfiguration,
         override.debugRequest?.let {
             newUrlField.text = it.url
             newMethodField.text = it.method
-            newHeadersField.initSingle(it.headers)
+            newHeadersField.init(it.headers)
         }
 
         initComplete()

@@ -39,7 +39,7 @@ class HeaderEditorPanel(private val changeListener: () -> Unit) : JPanel(BorderL
 
     init {
         val tableScroller = JScrollPane(table)
-        tableScroller.border = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0,0,0,2),tableScroller.border)
+        tableScroller.border = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2), tableScroller.border)
         add(tableScroller, BorderLayout.CENTER)
         table.rowHeight = 28
         table.font = table.font.deriveFont(15.0f)
@@ -73,8 +73,8 @@ class HeaderEditorPanel(private val changeListener: () -> Unit) : JPanel(BorderL
         maximumSize = Dimension(maximumSize.width, 100)
     }
 
-    fun extractHeaders(): Map<String, String> {
-        val map = mutableMapOf<String, String>()
+    fun extractHeaders(): Map<String, List<String>> {
+        val map = mutableMapOf<String, MutableList<String>>()
 
         val count = model.rowCount
         for (i in 0 until count) {
@@ -83,7 +83,7 @@ class HeaderEditorPanel(private val changeListener: () -> Unit) : JPanel(BorderL
 
             if (key.isEmpty() || value.isEmpty())
                 continue
-            map[key] = value
+            map.getOrPut(key) { mutableListOf() } += value
         }
 
         return map
@@ -97,16 +97,6 @@ class HeaderEditorPanel(private val changeListener: () -> Unit) : JPanel(BorderL
             value.forEach {
                 model.addRow(arrayOf(key, it))
             }
-        }
-    }
-
-    fun initSingle(headers: Map<String, String>?) {
-        val count = model.rowCount
-        for (i in 0 until count)
-            model.removeRow(0)
-        headers?.forEach { key, value ->
-            model.addRow(arrayOf(key, value))
-
         }
     }
 
