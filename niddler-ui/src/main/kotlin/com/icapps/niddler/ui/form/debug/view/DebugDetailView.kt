@@ -3,6 +3,7 @@ package com.icapps.niddler.ui.form.debug.view
 import com.icapps.niddler.ui.bold
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.debug.content.HeaderEditorPanel
+import com.icapps.niddler.ui.form.debug.view.body.BodyEditor
 import com.icapps.niddler.ui.left
 import java.awt.Color
 import java.awt.Dimension
@@ -27,6 +28,7 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
     private val titleView = JLabel("<>")
     private var currentMessage: DebugMessageEntry? = null
     private val headerPanel: HeaderEditorPanel
+    private val bodyPanel = BodyEditor(componentsFactory)
 
     init {
         layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
@@ -50,6 +52,7 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
 
         add(JLabel("Body").bold().left())
         add(Box.createVerticalStrut(2))
+        add(bodyPanel.left())
     }
 
     override fun paint(g: Graphics) {

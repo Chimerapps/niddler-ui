@@ -192,7 +192,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
         return DebugResponse(resp.statusCode ?: 200,
                 resp.statusLine ?: "OK",
                 waitingMessageEntry.modifiedHeaders ?: resp.headers,
-                resp.bodyAsNormalBase64,
+                resp.body,
                 resp.bodyFormat.subtype)
     }
 }
