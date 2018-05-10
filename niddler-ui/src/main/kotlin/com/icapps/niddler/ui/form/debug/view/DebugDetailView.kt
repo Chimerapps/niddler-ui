@@ -36,7 +36,7 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
         transferHandler = handler
         dropTarget.addDropTargetListener(handler)
 
-        headerPanel = HeaderEditorPanel { }
+        headerPanel = HeaderEditorPanel(componentsFactory) { }
         headerPanel.preferredSize = Dimension(headerPanel.preferredSize.width, 200)
         headerPanel.maximumSize = Dimension(headerPanel.maximumSize.width, 200)
         headerPanel.minimumSize = Dimension(headerPanel.minimumSize.width, 200)

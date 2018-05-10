@@ -215,7 +215,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         currentDetailPanelType = CurrentDetailPanelType.REQUEST_OVERRIDE
         currentDetailPayload = request
 
-        val right = RequestOverridePanel(changingConfiguration) {
+        val right = RequestOverridePanel(changingConfiguration, factory) {
             isChanged = true
         }
         currentDetailPanel = right

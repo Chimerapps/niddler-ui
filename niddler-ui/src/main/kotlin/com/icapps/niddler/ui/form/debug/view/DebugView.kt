@@ -8,10 +8,10 @@ import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.MainThreadDispatcher
+import com.icapps.niddler.ui.form.ui.AbstractAction
 import com.icapps.niddler.ui.setColumnFixedWidth
 import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
-import java.awt.Component
 import java.util.concurrent.CompletableFuture
 import javax.swing.JPanel
 import javax.swing.JScrollPane
@@ -36,8 +36,8 @@ class DebugView(private val componentsFactory: ComponentsFactory,
     private val detailView = DebugDetailView(componentsFactory)
 
     private val splitter = componentsFactory.createSplitPane()
-    private val sendButton: Component
-    private val cancelButton: Component
+    private val sendButton: AbstractAction
+    private val cancelButton: AbstractAction
 
     init {
         waitingMessagesList.apply {

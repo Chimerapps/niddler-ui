@@ -15,10 +15,14 @@ interface AbstractToolbar {
 
     val component: Component
 
-    fun addAction(icon: Icon, tooltip: String, actionListener: (Component) -> Unit): Component
+    fun addAction(icon: Icon, tooltip: String, actionListener: (AbstractAction) -> Unit): AbstractAction
 
     fun addSeparator()
 
+}
+
+interface AbstractAction {
+    var isEnabled: Boolean
 }
 
 class SwingToolbar(orientation: Int = JToolBar.HORIZONTAL, border: Boolean = false) : AbstractToolbar {
@@ -30,10 +34,10 @@ class SwingToolbar(orientation: Int = JToolBar.HORIZONTAL, border: Boolean = fal
             this.border = BorderFactory.createLoweredBevelBorder()
     }
 
-    override fun addAction(icon: Icon, tooltip: String, actionListener: (Component) -> Unit): Component {
-        val button = makeAction(tooltip, icon, actionListener)
+    override fun addAction(icon: Icon, tooltip: String, actionListener: (AbstractAction) -> Unit): AbstractAction {
+        val button = makeAction(tooltip, icon)
         component.add(button)
-        return button
+        return ButtonAction(button, actionListener)
     }
 
     override fun addSeparator() {
@@ -42,7 +46,21 @@ class SwingToolbar(orientation: Int = JToolBar.HORIZONTAL, border: Boolean = fal
 
 }
 
-fun makeAction(toolTip: String, icon: Icon, listener: (Component) -> Unit): JButton {
+private class ButtonAction(private val button: JButton,
+                           private val actionListener: (AbstractAction) -> Unit) : AbstractAction {
+
+    init {
+        button.addActionListener { actionListener(this) }
+    }
+
+    override var isEnabled: Boolean
+        get() = button.isEnabled
+        set(value) {
+            button.isEnabled = value
+        }
+}
+
+fun makeAction(toolTip: String, icon: Icon): JButton {
     return JButton().apply {
         this.icon = icon
         text = ""
@@ -50,6 +68,5 @@ fun makeAction(toolTip: String, icon: Icon, listener: (Component) -> Unit): JBut
         maximumSize = Dimension(32, 32)
         minimumSize = Dimension(32, 32)
         preferredSize = Dimension(32, 32)
-        addActionListener { listener(this) }
     }
 }

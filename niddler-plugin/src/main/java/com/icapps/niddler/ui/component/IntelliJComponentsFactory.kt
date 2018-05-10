@@ -25,6 +25,7 @@ import java.io.Reader
 import javax.swing.JComponent
 import javax.swing.JFileChooser
 import javax.swing.JScrollPane
+import javax.swing.JToolBar
 
 /**
  * @author Nicola Verbeeck
@@ -89,7 +90,11 @@ class IntelliJComponentsFactory(val project: Project?, val parent: Disposable) :
     }
 
     override fun createHorizontalToolbar(): AbstractToolbar {
-        return SwingToolbar()
+        return IntellijAbstractToolbar()
+    }
+
+    override fun createVerticalToolbar(): AbstractToolbar {
+        return IntellijAbstractToolbar(JToolBar.VERTICAL, true)
     }
 
     private fun getConfigFile(name: String): Reader? {

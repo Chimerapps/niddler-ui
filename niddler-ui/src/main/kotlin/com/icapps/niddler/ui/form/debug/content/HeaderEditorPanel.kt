@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.form.debug.content
 
-import com.icapps.niddler.ui.form.ui.makeAction
+import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.awt.Color
@@ -10,14 +10,14 @@ import javax.swing.BorderFactory
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTable
-import javax.swing.JToolBar
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.TableCellRenderer
 
 /**
  * @author nicolaverbeeck
  */
-class HeaderEditorPanel(private val changeListener: () -> Unit) : JPanel(BorderLayout()) {
+class HeaderEditorPanel(componentsFactory: ComponentsFactory,
+                        private val changeListener: () -> Unit) : JPanel(BorderLayout()) {
 
     private companion object {
         private val alternateRowColor1 = Color(0xD6, 0xDF, 0xEB)
@@ -44,23 +44,22 @@ class HeaderEditorPanel(private val changeListener: () -> Unit) : JPanel(BorderL
         table.rowHeight = 28
         table.font = table.font.deriveFont(15.0f)
 
-        val toolbar = JToolBar()
-        toolbar.isFloatable = false
+        val toolbar = componentsFactory.createHorizontalToolbar()
 
-        toolbar.add(makeAction("Add header", loadIcon("/add.png")) {
+        toolbar.addAction(loadIcon("/add.png"), "Add header") {
             model.addRow(arrayOf("", ""))
-        })
-        toolbar.add(makeAction("Add header", loadIcon("/remove.png")) {
+        }
+        toolbar.addAction(loadIcon("/remove.png"), "Add header") {
             if (model.rowCount == 0)
-                return@makeAction
+                return@addAction
             if (table.selectedRow != -1)
                 model.removeRow(table.selectedRow)
             else
                 model.removeRow(table.rowCount - 1)
-        })
+        }
 
         val toolbarFrame = JPanel(BorderLayout())
-        toolbarFrame.add(toolbar, BorderLayout.EAST)
+        toolbarFrame.add(toolbar.component, BorderLayout.EAST)
         add(toolbarFrame, BorderLayout.SOUTH)
 
         model.addColumn("Name")
