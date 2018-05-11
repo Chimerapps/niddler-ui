@@ -40,7 +40,7 @@ class JsonTreeEditorNode(override val jsonElement: JsonElement, private var pare
         if (child == null) {
             return
         }
-        val oldParent = child.getParent() as MutableTreeNode
+        val oldParent = child.parent as MutableTreeNode
 
         oldParent.remove(child)
         child.setParent(this)
@@ -67,8 +67,8 @@ class JsonTreeEditorNode(override val jsonElement: JsonElement, private var pare
             }
             if (!TextUtils.isEmpty(newObject.value)) {
                 value = newObject.value
-            }
             type = newObject.type
+            }
         }
     }
 
