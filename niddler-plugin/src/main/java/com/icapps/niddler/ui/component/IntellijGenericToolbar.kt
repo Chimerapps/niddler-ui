@@ -13,7 +13,7 @@ import javax.swing.JComponent
 /**
  * @author nicolaverbeeck
  */
-class IntellijAbstractToolbar(horizontal: Boolean) : AbstractToolbar {
+class IntellijGenericToolbar(horizontal: Boolean) : AbstractToolbar {
 
     internal val internal: ActionToolbar
     override val component: JComponent

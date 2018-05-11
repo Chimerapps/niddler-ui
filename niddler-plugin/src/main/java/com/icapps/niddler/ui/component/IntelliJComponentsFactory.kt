@@ -88,11 +88,11 @@ class IntelliJComponentsFactory(val project: Project?, val parent: Disposable) :
     }
 
     override fun createHorizontalToolbar(): AbstractToolbar {
-        return IntellijAbstractToolbar(horizontal = true)
+        return IntellijGenericToolbar(horizontal = true)
     }
 
     override fun createVerticalToolbar(): AbstractToolbar {
-        return IntellijAbstractToolbar(horizontal = false)
+        return IntellijGenericToolbar(horizontal = false)
     }
 
     private fun getConfigFile(name: String): Reader? {
