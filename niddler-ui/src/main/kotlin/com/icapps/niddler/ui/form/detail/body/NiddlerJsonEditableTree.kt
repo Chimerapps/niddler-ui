@@ -48,16 +48,14 @@ open class NiddlerJsonEditableTree(json: JsonElement) : JTree() {
             val element = getJsonElement(it)
             when {
                 (parentElement is JsonObject) -> {
-                    val newElement = getJsonElement(it)
                     val name = it.name ?: return
-                    parentElement.add(name, newElement)
-                    getChildren(it, newElement)
+                    parentElement.add(name, element)
                 }
                 (parentElement is JsonArray) -> {
                     parentElement.add(element)
-                    getChildren(it, element)
                 }
             }
+            getChildren(it, element)
         }
     }
 
