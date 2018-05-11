@@ -8,15 +8,23 @@ import com.icapps.niddler.ui.addChangeListener
 import com.icapps.niddler.ui.expandAllNodes
 import com.icapps.niddler.ui.model.AdbDeviceModel
 import com.icapps.niddler.ui.util.WideSelectionTreeUI
+import com.icapps.niddler.ui.util.logger
 import com.icapps.tools.aec.EmulatorFactory
 import java.awt.Window
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
-import javax.swing.*
+import javax.swing.JComponent
+import javax.swing.JOptionPane
+import javax.swing.JTree
+import javax.swing.KeyStroke
+import javax.swing.SwingWorker
+import javax.swing.Timer
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.MutableTreeNode
+import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
@@ -46,7 +54,8 @@ class NiddlerConnectDialog(parent: Window?,
             return dialog.selection
         }
 
-        const val REFRESH_PROCESS_DELAY = 2000
+        val log = logger<NiddlerConnectDialog>()
+        const val REFRESH_PROCESS_DELAY = 4000
     }
 
     private var selection: ConnectSelection? = null
@@ -173,12 +182,17 @@ class NiddlerConnectDialog(parent: Window?,
         refreshTimer?.stop()
         refreshTimer = null
         refreshTimer = Timer(REFRESH_PROCESS_DELAY) {
-            reloadWorker?.cancel(true)
+            log.debug("Refreshing")
+            try {
+                reloadWorker?.cancel(true)
+            } catch (e: Throwable) {
+            }
             reloadWorker = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, tree, progressBar::stop)
             reloadWorker?.execute()
         }.apply {
             isRepeats = true
             isCoalesce = false
+            start()
         }
     }
 
@@ -247,6 +261,7 @@ class NiddlerConnectDialog(parent: Window?,
             var rows = 0
             val root = tree.model.root as DefaultMutableTreeNode
             root.removeAllChildren()
+            (tree.model as DefaultTreeModel).reload()
             devices.forEach { device ->
                 val deviceNode = NiddlerConnectDeviceTreeNode(device)
                 (tree.model as DefaultTreeModel).insertNodeInto(deviceNode, root, root.childCount)
@@ -257,13 +272,28 @@ class NiddlerConnectDialog(parent: Window?,
                 }
             }
 
+            (tree.model as DefaultTreeModel).reload()
             //TODO there is still a selection bug (by default the first row is selected. when moving up and  down the first row keeps it selection)
             if (previousItem != null && previousItem is DefaultMutableTreeNode) {
                 tree.clearSelection()
-                tree.selectionPath = TreePath(previousItem.path)
+                if (previousItem is NiddlerConnectProcessTreeNode) {
+                    (tree.model.root as DefaultMutableTreeNode).forEach { itRoot: NiddlerConnectDeviceTreeNode ->
+                        itRoot.forEach<NiddlerConnectProcessTreeNode> {
+                            if (it.session == previousItem.session) {
+                                tree.selectionPath = TreePath(it.path)
+                            }
+                        }
+                    }
+                } else if (previousItem is NiddlerConnectDeviceTreeNode) {
+                    (tree.model.root as DefaultMutableTreeNode).forEach { itRoot: NiddlerConnectDeviceTreeNode ->
+                        if (itRoot.device == previousItem.device)
+                            tree.selectionPath = TreePath(itRoot.path)
+                    }
+                }
             } else if (devices.isNotEmpty()) {
                 tree.selectionPath = TreePath((tree.model.root as DefaultMutableTreeNode).path)
             }
+
             tree.expandAllNodes(0, rows)
             tree.isRootVisible = false
             doneCallback()
@@ -283,4 +313,11 @@ class NiddlerConnectDialog(parent: Window?,
             doneCallback(get())
         }
     }
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun <T : TreeNode> MutableTreeNode.forEach(block: (T) -> Unit) {
+    val count = childCount
+    for (i in 0 until count)
+        block(getChildAt(i) as T)
 }

@@ -4,17 +4,26 @@ import com.icapps.niddler.lib.debugger.model.BaseMatcher
 import com.icapps.niddler.lib.debugger.model.DebugRequest
 import com.icapps.niddler.lib.debugger.model.LocalRequestOverride
 import com.icapps.niddler.lib.debugger.model.ModifiableDebuggerConfiguration
+import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.left
 import com.icapps.niddler.ui.offsetLeft
 import com.icapps.niddler.ui.plusAssign
 import com.icapps.niddler.ui.singleLine
-import javax.swing.*
+import javax.swing.Box
+import javax.swing.BoxLayout
+import javax.swing.JCheckBox
+import javax.swing.JLabel
+import javax.swing.JOptionPane
+import javax.swing.JPanel
+import javax.swing.JTextField
+import javax.swing.UIManager
 import javax.swing.border.EmptyBorder
 
 /**
  * @author nicolaverbeeck
  */
 class RequestOverridePanel(configuration: ModifiableDebuggerConfiguration,
+                           componentsFactory: ComponentsFactory,
                            changeListener: () -> Unit)
     : BaseOverridePanel<BaseMatcher>(configuration, changeListener) {
 
@@ -24,7 +33,7 @@ class RequestOverridePanel(configuration: ModifiableDebuggerConfiguration,
 
     private val newUrlField = JTextField()
     private val newMethodField = JTextField()
-    private val newHeadersField = HeaderEditorPanel(changeListener)
+    private val newHeadersField = HeaderEditorPanel(componentsFactory, changeListener)
 
     private val staticRequestToggle = JCheckBox("Static override")
 

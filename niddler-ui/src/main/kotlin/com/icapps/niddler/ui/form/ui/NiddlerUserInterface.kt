@@ -24,7 +24,7 @@ interface NiddlerUserInterface {
     var debugButtonListener: (() -> Unit)?
 
     val toolbar: NiddlerMainToolbar
-    val disconnectButton: Component
+    val disconnectButton: AbstractAction
 
     val statusBar: NiddlerStatusbar
 

@@ -10,7 +10,6 @@ import com.icapps.niddler.ui.form.components.impl.SwingDialog
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.ui.AbstractToolbar
-import com.icapps.niddler.ui.form.ui.SwingToolbar
 import com.icapps.niddler.ui.util.logger
 import com.icapps.niddler.ui.utils.runWriteAction
 import com.intellij.openapi.Disposable
@@ -89,7 +88,11 @@ class IntelliJComponentsFactory(val project: Project?, val parent: Disposable) :
     }
 
     override fun createHorizontalToolbar(): AbstractToolbar {
-        return SwingToolbar()
+        return IntellijGenericToolbar(horizontal = true)
+    }
+
+    override fun createVerticalToolbar(): AbstractToolbar {
+        return IntellijGenericToolbar(horizontal = false)
     }
 
     private fun getConfigFile(name: String): Reader? {

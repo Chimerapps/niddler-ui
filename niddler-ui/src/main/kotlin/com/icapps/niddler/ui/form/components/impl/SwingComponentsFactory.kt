@@ -17,6 +17,7 @@ import java.io.IOException
 import javax.swing.JComponent
 import javax.swing.JFileChooser
 import javax.swing.JScrollPane
+import javax.swing.JToolBar
 
 /**
  * @author Nicola Verbeeck
@@ -75,6 +76,10 @@ class SwingComponentsFactory : ComponentsFactory {
 
     override fun createHorizontalToolbar(): AbstractToolbar {
         return SwingToolbar()
+    }
+
+    override fun createVerticalToolbar(): AbstractToolbar {
+        return SwingToolbar(JToolBar.VERTICAL, border = true)
     }
 
     private fun getConfigFile(name: String): File {

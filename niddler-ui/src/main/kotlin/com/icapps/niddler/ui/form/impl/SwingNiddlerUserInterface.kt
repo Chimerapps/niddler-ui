@@ -4,18 +4,19 @@ import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.form.ComponentsFactory
+import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.components.HintTextField
 import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.impl.SwingToolbar
 import com.icapps.niddler.ui.form.debug.view.DebugView
+import com.icapps.niddler.ui.form.ui.AbstractAction
 import com.icapps.niddler.ui.form.ui.NiddlerDetailUserInterface
 import com.icapps.niddler.ui.form.ui.NiddlerOverviewUserInterface
 import com.icapps.niddler.ui.form.ui.NiddlerStatusbar
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
 import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
-import java.awt.Component
 import java.awt.Dimension
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -46,7 +47,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     protected val rootPanel: JPanel
 
     private lateinit var splitPane: SplitPane
-    override lateinit var disconnectButton: Component
+    override lateinit var disconnectButton: AbstractAction
     private lateinit var messagesScroller: JScrollPane
     override lateinit var debugView: DebugView
 
@@ -190,6 +191,8 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     }
 
     private fun onDebugMessagesUpdated(numItems: Int) {
-        //TODO
+        MainThreadDispatcher.dispatch {
+            toolbar.hasWaitingBreakpoint = (numItems != 0)
+        }
     }
 }

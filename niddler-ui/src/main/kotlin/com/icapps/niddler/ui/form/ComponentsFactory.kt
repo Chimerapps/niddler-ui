@@ -35,5 +35,7 @@ interface ComponentsFactory {
 
     fun createHorizontalToolbar(): AbstractToolbar
 
+    fun createVerticalToolbar(): AbstractToolbar
+
 }
 

@@ -5,7 +5,11 @@ import com.icapps.niddler.ui.impl.IntelliJToolbar.Companion.MODE_DEBUG
 import com.icapps.niddler.ui.impl.IntelliJToolbar.Companion.MODE_LINKED
 import com.icapps.niddler.ui.impl.IntelliJToolbar.Companion.MODE_TIMELINE
 import com.icapps.niddler.ui.util.loadIcon
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.SimpleToolWindowPanel
@@ -137,7 +141,7 @@ private class DebugViewAction(private val toolbar: IntelliJToolbar,
 
     override fun setSelected(e: AnActionEvent?, state: Boolean) {
         if (state) {
-            toolbar.listener?.onLinkedSelected()
+            toolbar.listener?.onDebuggerViewSelected()
             toolbar.mode = MODE_DEBUG
             toolbar.internal.updateActionsImmediately()
         }

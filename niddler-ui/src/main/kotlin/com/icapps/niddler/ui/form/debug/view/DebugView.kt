@@ -8,10 +8,13 @@ import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.MainThreadDispatcher
+import com.icapps.niddler.ui.form.ui.AbstractAction
 import com.icapps.niddler.ui.setColumnFixedWidth
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.util.concurrent.CompletableFuture
 import javax.swing.JPanel
+import javax.swing.JScrollPane
 import javax.swing.JTable
 import javax.swing.ListSelectionModel
 import javax.swing.Timer
@@ -28,10 +31,13 @@ class DebugView(private val componentsFactory: ComponentsFactory,
         private val logger = com.icapps.niddler.ui.util.logger<DebugView>()
     }
 
-    private val waitingMessagesModel = MessagesModel()
+    private val waitingMessagesModel = MessagesModel(messagesUpdateListener)
     private val waitingMessagesList = JTable(waitingMessagesModel)
+    private val detailView = DebugDetailView(componentsFactory)
 
     private val splitter = componentsFactory.createSplitPane()
+    private val sendButton: AbstractAction
+    private val cancelButton: AbstractAction
 
     init {
         waitingMessagesList.apply {
@@ -60,12 +66,24 @@ class DebugView(private val componentsFactory: ComponentsFactory,
             }
         }
 
+        val toolbar = componentsFactory.createVerticalToolbar()
+        sendButton = toolbar.addAction(loadIcon("/stepOut.png"), "Send to server") {
+            onSubmitClicked()
+        }
+        cancelButton = toolbar.addAction(loadIcon("/cancel.png"), "Proceed without changes") {
+            onCancelClicked()
+        }
+        sendButton.isEnabled = false
+        cancelButton.isEnabled = false
+        add(toolbar.component, BorderLayout.WEST)
+
         val scroller = componentsFactory.createScrollPane()
         scroller.setViewportView(waitingMessagesList)
 
         add(splitter.asComponent, BorderLayout.CENTER)
         splitter.left = scroller
-        splitter.resizePriority = 1.0
+        splitter.right = JScrollPane(detailView)
+        splitter.resizePriority = .2
         splitter.asComponent.revalidate()
     }
 
@@ -96,13 +114,13 @@ class DebugView(private val componentsFactory: ComponentsFactory,
 
         val future = CompletableFuture<DebugResponse?>()
 
+        @Suppress("UNCHECKED_CAST")
         waitingMessagesModel.addMessage(DebugMessageEntry(method,
                 isRequest = false,
                 url = url,
                 response = parsedResponse,
-                future = future
+                future = future as CompletableFuture<Any?>
         ))
-        messagesUpdateListener(waitingMessagesList.rowCount)
         try {
             return future.get()
         } catch (e: Throwable) {
@@ -114,14 +132,68 @@ class DebugView(private val componentsFactory: ComponentsFactory,
     private fun checkRowSelectionState() {
         val index = waitingMessagesList.selectedRow
         if (index < 0) {
-            //TODO clear right
+            cancelButton.isEnabled = false
+            sendButton.isEnabled = false
+            detailView.clearMessage()
             return
         }
         showDetailFor(waitingMessagesModel.getMessageAt(index))
     }
 
     private fun showDetailFor(debugMessageEntry: DebugMessageEntry) {
-        //TODO
+        cancelButton.isEnabled = true
+        sendButton.isEnabled = true
+        detailView.showDetails(debugMessageEntry)
+    }
+
+    private fun onCancelClicked() {
+        val index = waitingMessagesList.selectedRow
+        if (index < 0) {
+            cancelButton.isEnabled = false
+            sendButton.isEnabled = false
+            detailView.clearMessage()
+            return
+        }
+        val model = waitingMessagesModel.getMessageAt(index)
+        waitingMessagesModel.removeMessage(model)
+        if (waitingMessagesModel.rowCount == 0)
+            waitingMessagesList.clearSelection()
+
+        model.future.complete(null)
+    }
+
+    private fun onSubmitClicked() {
+        val index = waitingMessagesList.selectedRow
+        if (index < 0) {
+            cancelButton.isEnabled = false
+            sendButton.isEnabled = false
+            detailView.clearMessage()
+            return
+        }
+        val model = waitingMessagesModel.getMessageAt(index)
+        waitingMessagesModel.removeMessage(model)
+        if (waitingMessagesModel.rowCount == 0)
+            waitingMessagesList.clearSelection()
+
+        detailView.save(model)
+
+        model.future.complete(buildDebuggerReply(model))
+    }
+
+    private fun buildDebuggerReply(waitingMessageEntry: DebugMessageEntry): Any? {
+        return if (waitingMessageEntry.isRequest)
+            null
+        else
+            buildResponse(waitingMessageEntry)
+    }
+
+    private fun buildResponse(waitingMessageEntry: DebugMessageEntry): DebugResponse? {
+        val resp = waitingMessageEntry.response ?: return null
+        return DebugResponse(resp.statusCode ?: 200,
+                resp.statusLine ?: "OK",
+                waitingMessageEntry.modifiedHeaders ?: resp.headers,
+                resp.bodyAsNormalBase64,
+                resp.bodyFormat.subtype)
     }
 }
 

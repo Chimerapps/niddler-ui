@@ -128,7 +128,17 @@ data class NiddlerSession(val device: ADBDevice,
                           val packageName: String,
                           val port: Int,
                           val pid: Int,
-                          val protocolVersion: Int)
+                          val protocolVersion: Int) {
+    override fun equals(other: Any?): Boolean {
+        if (other !is NiddlerSession)
+            return false
+
+        return packageName == other.packageName
+                && port == other.port
+                && pid == other.pid
+                && protocolVersion == other.protocolVersion
+    }
+}
 
 private data class NiddlerAnnouncementMessage(
         val packageName: String,

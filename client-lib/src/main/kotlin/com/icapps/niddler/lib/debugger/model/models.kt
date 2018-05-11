@@ -82,19 +82,19 @@ class RemoveRequestOverrideActionMessage(id: String)
 data class DebugReplyPayload(val messageId: String)
 
 abstract class DebugMessage(
-        @Expose var headers: Map<String, String>?,
+        @Expose var headers: Map<String, List<String>>?,
         @Expose var encodedBody: String?,
         @Expose var bodyMimeType: String?)
 
 class DebugResponse(@Expose val code: Int,
                     @Expose val message: String,
-                    headers: Map<String, String>?,
+                    headers: Map<String, List<String>>?,
                     encodedBody: String?,
                     bodyMimeType: String?) : DebugMessage(headers, encodedBody, bodyMimeType)
 
 class DebugRequest(@Expose var url: String = "",
                    @Expose var method: String = "",
-                   headers: Map<String, String>? = null,
+                   headers: Map<String, List<String>>? = null,
                    encodedBody: String? = null,
                    bodyMimeType: String? = null) : DebugMessage(headers, encodedBody, bodyMimeType) {
     override fun toString(): String {
