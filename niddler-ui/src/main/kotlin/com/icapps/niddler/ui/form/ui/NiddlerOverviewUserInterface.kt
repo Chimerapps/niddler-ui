@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.form.ui
 
+import com.icapps.niddler.ui.form.PopupMenuSelectingJTable
 import javax.swing.JTable
 import javax.swing.JTree
 
@@ -9,7 +10,7 @@ import javax.swing.JTree
  */
 interface NiddlerOverviewUserInterface {
 
-    val messagesAsTable: JTable
+    val messagesAsTable: PopupMenuSelectingJTable
     val messagesAsTree: JTree
 
     fun init()

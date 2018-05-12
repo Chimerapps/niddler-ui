@@ -48,7 +48,7 @@ import javax.swing.Timer
  * @date 14/11/16.
  */
 class NiddlerWindow(private val windowContents: NiddlerUserInterface, private val sdkPathGuesses: Collection<String>)
-    : NiddlerMessageListener, ParsedNiddlerMessageListener<ParsedNiddlerMessage>, NiddlerMessagePopupMenu.Listener,
+    : NiddlerMessageListener, ParsedNiddlerMessageListener<ParsedNiddlerMessage>, NiddlerTableMessagePopupMenu.Listener,
         NiddlerMainToolbar.ToolbarListener {
 
     companion object {
@@ -57,7 +57,6 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
     private val bodyParser = NiddlerMessageBodyParser(HeaderBodyClassifier())
     private val messages = NiddlerMessageContainer(bodyParser::parseBody, InMemoryNiddlerMessageStorage())
-    private val messagePopupMenu = NiddlerMessagePopupMenu(this)
 
     private lateinit var adbConnection: ADBBootstrap
     private var messageMode = MessageMode.TIMELINE
@@ -81,7 +80,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
         windowContents.overview.messagesAsTable.apply {
             //TODO cleanup
-            componentPopupMenu = messagePopupMenu
+            popup = NiddlerTableMessagePopupMenu(this@NiddlerWindow)
             model = TimelineMessagesTableModel()
             setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
             setColumnFixedWidth(0, 90)
@@ -107,7 +106,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             }
         }
         windowContents.overview.messagesAsTree.apply {
-            componentPopupMenu = messagePopupMenu
+            componentPopupMenu = NiddlerMessagePopupMenu(this@NiddlerWindow)
             model = LinkedMessagesModel()
             ui = WideSelectionTreeUI()
 
@@ -382,6 +381,17 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             debuggerSession!!.startSession()
             onDebuggerActive()
         }
+    }
+
+    override fun onShowRelatedClicked(source: ParsedNiddlerMessage?) {
+        if (source == null)
+            return
+        val toShow = if (source.isRequest)
+            messages.storage.findResponse(source)
+        else
+            messages.storage.findRequest(source)
+
+        windowContents.selectMessage(toShow ?: return)
     }
 
     override fun onCopyUrlClicked() {

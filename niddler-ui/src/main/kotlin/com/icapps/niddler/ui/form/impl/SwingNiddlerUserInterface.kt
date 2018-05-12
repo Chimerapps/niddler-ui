@@ -72,6 +72,10 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         initToolbar()
     }
 
+    override fun selectMessage(parsedNiddlerMessage: ParsedNiddlerMessage) {
+        overview.messagesAsTable.selectRowFor(parsedNiddlerMessage)
+    }
+
     protected open fun initSplitPane() {
         splitPane = componentsFactory.createSplitPane()
         splitPane.resizePriority = 1.0
