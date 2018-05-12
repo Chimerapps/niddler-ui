@@ -7,7 +7,7 @@ import javax.swing.JPopupMenu
 /**
  * Created by maartenvangiel on 20/04/2017.
  */
-open class NiddlerMessagePopupMenu<T : NiddlerMessagePopupMenu.Listener>(protected val listener: T) : JPopupMenu() {
+open class NiddlerMessagePopupMenu<T : NiddlerMessagePopupMenu.Listener>(val listener: T) : JPopupMenu() {
 
     private val copyUrlItem: JMenuItem = JMenuItem("Copy URL")
     private val copyBodyItem: JMenuItem = JMenuItem("Copy body")

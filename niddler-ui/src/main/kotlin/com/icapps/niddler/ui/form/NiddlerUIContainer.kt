@@ -4,6 +4,8 @@ import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.model.ui.TimelineMessagesTableModel
 import java.awt.AWTEvent
 import java.awt.Point
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import javax.swing.JPopupMenu
 import javax.swing.JTable
@@ -17,6 +19,13 @@ class PopupMenuSelectingJTable : JTable() {
 
     init {
         enableEvents(AWTEvent.MOUSE_EVENT_MASK)
+        addKeyListener(object : KeyAdapter() {
+            override fun keyTyped(e: KeyEvent) {
+                when (e.keyChar) {
+                    'r' -> popup.listener.onShowRelatedClicked(currentRowItem())
+                }
+            }
+        })
     }
 
     lateinit var popup: NiddlerTableMessagePopupMenu
@@ -29,22 +38,15 @@ class PopupMenuSelectingJTable : JTable() {
     }
 
     override fun getComponentPopupMenu(): JPopupMenu {
-        val relatedRow = selectedRow
-        if (relatedRow >= 0) {
-            val model = model
-            if (model is TimelineMessagesTableModel) {
-                val row = model.getRow(selectedRow)
-                if (row.isRequest) {
-                    popup.setOtherText("Show response", row)
-                } else {
-                    popup.setOtherText("Show request", row)
-                }
-            } else {
-                popup.clearExtra()
-            }
-        } else {
+        val current = currentRowItem()
+        if (current == null)
             popup.clearExtra()
-        }
+        else if (current.isRequest)
+            popup.setOtherText("Show response", current)
+        else
+            popup.setOtherText("Show request", current)
+
+
         return popup
     }
 
@@ -55,6 +57,19 @@ class PopupMenuSelectingJTable : JTable() {
                 clearSelection()
                 setRowSelectionInterval(index, index)
             }
+        }
+    }
+
+    private fun currentRowItem(): ParsedNiddlerMessage? {
+        val relatedRow = selectedRow
+        if (relatedRow < 0) {
+            return null
+        }
+        val model = model
+        if (model is TimelineMessagesTableModel) {
+            return model.getRow(selectedRow)
+        } else {
+            return null
         }
     }
 }
