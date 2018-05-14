@@ -135,5 +135,9 @@ class TimelineMessagesTableModel : TableModel, MessagesModel {
         return messages[selectedRow]
     }
 
+    fun findRowIndex(parsedNiddlerMessage: ParsedNiddlerMessage): Int {
+        return messages.indexOfFirst { it === parsedNiddlerMessage }
+    }
+
 
 }

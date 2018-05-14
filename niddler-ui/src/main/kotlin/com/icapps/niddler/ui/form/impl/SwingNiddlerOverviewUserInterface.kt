@@ -12,7 +12,7 @@ import javax.swing.JTree
  */
 open class SwingNiddlerOverviewUserInterface(private val parent: NiddlerOverviewParent) : NiddlerOverviewUserInterface {
 
-    override lateinit var messagesAsTable: JTable
+    override lateinit var messagesAsTable: PopupMenuSelectingJTable
     override lateinit var messagesAsTree: JTree
 
     override fun init() {
