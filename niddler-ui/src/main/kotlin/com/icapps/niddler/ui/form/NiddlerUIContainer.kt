@@ -37,7 +37,10 @@ class PopupMenuSelectingJTable : JTable() {
         return super.getPopupLocation(event)
     }
 
-    override fun getComponentPopupMenu(): JPopupMenu {
+    override fun getComponentPopupMenu(): JPopupMenu? {
+        if (!::popup.isInitialized)
+            return super.getComponentPopupMenu()
+
         val current = currentRowItem()
         if (current == null)
             popup.clearExtra()
@@ -45,7 +48,6 @@ class PopupMenuSelectingJTable : JTable() {
             popup.setOtherText("Show response", current)
         else
             popup.setOtherText("Show request", current)
-
 
         return popup
     }
