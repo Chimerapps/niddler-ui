@@ -68,8 +68,7 @@ class PopupMenuSelectingJTable : JTable() {
         val model = model
         if (model is TimelineMessagesTableModel) {
             return model.getRow(selectedRow)
-        } else {
-            return null
         }
+        return null
     }
 }
