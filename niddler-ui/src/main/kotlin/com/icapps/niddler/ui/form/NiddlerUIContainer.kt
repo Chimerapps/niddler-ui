@@ -58,6 +58,7 @@ class PopupMenuSelectingJTable : JTable() {
             if (index >= 0) {
                 clearSelection()
                 setRowSelectionInterval(index, index)
+                scrollToRow(index)
             }
         }
     }
@@ -72,5 +73,9 @@ class PopupMenuSelectingJTable : JTable() {
             return model.getRow(selectedRow)
         }
         return null
+    }
+
+    private fun scrollToRow(index: Int) {
+        scrollRectToVisible(getCellRect(index, 0, true))
     }
 }
