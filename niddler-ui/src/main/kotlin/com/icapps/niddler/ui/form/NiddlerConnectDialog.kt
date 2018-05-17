@@ -122,6 +122,8 @@ class NiddlerConnectDialog(parent: Window?,
                 return
             }
             selection = ConnectSelection(device = node.device.device, session = node.session, ip = directIP.text, port = port.text.toInt(), withDebugger = withDebugger)
+        } else {
+            selection = ConnectSelection(null, null, directIP.text, port.text.toInt(), withDebugger)
         }
         dispose()
     }
