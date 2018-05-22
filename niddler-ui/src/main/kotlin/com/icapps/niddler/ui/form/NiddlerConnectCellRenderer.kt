@@ -1,9 +1,7 @@
 package com.icapps.niddler.ui.form
 
-import com.icapps.niddler.ui.getDeviceIcon
 import com.icapps.niddler.ui.isBright
 import com.icapps.niddler.ui.toHex
-import com.icapps.niddler.ui.util.loadIcon
 import org.apache.http.util.TextUtils
 import java.awt.Color
 import java.awt.Component
@@ -37,7 +35,8 @@ class NiddlerConnectCellRenderer : DefaultTreeCellRenderer() {
 
     }
 
-    override fun getTreeCellRendererComponent(tree: JTree?, rowObject: Any?, sel: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean): Component {
+    override fun getTreeCellRendererComponent(tree: JTree?, rowObject: Any?, sel: Boolean, expanded: Boolean,
+                                              leaf: Boolean, row: Int, hasFocus: Boolean): Component {
         super.getTreeCellRendererComponent(tree, rowObject, sel, expanded, leaf, row, hasFocus)
         background = null
         val hexColor: String
@@ -51,23 +50,23 @@ class NiddlerConnectCellRenderer : DefaultTreeCellRenderer() {
             hexColor = secondaryTextNonSelectionColor
         }
         if (rowObject is NiddlerConnectDeviceTreeNode) {
-            val adbDevice = rowObject.device
-            if (adbDevice == null) {
+            val device = rowObject.device
+            if (device == null) {
                 text = "No connected devices"
                 icon = null
                 toolTipText = null
                 return this
             }
-            val iconResName = getDeviceIcon(adbDevice.emulator)
-            icon = loadIcon(iconResName)
-            if (TextUtils.isEmpty(adbDevice.name)) {
-                text = adbDevice.serialNr
+            icon = device.icon
+            if (TextUtils.isEmpty(device.name)) {
+                text = device.serialNr
             } else {
-                text = String.format("<html>%s <font color='%s'>%s</font>", adbDevice.name, hexColor, adbDevice.extraInfo)
-                toolTipText = adbDevice.serialNr
+                text = String.format("<html>%s <font color='%s'>%s</font>", device.name, hexColor, device.extraInfo)
+                toolTipText = device.serialNr
             }
         } else if (rowObject is NiddlerConnectProcessTreeNode) {
-            text = String.format("<html>%s <font color='%s'>(Port: %s)</font>", rowObject.session.packageName, hexColor, rowObject.session.port)
+            text = String.format("<html>%s <font color='%s'>(Port: %s)</font>",
+                    rowObject.session.packageName, hexColor, rowObject.session.port)
             icon = null
             toolTipText = null
         } else {

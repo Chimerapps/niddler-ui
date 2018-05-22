@@ -1,6 +1,5 @@
 package com.icapps.niddler.ui.form
 
-import com.icapps.niddler.lib.device.adb.ADBBootstrap
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
@@ -14,6 +13,8 @@ import com.icapps.niddler.lib.device.Device
 import com.icapps.niddler.lib.device.DirectPreparedConnection
 import com.icapps.niddler.lib.device.NiddlerSession
 import com.icapps.niddler.lib.device.PreparedDeviceConnection
+import com.icapps.niddler.lib.device.adb.ADBBootstrap
+import com.icapps.niddler.lib.device.local.LocalDevice
 import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
 import com.icapps.niddler.lib.model.NiddlerMessageBodyParser
@@ -134,13 +135,13 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
         windowContents.connectButtonListener = {
             val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent),
-                    adbConnection, null, null, withDebugger = false)
+                    adbConnection, LocalDevice(), null, null, withDebugger = false)
             if (selection != null)
                 onDeviceSelectionChanged(selection)
         }
         windowContents.debugButtonListener = {
             val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent),
-                    adbConnection, null, null, withDebugger = true)
+                    adbConnection, LocalDevice(), null, null, withDebugger = true)
             if (selection != null)
                 onDeviceSelectionChanged(selection)
         }

@@ -1,13 +1,16 @@
 package com.icapps.niddler.ui.form
 
-import com.icapps.niddler.lib.device.adb.ADBBootstrap
-import com.icapps.niddler.lib.device.adb.ADBDevice
-import com.icapps.niddler.lib.device.adb.ADBInterface
+import com.icapps.niddler.lib.device.Device
 import com.icapps.niddler.lib.device.NiddlerSession
+import com.icapps.niddler.lib.device.adb.ADBBootstrap
+import com.icapps.niddler.lib.device.adb.ADBInterface
+import com.icapps.niddler.lib.utils.localName
 import com.icapps.niddler.ui.addChangeListener
 import com.icapps.niddler.ui.expandAllNodes
-import com.icapps.niddler.ui.model.AdbDeviceModel
+import com.icapps.niddler.ui.getDeviceIcon
+import com.icapps.niddler.ui.model.DeviceModel
 import com.icapps.niddler.ui.util.WideSelectionTreeUI
+import com.icapps.niddler.ui.util.loadIcon
 import com.icapps.niddler.ui.util.logger
 import com.icapps.tools.aec.EmulatorFactory
 import java.awt.Window
@@ -34,6 +37,7 @@ import javax.swing.tree.TreeSelectionModel
  */
 class NiddlerConnectDialog(parent: Window?,
                            private val adbBootstrap: ADBBootstrap,
+                           private val localDevice: Device,
                            private val previousIp: String?,
                            private val previousPort: Int?,
                            private val withDebugger: Boolean) : ConnectDialog(parent) {
@@ -42,9 +46,9 @@ class NiddlerConnectDialog(parent: Window?,
 
     companion object {
         @JvmStatic
-        fun showDialog(parent: Window?, adbBootstrap: ADBBootstrap,
+        fun showDialog(parent: Window?, adbBootstrap: ADBBootstrap, localDevice: Device,
                        previousIp: String?, previousPort: Int?, withDebugger: Boolean): ConnectSelection? {
-            val dialog = NiddlerConnectDialog(parent, adbBootstrap, previousIp, previousPort, withDebugger)
+            val dialog = NiddlerConnectDialog(parent, adbBootstrap, localDevice, previousIp, previousPort, withDebugger)
             dialog.initUI()
             dialog.pack()
             dialog.setSize(500, 350)
@@ -169,7 +173,7 @@ class NiddlerConnectDialog(parent: Window?,
         adbInterface.createDeviceWatcher {
             reloadWorker?.cancel(true)
             reloadWorker = null
-            val reload = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, tree, progressBar::stop)
+            val reload = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, localDevice, tree, progressBar::stop)
             val devices = reload.executeOnBackgroundThread()
             MainThreadDispatcher.dispatch {
                 refreshTimer?.stop()
@@ -189,7 +193,7 @@ class NiddlerConnectDialog(parent: Window?,
                 reloadWorker?.cancel(true)
             } catch (e: Throwable) {
             }
-            reloadWorker = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, tree, progressBar::stop)
+            reloadWorker = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, localDevice, tree, progressBar::stop)
             reloadWorker?.execute()
         }.apply {
             isRepeats = true
@@ -198,7 +202,7 @@ class NiddlerConnectDialog(parent: Window?,
         }
     }
 
-    data class ConnectSelection(val device: ADBDevice?,
+    data class ConnectSelection(val device: Device?,
                                 val session: NiddlerSession?,
                                 val ip: String?,
                                 val port: Int,
@@ -206,19 +210,20 @@ class NiddlerConnectDialog(parent: Window?,
 
     private class NiddlerReloadSwingWorker(private val adbInterface: ADBInterface,
                                            private val adbBootstrap: ADBBootstrap,
+                                           private val localDevice: Device,
                                            val tree: JTree,
-                                           val doneCallback: () -> Unit) : SwingWorker<List<AdbDeviceModel>, AdbDeviceModel>() {
+                                           val doneCallback: () -> Unit) : SwingWorker<List<DeviceModel>, DeviceModel>() {
 
         private val authToken: String = File("${System.getProperty("user.home")}/.emulator_console_auth_token").readText()
 
-        override fun doInBackground(): List<AdbDeviceModel> {
+        override fun doInBackground(): List<DeviceModel> {
             return executeOnBackgroundThread()
         }
 
-        fun executeOnBackgroundThread(): List<AdbDeviceModel> {
+        fun executeOnBackgroundThread(): List<DeviceModel> {
             val niddlerConnectProcess = NiddlerProcessImplementation()
             val devices = adbInterface.devices
-            return devices.map { adbDevice ->
+            val adbItems = devices.map { adbDevice ->
                 val serial = adbDevice.serial
                 val emulated = adbBootstrap.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.characteristics") == "emulator"
                 val name = getCorrectName(adbBootstrap, serial, emulated)
@@ -227,8 +232,16 @@ class NiddlerConnectDialog(parent: Window?,
                 val extraInfo = "(Android $version, API $sdkVersion)"
 
                 val processes = niddlerConnectProcess.getProcesses(adbDevice)
-                AdbDeviceModel(name ?: "", extraInfo, emulated, serial, processes, adbDevice)
+                DeviceModel(name ?: "", extraInfo, loadIcon(getDeviceIcon(emulated)),
+                        serial, processes, adbDevice)
             }
+            val localSessions = localDevice.getNiddlerSessions()
+            val localItems = if (localSessions.isEmpty())
+                emptyList<DeviceModel>()
+            else
+                listOf(DeviceModel(localName(), "", loadIcon("/ic_device_computer.png"),
+                        "local", localSessions, localDevice))
+            return adbItems + localItems
         }
 
         private fun getCorrectName(adb: ADBBootstrap, serial: String, emulated: Boolean): String? {
@@ -258,7 +271,7 @@ class NiddlerConnectDialog(parent: Window?,
             super.done()
         }
 
-        fun onExecutionDone(devices: List<AdbDeviceModel>) {
+        fun onExecutionDone(devices: List<DeviceModel>) {
             val previousItem = tree.lastSelectedPathComponent
             var rows = 0
             val root = tree.model.root as DefaultMutableTreeNode
@@ -269,7 +282,8 @@ class NiddlerConnectDialog(parent: Window?,
                 (tree.model as DefaultTreeModel).insertNodeInto(deviceNode, root, root.childCount)
                 rows++
                 device.sessions.forEach { session ->
-                    (tree.model as DefaultTreeModel).insertNodeInto(NiddlerConnectProcessTreeNode(session, device), deviceNode, deviceNode.childCount)
+                    (tree.model as DefaultTreeModel).insertNodeInto(NiddlerConnectProcessTreeNode(session, device),
+                            deviceNode, deviceNode.childCount)
                     rows++
                 }
             }
