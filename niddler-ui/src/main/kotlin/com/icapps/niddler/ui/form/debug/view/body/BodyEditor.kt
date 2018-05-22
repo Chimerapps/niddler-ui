@@ -63,33 +63,35 @@ class BodyEditor(private val componentsFactory: ComponentsFactory) : JPanel(Bord
         currentType = bodyFormat
         currentBodyData = bodyData
         val displayTypes = mutableListOf<DisplayType>()
-        when (bodyFormat) {
-            BodyFormatType.FORMAT_JSON -> {
-                displayTypes += DisplayType("Structured", NiddlerJsonEditableTree(bodyData as JsonElement))
-                displayTypes += DisplayType("Pretty", JTextArea().apply {
+        if (bodyData != null) {
+            when (bodyFormat) {
+                BodyFormatType.FORMAT_JSON -> {
+                    displayTypes += DisplayType("Structured", NiddlerJsonEditableTree(bodyData as JsonElement))
+                    displayTypes += DisplayType("Pretty", JTextArea().apply {
+                        font = Font("Monospaced", Font.PLAIN, 10)
+                        document.insertString(0, GsonBuilder().setPrettyPrinting().create().toJson(bodyData), null)
+                    })
+                }
+                BodyFormatType.FORMAT_XML -> {
+                    displayTypes += DisplayType("Pretty", JTextArea().apply {
+                        font = Font("Monospaced", Font.PLAIN, 10)
+                        createPrettyPrintedView(document, bodyData)
+                    })
+                }
+                BodyFormatType.FORMAT_PLAIN -> displayTypes += DisplayType("Raw", JTextArea().apply {
                     font = Font("Monospaced", Font.PLAIN, 10)
-                    document.insertString(0, GsonBuilder().setPrettyPrinting().create().toJson(bodyData), null)
+                    document.insertString(0, bodyData?.toString(), null)
                 })
-            }
-            BodyFormatType.FORMAT_XML -> {
-                displayTypes += DisplayType("Pretty", JTextArea().apply {
-                    font = Font("Monospaced", Font.PLAIN, 10)
-                    createPrettyPrintedView(document, bodyData)
-                })
-            }
-            BodyFormatType.FORMAT_PLAIN -> displayTypes += DisplayType("Raw", JTextArea().apply {
-                font = Font("Monospaced", Font.PLAIN, 10)
-                document.insertString(0, bodyData?.toString(), null)
-            })
-            BodyFormatType.FORMAT_IMAGE -> {
-            }
-            BodyFormatType.FORMAT_BINARY -> {
-            }
-            BodyFormatType.FORMAT_HTML -> {
-            }
-            BodyFormatType.FORMAT_EMPTY -> {
-            }
-            BodyFormatType.FORMAT_FORM_ENCODED -> {
+                BodyFormatType.FORMAT_IMAGE -> {
+                }
+                BodyFormatType.FORMAT_BINARY -> {
+                }
+                BodyFormatType.FORMAT_HTML -> {
+                }
+                BodyFormatType.FORMAT_EMPTY -> {
+                }
+                BodyFormatType.FORMAT_FORM_ENCODED -> {
+                }
             }
         }
         //TODO missing type
