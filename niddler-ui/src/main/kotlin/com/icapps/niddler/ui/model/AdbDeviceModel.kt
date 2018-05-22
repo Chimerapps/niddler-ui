@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.model
 
-import com.icapps.niddler.lib.adb.ADBDevice
-import com.icapps.niddler.lib.adb.NiddlerSession
+import com.icapps.niddler.lib.device.adb.ADBDevice
+import com.icapps.niddler.lib.device.NiddlerSession
 
 class AdbDeviceModel(val name: String,
                      val extraInfo: String,

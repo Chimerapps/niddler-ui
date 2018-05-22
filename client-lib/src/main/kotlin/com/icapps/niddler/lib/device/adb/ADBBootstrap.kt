@@ -1,4 +1,4 @@
-package com.icapps.niddler.lib.adb
+package com.icapps.niddler.lib.device.adb
 
 import com.icapps.niddler.lib.utils.debug
 import com.icapps.niddler.lib.utils.info

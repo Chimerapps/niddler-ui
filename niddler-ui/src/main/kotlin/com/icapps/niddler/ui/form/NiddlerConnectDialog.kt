@@ -1,9 +1,9 @@
 package com.icapps.niddler.ui.form
 
-import com.icapps.niddler.lib.adb.ADBBootstrap
-import com.icapps.niddler.lib.adb.ADBDevice
-import com.icapps.niddler.lib.adb.ADBInterface
-import com.icapps.niddler.lib.adb.NiddlerSession
+import com.icapps.niddler.lib.device.adb.ADBBootstrap
+import com.icapps.niddler.lib.device.adb.ADBDevice
+import com.icapps.niddler.lib.device.adb.ADBInterface
+import com.icapps.niddler.lib.device.NiddlerSession
 import com.icapps.niddler.ui.addChangeListener
 import com.icapps.niddler.ui.expandAllNodes
 import com.icapps.niddler.ui.model.AdbDeviceModel
