@@ -197,7 +197,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         when {
             params.session != null -> initNiddlerOnSession(params.session, params.withDebugger)
             params.device != null -> initNiddlerOnDevice(params.device, params.port, params.withDebugger)
-            else -> initNiddlerOnDevice(params.ip!!, params.withDebugger)
+            else -> initNiddlerOnDevice(params.ip!!, params.port, params.withDebugger)
         }
     }
 
@@ -216,22 +216,22 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
     private fun initNiddlerOnSession(session: NiddlerSession, withDebugger: Boolean) {
         session.device.forwardTCPPort(6555, session.port)
-        initNiddlerOnDevice("127.0.0.1:6555", withDebugger)
+        initNiddlerOnDevice("127.0.0.1", 6555, withDebugger)
     }
 
     private fun initNiddlerOnDevice(adbDevice: ADBDevice, port: Int, withDebugger: Boolean) {
         adbDevice.forwardTCPPort(6555, port)
-        initNiddlerOnDevice("127.0.0.1:6555", withDebugger)
+        initNiddlerOnDevice("127.0.0.1", 6555, withDebugger)
     }
 
-    private fun initNiddlerOnDevice(ip: String, withDebugger: Boolean) {
+    private fun initNiddlerOnDevice(ip: String, port: Int, withDebugger: Boolean) {
         disconnect()
         messages.storage.clear()
 
         val tempUri = URI.create("sis://$ip")
-        val port = if (tempUri.port == -1) 6555 else tempUri.port
+        val usePort = if (tempUri.port == -1) port else tempUri.port
 
-        val niddlerClient = NiddlerClient(URI.create("ws://${tempUri.host}:$port"), withDebugger).apply {
+        val niddlerClient = NiddlerClient(URI.create("ws://${tempUri.host}:$usePort"), withDebugger).apply {
             registerMessageListener(this@NiddlerWindow)
             messages.attach(this)
         }
