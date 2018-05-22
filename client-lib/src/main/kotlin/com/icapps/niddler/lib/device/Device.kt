@@ -43,10 +43,11 @@ data class NiddlerSession(val device: Device,
                 && port == other.port
                 && pid == other.pid
                 && protocolVersion == other.protocolVersion
+                && device == other.device
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(packageName, port, pid, protocolVersion)
+        return Objects.hash(packageName, port, pid, protocolVersion, device)
     }
 }
 

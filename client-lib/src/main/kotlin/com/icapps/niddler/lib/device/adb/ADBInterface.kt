@@ -109,4 +109,20 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) : BaseD
         forwardTCPPort(suggestedLocalPort, remotePort)
         return DirectPreparedConnection("127.0.0.1", suggestedLocalPort)
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ADBDevice
+
+        if (serial != other.serial) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return serial.hashCode()
+    }
+
 }

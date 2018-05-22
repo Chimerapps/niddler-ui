@@ -19,4 +19,13 @@ class LocalDevice : BaseDevice() {
         return DirectPreparedConnection("127.0.0.1", remotePort)
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other)
+            return true
+        return (other is LocalDevice)
+    }
+
+    override fun hashCode(): Int {
+        return "local".hashCode()
+    }
 }
