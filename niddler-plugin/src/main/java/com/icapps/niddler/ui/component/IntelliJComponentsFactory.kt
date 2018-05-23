@@ -10,7 +10,7 @@ import com.icapps.niddler.ui.form.components.impl.SwingDialog
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.ui.AbstractToolbar
-import com.icapps.niddler.ui.util.logger
+import com.icapps.niddler.lib.utils.logger
 import com.icapps.niddler.ui.utils.runWriteAction
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project

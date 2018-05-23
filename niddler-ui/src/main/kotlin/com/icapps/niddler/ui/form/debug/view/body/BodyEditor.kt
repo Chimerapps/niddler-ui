@@ -2,6 +2,7 @@ package com.icapps.niddler.ui.form.debug.view.body
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
+import com.google.gson.JsonParser
 import com.icapps.niddler.lib.model.classifier.BodyFormatType
 import com.icapps.niddler.lib.model.classifier.ConcreteBody
 import com.icapps.niddler.ui.form.ComponentsFactory
@@ -53,7 +54,8 @@ class BodyEditor(private val componentsFactory: ComponentsFactory) : JPanel(Bord
         val displayTypes = currentDisplayTypes ?: return null
         when (currentType) {
             BodyFormatType.FORMAT_JSON -> {
-                return ConcreteBody(currentType!!, entry.bodyFormat.subtype, (displayTypes[0].component as NiddlerJsonEditableTree).getEditedJson())
+                return ConcreteBody(currentType!!, entry.bodyFormat.subtype, (displayTypes[1].component as JTextArea).text.toJsonTree())
+//                return ConcreteBody(currentType!!, entry.bodyFormat.subtype, (displayTypes[0].component as NiddlerJsonEditableTree).getEditedJson())
             }
         }
         return null
@@ -139,3 +141,6 @@ class BodyEditor(private val componentsFactory: ComponentsFactory) : JPanel(Bord
 
 private data class DisplayType(val name: String, val component: JComponent)
 
+private fun String.toJsonTree(): JsonElement {
+    return JsonParser().parse(this)
+}

@@ -1,15 +1,22 @@
 package com.icapps.niddler.ui
 
+import com.icapps.niddler.lib.utils.LoggerFactory
 import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.NiddlerWindow
 import com.icapps.niddler.ui.form.components.impl.SwingComponentsFactory
 import com.icapps.niddler.ui.form.impl.SwingMainThreadDispatcher
 import com.icapps.niddler.ui.form.impl.SwingNiddlerUserInterface
+import com.icapps.niddler.ui.util.JavaLogFactory
 import com.icapps.niddler.ui.util.SwingImageHelper
 import com.icapps.niddler.ui.util.iconLoader
 import java.awt.BorderLayout
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+import java.util.logging.ConsoleHandler
+import java.util.logging.Level
+import java.util.logging.Logger
+import java.util.logging.SimpleFormatter
+import java.util.logging.StreamHandler
 import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.WindowConstants
@@ -20,6 +27,7 @@ import javax.swing.WindowConstants
  * @date 10/11/16.
  */
 fun main(args: Array<String>) {
+    initLogging(args)
     MainThreadDispatcher.instance = SwingMainThreadDispatcher()
     iconLoader = SwingImageHelper()
 
@@ -51,5 +59,21 @@ fun main(args: Array<String>) {
     window.init()
     frame.setSize(1300, 600)
     frame.isVisible = true
+}
 
+private fun initLogging(args: Array<String>) {
+    if (args.contains("--log")) {
+        LoggerFactory.instance = JavaLogFactory()
+
+        System.setProperty("java.util.logging.SimpleFormatter.format",
+                "%1\$tY-%1\$tm-%1\$td %1\$tH:%1\$tM:%1\$tS.%1\$tL %4$-7s [%3\$s] (%2\$s) %5\$s %6\$s%n")
+
+        val consoleHandler = StreamHandler(System.out, SimpleFormatter())
+        consoleHandler.level = Level.FINEST
+
+        Logger.getLogger("com.icapps").apply {
+            level = Level.FINEST
+            addHandler(consoleHandler)
+        }
+    }
 }

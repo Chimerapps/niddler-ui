@@ -9,6 +9,8 @@ import com.icapps.niddler.lib.debugger.model.DebugResponse
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.model.classifier.BodyFormatType
+import com.icapps.niddler.lib.utils.error
+import com.icapps.niddler.lib.utils.logger
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.ui.AbstractAction
@@ -32,7 +34,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
     : JPanel(BorderLayout()), NiddlerDebugListener {
 
     private companion object {
-        private val logger = com.icapps.niddler.ui.util.logger<DebugView>()
+        private val logger = logger<DebugView>()
     }
 
     private val waitingMessagesModel = MessagesModel(messagesUpdateListener)
@@ -128,7 +130,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
         try {
             return future.get()
         } catch (e: Throwable) {
-            logger.error(e)
+            logger.error("Failed to wait for future", e)
             return null
         }
     }

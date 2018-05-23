@@ -4,14 +4,15 @@ import com.icapps.niddler.lib.device.Device
 import com.icapps.niddler.lib.device.NiddlerSession
 import com.icapps.niddler.lib.device.adb.ADBBootstrap
 import com.icapps.niddler.lib.device.adb.ADBInterface
+import com.icapps.niddler.lib.utils.debug
 import com.icapps.niddler.lib.utils.localName
+import com.icapps.niddler.lib.utils.logger
 import com.icapps.niddler.ui.addChangeListener
 import com.icapps.niddler.ui.expandAllNodes
 import com.icapps.niddler.ui.getDeviceIcon
 import com.icapps.niddler.ui.model.DeviceModel
 import com.icapps.niddler.ui.util.WideSelectionTreeUI
 import com.icapps.niddler.ui.util.loadIcon
-import com.icapps.niddler.ui.util.logger
 import com.icapps.tools.aec.EmulatorFactory
 import java.awt.Window
 import java.awt.event.KeyEvent

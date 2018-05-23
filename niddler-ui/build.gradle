@@ -59,3 +59,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     testCompile 'io.mockk:mockk:1.7'
 }
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
