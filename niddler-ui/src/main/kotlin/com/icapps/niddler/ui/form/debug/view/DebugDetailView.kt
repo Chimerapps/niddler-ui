@@ -113,6 +113,10 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
     fun save(into: DebugMessageEntry) {
         into.modifiedHeaders = headerPanel.extractHeaders()
         into.modifiedBody = bodyPanel.saveBody()
+
+        codeField.commitEdit()
+        into.modifiedCode = codeField.value as Int
+        into.modifiedStatusLine = messageField.text.trim()
     }
 
     private fun initHeaders(debugMessageEntry: DebugMessageEntry) {

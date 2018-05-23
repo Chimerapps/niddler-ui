@@ -76,4 +76,6 @@ data class DebugMessageEntry(val method: String,
                              val future: CompletableFuture<in Any?>,
                              val response: ParsedNiddlerMessage? = null,
                              var modifiedHeaders: Map<String, List<String>>? = null,
-                             var modifiedBody: ConcreteBody? = null)
+                             var modifiedBody: ConcreteBody? = null,
+                             var modifiedCode: Int? = null,
+                             var modifiedStatusLine: String? = null)
