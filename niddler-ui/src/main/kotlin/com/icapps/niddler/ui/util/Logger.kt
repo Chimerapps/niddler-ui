@@ -59,7 +59,6 @@ private class LoggerWrapper(private val instance: java.util.logging.Logger) : Lo
 
     private fun inferMethod(): String? {
         val ex = Throwable()
-        ex.printStackTrace()
         return ex.stackTrace.getOrNull(4)?.let {
             "${it.methodName}:${it.lineNumber}"
         }
