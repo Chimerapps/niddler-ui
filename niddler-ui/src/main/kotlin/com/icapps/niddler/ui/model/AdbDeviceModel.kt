@@ -1,20 +1,21 @@
 package com.icapps.niddler.ui.model
 
-import com.icapps.niddler.lib.adb.ADBDevice
-import com.icapps.niddler.lib.adb.NiddlerSession
+import com.icapps.niddler.lib.device.Device
+import com.icapps.niddler.lib.device.NiddlerSession
+import javax.swing.Icon
 
-class AdbDeviceModel(val name: String,
-                     val extraInfo: String,
-                     val emulator: Boolean,
-                     val serialNr: String,
-                     val sessions: List<NiddlerSession>,
-                     val device: ADBDevice) {
+class DeviceModel(val name: String?,
+                  val extraInfo: String,
+                  val icon: Icon,
+                  val serialNr: String,
+                  val sessions: List<NiddlerSession>,
+                  val device: Device) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as AdbDeviceModel
+        other as DeviceModel
 
         if (serialNr != other.serialNr) return false
 

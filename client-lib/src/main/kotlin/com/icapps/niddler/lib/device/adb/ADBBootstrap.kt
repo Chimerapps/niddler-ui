@@ -1,5 +1,7 @@
-package com.icapps.niddler.lib.adb
+package com.icapps.niddler.lib.device.adb
 
+import com.icapps.niddler.lib.utils.Platform
+import com.icapps.niddler.lib.utils.currentPlatform
 import com.icapps.niddler.lib.utils.debug
 import com.icapps.niddler.lib.utils.info
 import com.icapps.niddler.lib.utils.logger
@@ -39,7 +41,7 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>) {
         }
 
         private fun ext(windowsExtension: String, nonWindowsExtension: String): String {
-            if (currentPlatform() == PLATFORM_WINDOWS) {
+            if (currentPlatform() == Platform.WINDOWS) {
                 return windowsExtension
             } else {
                 return nonWindowsExtension
@@ -64,21 +66,6 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>) {
                 list += env
             }
             return list
-        }
-
-        private const val PLATFORM_UNKNOWN = 0
-        private const val PLATFORM_LINUX = 1
-        private const val PLATFORM_WINDOWS = 2
-        private const val PLATFORM_DARWIN = 3
-
-        private fun currentPlatform(): Int {
-            val os = System.getProperty("os.name")
-            return when {
-                os.startsWith("Mac OS") -> PLATFORM_DARWIN
-                os.startsWith("Windows") -> PLATFORM_WINDOWS
-                os.startsWith("Linux") -> PLATFORM_LINUX
-                else -> PLATFORM_UNKNOWN
-            }
         }
 
     }
