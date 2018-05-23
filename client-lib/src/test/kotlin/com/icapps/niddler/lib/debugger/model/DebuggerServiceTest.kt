@@ -35,9 +35,9 @@ internal class DebuggerServiceTest {
 
     @Test
     fun addDefaultResponse() {
-        val id = service.addDefaultResponse("299-2991-1-331", "GET", DebugResponse(200, "OK", mapOf("X-Client-Id" to "23019-10"),
+        val id = service.addDefaultResponse("299-2991-1-331", "GET", DebugResponse(200, "OK", mapOf("X-Client-Id" to listOf("23019-10")),
                 "ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=", "application/json"), true)
-        verify { mockingedConnection.sendMessage("{\"controlType\":\"addDefaultResponse\",\"payload\":{\"regex\":\"299-2991-1-331\",\"matchMethod\":\"GET\",\"id\":\"$id\",\"active\":true,\"code\":200,\"message\":\"OK\",\"headers\":{\"X-Client-Id\":\"23019-10\"},\"encodedBody\":\"ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=\",\"bodyMimeType\":\"application/json\"},\"type\":\"controlDebug\"}") }
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"addDefaultResponse\",\"payload\":{\"regex\":\"299-2991-1-331\",\"matchMethod\":\"GET\",\"id\":\"$id\",\"active\":true,\"code\":200,\"message\":\"OK\",\"headers\":{\"X-Client-Id\":[\"23019-10\"]},\"encodedBody\":\"ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=\",\"bodyMimeType\":\"application/json\"},\"type\":\"controlDebug\"}") }
 
     }
 
@@ -100,9 +100,9 @@ internal class DebuggerServiceTest {
 
     @Test
     fun addDefaultRequestOverride() {
-        val id = service.addDefaultRequestOverride("299-2991-1-331", "POST", DebugRequest("https://www.google.com", "GET", mapOf("X-Client-Id" to "23019-10"),
+        val id = service.addDefaultRequestOverride("299-2991-1-331", "POST", DebugRequest("https://www.google.com", "GET", mapOf("X-Client-Id" to listOf("23019-10")),
                 "ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=", "application/json"), true)
-        verify { mockingedConnection.sendMessage("{\"controlType\":\"addDefaultRequestOverride\",\"payload\":{\"regex\":\"299-2991-1-331\",\"matchMethod\":\"POST\",\"id\":\"$id\",\"active\":true,\"url\":\"https://www.google.com\",\"method\":\"GET\",\"headers\":{\"X-Client-Id\":\"23019-10\"},\"encodedBody\":\"ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=\",\"bodyMimeType\":\"application/json\"},\"type\":\"controlDebug\"}") }
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"addDefaultRequestOverride\",\"payload\":{\"regex\":\"299-2991-1-331\",\"matchMethod\":\"POST\",\"id\":\"$id\",\"active\":true,\"url\":\"https://www.google.com\",\"method\":\"GET\",\"headers\":{\"X-Client-Id\":[\"23019-10\"]},\"encodedBody\":\"ew0KCSJ0b2tlbiI6ICIxMjM4NzY3ODgxODgyOSINCn0=\",\"bodyMimeType\":\"application/json\"},\"type\":\"controlDebug\"}") }
     }
 
     @Test

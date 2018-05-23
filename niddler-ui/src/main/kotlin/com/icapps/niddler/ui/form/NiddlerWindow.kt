@@ -1,8 +1,5 @@
 package com.icapps.niddler.ui.form
 
-import com.icapps.niddler.lib.adb.ADBBootstrap
-import com.icapps.niddler.lib.adb.ADBDevice
-import com.icapps.niddler.lib.adb.NiddlerSession
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
@@ -12,6 +9,12 @@ import com.icapps.niddler.lib.debugger.model.ConcreteDebuggingSession
 import com.icapps.niddler.lib.debugger.model.DebuggerService
 import com.icapps.niddler.lib.debugger.model.ServerDebuggerInterface
 import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
+import com.icapps.niddler.lib.device.Device
+import com.icapps.niddler.lib.device.DirectPreparedConnection
+import com.icapps.niddler.lib.device.NiddlerSession
+import com.icapps.niddler.lib.device.PreparedDeviceConnection
+import com.icapps.niddler.lib.device.adb.ADBBootstrap
+import com.icapps.niddler.lib.device.local.LocalDevice
 import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
 import com.icapps.niddler.lib.model.NiddlerMessageBodyParser
@@ -37,7 +40,6 @@ import com.icapps.niddler.ui.util.WideSelectionTreeUI
 import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
 import java.io.File
-import java.net.URI
 import javax.swing.JOptionPane
 import javax.swing.ListSelectionModel
 import javax.swing.SwingUtilities
@@ -133,13 +135,13 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
         windowContents.connectButtonListener = {
             val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent),
-                    adbConnection, null, null, withDebugger = false)
+                    adbConnection, LocalDevice(), null, null, withDebugger = false)
             if (selection != null)
                 onDeviceSelectionChanged(selection)
         }
         windowContents.debugButtonListener = {
             val selection = NiddlerConnectDialog.showDialog(SwingUtilities.getWindowAncestor(windowContents.asComponent),
-                    adbConnection, null, null, withDebugger = true)
+                    adbConnection, LocalDevice(), null, null, withDebugger = true)
             if (selection != null)
                 onDeviceSelectionChanged(selection)
         }
@@ -197,7 +199,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         when {
             params.session != null -> initNiddlerOnSession(params.session, params.withDebugger)
             params.device != null -> initNiddlerOnDevice(params.device, params.port, params.withDebugger)
-            else -> initNiddlerOnDevice(params.ip!!, params.port, params.withDebugger)
+            else -> initNiddlerOnConnection(DirectPreparedConnection(params.ip!!, params.port), params.withDebugger)
         }
     }
 
@@ -215,23 +217,19 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     }
 
     private fun initNiddlerOnSession(session: NiddlerSession, withDebugger: Boolean) {
-        session.device.forwardTCPPort(6555, session.port)
-        initNiddlerOnDevice("127.0.0.1", 6555, withDebugger)
+        initNiddlerOnDevice(session.device, session.port, withDebugger)
     }
 
-    private fun initNiddlerOnDevice(adbDevice: ADBDevice, port: Int, withDebugger: Boolean) {
-        adbDevice.forwardTCPPort(6555, port)
-        initNiddlerOnDevice("127.0.0.1", 6555, withDebugger)
+    private fun initNiddlerOnDevice(device: Device, port: Int, withDebugger: Boolean) {
+        val connection = device.prepareConnection(6555, port)
+        initNiddlerOnConnection(connection, withDebugger)
     }
 
-    private fun initNiddlerOnDevice(ip: String, port: Int, withDebugger: Boolean) {
+    private fun initNiddlerOnConnection(connection: PreparedDeviceConnection, withDebugger: Boolean) {
         disconnect()
         messages.storage.clear()
 
-        val tempUri = URI.create("sis://$ip")
-        val usePort = if (tempUri.port == -1) port else tempUri.port
-
-        val niddlerClient = NiddlerClient(URI.create("ws://${tempUri.host}:$usePort"), withDebugger).apply {
+        val niddlerClient = NiddlerClient(connection.uri, withDebugger).apply {
             registerMessageListener(this@NiddlerWindow)
             messages.attach(this)
         }
