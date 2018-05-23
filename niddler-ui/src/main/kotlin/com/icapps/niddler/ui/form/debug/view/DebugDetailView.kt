@@ -58,8 +58,9 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
         add(Box.createVerticalStrut(5))
 
         responseValuesPanel.layout = BorderLayout()
-        responseValuesPanel.add(codeField.setFixedWidth(30).singleLine(), BorderLayout.WEST)
+        responseValuesPanel.add(codeField.setFixedWidth(50).singleLine(), BorderLayout.WEST)
         responseValuesPanel.add(messageField.singleLine(), BorderLayout.CENTER)
+        responseValuesPanel.maximumSize = Dimension(responseValuesPanel.maximumSize.width, codeField.maximumSize.height)
 
         add(JLabel("Headers").bold().left())
         add(Box.createVerticalStrut(2))
@@ -122,10 +123,10 @@ class DebugDetailView(componentsFactory: ComponentsFactory) : JPanel() {
     private fun setupCodeField(): JFormattedTextField {
         val format = NumberFormat.getInstance()
         val formatter = NumberFormatter(format)
-        formatter.valueClass = Int::class.java
+        formatter.valueClass = Int::class.javaObjectType
         formatter.minimum = 100
         formatter.maximum = 999
-        formatter.allowsInvalid = false
+        formatter.allowsInvalid = true
         formatter.commitsOnValidEdit = true
         return JFormattedTextField(formatter)
     }

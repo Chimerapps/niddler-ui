@@ -200,7 +200,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
         val resp = waitingMessageEntry.response ?: return null
         val bodyFormat = waitingMessageEntry.modifiedBody?.type ?: resp.bodyFormat.type
         val bodyData = waitingMessageEntry.modifiedBody?.data ?: resp.bodyData
-        return DebugResponse(403/*resp.statusCode ?: 200*/,
+        return DebugResponse(resp.statusCode ?: 200,
                 resp.statusLine ?: "OK",
                 waitingMessageEntry.modifiedHeaders ?: resp.headers,
                 transformBody(bodyData, bodyFormat)?.let { Base64.getEncoder().encodeToString(it) },
