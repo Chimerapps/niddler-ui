@@ -12,8 +12,8 @@ import com.icapps.niddler.ui.util.iconLoader
 import java.awt.BorderLayout
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
-import java.util.logging.ConsoleHandler
 import java.util.logging.Level
+import java.util.logging.LogRecord
 import java.util.logging.Logger
 import java.util.logging.SimpleFormatter
 import java.util.logging.StreamHandler
@@ -63,12 +63,17 @@ fun main(args: Array<String>) {
 
 private fun initLogging(args: Array<String>) {
     if (args.contains("--log")) {
-        LoggerFactory.instance = JavaLogFactory()
+        LoggerFactory.instance = JavaLogFactory(args.contains("--verbose"))
 
         System.setProperty("java.util.logging.SimpleFormatter.format",
                 "%1\$tY-%1\$tm-%1\$td %1\$tH:%1\$tM:%1\$tS.%1\$tL %4$-7s [%3\$s] (%2\$s) %5\$s %6\$s%n")
 
-        val consoleHandler = StreamHandler(System.out, SimpleFormatter())
+        val consoleHandler = object: StreamHandler(System.out, SimpleFormatter()){
+            override fun publish(record: LogRecord?) {
+                super.publish(record)
+                flush()
+            }
+        }
         consoleHandler.level = Level.FINEST
 
         Logger.getLogger("com.icapps").apply {

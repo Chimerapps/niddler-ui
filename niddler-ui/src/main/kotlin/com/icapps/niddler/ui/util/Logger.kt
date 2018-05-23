@@ -10,16 +10,17 @@ import java.util.logging.LogRecord
  * @date 25/04/2017.
  */
 
-class JavaLogFactory : LoggerFactory {
+class JavaLogFactory(private val captureMethod: Boolean) : LoggerFactory {
 
     override fun getInstanceForClass(clazz: Class<*>): Logger {
         val logger = java.util.logging.Logger.getLogger(clazz.name)
-        return LoggerWrapper(logger)
+        return LoggerWrapper(logger, captureMethod)
     }
 
 }
 
-private class LoggerWrapper(private val instance: java.util.logging.Logger) : Logger {
+private class LoggerWrapper(private val instance: java.util.logging.Logger,
+                            private val captureMethod: Boolean) : Logger {
 
     override fun doLogDebug(message: String?, t: Throwable?) {
         val record = LogRecord(Level.FINE, message)
@@ -58,6 +59,9 @@ private class LoggerWrapper(private val instance: java.util.logging.Logger) : Lo
     }
 
     private fun inferMethod(): String? {
+        if (!captureMethod)
+            return null
+
         val ex = Throwable()
         return ex.stackTrace.getOrNull(4)?.let {
             "${it.methodName}:${it.lineNumber}"
