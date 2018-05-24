@@ -5,7 +5,9 @@ import com.icapps.niddler.lib.utils.createGsonListType
 import com.icapps.niddler.lib.utils.debug
 import com.icapps.niddler.lib.utils.logger
 import java.io.IOException
+import java.net.ConnectException
 import java.net.InetAddress
+import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.URI
 import java.util.*
@@ -75,12 +77,20 @@ abstract class BaseDevice : Device {
 
     private companion object {
         private val log = logger<BaseDevice>()
+        private const val MAX_TIMEOUT = 100
     }
 
     private val gson = Gson()
 
     protected fun readAnnouncement(connectPort: Int): List<NiddlerSession> {
-        Socket(InetAddress.getByName("127.0.0.1"), connectPort).use { socket ->
+        val announcementSocket = Socket()
+        try {
+            announcementSocket.connect(InetSocketAddress(InetAddress.getLoopbackAddress(), connectPort), MAX_TIMEOUT)
+        } catch (e: ConnectException) {
+            return emptyList()
+        }
+
+        announcementSocket.use { socket ->
             socket.getOutputStream().apply {
                 write(Device.REQUEST_QUERY)
                 flush()

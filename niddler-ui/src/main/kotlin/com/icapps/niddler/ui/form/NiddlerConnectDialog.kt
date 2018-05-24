@@ -235,13 +235,17 @@ class NiddlerConnectDialog(parent: Window?,
                 DeviceModel(name ?: "", extraInfo, loadIcon(getDeviceIcon(emulated)),
                         serial, processes, adbDevice)
             }
-            val localSessions = localDevice.getNiddlerSessions()
-            val localItems = if (localSessions.isEmpty())
-                emptyList<DeviceModel>()
-            else
-                listOf(DeviceModel(localName(), "", loadIcon("/ic_device_computer.png"),
-                        "local", localSessions, localDevice))
-            return adbItems + localItems
+            try {
+                val localSessions = localDevice.getNiddlerSessions()
+                val localItems = if (localSessions.isEmpty())
+                    emptyList()
+                else
+                    listOf(DeviceModel(localName(), "", loadIcon("/ic_device_computer.png"),
+                            "local", localSessions, localDevice))
+                return adbItems + localItems
+            }catch(e: Throwable){
+                return adbItems
+            }
         }
 
         private fun getCorrectName(adb: ADBBootstrap, serial: String, emulated: Boolean): String? {
