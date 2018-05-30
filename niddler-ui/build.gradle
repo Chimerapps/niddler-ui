@@ -8,7 +8,7 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.3'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
     }
 }
 
@@ -57,5 +57,9 @@ dependencies {
     compile group: 'net.harawata', name: 'appdirs', version: '1.0.1'
 
     testCompile 'junit:junit:4.12'
-    testCompile 'io.mockk:mockk:1.7'
+    testCompile 'io.mockk:mockk:1.8'
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
 }

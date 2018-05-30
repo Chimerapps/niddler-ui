@@ -9,12 +9,12 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.3'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
     }
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.3.1"
+    id "org.jetbrains.intellij" version "0.3.2"
     id "com.github.ben-manes.versions" version "0.17.0"
 }
 
@@ -29,6 +29,10 @@ sourceCompatibility = 1.8
 intellij {
     version '2016.3.1'
     updateSinceUntilBuild false
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
 }
 
 repositories {
@@ -46,7 +50,7 @@ dependencies {
     compile(project(':niddler-ui')) {
         exclude group: 'org.slf4j', module: 'slf4j-api'
     }
-    ftpAntTask("org.apache.ant:ant-commons-net:1.8.4") {
+    ftpAntTask("org.apache.ant:ant-commons-net:1.10.3") {
         module("commons-net:commons-net:1.4.1") {
             dependencies "oro:oro:2.0.8:jar"
         }

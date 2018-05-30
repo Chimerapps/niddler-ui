@@ -1,12 +1,15 @@
 package com.icapps.niddler.ui
 
+import com.icapps.niddler.lib.utils.Logger
+import com.icapps.niddler.lib.utils.LoggerFactory
+import com.icapps.niddler.lib.utils.info
 import com.icapps.niddler.ui.component.IntelliJComponentsFactory
 import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.NiddlerWindow
 import com.icapps.niddler.ui.impl.IntelliJNiddlerUserInterface
 import com.icapps.niddler.ui.util.ImageHelper
 import com.icapps.niddler.ui.util.iconLoader
-import com.icapps.niddler.ui.util.logger
+import com.icapps.niddler.lib.utils.logger
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -27,6 +30,10 @@ import javax.swing.event.AncestorListener
 class NiddlerToolWindow : ToolWindowFactory, DumbAware {
 
     companion object {
+        init {
+            initLogger()
+        }
+
         private val log = logger<NiddlerToolWindow>()
     }
 
@@ -79,10 +86,41 @@ class NiddlerToolWindow : ToolWindowFactory, DumbAware {
 
 }
 
-class IntellijIconLoader : ImageHelper {
+private class IntellijIconLoader : ImageHelper {
 
     override fun loadImage(clazz: Class<*>, path: String): Icon {
         return IconLoader.getIcon(path, clazz)
+    }
+
+}
+
+private fun initLogger() {
+    LoggerFactory.instance = IdeaLoggerFactory()
+}
+
+private class IdeaLoggerFactory : LoggerFactory {
+
+    override fun getInstanceForClass(clazz: Class<*>): Logger {
+        return LoggerWrapper(com.intellij.openapi.diagnostic.Logger.getInstance(clazz))
+    }
+
+}
+
+private class LoggerWrapper(private val instance: com.intellij.openapi.diagnostic.Logger) : Logger {
+    override fun doLogDebug(message: String?, t: Throwable?) {
+        instance.debug(message, t)
+    }
+
+    override fun doLogInfo(message: String?, t: Throwable?) {
+        instance.info(message, t)
+    }
+
+    override fun doLogWarn(message: String?, t: Throwable?) {
+        instance.warn(message, t)
+    }
+
+    override fun doLogError(message: String?, t: Throwable?) {
+        instance.error(message, t)
     }
 
 }

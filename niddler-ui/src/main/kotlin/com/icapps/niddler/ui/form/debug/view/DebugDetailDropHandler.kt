@@ -1,5 +1,7 @@
 package com.icapps.niddler.ui.form.debug.view
 
+import com.icapps.niddler.lib.utils.debug
+import com.icapps.niddler.lib.utils.logger
 import java.awt.datatransfer.DataFlavor
 import java.awt.dnd.DropTargetDragEvent
 import java.awt.dnd.DropTargetDropEvent
@@ -14,7 +16,7 @@ import javax.swing.TransferHandler
 class DebugDetailDropHandler(private val component: DebugDetailView) : TransferHandler(), DropTargetListener {
 
     private companion object {
-        private val logger = com.icapps.niddler.ui.util.logger<DebugDetailDropHandler>()
+        private val logger = logger<DebugDetailDropHandler>()
     }
 
     override fun canImport(support: TransferSupport): Boolean {

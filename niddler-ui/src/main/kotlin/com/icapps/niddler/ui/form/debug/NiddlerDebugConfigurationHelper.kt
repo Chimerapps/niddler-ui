@@ -1,9 +1,10 @@
 package com.icapps.niddler.ui.form.debug
 
 import com.icapps.niddler.lib.debugger.model.ModifiableDebuggerConfiguration
+import com.icapps.niddler.lib.utils.error
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.debug.dialog.EnterRegexDialog
-import com.icapps.niddler.ui.util.logger
+import com.icapps.niddler.lib.utils.logger
 import java.awt.Window
 import javax.swing.JOptionPane
 

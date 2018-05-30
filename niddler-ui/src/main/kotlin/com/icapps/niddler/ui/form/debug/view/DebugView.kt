@@ -1,17 +1,23 @@
 package com.icapps.niddler.ui.form.debug.view
 
+import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.protocol.NiddlerDebugListener
 import com.icapps.niddler.lib.debugger.model.DebugRequest
 import com.icapps.niddler.lib.debugger.model.DebugResponse
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.classifier.BodyFormatType
+import com.icapps.niddler.lib.utils.error
+import com.icapps.niddler.lib.utils.logger
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.ui.AbstractAction
 import com.icapps.niddler.ui.setColumnFixedWidth
 import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import javax.swing.JPanel
 import javax.swing.JScrollPane
@@ -28,7 +34,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
     : JPanel(BorderLayout()), NiddlerDebugListener {
 
     private companion object {
-        private val logger = com.icapps.niddler.ui.util.logger<DebugView>()
+        private val logger = logger<DebugView>()
     }
 
     private val waitingMessagesModel = MessagesModel(messagesUpdateListener)
@@ -124,7 +130,7 @@ class DebugView(private val componentsFactory: ComponentsFactory,
         try {
             return future.get()
         } catch (e: Throwable) {
-            logger.error(e)
+            logger.error("Failed to wait for future", e)
             return null
         }
     }
@@ -156,8 +162,10 @@ class DebugView(private val componentsFactory: ComponentsFactory,
         }
         val model = waitingMessagesModel.getMessageAt(index)
         waitingMessagesModel.removeMessage(model)
-        if (waitingMessagesModel.rowCount == 0)
+        if (waitingMessagesModel.rowCount == 0) {
             waitingMessagesList.clearSelection()
+            checkRowSelectionState()
+        }
 
         model.future.complete(null)
     }
@@ -172,10 +180,11 @@ class DebugView(private val componentsFactory: ComponentsFactory,
         }
         val model = waitingMessagesModel.getMessageAt(index)
         waitingMessagesModel.removeMessage(model)
-        if (waitingMessagesModel.rowCount == 0)
-            waitingMessagesList.clearSelection()
-
         detailView.save(model)
+        if (waitingMessagesModel.rowCount == 0) {
+            waitingMessagesList.clearSelection()
+            checkRowSelectionState()
+        }
 
         model.future.complete(buildDebuggerReply(model))
     }
@@ -189,11 +198,30 @@ class DebugView(private val componentsFactory: ComponentsFactory,
 
     private fun buildResponse(waitingMessageEntry: DebugMessageEntry): DebugResponse? {
         val resp = waitingMessageEntry.response ?: return null
-        return DebugResponse(resp.statusCode ?: 200,
-                resp.statusLine ?: "OK",
+        val bodyFormat = waitingMessageEntry.modifiedBody?.type ?: resp.bodyFormat.type
+        val bodyData = waitingMessageEntry.modifiedBody?.data ?: resp.bodyData
+        return DebugResponse(waitingMessageEntry.modifiedCode ?: resp.statusCode ?: 200,
+                waitingMessageEntry.modifiedStatusLine ?: resp.statusLine ?: "OK",
                 waitingMessageEntry.modifiedHeaders ?: resp.headers,
-                resp.bodyAsNormalBase64,
-                resp.bodyFormat.subtype)
+                transformBody(bodyData, bodyFormat)?.let { Base64.getEncoder().encodeToString(it) },
+                bodyFormat.verbose
+        )
+    }
+
+    private fun transformBody(bodyData: Any?, bodyFormat: BodyFormatType): ByteArray? {
+        if (bodyData == null)
+            return null
+
+        return when (bodyFormat) {
+            BodyFormatType.FORMAT_JSON -> Gson().toJson(bodyData as JsonElement).toByteArray()
+            BodyFormatType.FORMAT_XML -> TODO()
+            BodyFormatType.FORMAT_PLAIN -> (bodyData as String).toByteArray()
+            BodyFormatType.FORMAT_IMAGE -> TODO()
+            BodyFormatType.FORMAT_BINARY -> bodyData as ByteArray
+            BodyFormatType.FORMAT_HTML -> TODO()
+            BodyFormatType.FORMAT_EMPTY -> null
+            BodyFormatType.FORMAT_FORM_ENCODED -> TODO()
+        }
     }
 }
 

@@ -25,30 +25,24 @@ class ServerDebuggerInterface(private val service: DebuggerService) : DebuggerIn
     }
 
     override fun updateDefaultResponses(items: Iterable<LocalRequestIntercept>) {
-        val (unsentItems, knownItems) = items.split { !knownDefaultResponses.contains(it.id) }
-        unsentItems.forEach {
-            val actionId = service.addDefaultResponse(it.regex, it.matchMethod, it.debugResponse!!, it.active)
-            if (it.active)
-                enabledActions += actionId
-            it.id = actionId
+        updateActionDelta(items, knownDefaultResponses, service::removeRequestAction) {
+            service.addDefaultResponse(it.regex, it.matchMethod, it.debugResponse!!, it.active)
         }
-        knownItems.forEach {
-            if (!it.active && enabledActions.contains(it.id))
-                service.muteAction(it.id)
-            else if (it.active && !enabledActions.contains(it.id))
-                service.unmuteAction(it.id)
-        }
-
-        val removed = knownDefaultResponses.filterNot { id -> items.indexOfFirst { it.id == id } != -1 }
-        removed.forEach(service::removeRequestAction)
-        knownDefaultResponses.clear()
-        items.mapTo(knownDefaultResponses) { it.id }
     }
 
     override fun updateResponseIntercepts(items: List<LocalResponseIntercept>) {
-        val (unsetItems, knownItems) = items.split { !knownResponseIntercepts.contains(it.id) }
-        unsetItems.forEach {
-            val actionId = service.addResponseIntercept(it.regex, it.matchMethod, responseCode = null, active = it.active)
+        updateActionDelta(items, knownResponseIntercepts, service::removeResponseAction) {
+            service.addResponseIntercept(it.regex, it.matchMethod, responseCode = null, active = it.active)
+        }
+    }
+
+    private fun <T : BaseAction> updateActionDelta(items: Iterable<T>,
+                                                   knownItemsContainer: MutableCollection<String>,
+                                                   remover: (String) -> Unit,
+                                                   sender: (T) -> String) {
+        val (unsentItems, knownItems) = items.split { !knownItemsContainer.contains(it.id) }
+        unsentItems.forEach {
+            val actionId = sender(it)
             if (it.active)
                 enabledActions += actionId
             it.id = actionId
@@ -59,11 +53,10 @@ class ServerDebuggerInterface(private val service: DebuggerService) : DebuggerIn
             else if (it.active && !enabledActions.contains(it.id))
                 service.unmuteAction(it.id)
         }
-
-        val removed = knownResponseIntercepts.filterNot { id -> items.indexOfFirst { it.id == id } != -1 }
-        removed.forEach(service::removeResponseAction)
-        knownResponseIntercepts.clear()
-        items.mapTo(knownResponseIntercepts) { it.id }
+        val removed = knownItemsContainer.filterNot { id -> items.indexOfFirst { item -> item.id == id } != -1 }
+        removed.forEach(remover)
+        knownItemsContainer.clear()
+        items.mapTo(knownItemsContainer) { it.id }
     }
 
     override fun mute() {

@@ -7,7 +7,12 @@ import java.awt.Dimension
 import java.awt.Font
 import java.beans.PropertyChangeEvent
 import java.util.*
-import javax.swing.*
+import javax.swing.JButton
+import javax.swing.JComponent
+import javax.swing.JLabel
+import javax.swing.JTable
+import javax.swing.JTextField
+import javax.swing.JTree
 import javax.swing.border.EmptyBorder
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -56,10 +61,11 @@ fun JTable.setColumnMinWidth(columnIndex: Int, width: Int) {
     column?.preferredWidth = width
 }
 
-fun JLabel.setFixedWidth(width: Int) {
+fun <T : JComponent> T.setFixedWidth(width: Int): T {
     minimumSize = Dimension(width, 32)
     maximumSize = Dimension(width, 32)
     preferredSize = Dimension(width, 32)
+    return this
 }
 
 fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {

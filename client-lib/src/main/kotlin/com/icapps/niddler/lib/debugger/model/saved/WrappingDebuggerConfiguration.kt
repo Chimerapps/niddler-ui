@@ -116,7 +116,11 @@ class WrappingDebuggerConfiguration : DebuggerConfiguration {
         operator fun getValue(thisRef: Any, property: KProperty<*>): T {
             synchronized(lock) {
                 cachedField?.let { return it }
-                val value = parent.getNodeAs(name, type) ?: defaultCreator()
+                var value = parent.getNodeAs<T>(name, type)
+                if (value == null) {
+                    value = defaultCreator()
+                    parent.setNode(name, value)
+                }
                 cachedField = value
                 return value
             }
