@@ -2,6 +2,7 @@ package com.icapps.niddler.ui.component
 
 import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.lib.debugger.model.saved.WrappingDebuggerConfiguration
+import com.icapps.niddler.lib.utils.debug
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.Dialog
 import com.icapps.niddler.ui.form.components.SplitPane
