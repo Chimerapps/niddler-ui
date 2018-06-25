@@ -244,7 +244,7 @@ class NiddlerConnectDialog(parent: Window?,
                     listOf(DeviceModel(localName(), "", loadIcon("/ic_device_computer.png"),
                             "local", localSessions, localDevice))
                 return adbItems + localItems
-            }catch(e: Throwable){
+            } catch (e: Throwable) {
                 return adbItems
             }
         }
@@ -331,7 +331,8 @@ class NiddlerConnectDialog(parent: Window?,
 
         override fun done() {
             super.done()
-            doneCallback(get())
+            if (!isCancelled)
+                doneCallback(get())
         }
     }
 }

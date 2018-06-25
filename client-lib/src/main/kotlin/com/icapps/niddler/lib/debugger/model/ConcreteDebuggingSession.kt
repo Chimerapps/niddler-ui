@@ -18,10 +18,10 @@ class ConcreteDebuggingSession(private val debuggerInterface: DebuggerInterface)
 
     override fun startSession() {
         sessionActive = true
-        debuggerInterface.activate()
         if (!configurationSent) {
             currentConfiguration?.let { applyConfiguration(it) }
         }
+        debuggerInterface.activate()
     }
 
     override fun stopSession() {

@@ -21,6 +21,7 @@ class DebuggerConfigurationModelAdapter(
 
         updateList(root.blacklistRoot, "Blacklist", debuggerConfiguration.blacklistConfiguration)
         updateList(root.requestOverrideRoot, "Request override", debuggerConfiguration.requestOverride)
+        updateList(root.responseInterceptRoot, "Response intercept", debuggerConfiguration.responseIntercept)
     }
 
     private fun <T> updateCheckState(node: ConfigurationNode<T>, text: String, disableableItem: DisableableItem<T>) {

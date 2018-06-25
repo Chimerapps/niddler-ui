@@ -99,4 +99,8 @@ data class LocalResponseIntercept(@Expose override var id: String = "",
                                   @Expose override var matchMethod: String? = null,
                                   @Expose override var repeatCount: Int? = null,
                                   @Expose override var responseCode: Int? = null,
-                                  @Expose var response: DebugResponse? = null) : ResponseMatcher
+                                  @Expose var response: DebugResponse? = null) : ResponseMatcher {
+    override fun toString(): String {
+        return regex ?: matchMethod ?: ""
+    }
+}
