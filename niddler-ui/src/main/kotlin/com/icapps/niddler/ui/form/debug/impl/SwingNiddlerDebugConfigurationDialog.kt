@@ -1,11 +1,11 @@
 package com.icapps.niddler.ui.form.debug.impl
 
 import com.icapps.niddler.lib.debugger.model.LocalRequestOverride
+import com.icapps.niddler.lib.debugger.model.LocalResponseIntercept
 import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.lib.debugger.model.saved.TemporaryDebuggerConfiguration
 import com.icapps.niddler.ui.button
 import com.icapps.niddler.ui.form.ComponentsFactory
-import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.debug.ConfigurationModel
 import com.icapps.niddler.ui.form.debug.DebugToolbar
@@ -15,6 +15,7 @@ import com.icapps.niddler.ui.form.debug.content.BlacklistPanel
 import com.icapps.niddler.ui.form.debug.content.ContentPanel
 import com.icapps.niddler.ui.form.debug.content.DelaysConfigurationPanel
 import com.icapps.niddler.ui.form.debug.content.RequestOverridePanel
+import com.icapps.niddler.ui.form.debug.content.ResponseInterceptPanel
 import com.icapps.niddler.ui.form.debug.nodes.BlacklistItemNode
 import com.icapps.niddler.ui.form.debug.nodes.BlacklistRootNode
 import com.icapps.niddler.ui.form.debug.nodes.CheckedNode
@@ -22,6 +23,7 @@ import com.icapps.niddler.ui.form.debug.nodes.ConfigurationNode
 import com.icapps.niddler.ui.form.debug.nodes.DelaysConfigurationRootNode
 import com.icapps.niddler.ui.form.debug.nodes.RequestOverrideNode
 import com.icapps.niddler.ui.form.debug.nodes.RequestOverrideRootNode
+import com.icapps.niddler.ui.form.debug.nodes.ResponseInterceptNode
 import com.icapps.niddler.ui.form.debug.nodes.TreeNode
 import com.icapps.niddler.ui.form.debug.nodes.swing.SwingNodeBuilder
 import com.icapps.niddler.ui.path
@@ -108,12 +110,6 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
 
         configurationModel.onConfigurationChanged()
         isChanged = false
-
-        if (changingConfiguration.responseIntercept.isEmpty()) {
-            MainThreadDispatcher.dispatch {
-                changingConfiguration.addResponseIntercept(".*bootstrap.*", "GET", true)
-            }
-        }
     }
 
     override fun focusOnNode(node: ConfigurationNode<*>) {
@@ -164,6 +160,7 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
                 is BlacklistRootNode, is RequestOverrideRootNode -> onRootNodeSelected()
                 is BlacklistItemNode -> onBlacklistNodeSelected(component.nodeData!!)
                 is RequestOverrideNode -> onRequestOverrideSelected(component.requestOverride)
+                is ResponseInterceptNode -> onResponseInterceptSelected(component.responseIntercept)
             }
         }
     }
@@ -221,6 +218,25 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
         currentDetailPanel = right
         splitPane.right = JScrollPane(right.apply {
             val item = changingConfiguration.requestOverride.first { it.item.id == request.id }
+            init(item.item, item.enabled)
+        })
+    }
+
+    protected open fun onResponseInterceptSelected(response: LocalResponseIntercept) {
+        if (currentDetailPanelType == CurrentDetailPanelType.RESPONSE_INTERCEPT && currentDetailPayload == response)
+            return
+
+        currentDetailPanel?.applyToModel()
+
+        currentDetailPanelType = CurrentDetailPanelType.RESPONSE_INTERCEPT
+        currentDetailPayload = response
+
+        val right = ResponseInterceptPanel(changingConfiguration, factory) {
+            isChanged = true
+        }
+        currentDetailPanel = right
+        splitPane.right = JScrollPane(right.apply {
+            val item = changingConfiguration.responseIntercept.first { it.item.id == response.id }
             init(item.item, item.enabled)
         })
     }
@@ -287,7 +303,8 @@ open class SwingNiddlerDebugConfigurationDialog(parent: Window?,
     enum class CurrentDetailPanelType {
         DELAYS,
         BLACKLIST,
-        REQUEST_OVERRIDE
+        REQUEST_OVERRIDE,
+        RESPONSE_INTERCEPT
     }
 
 }

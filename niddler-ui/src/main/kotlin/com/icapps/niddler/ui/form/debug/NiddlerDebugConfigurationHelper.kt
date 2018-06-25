@@ -2,9 +2,9 @@ package com.icapps.niddler.ui.form.debug
 
 import com.icapps.niddler.lib.debugger.model.ModifiableDebuggerConfiguration
 import com.icapps.niddler.lib.utils.error
+import com.icapps.niddler.lib.utils.logger
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.debug.dialog.EnterRegexDialog
-import com.icapps.niddler.lib.utils.logger
 import java.awt.Window
 import javax.swing.JOptionPane
 
@@ -43,8 +43,7 @@ open class NiddlerDebugConfigurationHelper(private val owner: Window?,
             val node = configurationModel.configurationRoot.requestOverrideRoot.findNode {
                 it.requestOverride.id == id
             }
-            if (node != null)
-                configurationDialog.focusOnNode(node)
+            node?.let { configurationDialog.focusOnNode(it) }
         } catch (e: Exception) {
             showError(e)
         }
@@ -52,7 +51,15 @@ open class NiddlerDebugConfigurationHelper(private val owner: Window?,
 
 
     override fun addResponseInterceptor() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        try {
+            val id = configurationConfiguration.addResponseIntercept(null, null, false)
+            val node = configurationModel.configurationRoot.responseInterceptRoot.findNode {
+                it.responseIntercept.id == id
+            }
+            node?.let { configurationDialog.focusOnNode(it) }
+        } catch (e: Exception) {
+            showError(e)
+        }
     }
 
     override fun onAddResponseOverride() {
