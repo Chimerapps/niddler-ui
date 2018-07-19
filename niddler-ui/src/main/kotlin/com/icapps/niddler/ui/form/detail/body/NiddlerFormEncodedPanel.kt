@@ -1,7 +1,11 @@
 package com.icapps.niddler.ui.form.detail.body
 
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
-import javax.swing.JTable
+import com.icapps.niddler.ui.form.PopupMenuSelectingJTable
+import com.icapps.niddler.ui.util.ClipboardUtil
+import java.awt.datatransfer.StringSelection
+import javax.swing.JMenuItem
+import javax.swing.JPopupMenu
 import javax.swing.table.AbstractTableModel
 
 /**
@@ -16,7 +20,29 @@ class NiddlerFormEncodedPanel(message: ParsedNiddlerMessage) : NiddlerStructured
 
     @Suppress("UNCHECKED_CAST")
     override fun createStructuredView() {
-        structuredView = JTable(TwoColumnTableModel(message.bodyData as Map<String, String>))
+        structuredView = object : PopupMenuSelectingJTable<Pair<String, String>>(TwoColumnTableModel(message.bodyData as Map<String, String>)) {
+            override fun popupMenuForSelection(row: Pair<String, String>?): JPopupMenu? {
+                if (row == null)
+                    return null
+                return JPopupMenu().also {
+                    it.add(JMenuItem("Copy key").also {
+                        it.addActionListener {
+                            ClipboardUtil.copyToClipboard(StringSelection(row.first))
+                        }
+                    })
+                    it.add(JMenuItem("Copy value").also {
+                        it.addActionListener {
+                            ClipboardUtil.copyToClipboard(StringSelection(row.second))
+                        }
+                    })
+                }
+            }
+
+            override fun getRowAtIndex(index: Int): Pair<String, String>? {
+                return (model as? TwoColumnTableModel)?.itemList?.getOrNull(index)
+            }
+
+        }
     }
 
 }
