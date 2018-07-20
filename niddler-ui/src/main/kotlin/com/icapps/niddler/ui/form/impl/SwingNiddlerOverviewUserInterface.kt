@@ -1,9 +1,8 @@
 package com.icapps.niddler.ui.form.impl
 
-import com.icapps.niddler.ui.form.PopupMenuSelectingJTable
+import com.icapps.niddler.ui.form.TimelineJTable
 import com.icapps.niddler.ui.form.ui.NiddlerOverviewUserInterface
 import com.icapps.niddler.ui.model.ui.LinkedMessagesRenderer
-import javax.swing.JTable
 import javax.swing.JTree
 
 /**
@@ -12,7 +11,7 @@ import javax.swing.JTree
  */
 open class SwingNiddlerOverviewUserInterface(private val parent: NiddlerOverviewParent) : NiddlerOverviewUserInterface {
 
-    override lateinit var messagesAsTable: PopupMenuSelectingJTable
+    override lateinit var messagesAsTable: TimelineJTable
     override lateinit var messagesAsTree: JTree
 
     override fun init() {
@@ -21,7 +20,7 @@ open class SwingNiddlerOverviewUserInterface(private val parent: NiddlerOverview
     }
 
     protected open fun initMessagesAsTable() {
-        messagesAsTable = PopupMenuSelectingJTable().apply {
+        messagesAsTable = TimelineJTable().apply {
             fillsViewportHeight = false
             rowHeight = 32
             showHorizontalLines = true
