@@ -32,7 +32,7 @@ abstract class PopupMenuSelectingJTable<RowType> : JTable {
     override fun getComponentPopupMenu(): JPopupMenu? {
         val current = currentRowItem()
 
-        return popupMenuForSelection(current)
+        return popupMenuForSelection(current) ?: super.getComponentPopupMenu()
     }
 
     protected abstract fun popupMenuForSelection(row: RowType?): JPopupMenu?

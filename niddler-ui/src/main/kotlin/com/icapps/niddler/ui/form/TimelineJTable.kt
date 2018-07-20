@@ -29,7 +29,7 @@ class TimelineJTable : PopupMenuSelectingJTable<ParsedNiddlerMessage>() {
 
     override fun popupMenuForSelection(row: ParsedNiddlerMessage?): JPopupMenu? {
         if (!::popup.isInitialized)
-            return super.getComponentPopupMenu()
+            return null
 
         when {
             row == null -> popup.clearExtra()
