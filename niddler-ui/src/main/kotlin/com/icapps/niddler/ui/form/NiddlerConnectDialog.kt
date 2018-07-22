@@ -21,6 +21,7 @@ import java.awt.event.MouseEvent
 import java.io.File
 import javax.swing.JComponent
 import javax.swing.JOptionPane
+import javax.swing.JTextField
 import javax.swing.JTree
 import javax.swing.KeyStroke
 import javax.swing.SwingWorker
@@ -174,7 +175,7 @@ class NiddlerConnectDialog(parent: Window?,
         adbInterface.createDeviceWatcher {
             reloadWorker?.cancel(true)
             reloadWorker = null
-            val reload = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, localDevice, tree, progressBar::stop)
+            val reload = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, localDevice, tree, directIP, progressBar::stop)
             val devices = reload.executeOnBackgroundThread()
             MainThreadDispatcher.dispatch {
                 refreshTimer?.stop()
@@ -194,7 +195,7 @@ class NiddlerConnectDialog(parent: Window?,
                 reloadWorker?.cancel(true)
             } catch (e: Throwable) {
             }
-            reloadWorker = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, localDevice, tree, progressBar::stop)
+            reloadWorker = NiddlerReloadSwingWorker(adbInterface, adbBootstrap, localDevice, tree, directIP, progressBar::stop)
             reloadWorker?.execute()
         }.apply {
             isRepeats = true
@@ -213,6 +214,7 @@ class NiddlerConnectDialog(parent: Window?,
                                            private val adbBootstrap: ADBBootstrap,
                                            private val localDevice: Device,
                                            val tree: JTree,
+                                           private val directIp: JTextField,
                                            val doneCallback: () -> Unit) : SwingWorker<List<DeviceModel>, DeviceModel>() {
 
         private val authToken: String = File("${System.getProperty("user.home")}/.emulator_console_auth_token").readText()
@@ -311,7 +313,7 @@ class NiddlerConnectDialog(parent: Window?,
                             tree.selectionPath = TreePath(itRoot.path)
                     }
                 }
-            } else if (devices.isNotEmpty()) {
+            } else if (devices.isNotEmpty() && directIp.text.isEmpty()) {
                 tree.selectionPath = TreePath((tree.model.root as DefaultMutableTreeNode).path)
             }
 
