@@ -122,7 +122,6 @@ class NiddlerConnectDialog(parent: Window?,
         if (node is NiddlerConnectDeviceTreeNode && node.device != null) {
             selection = ConnectSelection(device = node.device.device, session = null, ip = directIP.text, port = port.text.toInt(), withDebugger = withDebugger)
         } else if (node is NiddlerConnectProcessTreeNode) {
-            //todo add the correct selection for processes
             if (withDebugger && node.session.protocolVersion < NiddlerWindow.PROTCOL_VERSION_DEBUGGING) {
                 JOptionPane.showConfirmDialog(this, "This process does not support debugging")
                 return
