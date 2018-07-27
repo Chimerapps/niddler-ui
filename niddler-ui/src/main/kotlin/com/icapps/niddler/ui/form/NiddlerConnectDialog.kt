@@ -19,6 +19,7 @@ import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
+import java.io.IOException
 import javax.swing.JComponent
 import javax.swing.JOptionPane
 import javax.swing.JTextField
@@ -216,7 +217,12 @@ class NiddlerConnectDialog(parent: Window?,
                                            private val directIp: JTextField,
                                            val doneCallback: () -> Unit) : SwingWorker<List<DeviceModel>, DeviceModel>() {
 
-        private val authToken: String = File("${System.getProperty("user.home")}/.emulator_console_auth_token").readText()
+        private val authToken: String? = try{
+            File("${System.getProperty("user.home")}/.emulator_console_auth_token").readText()
+        }catch(e:IOException){
+            log.debug("Failed to read auth token:",e)
+            null
+        }
 
         override fun doInBackground(): List<DeviceModel> {
             return executeOnBackgroundThread()
@@ -253,9 +259,9 @@ class NiddlerConnectDialog(parent: Window?,
         private fun getCorrectName(adb: ADBBootstrap, serial: String, emulated: Boolean): String? {
             return if (emulated) {
                 val port = serial.split("-").last().toIntOrNull() ?: return getName(adb, serial)
-                if (authToken.isBlank())
+                if (authToken.isNullOrBlank())
                     return getName(adb, serial)
-                val emulator = EmulatorFactory.create(port, authToken)
+                val emulator = EmulatorFactory.create(port, authToken!!)
                 emulator.connect()
                 val output = emulator.avdControl.name()
                 emulator.disconnect()
