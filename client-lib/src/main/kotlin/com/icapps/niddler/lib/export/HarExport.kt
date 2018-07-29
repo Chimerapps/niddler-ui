@@ -16,7 +16,7 @@ import java.util.*
  * @author Nicola Verbeeck
  * @date 09/11/2017.
  */
-class HarExport<T : NiddlerMessage>(private val targetFile: File,
+class HarExport<T : ParsedNiddlerMessage>(private val targetFile: File,
                                     private val simpleClassifier: SimpleBodyClassifier) : Exporter<T> {
 
     override fun export(messages: NiddlerMessageStorage<T>) {
@@ -103,7 +103,8 @@ class HarExport<T : NiddlerMessage>(private val targetFile: File,
             BodyFormatType.FORMAT_HTML -> builder.withMime(format.subtype
                     ?: "").withText(message.getBodyAsString("UTF-8") ?: "")
             BodyFormatType.FORMAT_EMPTY -> return null
-            BodyFormatType.FORMAT_FORM_ENCODED -> builder.withParams((message.body as Map<String, String>).map { Param(name = it.key, value = it.value) })
+            BodyFormatType.FORMAT_FORM_ENCODED -> builder.withMime("application/x-www-form-urlencoded")
+                    .withParams((message.bodyData as Map<String, String>).map { Param(name = it.key, value = it.value) })
         }
         return builder.build()
     }
