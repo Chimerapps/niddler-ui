@@ -9,11 +9,14 @@ import com.icapps.niddler.lib.utils.warn
 import se.vidstige.jadb.JadbConnection
 import java.io.File
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * @author Nicola Verbeeck
  * @date 10/11/16.
  */
+private const val ADB_TIMEOUT_S = 2L
+
 class ADBBootstrap(sdkPathGuesses: Collection<String>) {
 
     companion object {
@@ -87,11 +90,21 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>) {
         return pathToAdb?.let {
             val builder = ProcessBuilder(it.prepend(commands))
             val process = builder.start()
-            process.waitFor()
-            val response = process.inputStream.bufferedReader().readText().trim()
-            val error = process.errorStream.bufferedReader().readText()
-            if (error.isNotBlank())
-                System.err.println(error)
+            val success = process.waitFor(ADB_TIMEOUT_S, TimeUnit.SECONDS)
+            val response = if (success) {
+                val response = process.inputStream.bufferedReader().readText().trim()
+                val error = process.errorStream.bufferedReader().readText()
+                if (error.isNotBlank())
+                    System.err.println(error)
+                response
+            } else
+                null
+            try{
+                if (!success)
+                    process.destroy()
+            }catch(e:Throwable){e.printStackTrace()
+            }
+
             response
         }
     }

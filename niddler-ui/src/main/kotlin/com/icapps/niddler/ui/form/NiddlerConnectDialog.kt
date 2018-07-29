@@ -20,6 +20,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.CancellationException
 import javax.swing.JComponent
 import javax.swing.JOptionPane
 import javax.swing.JTextField
@@ -220,7 +221,6 @@ class NiddlerConnectDialog(parent: Window?,
         private val authToken: String? = try{
             File("${System.getProperty("user.home")}/.emulator_console_auth_token").readText()
         }catch(e:IOException){
-            log.debug("Failed to read auth token:",e)
             null
         }
 
@@ -279,7 +279,11 @@ class NiddlerConnectDialog(parent: Window?,
         }
 
         override fun done() {
-            onExecutionDone(get())
+            try {
+                onExecutionDone(get())
+            }catch (e:CancellationException){
+                //Ignore
+            }
             super.done()
         }
 
