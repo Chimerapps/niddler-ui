@@ -441,10 +441,19 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     }
 
     private fun showExportDialog() {
+        var applyFilter = false
+        if (!currentFilter.isBlank()) {
+            val option = JOptionPane.showOptionDialog(windowContents.asComponent, "Pick an option",
+                    "Export options", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+                    arrayOf("Current view", "All"), "All")
+            if (option == 0)
+                applyFilter = true
+        }
         var exportLocation = windowContents.componentsFactory.showSaveDialog("Save export to", ".har") ?: return
         if (!exportLocation.endsWith(".har"))
             exportLocation += ".har"
-        HarExport<ParsedNiddlerMessage>(File(exportLocation), HeaderBodyClassifier()).export(messages.storage)
+        HarExport<ParsedNiddlerMessage>(File(exportLocation), HeaderBodyClassifier())
+                .export(messages.storage, if (applyFilter) messages.storage.filter else null)
     }
 
     private fun applyFilter(filter: String) {

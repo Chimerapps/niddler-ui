@@ -19,11 +19,11 @@ import java.util.*
 class HarExport<T : NiddlerMessage>(private val targetFile: File,
                                     private val simpleClassifier: SimpleBodyClassifier) : Exporter<T> {
 
-    override fun export(messages: NiddlerMessageStorage<T>) {
+    override fun export(messages: NiddlerMessageStorage<T>, filter: NiddlerMessageStorage.Filter<T>?) {
         val writer = StreamingHarWriter(target = FileOutputStream(targetFile).buffered(),
                 creator = Creator("Niddler", "1.0"))
 
-        exportTo(messages.messagesLinkedWithFilter(filter = null), writer)
+        exportTo(messages.messagesLinkedWithFilter(filter = filter), writer)
 
         writer.close()
     }
