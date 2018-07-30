@@ -8,6 +8,6 @@ import com.icapps.niddler.lib.model.NiddlerMessageStorage
  */
 interface Exporter<T : NiddlerMessage> {
 
-    fun export(messages: NiddlerMessageStorage<T>)
+    fun export(messages: NiddlerMessageStorage<T>, filter: NiddlerMessageStorage.Filter<T>?)
 
 }

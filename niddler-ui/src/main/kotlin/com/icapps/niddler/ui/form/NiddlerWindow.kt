@@ -37,6 +37,7 @@ import com.icapps.niddler.ui.setColumnFixedWidth
 import com.icapps.niddler.ui.setColumnMinWidth
 import com.icapps.niddler.ui.util.ClipboardUtil
 import com.icapps.niddler.ui.util.WideSelectionTreeUI
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
 import java.io.File
@@ -441,10 +442,22 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     }
 
     private fun showExportDialog() {
+        var applyFilter = false
+        if (!currentFilter.isBlank()) {
+            val option = JOptionPane.showOptionDialog(windowContents.asComponent, "A filter is active.\nDo you wish to export only the items matching the filter?",
+                    "Export options", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+                    "/niddler_logo.png".loadIcon<NiddlerWindow>(),
+                    arrayOf("Current view", "All"), "All")
+            when (option) {
+                0-> applyFilter = true
+                -1 -> return
+            }
+        }
         var exportLocation = windowContents.componentsFactory.showSaveDialog("Save export to", ".har") ?: return
         if (!exportLocation.endsWith(".har"))
             exportLocation += ".har"
-        HarExport<ParsedNiddlerMessage>(File(exportLocation), HeaderBodyClassifier()).export(messages.storage)
+        HarExport<ParsedNiddlerMessage>(File(exportLocation), HeaderBodyClassifier())
+                .export(messages.storage, if (applyFilter) messages.storage.filter else null)
     }
 
     private fun applyFilter(filter: String) {
