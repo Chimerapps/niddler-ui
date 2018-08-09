@@ -5,7 +5,7 @@ import com.icapps.niddler.lib.debugger.model.LocalRequestIntercept
 import com.icapps.niddler.lib.debugger.model.LocalRequestOverride
 import com.icapps.niddler.lib.debugger.model.LocalResponseIntercept
 import com.icapps.niddler.lib.debugger.model.ModifiableDebuggerConfiguration
-import java.util.*
+import java.util.UUID
 
 /**
  * @author nicolaverbeeck
@@ -13,7 +13,7 @@ import java.util.*
 class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
                                      private val changeListener: () -> Unit)
     : ModifiableDebuggerConfiguration, DebuggerConfiguration {
-    
+
     private val internalBlacklist: MutableList<DisableableItem<String>> = mutableListOf()
     private val internalRequestIntercept: MutableList<DisableableItem<LocalRequestIntercept>> = mutableListOf()
     private val internalRequestOverride: MutableList<DisableableItem<LocalRequestOverride>> = mutableListOf()
@@ -167,6 +167,7 @@ class TemporaryDebuggerConfiguration(delegate: DebuggerConfiguration,
         val item = internalResponseIntercept.find { it.item.id == id }
         item?.let {
             it.enabled = active
+            it.item.active = active
             notifyChange()
         }
     }

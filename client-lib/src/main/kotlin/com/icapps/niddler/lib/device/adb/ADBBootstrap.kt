@@ -8,7 +8,8 @@ import com.icapps.niddler.lib.utils.logger
 import com.icapps.niddler.lib.utils.warn
 import se.vidstige.jadb.JadbConnection
 import java.io.File
-import java.util.*
+import java.util.ArrayList
+import java.util.HashSet
 import java.util.concurrent.TimeUnit
 
 /**
@@ -99,15 +100,17 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>) {
                 response
             } else
                 null
-            try{
+            try {
                 if (!success)
                     process.destroy()
-            }catch(e:Throwable){e.printStackTrace()
+            } catch (e: Throwable) {
+                e.printStackTrace()
             }
 
             response
         }
     }
+
 }
 
 private fun String.prepend(list: Array<out String>): List<String> {
