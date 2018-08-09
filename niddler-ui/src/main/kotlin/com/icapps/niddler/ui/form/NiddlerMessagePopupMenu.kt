@@ -70,3 +70,46 @@ class NiddlerTableMessagePopupMenu(listener: Listener)
     }
 
 }
+
+/**
+ * @author Nicola Verbeeck
+ */
+open class NiddlerStructuredViewPopupMenu(val listener: Listener) : JPopupMenu() {
+
+    private val copyValueItem: JMenuItem = JMenuItem("Copy value")
+    private val copyKeyItem: JMenuItem = JMenuItem("Copy key")
+    private var key: Any? = null
+    private var value: Any? = null
+
+    init {
+        copyValueItem.apply {
+            addActionListener { value?.let { listener.onCopyValueClicked(it) } }
+        }
+        copyKeyItem.apply {
+            addActionListener { key?.let { listener.onCopyKeyClicked(it) } }
+        }
+    }
+
+    final override fun add(comp: JMenuItem?): JMenuItem {
+        return super.add(comp)
+    }
+
+    fun init(key: Any?, value: Any?) {
+        this.key = key
+        this.value = value
+
+        remove(copyKeyItem)
+        if (key != null)
+            add(copyKeyItem)
+
+        remove(copyValueItem)
+        if (value != null)
+            add(copyValueItem)
+    }
+
+    interface Listener {
+        fun onCopyKeyClicked(key: Any)
+        fun onCopyValueClicked(value: Any)
+    }
+
+}

@@ -21,7 +21,6 @@ abstract class PopupMenuSelectingJTable<RowType> : JTable {
         enableEvents(AWTEvent.MOUSE_EVENT_MASK)
     }
 
-
     override fun getPopupLocation(event: MouseEvent): Point? {
         val r = rowAtPoint(event.point)
         clearSelection()
