@@ -16,7 +16,7 @@ class NiddlerJsonDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDat
     }
 
     override fun createStructuredView() {
-        this.structuredView = NiddlerJsonTree(message.bodyData as JsonElement)
+        this.structuredView = NiddlerJsonTree(message.bodyData as JsonElement).also { it.popup = popup }
     }
 
     override fun createPrettyPrintedView(doc: Document) {

@@ -4,19 +4,19 @@ import com.icapps.niddler.ui.asEnumeration
 import org.w3c.dom.Attr
 import org.w3c.dom.Node
 import org.w3c.dom.Text
-import java.util.*
+import java.util.Enumeration
 import javax.swing.tree.TreeNode
 
 /**
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-class XMLTreeNode(private val xmlElement: Node, private val parent: TreeNode?) : TreeNode {
+class XMLTreeNode(val xmlElement: Node, private val parent: TreeNode?) : TreeNode {
 
     private val children: MutableList<XMLTreeNode> = arrayListOf()
 
-    private lateinit var value: String
-    private var name: String
+    lateinit var value: String
+    var name: String
     var type: Type
 
     init {
@@ -36,7 +36,7 @@ class XMLTreeNode(private val xmlElement: Node, private val parent: TreeNode?) :
     private fun populateChildren() {
         val nodeList = xmlElement.childNodes
         val numItems = nodeList.length
-        for (i in 0..numItems - 1) {
+        for (i in 0 until numItems) {
             val item = nodeList.item(i)
             if (item is Text && item.nodeValue.isBlank())
                 continue

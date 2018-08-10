@@ -1,10 +1,20 @@
 package com.icapps.niddler.ui.form.detail.body
 
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.ui.form.NiddlerStructuredViewPopupMenu
+import com.icapps.niddler.ui.util.ClipboardUtil
 import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.awt.Font
-import javax.swing.*
+import java.awt.datatransfer.StringSelection
+import javax.swing.Box
+import javax.swing.ButtonGroup
+import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.JScrollPane
+import javax.swing.JTextArea
+import javax.swing.JToggleButton
+import javax.swing.JToolBar
 import javax.swing.text.Document
 
 /**
@@ -22,6 +32,17 @@ abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, 
     private val rawButton: JToggleButton
     private var toolbar: JToolBar
     private val monospaceFont: Font
+
+    protected val popup = NiddlerStructuredViewPopupMenu(object : NiddlerStructuredViewPopupMenu.Listener {
+        override fun onCopyKeyClicked(key: Any) {
+            ClipboardUtil.copyToClipboard(StringSelection(key.toString()))
+        }
+
+        override fun onCopyValueClicked(value: Any) {
+            ClipboardUtil.copyToClipboard(StringSelection(value.toString()))
+        }
+
+    })
 
     init {
         layout = BorderLayout()
