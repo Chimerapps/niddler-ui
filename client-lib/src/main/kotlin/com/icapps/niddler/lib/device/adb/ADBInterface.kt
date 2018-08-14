@@ -94,6 +94,14 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) : BaseD
         return bootstrap.executeADBCommand(*newArgs)
     }
 
+    fun executeADBCommand(timeoutInSeconds: Long, vararg args: String): String? {
+        val newArgs = Array(args.size + 2) { "" }
+        newArgs[0] = "-s"
+        newArgs[1] = serial
+        System.arraycopy(args, 0, newArgs, 2, args.size)
+        return bootstrap.executeADBCommand(timeoutInSeconds, *newArgs)
+    }
+
     override fun getNiddlerSessions(): List<NiddlerSession> {
         val freePort: Int
         try {

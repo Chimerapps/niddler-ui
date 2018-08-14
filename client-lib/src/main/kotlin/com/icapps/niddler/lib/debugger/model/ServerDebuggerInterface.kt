@@ -10,6 +10,7 @@ class ServerDebuggerInterface(private val service: DebuggerService) : DebuggerIn
     private val serverBlacklist: MutableSet<String> = mutableSetOf()
     private val knownDefaultResponses: MutableSet<String> = mutableSetOf()
     private val knownResponseIntercepts: MutableSet<String> = mutableSetOf()
+    private val knownRequestIntercepts: MutableSet<String> = mutableSetOf()
     private val enabledActions: MutableSet<String> = mutableSetOf()
     private var delays: DebuggerDelays? = null
 
@@ -27,6 +28,12 @@ class ServerDebuggerInterface(private val service: DebuggerService) : DebuggerIn
     override fun updateDefaultResponses(items: Iterable<LocalRequestIntercept>) {
         updateActionDelta(items, knownDefaultResponses, service::removeRequestAction) {
             service.addDefaultResponse(it.regex, it.matchMethod, it.debugResponse!!, it.active)
+        }
+    }
+
+    override fun updateRequestIntercepts(items: Iterable<LocalRequestIntercept>) {
+        updateActionDelta(items, knownRequestIntercepts, service::removeRequestAction) {
+            service.addRequestIntercept(it.regex, it.matchMethod, it.active)
         }
     }
 

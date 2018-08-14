@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
  * @author Nicola Verbeeck
  * @date 10/11/16.
  */
-private const val ADB_TIMEOUT_S = 2L
+const val DEFAULT_ADB_TIMEOUT_S = 2L
 
 class ADBBootstrap(sdkPathGuesses: Collection<String>) {
 
@@ -87,11 +87,13 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>) {
         return ADBInterface(connection = JadbConnection(), bootstrap = this)
     }
 
-    fun executeADBCommand(vararg commands: String): String? {
+    fun executeADBCommand(vararg commands: String) = executeADBCommand(DEFAULT_ADB_TIMEOUT_S, *commands)
+
+    fun executeADBCommand(timeoutInSeconds: Long, vararg commands: String): String? {
         return pathToAdb?.let {
             val builder = ProcessBuilder(it.prepend(commands))
             val process = builder.start()
-            val success = process.waitFor(ADB_TIMEOUT_S, TimeUnit.SECONDS)
+            val success = process.waitFor(timeoutInSeconds, TimeUnit.SECONDS)
             val response = if (success) {
                 val response = process.inputStream.bufferedReader().readText().trim()
                 val error = process.errorStream.bufferedReader().readText()

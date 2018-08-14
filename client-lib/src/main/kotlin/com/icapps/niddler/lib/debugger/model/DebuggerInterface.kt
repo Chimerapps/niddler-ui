@@ -19,6 +19,8 @@ interface DebuggerInterface {
 
     fun updateResponseIntercepts(items: List<LocalResponseIntercept>)
 
+    fun updateRequestIntercepts(items: Iterable<LocalRequestIntercept>)
+
     fun mute()
 
     fun unmute()
