@@ -15,6 +15,7 @@ class StreamingHarWriter(target: OutputStream, creator: Creator, version: String
     private val gson = Gson()
 
     init {
+        json.setIndent("  ")
         json.beginObject()
         json.name("log")
         json.beginObject()

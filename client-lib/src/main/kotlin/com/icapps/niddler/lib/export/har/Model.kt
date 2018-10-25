@@ -150,15 +150,15 @@ data class Response(
 class Cache
 
 data class Timings(
-        val send: Long,
-        val wait: Long,
-        val receive: Long,
+        val send: Double,
+        val wait: Double,
+        val receive: Double,
         val comment: String? = null
 )
 
 data class Entry(
         val startedDateTime: String,
-        val time: Long,
+        val time: Double,
         val request: Request,
         val response: Response,
         val cache: Cache,
@@ -166,7 +166,7 @@ data class Entry(
         val comment: String? = null
 ) {
     companion object {
-        val TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ"
+        val TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
 
         fun format(date: Date): String {
             return SimpleDateFormat(TIME_FORMAT).format(date)

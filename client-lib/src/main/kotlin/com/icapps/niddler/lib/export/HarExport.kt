@@ -1,7 +1,19 @@
 package com.icapps.niddler.lib.export
 
-import com.icapps.niddler.lib.connection.model.NiddlerMessage
-import com.icapps.niddler.lib.export.har.*
+import com.icapps.niddler.lib.export.har.Cache
+import com.icapps.niddler.lib.export.har.Content
+import com.icapps.niddler.lib.export.har.ContentBuilder
+import com.icapps.niddler.lib.export.har.Creator
+import com.icapps.niddler.lib.export.har.Entry
+import com.icapps.niddler.lib.export.har.Header
+import com.icapps.niddler.lib.export.har.Param
+import com.icapps.niddler.lib.export.har.PostData
+import com.icapps.niddler.lib.export.har.PostDataBuilder
+import com.icapps.niddler.lib.export.har.QueryParameter
+import com.icapps.niddler.lib.export.har.Request
+import com.icapps.niddler.lib.export.har.Response
+import com.icapps.niddler.lib.export.har.StreamingHarWriter
+import com.icapps.niddler.lib.export.har.Timings
 import com.icapps.niddler.lib.model.BodyFormat
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
@@ -10,14 +22,14 @@ import com.icapps.niddler.lib.model.classifier.SimpleBodyClassifier
 import com.icapps.niddler.lib.utils.UrlUtil
 import java.io.File
 import java.io.FileOutputStream
-import java.util.*
+import java.util.Date
 
 /**
  * @author Nicola Verbeeck
  * @date 09/11/2017.
  */
 class HarExport<T : ParsedNiddlerMessage>(private val targetFile: File,
-                                    private val simpleClassifier: SimpleBodyClassifier) : Exporter<T> {
+                                          private val simpleClassifier: SimpleBodyClassifier) : Exporter<T> {
 
     override fun export(messages: NiddlerMessageStorage<T>, filter: NiddlerMessageStorage.Filter<T>?) {
         val writer = StreamingHarWriter(target = FileOutputStream(targetFile).buffered(),
@@ -38,13 +50,14 @@ class HarExport<T : ParsedNiddlerMessage>(private val targetFile: File,
         val request = niddlerMessages.find { it.isRequest } ?: return
         val response = niddlerMessages.firstOrNull { !it.isRequest } ?: return
 
+        val time = (response.timestamp - request.timestamp).toDouble()
         val harEntry = Entry(
                 startedDateTime = Entry.format(request.timestamp.let { Date(it) }),
-                time = response.timestamp - request.timestamp,
+                time = time,
                 request = makeRequest(request),
                 response = makeResponse(response),
                 cache = Cache(),
-                timings = extractTimings(response)
+                timings = extractTimings(response, time)
         )
 
         writer.addEntry(harEntry)
@@ -128,15 +141,24 @@ class HarExport<T : ParsedNiddlerMessage>(private val targetFile: File,
             BodyFormatType.FORMAT_EMPTY -> builder.withMime("").withText("")
             else -> builder.withMime("").withText("")
         }
-        builder.withSize(-1)
+        builder.withSize(message.headers?.get("content-length")?.getOrNull(0)?.toLongOrNull() ?: message.getBodyAsBytes?.size?.toLong() ?: -1L)
         return builder.build()
     }
 
-    fun extractTimings(response: T): Timings {
+    fun extractTimings(response: T, totalRequestTime: Double): Timings {
+        var writeTime = response.writeTime?.toDouble() ?: 0.0
+        val waitTime = response.waitTime?.toDouble() ?: 0.0
+        val readTime = response.readTime?.toDouble() ?: 0.0
+
+        val totalKnownTime = writeTime + waitTime + readTime
+        if (totalKnownTime < totalRequestTime) {
+            writeTime += (totalRequestTime - totalKnownTime)
+        }
+
         return Timings(
-                response.writeTime?.toLong() ?: 0L,
-                response.waitTime?.toLong() ?: 0L,
-                response.readTime?.toLong() ?: 0L
+                writeTime,
+                waitTime,
+                readTime
         )
     }
 

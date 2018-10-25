@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
  * @author Nicola Verbeeck
  * @date 10/11/16.
  */
-const val DEFAULT_ADB_TIMEOUT_S = 2L
+const val DEFAULT_ADB_TIMEOUT_S = 4L
 
 class ADBBootstrap(sdkPathGuesses: Collection<String>) {
 
