@@ -28,11 +28,11 @@ class StreamingHarWriterTest {
         val writer = StreamingHarWriter(out, creator = Creator(name = "Niddler", version = "1.0"))
 
         val entry = Entry(startedDateTime = "2005-04-01T13:38:09-0800",
-                time = 19200,
+                time = 19200.0,
                 request = Request(method = "POST", url = "http://www.test.com/bla", httpVersion = "HTTP/1.1", headers = emptyList(), queryString = emptyList(), postData = null),
                 response = Response(status = 200, statusText = "OK", httpVersion = "HTTP/1.1", content = Content(13, "application/xml", "<>", null), headers = emptyList()),
                 cache = Cache(),
-                timings = Timings(send = 13, receive = 344, wait = 1213))
+                timings = Timings(send = 13.0, receive = 344.0, wait = 1213.0))
 
         writer.addEntry(entry)
 

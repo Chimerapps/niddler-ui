@@ -27,7 +27,7 @@ class BodyParser(private val initialBodyFormat: BodyFormat, private val bodyByte
         if (bodyBytes == null || bodyBytes.isEmpty())
             return ConcreteBody(initialBodyFormat.type, initialBodyFormat.subtype, data = null)
 
-        if (initialBodyFormat.type == BodyFormatType.FORMAT_BINARY)
+        if (initialBodyFormat.type == BodyFormatType.FORMAT_BINARY || initialBodyFormat.type == BodyFormatType.FORMAT_EMPTY)
             return determineBodyFromContent(bodyBytes) ?: ConcreteBody(initialBodyFormat.type,
                     initialBodyFormat.subtype,
                     data = bodyBytes)

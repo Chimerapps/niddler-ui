@@ -37,7 +37,7 @@ open class SwingNiddlerDetailUserInterface(componentsFactory: ComponentsFactory,
         get() = content.asComponent
 
     private val bodyRoot: JPanel = JPanel(BorderLayout())
-    private val detailPanel: MessageDetailPanel = MessageDetailPanel(messageContainer)
+    private val detailPanel: MessageDetailPanel = MessageDetailPanel(messageContainer, componentsFactory)
 
     private val content: TabComponent = componentsFactory.createTabComponent()
 

@@ -27,6 +27,8 @@ interface NiddlerMessage {
     val waitTime: Int?
     val httpVersion: String?
 
+    val trace: List<String>?
+
     val networkRequest: NiddlerMessage?
     val networkReply: NiddlerMessage?
 
@@ -65,7 +67,8 @@ class NetworkNiddlerMessage(
         override val waitTime: Int?,
         override val httpVersion: String?,
         override val networkRequest: NiddlerMessage?,
-        override val networkReply: NiddlerMessage?
+        override val networkReply: NiddlerMessage?,
+        override val trace: List<String>?
 ) : NiddlerMessage {
 
 

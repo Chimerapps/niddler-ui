@@ -5,12 +5,14 @@ import com.icapps.niddler.lib.debugger.model.saved.WrappingDebuggerConfiguration
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.Dialog
 import com.icapps.niddler.ui.form.components.SplitPane
+import com.icapps.niddler.ui.form.components.StackTraceComponent
 import com.icapps.niddler.ui.form.components.TabComponent
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.ui.AbstractToolbar
 import com.icapps.niddler.ui.form.ui.SwingToolbar
 import net.harawata.appdirs.AppDirsFactory
+import java.awt.Component
 import java.awt.Window
 import java.io.File
 import java.io.IOException
@@ -80,6 +82,10 @@ class SwingComponentsFactory : ComponentsFactory {
 
     override fun createVerticalToolbar(): AbstractToolbar {
         return SwingToolbar(JToolBar.VERTICAL, border = true)
+    }
+
+    override fun createTraceComponent(): StackTraceComponent? {
+        return null
     }
 
     private fun getConfigFile(name: String): File {

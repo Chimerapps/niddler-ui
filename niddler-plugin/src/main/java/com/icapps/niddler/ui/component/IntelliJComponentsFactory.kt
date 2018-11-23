@@ -3,15 +3,16 @@ package com.icapps.niddler.ui.component
 import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.lib.debugger.model.saved.WrappingDebuggerConfiguration
 import com.icapps.niddler.lib.utils.debug
+import com.icapps.niddler.lib.utils.logger
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.components.Dialog
 import com.icapps.niddler.ui.form.components.SplitPane
+import com.icapps.niddler.ui.form.components.StackTraceComponent
 import com.icapps.niddler.ui.form.components.TabComponent
 import com.icapps.niddler.ui.form.components.impl.SwingDialog
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.ui.AbstractToolbar
-import com.icapps.niddler.lib.utils.logger
 import com.icapps.niddler.ui.utils.runWriteAction
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
@@ -129,6 +130,10 @@ class IntelliJComponentsFactory(val project: Project?, val parent: Disposable) :
         } catch (e: IOException) {
             return null
         }
+    }
+
+    override fun createTraceComponent(): StackTraceComponent? {
+        return project?.let { IntelliJStackTraceComponent(it) }
     }
 
     private fun writeDirectoryBased(wrappingDebuggerConfiguration: WrappingDebuggerConfiguration) {
