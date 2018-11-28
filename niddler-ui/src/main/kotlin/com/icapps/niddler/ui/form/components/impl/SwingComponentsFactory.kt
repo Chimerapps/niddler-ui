@@ -12,7 +12,6 @@ import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialo
 import com.icapps.niddler.ui.form.ui.AbstractToolbar
 import com.icapps.niddler.ui.form.ui.SwingToolbar
 import net.harawata.appdirs.AppDirsFactory
-import java.awt.Component
 import java.awt.Window
 import java.io.File
 import java.io.IOException
@@ -85,7 +84,7 @@ class SwingComponentsFactory : ComponentsFactory {
     }
 
     override fun createTraceComponent(): StackTraceComponent? {
-        return null
+        return SwingStackTraceComponent()
     }
 
     private fun getConfigFile(name: String): File {

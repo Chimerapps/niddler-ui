@@ -21,8 +21,8 @@ import javax.swing.JLabel
 import javax.swing.JMenuItem
 import javax.swing.JPanel
 import javax.swing.JPopupMenu
-import javax.swing.JScrollPane
 import javax.swing.SwingConstants
+import javax.swing.border.BevelBorder
 import javax.swing.border.EmptyBorder
 import javax.swing.border.TitledBorder
 
@@ -58,18 +58,19 @@ class MessageDetailPanel(private val messages: NiddlerMessageStorage<ParsedNiddl
                 "Stacktrace", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
 
         generalContentPanel = JPanel(FormLayout("left:default, 3dlu, pref", "pref, pref, pref, pref, pref"))
-        generalContentPanel.border = EmptyBorder(5, 5, 5, 5)
-        generalPanel.add(JScrollPane(generalContentPanel))
+        generalContentPanel.border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5))
+        generalPanel.add(generalContentPanel)
 
         headersContentPanel = JPanel(FormLayout("left:default, 3dlu, pref", ""))
-        headersContentPanel.border = EmptyBorder(5, 5, 5, 5)
-        headersPanel.add(JScrollPane(headersContentPanel))
+        headersContentPanel.border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5))
+        headersPanel.add(headersContentPanel)
 
         containerPanel.add(generalPanel)
         containerPanel.add(headersPanel)
         containerPanel.add(tracePanel)
 
         stackTraceComponent = componentsFactory.createTraceComponent()?.also {
+            (it.asComponent as? JComponent)?.border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5))
             tracePanel.add(it.asComponent)
         }
 
@@ -143,10 +144,12 @@ class MessageDetailPanel(private val messages: NiddlerMessageStorage<ParsedNiddl
             messages.findRequest(message)
         }
         val trace = request?.trace
-        if (trace != null)
-            stackTraceComponent?.setStackTrace(trace)
-
         tracePanel.isVisible = trace != null
+        stackTraceComponent?.setStackTrace(trace)
+        stackTraceComponent?.invalidate()
+        stackTraceComponent?.repaint()
+        tracePanel.invalidate()
+        tracePanel.repaint()
     }
 
     fun clear() {
