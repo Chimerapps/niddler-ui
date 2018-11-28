@@ -44,14 +44,14 @@ class IntelliJStackTraceComponent(private val project: Project) : StackTraceComp
         textArea.background = null
 
         style = textArea.addStyle("Style", null)
-        StyleConstants.setForeground(style, Color.blue)
+        StyleConstants.setForeground(style, UIManager.getColor("link.foreground") ?: Color.blue)
         StyleConstants.setUnderline(style, true)
 
         val defaultCursor = textArea.cursor
 
         textArea.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(mouseEvent: MouseEvent) {
-                if (mouseEvent.getButton() == MouseEvent.BUTTON1 && !mouseEvent.isPopupTrigger) {
+                if (mouseEvent.button == MouseEvent.BUTTON1 && !mouseEvent.isPopupTrigger) {
                     getHyperlinkInfoByPoint(mouseEvent.point)?.let { makeRunnable(it, mouseEvent) }?.run()
                 }
             }

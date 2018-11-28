@@ -29,7 +29,7 @@ class SwingStackTraceComponent : StackTraceComponent {
         textArea.background = null
 
         style = textArea.addStyle("Style", null)
-        StyleConstants.setForeground(style, Color.blue)
+        StyleConstants.setForeground(style, UIManager.getColor("link.foreground") ?: Color.blue)
         StyleConstants.setUnderline(style, true)
     }
 
