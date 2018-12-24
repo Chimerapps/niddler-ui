@@ -150,7 +150,22 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             disconnect()
             windowContents.disconnectButton.isEnabled = false
         }
+        windowContents.staticBlacklistButtonListener = {
+            val client = niddlerClient
+            if (client == null || !client.isOpen) {
+                windowContents.showWarningMessage("Not connected", "Not connected to a niddler server")
+            } else {
+                val copy = client.staticBlacklist
+                val parent = SwingUtilities.getWindowAncestor(windowContents.asComponent)
+                val dialog = windowContents.componentsFactory
+                        .createStaticBreakpointConfigurationDialog(parent, copy)
+                dialog.init { changes ->
+                    changes.forEach { client.setStaticBlacklistItemEnabled(it.first, it.second) }
+                }
 
+                dialog.visibility = true
+            }
+        }
         windowContents.filterListener = {
             applyFilter(it ?: "")
         }
@@ -281,6 +296,10 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
     override fun onMessage(message: ParsedNiddlerMessage) {
         updateMessages()
+    }
+
+    override fun onStaticBlacklistUpdated(entries: List<Pair<String, Boolean>>) {
+        //TODO
     }
 
     override fun onTimelineSelected() {
@@ -449,7 +468,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
                     "/niddler_logo.png".loadIcon<NiddlerWindow>(),
                     arrayOf("Current view", "All"), "All")
             when (option) {
-                0-> applyFilter = true
+                0 -> applyFilter = true
                 -1 -> return
             }
         }

@@ -18,10 +18,13 @@ interface NiddlerUserInterface {
 
     fun selectMessage(parsedNiddlerMessage: ParsedNiddlerMessage)
 
+    fun showWarningMessage(title: String, message: String)
+
     var connectButtonListener: (() -> Unit)?
     var filterListener: ((String?) -> Unit)?
     var disconnectButtonListener: (() -> Unit)?
     var debugButtonListener: (() -> Unit)?
+    var staticBlacklistButtonListener: (() -> Unit)?
 
     val toolbar: NiddlerMainToolbar
     val disconnectButton: AbstractAction

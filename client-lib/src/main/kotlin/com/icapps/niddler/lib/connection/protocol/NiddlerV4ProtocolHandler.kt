@@ -27,6 +27,7 @@ open class NiddlerV4ProtocolHandler(messageListener: NiddlerMessageListener,
 
         when (type) {
             "debugRequest" -> onDebugRequest(socket, message)
+            "staticBlacklist" -> onStaticBlacklist(message)
             else -> super.onMessage(socket, message)
         }
     }
@@ -44,6 +45,14 @@ open class NiddlerV4ProtocolHandler(messageListener: NiddlerMessageListener,
         } else {
             log.warn("Failed to debug request message, unknown type: $message")
         }
+    }
+
+    private fun onStaticBlacklist(message: JsonObject) {
+        val newList = message.getAsJsonArray("entries")?.map {
+            val entry = it.asJsonObject
+            entry.get("pattern").asString to entry.get("enabled").asBoolean
+        }
+        newList?.let { messageListener.onStaticBlacklistUpdated(it) }
     }
 
     private fun onDebugRequestOverride(socket: WebSocketClient, message: NiddlerMessage) {

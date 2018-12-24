@@ -26,6 +26,14 @@ interface NiddlerDebugConfigurationDialog {
 
 }
 
+interface NiddlerStaticBreakpoointsConfigurationDialog {
+
+    var visibility: Boolean
+
+    fun init(applyListener: (changes: List<Pair<String, Boolean>>) -> Unit)
+
+}
+
 interface DebugToolbar {
 
     var listener: DebugToolbarListener?

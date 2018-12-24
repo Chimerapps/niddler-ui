@@ -8,7 +8,9 @@ import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.StackTraceComponent
 import com.icapps.niddler.ui.form.components.TabComponent
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
+import com.icapps.niddler.ui.form.debug.NiddlerStaticBreakpoointsConfigurationDialog
 import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialog
+import com.icapps.niddler.ui.form.impl.SwingNiddlerStaticBreakpoointsConfigurationDialog
 import com.icapps.niddler.ui.form.ui.AbstractToolbar
 import com.icapps.niddler.ui.form.ui.SwingToolbar
 import net.harawata.appdirs.AppDirsFactory
@@ -58,6 +60,11 @@ class SwingComponentsFactory : ComponentsFactory {
     override fun createDebugConfigurationDialog(parent: Window?, configuration: DebuggerConfiguration)
             : NiddlerDebugConfigurationDialog {
         return SwingNiddlerDebugConfigurationDialog(parent, this, configuration)
+    }
+
+    override fun createStaticBreakpointConfigurationDialog(parent: Window?, breakpoints: List<Pair<String, Boolean>>)
+            : NiddlerStaticBreakpoointsConfigurationDialog {
+        return SwingNiddlerStaticBreakpoointsConfigurationDialog(parent, breakpoints)
     }
 
     override fun loadSavedConfiguration(): DebuggerConfiguration {

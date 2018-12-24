@@ -1,9 +1,15 @@
 package com.icapps.niddler.lib.connection
 
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
-import com.icapps.niddler.lib.connection.protocol.*
+import com.icapps.niddler.lib.connection.protocol.NiddlerDebugListener
+import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
+import com.icapps.niddler.lib.connection.protocol.NiddlerProtocol
+import com.icapps.niddler.lib.connection.protocol.NiddlerV1ProtocolHandler
+import com.icapps.niddler.lib.connection.protocol.NiddlerV2ProtocolHandler
+import com.icapps.niddler.lib.connection.protocol.NiddlerV4ProtocolHandler
 import com.icapps.niddler.lib.debugger.NiddlerDebuggerConnection
 import com.icapps.niddler.lib.debugger.model.DebugRequest
 import com.icapps.niddler.lib.debugger.model.DebugResponse
@@ -13,7 +19,7 @@ import org.java_websocket.client.WebSocketClient
 import org.java_websocket.drafts.Draft_6455
 import org.java_websocket.handshake.ServerHandshake
 import java.net.URI
-import java.util.*
+import java.util.HashSet
 
 /**
  * @author Nicola Verbeeck
@@ -31,8 +37,12 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient
     var debugListener: NiddlerDebugListener? = null
     private var protocolHandler: NiddlerProtocol? = null
 
+    var staticBlacklist: List<Pair<String, Boolean>> = emptyList()
+        private set
+
     override fun onOpen(handshakeData: ServerHandshake?) {
         log.debug("Connection succeeded: ${connection.remoteSocketAddress}")
+        staticBlacklist = emptyList()
     }
 
     override fun onClose(code: Int, reason: String?, remote: Boolean) {
@@ -40,6 +50,7 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient
         synchronized(clientListeners) {
             clientListeners.forEach { it.onClosed() }
         }
+        staticBlacklist = emptyList()
     }
 
     override fun onMessage(message: String) {
@@ -62,6 +73,7 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient
         synchronized(clientListeners) {
             clientListeners.add(listener)
         }
+        listener.onStaticBlacklistUpdated(staticBlacklist)
     }
 
     fun unregisterMessageListener(listener: NiddlerMessageListener) {
@@ -147,5 +159,20 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient
     override fun sendMessage(message: String) {
         send(message)
     }
-}
 
+    override fun onStaticBlacklistUpdated(entries: List<Pair<String, Boolean>>) {
+        staticBlacklist = entries
+        synchronized(clientListeners) {
+            clientListeners.forEach { it.onStaticBlacklistUpdated(staticBlacklist) }
+        }
+    }
+
+    fun setStaticBlacklistItemEnabled(pattern: String, enabled: Boolean) {
+        val json = JsonObject();
+        json.addProperty("type","controlStaticBlacklist")
+        json.addProperty("pattern", pattern)
+        json.addProperty("enabled", enabled)
+        send(json.toString())
+    }
+
+}

@@ -3,6 +3,7 @@ package com.icapps.niddler.ui.form.impl
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.ui.button
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.components.HintTextField
@@ -19,6 +20,7 @@ import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.JComponent
+import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.event.DocumentEvent
@@ -35,6 +37,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     override var filterListener: ((String?) -> Unit)? = null
     override var disconnectButtonListener: (() -> Unit)? = null
     override var debugButtonListener: (() -> Unit)? = null
+    override var staticBlacklistButtonListener: (() -> Unit)? = null
 
     override val asComponent: JComponent
         get() = rootPanel
@@ -114,7 +117,13 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
 
         topPanel.add(toolbar.component, BorderLayout.WEST)
 
-        initFilter(topPanel)
+        val rightPanel = JPanel(BorderLayout())
+        topPanel.add(rightPanel, BorderLayout.EAST)
+
+        rightPanel.add(button("Blacklist") {
+            staticBlacklistButtonListener?.invoke()
+        })
+        initFilter(rightPanel)
     }
 
     protected open fun initFilter(parent: JPanel) {
@@ -192,6 +201,10 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
                 it.revalidate()
             }
         }
+    }
+
+    override fun showWarningMessage(title: String, message: String) {
+        JOptionPane.showMessageDialog(rootPanel, message, title, JOptionPane.WARNING_MESSAGE)
     }
 
     private fun onDebugMessagesUpdated(numItems: Int) {

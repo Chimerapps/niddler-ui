@@ -35,6 +35,8 @@ interface NiddlerMessageListener {
 
     fun onClosed()
 
+    fun onStaticBlacklistUpdated(entries: List<Pair<String, Boolean>>)
+
 }
 
 interface NiddlerDebugListener {

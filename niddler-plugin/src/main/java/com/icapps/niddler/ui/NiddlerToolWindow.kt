@@ -3,13 +3,13 @@ package com.icapps.niddler.ui
 import com.icapps.niddler.lib.utils.Logger
 import com.icapps.niddler.lib.utils.LoggerFactory
 import com.icapps.niddler.lib.utils.info
+import com.icapps.niddler.lib.utils.logger
 import com.icapps.niddler.ui.component.IntelliJComponentsFactory
 import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.NiddlerWindow
 import com.icapps.niddler.ui.impl.IntelliJNiddlerUserInterface
 import com.icapps.niddler.ui.util.ImageHelper
 import com.icapps.niddler.ui.util.iconLoader
-import com.icapps.niddler.lib.utils.logger
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -17,10 +17,8 @@ import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
-import java.awt.Color
-import java.util.*
+import java.util.HashSet
 import javax.swing.Icon
-import javax.swing.UIManager
 import javax.swing.event.AncestorEvent
 import javax.swing.event.AncestorListener
 
@@ -45,11 +43,11 @@ class NiddlerToolWindow : ToolWindowFactory, DumbAware {
         MainThreadDispatcher.instance = IntelliJMaiThreadDispatcher()
         iconLoader = IntellijIconLoader()
 
-        val ui = IntelliJNiddlerUserInterface(IntelliJComponentsFactory(p0, window.contentManager))
+        val ui = IntelliJNiddlerUserInterface(p0, IntelliJComponentsFactory(p0, window.contentManager))
         niddlerWindow = NiddlerWindow(ui, guessPaths(p0))
 
         val contentService = ContentFactory.SERVICE.getInstance()
-        val content = contentService.createContent(ui.asComponent, " - Inspect network traffic", true)
+        val content = contentService.createContent(ui.asComponent, "Inspect network traffic", true)
 
         niddlerWindow.init()
         niddlerWindow.onWindowVisible()

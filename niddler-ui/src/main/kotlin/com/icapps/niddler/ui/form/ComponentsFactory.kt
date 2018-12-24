@@ -6,8 +6,8 @@ import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.StackTraceComponent
 import com.icapps.niddler.ui.form.components.TabComponent
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
+import com.icapps.niddler.ui.form.debug.NiddlerStaticBreakpoointsConfigurationDialog
 import com.icapps.niddler.ui.form.ui.AbstractToolbar
-import java.awt.Component
 import java.awt.Window
 import javax.swing.JComponent
 import javax.swing.JScrollPane
@@ -30,6 +30,9 @@ interface ComponentsFactory {
 
     fun createDebugConfigurationDialog(parent: Window?, configuration: DebuggerConfiguration)
             : NiddlerDebugConfigurationDialog
+
+    fun createStaticBreakpointConfigurationDialog(parent: Window?, breakpoints: List<Pair<String, Boolean>>)
+            : NiddlerStaticBreakpoointsConfigurationDialog
 
     fun loadSavedConfiguration(): DebuggerConfiguration
 
