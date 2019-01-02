@@ -77,7 +77,7 @@ task uploadToInternalServer << {
         pluginDescriptorFile.write pluginFileContents
 
         ftp(server: "$internalServer", userid: "$internalServerUser", password: "$internalServerPassword",
-                remoteDir: "$internalServerDir") {
+                remoteDir: "$internalServerDir", passive:'yes') {
             fileset(dir: "build/distributions") {
                 include(name: "niddler-plugin-${actualPluginVersion}.zip")
                 include(name: "updatePlugins.xml")
