@@ -1,6 +1,7 @@
 package com.icapps.niddler.lib.connection.protocol
 
 import com.google.gson.JsonObject
+import com.icapps.niddler.lib.connection.StaticBlacklistEntry
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 import com.icapps.niddler.lib.debugger.model.DebugRequest
@@ -35,7 +36,7 @@ interface NiddlerMessageListener {
 
     fun onClosed()
 
-    fun onStaticBlacklistUpdated(entries: List<Pair<String, Boolean>>)
+    fun onStaticBlacklistUpdated(id: String, name: String, entries: List<StaticBlacklistEntry>)
 
 }
 

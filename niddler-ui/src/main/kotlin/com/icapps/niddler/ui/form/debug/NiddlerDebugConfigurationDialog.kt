@@ -30,7 +30,9 @@ interface NiddlerStaticBreakpoointsConfigurationDialog {
 
     var visibility: Boolean
 
-    fun init(applyListener: (changes: List<Pair<String, Boolean>>) -> Unit)
+    fun init(applyListener: (changes: List<StaticBlackListChange>) -> Unit)
+
+    data class StaticBlackListChange(val id: String, val pattern: String, val enabled: Boolean)
 
 }
 

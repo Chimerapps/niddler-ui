@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.form
 
+import com.icapps.niddler.lib.connection.StaticBlacklistHandler
 import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.ui.form.components.Dialog
 import com.icapps.niddler.ui.form.components.SplitPane
@@ -31,7 +32,7 @@ interface ComponentsFactory {
     fun createDebugConfigurationDialog(parent: Window?, configuration: DebuggerConfiguration)
             : NiddlerDebugConfigurationDialog
 
-    fun createStaticBreakpointConfigurationDialog(parent: Window?, breakpoints: List<Pair<String, Boolean>>)
+    fun createStaticBlacklistConfigurationDialog(parent: Window?, blacklist: List<StaticBlacklistHandler>)
             : NiddlerStaticBreakpoointsConfigurationDialog
 
     fun loadSavedConfiguration(): DebuggerConfiguration

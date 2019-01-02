@@ -1,6 +1,7 @@
 package com.icapps.niddler.lib.connection.protocol
 
 import com.google.gson.JsonObject
+import com.icapps.niddler.lib.connection.StaticBlacklistEntry
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.debugger.model.DebugReplyPayload
 import com.icapps.niddler.lib.debugger.model.MESSAGE_DEBUG_REPLY
@@ -48,11 +49,13 @@ open class NiddlerV4ProtocolHandler(messageListener: NiddlerMessageListener,
     }
 
     private fun onStaticBlacklist(message: JsonObject) {
+        val id = message.get("id").asString
+        val name = message.get("name").asString
         val newList = message.getAsJsonArray("entries")?.map {
             val entry = it.asJsonObject
-            entry.get("pattern").asString to entry.get("enabled").asBoolean
+            StaticBlacklistEntry(entry.get("pattern").asString, entry.get("enabled").asBoolean)
         }
-        newList?.let { messageListener.onStaticBlacklistUpdated(it) }
+        newList?.let { messageListener.onStaticBlacklistUpdated(id, name, it) }
     }
 
     private fun onDebugRequestOverride(socket: WebSocketClient, message: NiddlerMessage) {

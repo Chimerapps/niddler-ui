@@ -1,6 +1,7 @@
 package com.icapps.niddler.ui.form
 
 import com.icapps.niddler.lib.connection.NiddlerClient
+import com.icapps.niddler.lib.connection.StaticBlacklistEntry
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
@@ -155,12 +156,12 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             if (client == null || !client.isOpen) {
                 windowContents.showWarningMessage("Not connected", "Not connected to a niddler server")
             } else {
-                val copy = client.staticBlacklist
+                val copy = client.staticBlacklist.getConfiguration()
                 val parent = SwingUtilities.getWindowAncestor(windowContents.asComponent)
                 val dialog = windowContents.componentsFactory
-                        .createStaticBreakpointConfigurationDialog(parent, copy)
+                        .createStaticBlacklistConfigurationDialog(parent, copy)
                 dialog.init { changes ->
-                    changes.forEach { client.setStaticBlacklistItemEnabled(it.first, it.second) }
+                    changes.forEach { client.setStaticBlacklistItemEnabled(it.id, it.pattern, it.enabled) }
                 }
 
                 dialog.visibility = true
@@ -298,7 +299,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
         updateMessages()
     }
 
-    override fun onStaticBlacklistUpdated(entries: List<Pair<String, Boolean>>) {
+    override fun onStaticBlacklistUpdated(id: String, name: String, entries: List<StaticBlacklistEntry>) {
         //TODO
     }
 

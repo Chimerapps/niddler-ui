@@ -34,6 +34,6 @@ open class NiddlerMessageListenerAdapter : NiddlerMessageListener {
     override fun onClosed() {
     }
 
-    override fun onStaticBlacklistUpdated(entries: List<Pair<String, Boolean>>) {
+    override fun onStaticBlacklistUpdated(id: String, name: String, entries: List<StaticBlacklistEntry>) {
     }
 }

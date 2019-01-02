@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.component
 
+import com.icapps.niddler.lib.connection.StaticBlacklistHandler
 import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 import com.icapps.niddler.lib.debugger.model.saved.WrappingDebuggerConfiguration
 import com.icapps.niddler.lib.utils.debug
@@ -13,7 +14,7 @@ import com.icapps.niddler.ui.form.components.impl.SwingDialog
 import com.icapps.niddler.ui.form.debug.NiddlerDebugConfigurationDialog
 import com.icapps.niddler.ui.form.debug.NiddlerStaticBreakpoointsConfigurationDialog
 import com.icapps.niddler.ui.form.debug.impl.SwingNiddlerDebugConfigurationDialog
-import com.icapps.niddler.ui.form.impl.SwingNiddlerStaticBreakpoointsConfigurationDialog
+import com.icapps.niddler.ui.form.impl.SwingNiddlerStaticBlacklistConfigurationDialog
 import com.icapps.niddler.ui.form.ui.AbstractToolbar
 import com.icapps.niddler.ui.utils.runWriteAction
 import com.intellij.openapi.Disposable
@@ -70,9 +71,9 @@ class IntelliJComponentsFactory(val project: Project?, val parent: Disposable) :
         return SwingNiddlerDebugConfigurationDialog(parent, this, configuration)
     }
 
-    override fun createStaticBreakpointConfigurationDialog(parent: Window?, breakpoints: List<Pair<String, Boolean>>)
+    override fun createStaticBlacklistConfigurationDialog(parent: Window?, blacklist: List<StaticBlacklistHandler>)
             : NiddlerStaticBreakpoointsConfigurationDialog {
-        return SwingNiddlerStaticBreakpoointsConfigurationDialog(parent, breakpoints)
+        return SwingNiddlerStaticBlacklistConfigurationDialog(parent, blacklist)
     }
 
     override fun loadSavedConfiguration(): DebuggerConfiguration {

@@ -37,12 +37,11 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient
     var debugListener: NiddlerDebugListener? = null
     private var protocolHandler: NiddlerProtocol? = null
 
-    var staticBlacklist: List<Pair<String, Boolean>> = emptyList()
-        private set
+    val staticBlacklist = StaticBlacklistConfiguration()
 
     override fun onOpen(handshakeData: ServerHandshake?) {
         log.debug("Connection succeeded: ${connection.remoteSocketAddress}")
-        staticBlacklist = emptyList()
+        staticBlacklist.clear()
     }
 
     override fun onClose(code: Int, reason: String?, remote: Boolean) {
@@ -50,7 +49,7 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient
         synchronized(clientListeners) {
             clientListeners.forEach { it.onClosed() }
         }
-        staticBlacklist = emptyList()
+        staticBlacklist.clear()
     }
 
     override fun onMessage(message: String) {
@@ -73,7 +72,7 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient
         synchronized(clientListeners) {
             clientListeners.add(listener)
         }
-        listener.onStaticBlacklistUpdated(staticBlacklist)
+        staticBlacklist.getConfiguration().forEach { listener.onStaticBlacklistUpdated(it.id, it.name, it.entries) }
     }
 
     fun unregisterMessageListener(listener: NiddlerMessageListener) {
@@ -160,19 +159,47 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient
         send(message)
     }
 
-    override fun onStaticBlacklistUpdated(entries: List<Pair<String, Boolean>>) {
-        staticBlacklist = entries
+    override fun onStaticBlacklistUpdated(id: String, name: String, entries: List<StaticBlacklistEntry>) {
+        staticBlacklist.onConfigurationUpdated(id, name, entries)
         synchronized(clientListeners) {
-            clientListeners.forEach { it.onStaticBlacklistUpdated(staticBlacklist) }
+            clientListeners.forEach { it.onStaticBlacklistUpdated(id, name, entries) }
         }
     }
 
-    fun setStaticBlacklistItemEnabled(pattern: String, enabled: Boolean) {
+    fun setStaticBlacklistItemEnabled(id: String, pattern: String, enabled: Boolean) {
         val json = JsonObject();
-        json.addProperty("type","controlStaticBlacklist")
+        json.addProperty("type", "controlStaticBlacklist")
+        json.addProperty("id", id)
         json.addProperty("pattern", pattern)
         json.addProperty("enabled", enabled)
         send(json.toString())
     }
 
+}
+
+data class StaticBlacklistEntry(val pattern: String, val enabled: Boolean)
+
+data class StaticBlacklistHandler(val id: String, val name: String, val entries: List<StaticBlacklistEntry>)
+
+class StaticBlacklistConfiguration {
+
+    private val configuration: MutableMap<String, StaticBlacklistHandler> = mutableMapOf()
+
+    fun getConfiguration(): List<StaticBlacklistHandler> {
+        synchronized(configuration) {
+            return configuration.map { it.value }
+        }
+    }
+
+    fun onConfigurationUpdated(id: String, name: String, entries: List<StaticBlacklistEntry>) {
+        synchronized(configuration) {
+            configuration[id] = StaticBlacklistHandler(id, name, entries)
+        }
+    }
+
+    fun clear() {
+        synchronized(configuration) {
+            configuration.clear()
+        }
+    }
 }
