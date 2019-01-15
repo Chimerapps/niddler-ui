@@ -28,6 +28,7 @@ interface NiddlerMessage {
     val httpVersion: String?
 
     val trace: List<String>?
+    val context: List<String>?
 
     val networkRequest: NiddlerMessage?
     val networkReply: NiddlerMessage?
@@ -68,7 +69,8 @@ class NetworkNiddlerMessage(
         override val httpVersion: String?,
         override val networkRequest: NiddlerMessage?,
         override val networkReply: NiddlerMessage?,
-        override val trace: List<String>?
+        override val trace: List<String>?,
+        override val context: List<String>?
 ) : NiddlerMessage {
 
 

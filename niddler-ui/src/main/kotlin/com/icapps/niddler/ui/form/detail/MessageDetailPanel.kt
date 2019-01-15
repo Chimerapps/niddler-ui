@@ -36,10 +36,12 @@ class MessageDetailPanel(private val messages: NiddlerMessageStorage<ParsedNiddl
     private val generalPanel = JPanel(BorderLayout())
     private val headersPanel = JPanel(BorderLayout())
     private val tracePanel = JPanel(BorderLayout())
+    private val contextPanel = JPanel(BorderLayout())
     private val generalContentPanel: JPanel
     private val headersContentPanel: JPanel
     private val containerPanel = JPanel()
     private val stackTraceComponent: StackTraceComponent?
+    private val contextComponent: StackTraceComponent?
 
     private val formatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
     private val boldFont: Font
@@ -56,6 +58,9 @@ class MessageDetailPanel(private val messages: NiddlerMessageStorage<ParsedNiddl
                 "Headers", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
         tracePanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0),
                 "Stacktrace", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
+        contextPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0),
+                "Context", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
+
 
         generalContentPanel = JPanel(FormLayout("left:default, 3dlu, pref", "pref, pref, pref, pref, pref"))
         generalContentPanel.border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5))
@@ -68,10 +73,16 @@ class MessageDetailPanel(private val messages: NiddlerMessageStorage<ParsedNiddl
         containerPanel.add(generalPanel)
         containerPanel.add(headersPanel)
         containerPanel.add(tracePanel)
+        containerPanel.add(contextPanel)
 
         stackTraceComponent = componentsFactory.createTraceComponent()?.also {
             (it.asComponent as? JComponent)?.border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5))
             tracePanel.add(it.asComponent)
+        }
+
+        contextComponent = componentsFactory.createTraceComponent()?.also {
+            (it.asComponent as? JComponent)?.border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5))
+            contextPanel.add(it.asComponent)
         }
 
         boldFont = Font("Monospaced", Font.BOLD, 12)
@@ -109,6 +120,7 @@ class MessageDetailPanel(private val messages: NiddlerMessageStorage<ParsedNiddl
 
         populateHeaders(message)
         populateStackTrace(message)
+        populateContext(message)
 
         headersContentPanel.revalidate()
         generalContentPanel.revalidate()
@@ -150,6 +162,21 @@ class MessageDetailPanel(private val messages: NiddlerMessageStorage<ParsedNiddl
         stackTraceComponent?.repaint()
         tracePanel.invalidate()
         tracePanel.repaint()
+    }
+
+    private fun populateContext(message: ParsedNiddlerMessage) {
+        val request = if (message.isRequest) {
+            message
+        } else {
+            messages.findRequest(message)
+        }
+        val context = request?.context
+        contextPanel.isVisible = context != null
+        contextComponent?.setStackTrace(context)
+        contextComponent?.invalidate()
+        contextComponent?.repaint()
+        contextPanel.invalidate()
+        contextPanel.repaint()
     }
 
     fun clear() {
