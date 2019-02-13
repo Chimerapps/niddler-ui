@@ -45,7 +45,7 @@ class NiddlerJsonTree(json: JsonElement) : JTree() {
         if (node.isLeaf) {
             popup.init(key = node.name, value = node.value)
         } else {
-            val value = GsonBuilder().setPrettyPrinting().create().toJson(node.jsonElement)
+            val value = GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(node.jsonElement)
             popup.init(key = node.name, value = value)
         }
 

@@ -71,7 +71,7 @@ class BodyEditor(private val componentsFactory: ComponentsFactory) : JPanel(Bord
                     displayTypes += DisplayType("Structured", NiddlerJsonEditableTree(bodyData as JsonElement))
                     displayTypes += DisplayType("Pretty", JTextArea().apply {
                         font = Font("Monospaced", Font.PLAIN, 10)
-                        document.insertString(0, GsonBuilder().setPrettyPrinting().create().toJson(bodyData), null)
+                        document.insertString(0, GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(bodyData), null)
                     })
                 }
                 BodyFormatType.FORMAT_XML -> {
@@ -82,7 +82,7 @@ class BodyEditor(private val componentsFactory: ComponentsFactory) : JPanel(Bord
                 }
                 BodyFormatType.FORMAT_PLAIN -> displayTypes += DisplayType("Raw", JTextArea().apply {
                     font = Font("Monospaced", Font.PLAIN, 10)
-                    document.insertString(0, bodyData?.toString(), null)
+                    document.insertString(0, bodyData.toString(), null)
                 })
                 BodyFormatType.FORMAT_IMAGE -> {
                 }

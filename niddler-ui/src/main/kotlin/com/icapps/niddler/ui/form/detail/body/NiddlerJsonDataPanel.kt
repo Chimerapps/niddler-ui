@@ -21,7 +21,7 @@ class NiddlerJsonDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDat
 
     override fun createPrettyPrintedView(doc: Document) {
         doc.remove(0, doc.length)
-        doc.insertString(0, GsonBuilder().setPrettyPrinting().create().toJson(message.bodyData), null)
+        doc.insertString(0, GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(message.bodyData), null)
     }
 
 }

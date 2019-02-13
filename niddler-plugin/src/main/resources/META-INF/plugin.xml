@@ -7,8 +7,10 @@
     <description>This plugin enables the niddler ui inside the IDE</description>
 
     <change-notes><![CDATA[
-    <b>1.0.0 - First 'public' release</b>
+    <b>1.0.2 - First 'public' release</b>
     <ul>
+        <li>Pretty view also shows 'null' in json mode</li>
+        <li>Many many changes. Too many to list</li>
         <li>1.0.2 - Do not fail on newer versions of the protocol</li>
         <li>1.0.1 - Filtering was not case insensitive</li>
         <li>1.0.0 - Disconnect button</li>
@@ -28,13 +30,13 @@
         ]]>
     </change-notes>
 
-    <idea-version since-build="141.0"/>
+    <idea-version since-build="141.0" />
 
     <depends>com.intellij.modules.lang</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Niddler" anchor="bottom" factoryClass="com.icapps.niddler.ui.NiddlerToolWindow"
-                    icon="/niddler_small.png"/>
+                    icon="/niddler_small.png" />
     </extensions>
 
     <actions>
