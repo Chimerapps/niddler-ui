@@ -11,6 +11,7 @@ import com.jgoodies.forms.layout.RowSpec
 import java.awt.BorderLayout
 import java.awt.Font
 import java.awt.datatransfer.StringSelection
+import java.net.URLDecoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -62,7 +63,7 @@ class MessageDetailPanel(private val messages: NiddlerMessageStorage<ParsedNiddl
                 "Context", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
 
 
-        generalContentPanel = JPanel(FormLayout("left:default, 3dlu, pref", "pref, pref, pref, pref, pref"))
+        generalContentPanel = JPanel(FormLayout("left:default, 3dlu, pref", "pref, pref, pref, pref, pref, pref"))
         generalContentPanel.border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5))
         generalPanel.add(generalContentPanel)
 
@@ -111,12 +112,22 @@ class MessageDetailPanel(private val messages: NiddlerMessageStorage<ParsedNiddl
         generalContentPanel.add(boldLabel("URL"), constraints.xy(1, 3))
         generalContentPanel.add(selectableLabel(message.url ?: other?.url), constraints.xy(3, 3))
 
-        generalContentPanel.add(boldLabel("Status"), constraints.xy(1, 4))
-        generalContentPanel.add(selectableLabel((message.statusCode
-                ?: other?.statusCode)?.toString()), constraints.xy(3, 4))
+        var row = 4
 
-        generalContentPanel.add(boldLabel("Execution time"), constraints.xy(1, 5))
-        generalContentPanel.add(makeExecutionTimeLabel(message, other), constraints.xy(3, 5))
+        val urlDecoded = URLDecoder.decode(message.url ?: other?.url, "utf-8")
+        if (urlDecoded != message.url ?: other?.url) {
+            generalContentPanel.add(boldLabel("Decoded URL"), constraints.xy(1, row))
+            generalContentPanel.add(selectableLabel(urlDecoded), constraints.xy(3, row))
+            ++row
+        }
+
+        generalContentPanel.add(boldLabel("Status"), constraints.xy(1, row))
+        generalContentPanel.add(selectableLabel((message.statusCode
+                ?: other?.statusCode)?.toString()), constraints.xy(3, row))
+        ++row
+
+        generalContentPanel.add(boldLabel("Execution time"), constraints.xy(1, row))
+        generalContentPanel.add(makeExecutionTimeLabel(message, other), constraints.xy(3, row))
 
         populateHeaders(message)
         populateStackTrace(message)
