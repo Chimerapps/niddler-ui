@@ -12,7 +12,7 @@ import javax.swing.JScrollPane
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-class NiddlerImageDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(false, true, message) {
+class NiddlerImageDataPanel(savedState: Map<String, Any>?, message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(false, true, savedState, message) {
 
 
     init {

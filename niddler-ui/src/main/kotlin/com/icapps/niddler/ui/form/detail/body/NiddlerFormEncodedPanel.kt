@@ -12,7 +12,7 @@ import javax.swing.table.AbstractTableModel
  * @author Nicola Verbeeck
  * @date 14/04/2017.
  */
-class NiddlerFormEncodedPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(true, false, message) {
+class NiddlerFormEncodedPanel(savedState: Map<String, Any>?, message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(true, false, savedState, message) {
 
     init {
         initUI()

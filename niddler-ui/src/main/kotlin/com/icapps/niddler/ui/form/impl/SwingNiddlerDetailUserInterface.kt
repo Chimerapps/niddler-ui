@@ -40,6 +40,7 @@ open class SwingNiddlerDetailUserInterface(componentsFactory: ComponentsFactory,
     private val detailPanel: MessageDetailPanel = MessageDetailPanel(messageContainer, componentsFactory)
 
     private val content: TabComponent = componentsFactory.createTabComponent()
+    private val savedContentState = mutableMapOf<String, Any>()
 
     override fun init() {
         content.addTab("Details", JScrollPane(detailPanel))
@@ -49,6 +50,11 @@ open class SwingNiddlerDetailUserInterface(componentsFactory: ComponentsFactory,
     }
 
     protected open fun updateWindowContents(currentMessage: ParsedNiddlerMessage) {
+        if (bodyRoot.componentCount > 0) {
+            (bodyRoot.getComponent(0) as? NiddlerStructuredDataPanel)?.let {
+                it.saveState(savedContentState)
+            }
+        }
         bodyRoot.removeAll()
 
         detailPanel.setMessage(currentMessage)
@@ -57,12 +63,12 @@ open class SwingNiddlerDetailUserInterface(componentsFactory: ComponentsFactory,
             showEmptyMessageBody(currentMessage)
         } else {
             when (currentMessage.bodyFormat.type) {
-                BodyFormatType.FORMAT_JSON -> bodyRoot.add(NiddlerJsonDataPanel(currentMessage), BorderLayout.CENTER)
-                BodyFormatType.FORMAT_XML -> bodyRoot.add(NiddlerXMLDataPanel(currentMessage), BorderLayout.CENTER)
+                BodyFormatType.FORMAT_JSON -> bodyRoot.add(NiddlerJsonDataPanel(savedContentState, currentMessage), BorderLayout.CENTER)
+                BodyFormatType.FORMAT_XML -> bodyRoot.add(NiddlerXMLDataPanel(savedContentState, currentMessage), BorderLayout.CENTER)
                 BodyFormatType.FORMAT_PLAIN -> bodyRoot.add(NiddlerPlainDataPanel(currentMessage), BorderLayout.CENTER)
-                BodyFormatType.FORMAT_HTML -> bodyRoot.add(NiddlerHTMLDataPanel(currentMessage), BorderLayout.CENTER)
-                BodyFormatType.FORMAT_FORM_ENCODED -> bodyRoot.add(NiddlerFormEncodedPanel(currentMessage), BorderLayout.CENTER)
-                BodyFormatType.FORMAT_IMAGE -> bodyRoot.add(NiddlerImageDataPanel(currentMessage), BorderLayout.CENTER)
+                BodyFormatType.FORMAT_HTML -> bodyRoot.add(NiddlerHTMLDataPanel(savedContentState, currentMessage), BorderLayout.CENTER)
+                BodyFormatType.FORMAT_FORM_ENCODED -> bodyRoot.add(NiddlerFormEncodedPanel(savedContentState, currentMessage), BorderLayout.CENTER)
+                BodyFormatType.FORMAT_IMAGE -> bodyRoot.add(NiddlerImageDataPanel(savedContentState, currentMessage), BorderLayout.CENTER)
                 BodyFormatType.FORMAT_BINARY -> bodyRoot.add(NiddlerBinaryPanel(currentMessage), BorderLayout.CENTER)
                 BodyFormatType.FORMAT_EMPTY -> showEmptyMessageBody(currentMessage)
             }
