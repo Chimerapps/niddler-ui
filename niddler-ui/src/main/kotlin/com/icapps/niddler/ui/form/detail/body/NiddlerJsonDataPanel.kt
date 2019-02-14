@@ -9,7 +9,7 @@ import javax.swing.text.Document
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-class NiddlerJsonDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(true, true, message) {
+class NiddlerJsonDataPanel(savedState: Map<String, Any>?, message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(true, true, savedState, message) {
 
     init {
         initUI()

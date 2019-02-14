@@ -12,7 +12,7 @@ import javax.xml.transform.stream.StreamResult
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-class NiddlerXMLDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(true, true, message) {
+class NiddlerXMLDataPanel(savedState: Map<String, Any>?, message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(true, true, savedState, message) {
 
     init {
         initUI()
