@@ -114,11 +114,13 @@ class MessageDetailPanel(private val messages: NiddlerMessageStorage<ParsedNiddl
 
         var row = 4
 
-        val urlDecoded = URLDecoder.decode(message.url ?: other?.url, "utf-8")
-        if (urlDecoded != message.url ?: other?.url) {
-            generalContentPanel.add(boldLabel("Decoded URL"), constraints.xy(1, row))
-            generalContentPanel.add(selectableLabel(urlDecoded), constraints.xy(3, row))
-            ++row
+        (message.url ?: other?.url)?.let { url ->
+            val urlDecoded = URLDecoder.decode(url, "utf-8")
+            if (urlDecoded != url) {
+                generalContentPanel.add(boldLabel("Decoded URL"), constraints.xy(1, row))
+                generalContentPanel.add(selectableLabel(urlDecoded), constraints.xy(3, row))
+                ++row
+            }
         }
 
         generalContentPanel.add(boldLabel("Status"), constraints.xy(1, row))
