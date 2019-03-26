@@ -17,6 +17,7 @@ import com.icapps.niddler.lib.device.PreparedDeviceConnection
 import com.icapps.niddler.lib.device.adb.ADBBootstrap
 import com.icapps.niddler.lib.device.local.LocalDevice
 import com.icapps.niddler.lib.export.HarExport
+import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
 import com.icapps.niddler.lib.model.NiddlerMessageBodyParser
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
@@ -61,6 +62,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
     private val bodyParser = NiddlerMessageBodyParser(HeaderBodyClassifier())
     private val messages = NiddlerMessageContainer(bodyParser::parseBody, InMemoryNiddlerMessageStorage())
+    private val urlHider = BaseUrlHider()
 
     private lateinit var adbConnection: ADBBootstrap
     private var messageMode = MessageMode.TIMELINE
@@ -84,7 +86,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
         windowContents.overview.messagesAsTable.apply {
             //TODO cleanup
-            popup = NiddlerTableMessagePopupMenu(this@NiddlerWindow)
+            popup = NiddlerTableMessagePopupMenu(urlHider, messages.storage, this@NiddlerWindow)
             model = TimelineMessagesTableModel()
             setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
             setColumnFixedWidth(0, 90)
@@ -306,13 +308,13 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     override fun onTimelineSelected() {
         windowContents.overview.showTable()
         messageMode = MessageMode.TIMELINE
-        (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages.storage)
+        (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages.storage, urlHider)
     }
 
     override fun onLinkedSelected() {
         windowContents.overview.showLinked()
         messageMode = MessageMode.LINKED
-        (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages.storage)
+        (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages.storage, urlHider)
     }
 
     override fun onDebuggerViewSelected() {
@@ -322,9 +324,9 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
     override fun onClearSelected() {
         messages.storage.clear()
         if (messageMode == MessageMode.TIMELINE)
-            (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages.storage)
+            (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages.storage, urlHider)
         else
-            (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages.storage)
+            (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages.storage, urlHider)
 
         windowContents.overview.messagesAsTable.clearSelection()
         windowContents.overview.messagesAsTree.clearSelection()
@@ -361,7 +363,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
 
             if (messageMode == MessageMode.TIMELINE) {
                 val previousSelection = windowContents.overview.messagesAsTable.selectedRow
-                (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages.storage)
+                (windowContents.overview.messagesAsTable.model as? MessagesModel)?.updateMessages(messages.storage, urlHider)
                 if (previousSelection != -1) {
                     try {
                         windowContents.overview.messagesAsTable.addRowSelectionInterval(previousSelection,
@@ -371,7 +373,7 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
                 }
             } else {
                 val previousSelection = windowContents.overview.messagesAsTree.selectionPath
-                (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages.storage)
+                (windowContents.overview.messagesAsTree.model as? MessagesModel)?.updateMessages(messages.storage, urlHider)
                 if (previousSelection != null) {
                     try {
                         windowContents.overview.messagesAsTree.selectionPath = previousSelection
@@ -459,6 +461,27 @@ class NiddlerWindow(private val windowContents: NiddlerUserInterface, private va
             return
         }
         ClipboardUtil.copyToClipboard(StringSelection(CurlCodeGenerator().generateRequestCode(request)))
+    }
+
+    override fun onUpdateBaseUrlClicked(source: ParsedNiddlerMessage?) {
+        source ?: return
+
+        val url = if (source.isRequest) source.url
+        else
+            messages.storage.findRequest(source)?.url
+        url ?: return
+
+        val current = urlHider.getHiddenBaseUrl(url)
+        if (current != null) {
+            urlHider.unhideBaseUrl(current)
+        } else {
+            val result = JOptionPane.showInputDialog("Hide base url", url)
+            if (result.isNullOrBlank())
+                return
+
+            urlHider.hideBaseUrl(result)
+        }
+        updateMessages()
     }
 
     private fun showExportDialog() {
