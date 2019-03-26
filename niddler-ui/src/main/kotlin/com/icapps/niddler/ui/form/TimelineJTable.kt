@@ -31,10 +31,11 @@ class TimelineJTable : PopupMenuSelectingJTable<ParsedNiddlerMessage>() {
         if (!::popup.isInitialized)
             return null
 
+        popup.updateBaseUrlOptions(row)
         when {
             row == null -> popup.clearExtra()
-            row.isRequest -> popup.setOtherText("Show response", row)
-            else -> popup.setOtherText("Show request", row)
+            row.isRequest -> popup.setOtherText("Show response")
+            else -> popup.setOtherText("Show request")
         }
 
         return popup

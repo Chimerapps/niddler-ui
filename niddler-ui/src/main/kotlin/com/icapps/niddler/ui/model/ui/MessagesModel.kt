@@ -1,5 +1,6 @@
 package com.icapps.niddler.ui.model.ui
 
+import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 
@@ -9,6 +10,6 @@ import com.icapps.niddler.lib.model.ParsedNiddlerMessage
  */
 interface MessagesModel {
 
-    fun updateMessages(messages: NiddlerMessageStorage<ParsedNiddlerMessage>)
+    fun updateMessages(messages: NiddlerMessageStorage<ParsedNiddlerMessage>, urlHider: BaseUrlHider)
 
 }

@@ -1,5 +1,7 @@
 package com.icapps.niddler.ui.form
 
+import com.icapps.niddler.lib.model.BaseUrlHider
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import javax.swing.JMenuItem
 import javax.swing.JPopupMenu
@@ -40,24 +42,29 @@ open class NiddlerMessagePopupMenu<T : NiddlerMessagePopupMenu.Listener>(val lis
 /**
  * @author Nicola Verbeeck
  */
-class NiddlerTableMessagePopupMenu(listener: Listener)
+class NiddlerTableMessagePopupMenu(private val baseUrlHider: BaseUrlHider,
+                                   private val messages: NiddlerMessageStorage<ParsedNiddlerMessage>,
+                                   listener: Listener)
     : NiddlerMessagePopupMenu<NiddlerTableMessagePopupMenu.Listener>(listener) {
 
     private val showOtherMenuItem: JMenuItem = JMenuItem("")
+    private val baseUrlMenuItem = JMenuItem("")
     private var source: ParsedNiddlerMessage? = null
 
     init {
         add(showOtherMenuItem.apply {
             addActionListener { listener.onShowRelatedClicked(source) }
         })
+        add(baseUrlMenuItem.apply {
+            addActionListener { listener.onUpdateBaseUrlClicked(source) }
+        })
     }
 
-    fun setOtherText(text: String, source: ParsedNiddlerMessage) {
-        if (showOtherMenuItem.parent == null)
-            add(showOtherMenuItem)
+    fun setOtherText(text: String) {
+        clearExtra() //Ensure consistent ordering
+        add(showOtherMenuItem)
 
         showOtherMenuItem.text = text
-        this.source = source
     }
 
     fun clearExtra() {
@@ -65,8 +72,30 @@ class NiddlerTableMessagePopupMenu(listener: Listener)
             remove(showOtherMenuItem)
     }
 
+    fun updateBaseUrlOptions(row: ParsedNiddlerMessage?) {
+        this.source = row
+
+        if (baseUrlMenuItem.parent != null)
+            remove(baseUrlMenuItem)
+        row ?: return
+
+        val url = if (row.isRequest) row.url
+        else
+            messages.findRequest(row)?.url
+        url ?: return
+
+        val hiddenBase = baseUrlHider.getHiddenBaseUrl(url)
+        if (hiddenBase == null) {
+            baseUrlMenuItem.text = "Hide base urls"
+        } else {
+            baseUrlMenuItem.text = "Show base urls"
+        }
+        add(baseUrlMenuItem)
+    }
+
     interface Listener : NiddlerMessagePopupMenu.Listener {
         fun onShowRelatedClicked(source: ParsedNiddlerMessage?)
+        fun onUpdateBaseUrlClicked(source: ParsedNiddlerMessage?)
     }
 
 }
