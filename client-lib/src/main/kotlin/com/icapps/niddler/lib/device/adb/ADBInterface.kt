@@ -83,7 +83,7 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) : BaseD
     }
 
     fun removeTCPForward(localPort: Int) {
-        bootstrap.executeADBCommand("-s", serial, "forward", "--remove", "$localPort")
+        bootstrap.executeADBCommand("-s", serial, "forward", "--remove", "tcp:$localPort")
     }
 
     fun executeADBCommand(vararg args: String): String? {
