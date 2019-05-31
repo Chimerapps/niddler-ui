@@ -10,7 +10,7 @@ import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.URI
-import java.util.*
+import java.util.Objects
 
 /**
  * @author nicolaverbeeck
@@ -77,23 +77,25 @@ abstract class BaseDevice : Device {
 
     private companion object {
         private val log = logger<BaseDevice>()
-        private const val MAX_TIMEOUT = 100
+        private const val MAX_TIMEOUT = 300
+        private const val MAX_READ_TIMEOUT = 1000
     }
 
     private val gson = Gson()
 
     protected fun readAnnouncement(connectPort: Int): List<NiddlerSession> {
-        val announcementSocket = Socket()
-        try {
-            announcementSocket.connect(InetSocketAddress(InetAddress.getLoopbackAddress(), connectPort), MAX_TIMEOUT)
-        } catch (e: ConnectException) {
-            return emptyList()
-        }
+        Socket().use { socket ->
+            try {
+                socket.connect(InetSocketAddress(InetAddress.getLoopbackAddress(), connectPort), MAX_TIMEOUT)
+                socket.soTimeout = MAX_READ_TIMEOUT
+            } catch (e: ConnectException) {
+                return emptyList()
+            }
 
-        announcementSocket.use { socket ->
             socket.getOutputStream().apply {
                 write(Device.REQUEST_QUERY)
                 flush()
+                close() //Close the stream to signal the client no more data is coming
             }
             return try {
                 val line = socket.getInputStream().bufferedReader().readLine()
