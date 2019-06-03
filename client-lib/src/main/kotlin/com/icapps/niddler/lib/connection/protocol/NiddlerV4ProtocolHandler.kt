@@ -25,9 +25,7 @@ open class NiddlerV4ProtocolHandler(messageListener: NiddlerMessageListener,
     }
 
     override fun onMessage(socket: WebSocketClient, message: JsonObject) {
-        val type = message["type"].asString
-
-        when (type) {
+        when (message["type"].asString) {
             MESSAGE_TYPE_DEBUG_REQUEST -> onDebugRequest(socket, message)
             MESSAGE_TYPE_STATIC_BLACKLIST -> onStaticBlacklist(message)
             else -> super.onMessage(socket, message)

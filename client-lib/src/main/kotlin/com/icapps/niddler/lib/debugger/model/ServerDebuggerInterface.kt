@@ -1,7 +1,5 @@
 package com.icapps.niddler.lib.debugger.model
 
-import com.icapps.niddler.lib.utils.split
-
 /**
  * @author nicolaverbeeck
  */
@@ -47,7 +45,7 @@ class ServerDebuggerInterface(private val service: DebuggerService) : DebuggerIn
                                                    knownItemsContainer: MutableCollection<String>,
                                                    remover: (String) -> Unit,
                                                    sender: (T) -> String) {
-        val (unsentItems, knownItems) = items.split { !knownItemsContainer.contains(it.id) }
+        val (unsentItems, knownItems) = items.partition { !knownItemsContainer.contains(it.id) }
         unsentItems.forEach {
             val actionId = sender(it)
             if (it.active)
