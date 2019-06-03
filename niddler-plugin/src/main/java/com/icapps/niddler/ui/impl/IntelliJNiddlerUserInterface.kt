@@ -2,6 +2,11 @@ package com.icapps.niddler.ui.impl
 
 import com.icapps.niddler.ui.form.ComponentsFactory
 import com.icapps.niddler.ui.form.impl.SwingNiddlerUserInterface
+import com.intellij.notification.NotificationDisplayType
+import com.intellij.notification.NotificationGroup
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.ui.FilterComponent
 import java.awt.BorderLayout
@@ -13,7 +18,11 @@ import javax.swing.JPanel
  * @author Nicola Verbeeck
  * @date 16/11/2017.
  */
-class IntelliJNiddlerUserInterface(componentsFactory: ComponentsFactory) : SwingNiddlerUserInterface(componentsFactory) {
+class IntelliJNiddlerUserInterface(private val project: Project, componentsFactory: ComponentsFactory) : SwingNiddlerUserInterface(componentsFactory) {
+
+    private companion object {
+        private const val channel = "niddler"
+    }
 
     override val asComponent: JComponent
         get() = toolWindowPanel.component
@@ -41,4 +50,14 @@ class IntelliJNiddlerUserInterface(componentsFactory: ComponentsFactory) : Swing
         parent.add(filter, BorderLayout.EAST)
     }
 
+    override fun showWarningMessage(title: String, message: String) {
+        val group = NotificationGroup(
+                channel + "_warning",
+                NotificationDisplayType.STICKY_BALLOON,
+                true
+        )
+
+        val notification = group.createNotification(title, message, NotificationType.WARNING, null)
+        Notifications.Bus.notify(notification, project)
+    }
 }

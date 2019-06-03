@@ -1,8 +1,14 @@
 package com.icapps.niddler.ui.hex;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.JComponent;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 /**
  * Created by IntelliJ IDEA.
@@ -10,142 +16,124 @@ import java.awt.event.*;
  * Date: 09-abr-2003
  * Time: 12:47:18
  */
-public class JHexEditorASCII extends JComponent implements MouseListener,KeyListener
-{
+public class JHexEditorASCII extends JComponent implements MouseListener, KeyListener {
     private JHexEditor he;
 
-    public JHexEditorASCII(JHexEditor he)
-    {
-        this.he=he;
+    public JHexEditorASCII(JHexEditor he) {
+        this.he = he;
         addMouseListener(this);
         addKeyListener(this);
         addFocusListener(he);
     }
 
-    public Dimension getPreferredSize()
-    {
+    public Dimension getPreferredSize() {
         debug("getPreferredSize()");
         return getMinimumSize();
     }
 
-    public Dimension getMinimumSize()
-    {
+    public Dimension getMinimumSize() {
         debug("getMinimumSize()");
 
-        Dimension d=new Dimension();
-        FontMetrics fn=getFontMetrics(he.font);
-        int h=fn.getHeight();
-        int nl=he.getLineas();
-        d.setSize((fn.stringWidth(" ")+1)*(16)+(he.border*2)+1,h*nl+(he.border*2)+1);
+        Dimension d = new Dimension();
+        FontMetrics fn = getFontMetrics(he.font);
+        int h = fn.getHeight();
+        int nl = he.getLineas();
+        d.setSize((fn.stringWidth(" ") + 1) * (16) + (he.border * 2) + 1, h * nl + (he.border * 2) + 1);
         return d;
     }
 
-    public void paint(Graphics g)
-    {
-        debug("paint("+g+")");
-        debug("cursor="+he.cursor+" buff.length="+he.buff.length);
-        Dimension d=getMinimumSize();
+    public void paint(Graphics g) {
+        debug("paint(" + g + ")");
+        debug("cursor=" + he.cursor + " buff.length=" + he.buff.length);
+        Dimension d = getMinimumSize();
         g.setColor(Color.white);
-        g.fillRect(0,0,d.width,d.height);
+        g.fillRect(0, 0, d.width, d.height);
         g.setColor(Color.black);
 
         g.setFont(he.font);
 
         //datos ascii
-        int ini=he.getInicio()*16;
-        int fin=ini+(he.getLineas()*16);
-        if(fin>he.buff.length) fin=he.buff.length;
+        int ini = he.getInicio() * 16;
+        int fin = ini + (he.getLineas() * 16);
+        if (fin > he.buff.length) fin = he.buff.length;
 
-        int x=0;
-        int y=0;
-        for(int n=ini;n<fin;n++)
-        {
-            if(n==he.cursor)
-            {
+        int x = 0;
+        int y = 0;
+        for (int n = ini; n < fin; n++) {
+            if (n == he.cursor) {
                 g.setColor(Color.blue);
-                if(hasFocus()) he.fondo(g,x,y,1); else he.cuadro(g,x,y,1);
-                if(hasFocus()) g.setColor(Color.white); else g.setColor(Color.black);
-            } else
-            {
+                if (hasFocus()) he.fondo(g, x, y, 1);
+                else he.cuadro(g, x, y, 1);
+                if (hasFocus()) g.setColor(Color.white);
+                else g.setColor(Color.black);
+            } else {
                 g.setColor(Color.black);
             }
 
-            String s=""+new Character((char)he.buff[n]);
-            if((he.buff[n]<20)||(he.buff[n]>126)) s=""+(char)16;
-            he.printString(g,s,(x++),y);
-            if(x==16)
-            {
-                x=0;
+            String s = "" + new Character((char) he.buff[n]);
+            if ((he.buff[n] < 20) || (he.buff[n] > 126)) s = "" + (char) 16;
+            he.printString(g, s, (x++), y);
+            if (x == 16) {
+                x = 0;
                 y++;
             }
         }
 
     }
 
-    private void debug(String s)
-    {
-        if(he.DEBUG) System.out.println("JHexEditorASCII ==> "+s);
+    private void debug(String s) {
+        if (he.DEBUG) System.out.println("JHexEditorASCII ==> " + s);
     }
 
     // calcular la posicion del raton
-    public int calcularPosicionRaton(int x,int y)
-    {
-        FontMetrics fn=getFontMetrics(he.font);
-        x=x/(fn.stringWidth(" ")+1);
-        y=y/fn.getHeight();
-        debug("x="+x+" ,y="+y);
-        return x+((y+he.getInicio())*16);
+    public int calcularPosicionRaton(int x, int y) {
+        FontMetrics fn = getFontMetrics(he.font);
+        x = x / (fn.stringWidth(" ") + 1);
+        y = y / fn.getHeight();
+        debug("x=" + x + " ,y=" + y);
+        return x + ((y + he.getInicio()) * 16);
     }
 
     // mouselistener
-    public void mouseClicked(MouseEvent e)
-    {
-        debug("mouseClicked("+e+")");
-        he.cursor=calcularPosicionRaton(e.getX(),e.getY());
+    public void mouseClicked(MouseEvent e) {
+        debug("mouseClicked(" + e + ")");
+        he.cursor = calcularPosicionRaton(e.getX(), e.getY());
         this.requestFocus();
         he.repaint();
     }
 
-    public void mousePressed(MouseEvent e)
-    {
+    public void mousePressed(MouseEvent e) {
     }
 
-    public void mouseReleased(MouseEvent e)
-    {
+    public void mouseReleased(MouseEvent e) {
     }
 
-    public void mouseEntered(MouseEvent e)
-    {
+    public void mouseEntered(MouseEvent e) {
     }
 
-    public void mouseExited(MouseEvent e)
-    {
+    public void mouseExited(MouseEvent e) {
     }
 
     //KeyListener
-    public void keyTyped(KeyEvent e)
-    {
-        debug("keyTyped("+e+")");
+    public void keyTyped(KeyEvent e) {
+        debug("keyTyped(" + e + ")");
 
-        he.buff[he.cursor]=(byte)e.getKeyChar();
+        he.buff[he.cursor] = (byte) e.getKeyChar();
 
-        if(he.cursor!=(he.buff.length-1)) he.cursor++;
+        if (he.cursor != (he.buff.length - 1)) he.cursor++;
         he.repaint();
     }
 
-    public void keyPressed(KeyEvent e)
-    {
-        debug("keyPressed("+e+")");
+    public void keyPressed(KeyEvent e) {
+        debug("keyPressed(" + e + ")");
         he.keyPressed(e);
     }
 
-    public void keyReleased(KeyEvent e)
-    {
-        debug("keyReleased("+e+")");
+    public void keyReleased(KeyEvent e) {
+        debug("keyReleased(" + e + ")");
     }
 
-    public boolean isFocusTraversable()
-    {
+    public boolean isFocusTraversable() {
         return true;
     }
 }

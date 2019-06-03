@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.form.ui
 
-import javax.swing.JTable
+import com.icapps.niddler.ui.form.TimelineJTable
 import javax.swing.JTree
 
 /**
@@ -9,12 +9,13 @@ import javax.swing.JTree
  */
 interface NiddlerOverviewUserInterface {
 
-    val messagesAsTable: JTable
+    val messagesAsTable: TimelineJTable
     val messagesAsTree: JTree
 
     fun init()
 
     fun showTable()
     fun showLinked()
+    fun showDebugView()
 
 }

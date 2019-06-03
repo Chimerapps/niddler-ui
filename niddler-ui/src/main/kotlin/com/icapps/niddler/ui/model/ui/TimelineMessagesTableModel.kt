@@ -1,12 +1,15 @@
 package com.icapps.niddler.ui.model.ui
 
-import com.icapps.niddler.ui.model.MessageContainer
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.BaseUrlHider
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.util.getStatusCodeString
+import com.icapps.niddler.ui.util.loadIcon
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Collections
+import java.util.Date
+import java.util.Locale
 import javax.swing.Icon
-import javax.swing.ImageIcon
 import javax.swing.event.TableModelEvent
 import javax.swing.event.TableModelListener
 import javax.swing.table.TableModel
@@ -18,12 +21,18 @@ import javax.swing.table.TableModel
 class TimelineMessagesTableModel : TableModel, MessagesModel {
 
     companion object {
-        @JvmStatic private val INDEX_TIMESTAMP = 0
-        @JvmStatic private val INDEX_DIRECTION = 1
-        @JvmStatic private val INDEX_METHOD = 2
-        @JvmStatic private val INDEX_URL = 3
-        @JvmStatic private val INDEX_STATUS_CODE = 4
-        @JvmStatic private val INDEX_FORMAT = 5
+        @JvmStatic
+        private val INDEX_TIMESTAMP = 0
+        @JvmStatic
+        private val INDEX_DIRECTION = 1
+        @JvmStatic
+        private val INDEX_METHOD = 2
+        @JvmStatic
+        private val INDEX_URL = 3
+        @JvmStatic
+        private val INDEX_STATUS_CODE = 4
+        @JvmStatic
+        private val INDEX_FORMAT = 5
     }
 
     private val listeners: MutableSet<TableModelListener> = hashSetOf()
@@ -32,15 +41,17 @@ class TimelineMessagesTableModel : TableModel, MessagesModel {
 
     private val upIcon: Icon
     private val downIcon: Icon
-    private lateinit var container: MessageContainer
+    private lateinit var container: NiddlerMessageStorage<ParsedNiddlerMessage>
+    private var urlHider: BaseUrlHider? = null
 
     init {
-        upIcon = ImageIcon(javaClass.getResource("/ic_up.png"))
-        downIcon = ImageIcon(javaClass.getResource("/ic_down.png"))
+        upIcon = loadIcon("/ic_up.png")
+        downIcon = loadIcon("/ic_down.png")
     }
 
-    override fun updateMessages(messages: MessageContainer) {
-        this.messages = messages.getMessagesChronological()
+    override fun updateMessages(messages: NiddlerMessageStorage<ParsedNiddlerMessage>, urlHider: BaseUrlHider) {
+        this.messages = messages.messagesChronological
+        this.urlHider = urlHider
         container = messages
 
         val e = TableModelEvent(this)
@@ -97,7 +108,7 @@ class TimelineMessagesTableModel : TableModel, MessagesModel {
             INDEX_TIMESTAMP -> formatter.format(Date(message.timestamp))
             INDEX_DIRECTION -> if (message.isRequest) upIcon else downIcon
             INDEX_METHOD -> message.method ?: other?.method
-            INDEX_URL -> message.url ?: other?.url
+            INDEX_URL -> hideBaseUrl(message.url ?: other?.url)
             INDEX_STATUS_CODE -> {
                 if (!message.message.statusLine.isNullOrBlank())
                     "${message.statusCode} - ${message.message.statusLine}"
@@ -129,5 +140,15 @@ class TimelineMessagesTableModel : TableModel, MessagesModel {
         return messages[selectedRow]
     }
 
+    fun findRowIndex(parsedNiddlerMessage: ParsedNiddlerMessage): Int {
+        return messages.indexOfFirst { it === parsedNiddlerMessage }
+    }
 
+    private fun hideBaseUrl(url: String?): String? {
+        url ?: return null
+        val hider = urlHider ?: return url
+        val baseToStrip = hider.getHiddenBaseUrl(url) ?: return url
+
+        return "\u2026" + url.substring(baseToStrip.length)
+    }
 }

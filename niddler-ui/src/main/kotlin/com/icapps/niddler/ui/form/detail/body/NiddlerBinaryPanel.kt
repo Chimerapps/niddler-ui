@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.detail.body
 
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.hex.JHexEditor
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
 import java.awt.BorderLayout
 import javax.swing.JPanel
 

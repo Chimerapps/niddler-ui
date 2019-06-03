@@ -2,8 +2,22 @@ package com.icapps.niddler.ui.form;
 
 import com.icapps.niddler.ui.form.components.NiddlerIndeterminateProgressBar;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.KeyStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -12,10 +26,10 @@ public abstract class ConnectDialog extends JDialog {
     protected JPanel contentPane;
     protected JButton buttonOK;
     protected JButton buttonCancel;
-    protected JList adbList;
     protected JTextField directIP;
     protected JFormattedTextField port;
     protected NiddlerIndeterminateProgressBar progressBar;
+    protected JTree tree;
 
     public ConnectDialog(final Window owner) {
         super(owner, "Select a device to connect to", ModalityType.APPLICATION_MODAL);
@@ -108,8 +122,8 @@ public abstract class ConnectDialog extends JDialog {
         panel5.add(progressBar, BorderLayout.CENTER);
         final JScrollPane scrollPane1 = new JScrollPane();
         panel1.add(scrollPane1, BorderLayout.CENTER);
-        adbList = new JList();
-        scrollPane1.setViewportView(adbList);
+        tree = new JTree();
+        scrollPane1.setViewportView(tree);
         final JPanel panel6 = new JPanel();
         panel6.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
         contentPane.add(panel6, BorderLayout.SOUTH);

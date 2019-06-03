@@ -1,10 +1,9 @@
-package com.icapps.niddler.ui.model.ui.json
+package com.icapps.niddler.ui.model.ui.xml
 
-import com.icapps.niddler.ui.model.ui.xml.XMLTreeNode
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.Component
 import java.awt.Font
 import javax.swing.Icon
-import javax.swing.ImageIcon
 import javax.swing.JTree
 import javax.swing.tree.DefaultTreeCellRenderer
 
@@ -20,8 +19,8 @@ class XMLTreeRenderer : DefaultTreeCellRenderer() {
     private var regularFont: Font
 
     init {
-        stringIcon = ImageIcon(javaClass.getResource("/string.png"))
-        nodeIcon = ImageIcon(javaClass.getResource("/ic_xml_node.png"))
+        stringIcon = loadIcon("/string.png")
+        nodeIcon = loadIcon("/ic_xml_node.png")
 
         regularFont = Font("Monospaced", 0, 11)
     }

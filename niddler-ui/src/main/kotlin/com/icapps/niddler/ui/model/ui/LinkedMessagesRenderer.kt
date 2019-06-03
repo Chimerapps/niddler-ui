@@ -1,9 +1,10 @@
 package com.icapps.niddler.ui.model.ui
 
-import com.icapps.niddler.ui.model.NiddlerMessage
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.setFixedWidth
 import com.icapps.niddler.ui.util.getStatusCodeString
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.Color
 import java.awt.Component
 import java.text.SimpleDateFormat
@@ -23,8 +24,8 @@ class LinkedMessagesRenderer(private val protocolVersion: Int) : TreeCellRendere
     private val downIcon: Icon
 
     init {
-        upIcon = ImageIcon(javaClass.getResource("/ic_up.png"))
-        downIcon = ImageIcon(javaClass.getResource("/ic_down.png"))
+        upIcon = loadIcon("/ic_up.png")
+        downIcon = loadIcon("/ic_down.png")
     }
 
     private val requestFrame = JPanel()

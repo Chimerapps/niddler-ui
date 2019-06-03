@@ -94,7 +94,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="542e5" class="javax.swing.JList" binding="adbList">
+              <component id="c2d68" class="javax.swing.JTree" binding="tree" default-binding="true">
                 <constraints/>
                 <properties/>
               </component>
