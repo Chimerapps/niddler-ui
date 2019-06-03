@@ -17,7 +17,7 @@ import java.lang.Exception
 import java.net.ServerSocket
 
 /**
- * @author nicolaverbeeck
+ * @author Nicola Verbeeck
  */
 class ADBInterface(private val bootstrap: ADBBootstrap, private val connection: JadbConnection? = null) {
 

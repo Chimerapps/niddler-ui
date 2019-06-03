@@ -4,7 +4,7 @@ import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 
 /**
- * @author nicolaverbeeck
+ * @author Nicola Verbeeck
  */
 interface Exporter<T : NiddlerMessage> {
 

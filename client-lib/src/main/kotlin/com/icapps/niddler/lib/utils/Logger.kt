@@ -1,7 +1,7 @@
 package com.icapps.niddler.lib.utils
 
 /**
- * @author nicolaverbeeck
+ * @author Nicola Verbeeck
  */
 interface Logger {
 
@@ -15,6 +15,9 @@ interface Logger {
 
 }
 
+/**
+ * @author Nicola Verbeeck
+ */
 interface LoggerFactory {
 
     companion object {

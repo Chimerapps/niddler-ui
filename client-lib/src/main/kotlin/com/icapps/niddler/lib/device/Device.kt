@@ -13,7 +13,7 @@ import java.net.URI
 import java.util.Objects
 
 /**
- * @author nicolaverbeeck
+ * @author Nicola Verbeeck
  */
 interface Device {
 

@@ -5,7 +5,6 @@ import java.util.*
 
 /**
  * @author Nicola Verbeeck
- * @date 09/11/2017.
  */
 data class Creator(
         val name: String,
@@ -166,7 +165,7 @@ data class Entry(
         val comment: String? = null
 ) {
     companion object {
-        val TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        const val TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
 
         fun format(date: Date): String {
             return SimpleDateFormat(TIME_FORMAT).format(date)

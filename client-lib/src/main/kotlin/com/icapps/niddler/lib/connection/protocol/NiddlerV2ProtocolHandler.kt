@@ -6,28 +6,30 @@ import com.icapps.niddler.lib.utils.logger
 import com.icapps.niddler.lib.utils.warn
 import org.java_websocket.client.WebSocketClient
 import java.security.MessageDigest
-import java.util.*
+import java.util.Base64
 
 /**
  * @author Nicola Verbeeck
- * @date 22/11/16.
  */
 open class NiddlerV2ProtocolHandler(messageListener: NiddlerMessageListener,
                                     protected val protocolVersion: Int) : NiddlerV1ProtocolHandler(messageListener) {
 
     companion object {
         private val log = logger<NiddlerV2ProtocolHandler>()
+        const val MESSAGE_TYPE_SERVER_INFO = "serverInfo"
+        const val MESSAGE_TYPE_AUTH_REQUEST = "authRequest"
+        const val MESSAGE_TYPE_AUTH_AUTH_SUCCESS = "authSuccess"
+        const val MESSAGE_TYPE_REQUEST = "request"
+        const val MESSAGE_TYPE_RESPONSE = "response"
     }
 
     override fun onMessage(socket: WebSocketClient, message: JsonObject) {
-        val type = message["type"].asString
-
-        when (type) {
-            "serverInfo" -> onServerInfo(message)
-            "authRequest" -> onAuthRequest(socket, message)
-            "authSuccess" -> onAuthSuccess()
-            "request", "response" -> onServiceMessage(message)
-            else -> log.warn("Failed to handle message, unknown type: " + type)
+        when (val type = message["type"].asString) {
+            MESSAGE_TYPE_SERVER_INFO -> onServerInfo(message)
+            MESSAGE_TYPE_AUTH_REQUEST -> onAuthRequest(socket, message)
+            MESSAGE_TYPE_AUTH_AUTH_SUCCESS -> onAuthSuccess()
+            MESSAGE_TYPE_REQUEST, MESSAGE_TYPE_RESPONSE -> onServiceMessage(message)
+            else -> log.warn("Failed to handle message, unknown type: $type")
         }
     }
 
@@ -36,9 +38,12 @@ open class NiddlerV2ProtocolHandler(messageListener: NiddlerMessageListener,
     }
 
     private fun onServerInfo(serverInfo: JsonObject) {
-        messageListener.onServerInfo(NiddlerServerInfo(serverInfo["serverName"].asString,
-                serverInfo["serverDescription"].asString,
-                protocolVersion))
+        messageListener.onServerInfo(
+                NiddlerServerInfo(
+                        serverName = serverInfo["serverName"].asString,
+                        serverDescription = serverInfo["serverDescription"].asString,
+                        icon = if (serverInfo.has("icon")) serverInfo["icon"].asString else null,
+                        protocol = protocolVersion))
     }
 
     private fun onAuthRequest(socket: WebSocketClient, authRequestMessage: JsonObject) {

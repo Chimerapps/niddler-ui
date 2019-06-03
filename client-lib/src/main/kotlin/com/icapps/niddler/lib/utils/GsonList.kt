@@ -5,7 +5,7 @@ import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
 /**
- * @author nicolaverbeeck
+ * @author Nicola Verbeeck
  */
 class GsonList(val type: Type) : ParameterizedType {
 

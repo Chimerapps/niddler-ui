@@ -14,14 +14,13 @@ import java.util.concurrent.TimeUnit
 
 /**
  * @author Nicola Verbeeck
- * @date 10/11/16.
  */
-const val DEFAULT_ADB_TIMEOUT_S = 4L
-
 class ADBBootstrap(sdkPathGuesses: Collection<String>) {
 
     companion object {
         private val log = logger<ADBBootstrap>()
+        private const val DEFAULT_ADB_TIMEOUT_S = 4L
+        private val platformExt: String by lazy { if (currentPlatform == Platform.WINDOWS) ".exe" else "" }
 
         private fun determineExecutablePath(name: String): String? {
             val foundPath = System.getenv("PATH").split(File.pathSeparator).find {
@@ -41,20 +40,12 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>) {
             }
             log.info("Failed to find android sdk dir, searching path")
 
-            return determineExecutablePath("adb" + ext(".exe", ""))
-        }
-
-        private fun ext(windowsExtension: String, nonWindowsExtension: String): String {
-            if (currentPlatform() == Platform.WINDOWS) {
-                return windowsExtension
-            } else {
-                return nonWindowsExtension
-            }
+            return determineExecutablePath("adb$platformExt")
         }
 
         private fun hasValidAdb(sdkDir: String): File? {
             log.debug("Found android sdk at $sdkDir")
-            val adbFile = File("$sdkDir${File.separator}platform-tools${File.separator}adb${ext(".exe", "")}")
+            val adbFile = File("$sdkDir${File.separator}platform-tools${File.separator}adb$platformExt")
             if (adbFile.exists() && adbFile.canExecute())
                 return adbFile
 

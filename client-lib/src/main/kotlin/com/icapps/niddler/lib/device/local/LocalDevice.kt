@@ -7,7 +7,7 @@ import com.icapps.niddler.lib.device.NiddlerSession
 import com.icapps.niddler.lib.device.PreparedDeviceConnection
 
 /**
- * @author nicolaverbeeck
+ * @author Nicola Verbeeck
  */
 class LocalDevice : BaseDevice() {
 

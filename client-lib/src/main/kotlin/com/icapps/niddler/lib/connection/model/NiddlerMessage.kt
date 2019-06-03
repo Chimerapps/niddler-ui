@@ -1,12 +1,10 @@
 package com.icapps.niddler.lib.connection.model
 
 import java.nio.charset.Charset
-import java.util.*
-
+import java.util.Base64
 
 /**
  * @author Nicola Verbeeck
- * @date 14/11/16.
  */
 interface NiddlerMessage {
 

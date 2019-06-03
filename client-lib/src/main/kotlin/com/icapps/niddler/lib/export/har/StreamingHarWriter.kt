@@ -7,7 +7,6 @@ import java.io.OutputStreamWriter
 
 /**
  * @author Nicola Verbeeck
- * @date 09/11/2017.
  */
 class StreamingHarWriter(target: OutputStream, creator: Creator, version: String = "1.2", comment: String? = null) {
 

@@ -13,7 +13,6 @@ import org.java_websocket.client.WebSocketClient
 
 /**
  * @author Nicola Verbeeck
- * @date 22/11/16.
  */
 open class NiddlerV4ProtocolHandler(messageListener: NiddlerMessageListener,
                                     protected val debugListener: NiddlerDebugListener,
@@ -21,14 +20,16 @@ open class NiddlerV4ProtocolHandler(messageListener: NiddlerMessageListener,
 
     companion object {
         private val log = logger<NiddlerV4ProtocolHandler>()
+        const val MESSAGE_TYPE_DEBUG_REQUEST = "debugRequest"
+        const val MESSAGE_TYPE_STATIC_BLACKLIST = "staticBlacklist"
     }
 
     override fun onMessage(socket: WebSocketClient, message: JsonObject) {
         val type = message["type"].asString
 
         when (type) {
-            "debugRequest" -> onDebugRequest(socket, message)
-            "staticBlacklist" -> onStaticBlacklist(message)
+            MESSAGE_TYPE_DEBUG_REQUEST -> onDebugRequest(socket, message)
+            MESSAGE_TYPE_STATIC_BLACKLIST -> onStaticBlacklist(message)
             else -> super.onMessage(socket, message)
         }
     }

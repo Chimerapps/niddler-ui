@@ -14,11 +14,9 @@ import com.icapps.niddler.lib.export.har.Request
 import com.icapps.niddler.lib.export.har.Response
 import com.icapps.niddler.lib.export.har.StreamingHarWriter
 import com.icapps.niddler.lib.export.har.Timings
-import com.icapps.niddler.lib.model.BodyFormat
+import com.icapps.niddler.lib.model.BodyFormatType
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
-import com.icapps.niddler.lib.model.classifier.BodyFormatType
-import com.icapps.niddler.lib.model.classifier.SimpleBodyClassifier
 import com.icapps.niddler.lib.utils.UrlUtil
 import java.io.File
 import java.io.FileOutputStream
@@ -26,10 +24,8 @@ import java.util.Date
 
 /**
  * @author Nicola Verbeeck
- * @date 09/11/2017.
  */
-class HarExport<T : ParsedNiddlerMessage>(private val targetFile: File,
-                                          private val simpleClassifier: SimpleBodyClassifier) : Exporter<T> {
+class HarExport<T : ParsedNiddlerMessage>(private val targetFile: File) : Exporter<T> {
 
     override fun export(messages: NiddlerMessageStorage<T>, filter: NiddlerMessageStorage.Filter<T>?) {
         val writer = StreamingHarWriter(target = FileOutputStream(targetFile).buffered(),
@@ -101,23 +97,17 @@ class HarExport<T : ParsedNiddlerMessage>(private val targetFile: File,
             return null
 
         val builder = PostDataBuilder()
-        val format = classifyFormat(message)
+        val format = message.bodyFormat
         when (format.type) {
-            BodyFormatType.FORMAT_JSON -> builder.withMime(BodyFormatType.FORMAT_JSON.verbose).withText(message.getBodyAsString(format.encoding)
-                    ?: "")
-            BodyFormatType.FORMAT_XML -> builder.withMime(BodyFormatType.FORMAT_XML.verbose).withText(message.getBodyAsString(format.encoding)
-                    ?: "")
-            BodyFormatType.FORMAT_PLAIN -> builder.withMime(BodyFormatType.FORMAT_PLAIN.verbose).withText(message.getBodyAsString(format.encoding)
-                    ?: "")
-            BodyFormatType.FORMAT_IMAGE -> builder.withMime(format.subtype
-                    ?: "").withText(message.bodyAsNormalBase64 ?: "")
-            BodyFormatType.FORMAT_BINARY -> builder.withMime(format.subtype
-                    ?: "").withText(message.bodyAsNormalBase64 ?: "")
-            BodyFormatType.FORMAT_HTML -> builder.withMime(format.subtype
-                    ?: "").withText(message.getBodyAsString("UTF-8") ?: "")
+            BodyFormatType.FORMAT_JSON -> builder.withMime(BodyFormatType.FORMAT_JSON.verbose).withText(message.getBodyAsString(format.encoding) ?: "")
+            BodyFormatType.FORMAT_XML -> builder.withMime(BodyFormatType.FORMAT_XML.verbose).withText(message.getBodyAsString(format.encoding) ?: "")
+            BodyFormatType.FORMAT_PLAIN -> builder.withMime(BodyFormatType.FORMAT_PLAIN.verbose).withText(message.getBodyAsString(format.encoding) ?: "")
+            BodyFormatType.FORMAT_IMAGE -> builder.withMime(format.rawMimeType ?: "").withText(message.bodyAsNormalBase64 ?: "")
+            BodyFormatType.FORMAT_BINARY -> builder.withMime(format.rawMimeType ?: "").withText(message.bodyAsNormalBase64 ?: "")
+            BodyFormatType.FORMAT_HTML -> builder.withMime(format.rawMimeType ?: "").withText(message.getBodyAsString(format.encoding ?: "UTF-8") ?: "")
             BodyFormatType.FORMAT_EMPTY -> return null
             BodyFormatType.FORMAT_FORM_ENCODED -> builder.withMime("application/x-www-form-urlencoded")
-                    .withParams((message.bodyData as Map<String, String>).map { Param(name = it.key, value = it.value) })
+                    .withParams((message.bodyData as Map<String, List<String>>).flatMap { (key, value) -> value.map { entry -> Param(name = key, value = entry) } })
         }
         return builder.build()
     }
@@ -127,17 +117,14 @@ class HarExport<T : ParsedNiddlerMessage>(private val targetFile: File,
             return Content(size = -1, mimeType = "", text = null, encoding = null)
 
         val builder = ContentBuilder()
-        val format = classifyFormat(message)
+        val format = message.bodyFormat
         when (format.type) {
             BodyFormatType.FORMAT_JSON -> builder.withMime(BodyFormatType.FORMAT_JSON.verbose).withText(message.getBodyAsString(format.encoding))
             BodyFormatType.FORMAT_XML -> builder.withMime(BodyFormatType.FORMAT_XML.verbose).withText(message.getBodyAsString(format.encoding))
             BodyFormatType.FORMAT_PLAIN -> builder.withMime(BodyFormatType.FORMAT_PLAIN.verbose).withText(message.getBodyAsString(format.encoding))
-            BodyFormatType.FORMAT_IMAGE -> builder.withMime(format.subtype
-                    ?: "").withText(message.bodyAsNormalBase64).withEncoding("base64")
-            BodyFormatType.FORMAT_BINARY -> builder.withMime(format.subtype
-                    ?: "").withText(message.bodyAsNormalBase64).withEncoding("base64")
-            BodyFormatType.FORMAT_HTML -> builder.withMime(format.subtype
-                    ?: "").withText(message.bodyAsNormalBase64).withEncoding("base64")
+            BodyFormatType.FORMAT_IMAGE -> builder.withMime(format.rawMimeType ?: "").withText(message.bodyAsNormalBase64).withEncoding("base64")
+            BodyFormatType.FORMAT_BINARY -> builder.withMime(format.rawMimeType ?: "").withText(message.bodyAsNormalBase64).withEncoding("base64")
+            BodyFormatType.FORMAT_HTML -> builder.withMime(format.rawMimeType ?: "").withText(message.bodyAsNormalBase64).withEncoding("base64")
             BodyFormatType.FORMAT_EMPTY -> builder.withMime("").withText("")
             else -> builder.withMime("").withText("")
         }
@@ -160,12 +147,6 @@ class HarExport<T : ParsedNiddlerMessage>(private val targetFile: File,
                 waitTime,
                 readTime
         )
-    }
-
-    private fun classifyFormat(message: T): BodyFormat {
-        if (message is ParsedNiddlerMessage)
-            return message.bodyFormat
-        return simpleClassifier.classifyFormat(message)
     }
 
 }

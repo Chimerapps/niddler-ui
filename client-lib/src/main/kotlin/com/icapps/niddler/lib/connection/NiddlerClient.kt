@@ -23,13 +23,13 @@ import java.util.HashSet
 
 /**
  * @author Nicola Verbeeck
- * @date 14/11/2016.
  */
 class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient(serverURI, Draft_6455()),
         NiddlerMessageListener, NiddlerDebugListener, NiddlerDebuggerConnection {
 
     companion object {
         private val log = logger<NiddlerClient>()
+        const val MESSAGE_TYPE_PROTOCOL = "protocol"
     }
 
     private val clientListeners: MutableSet<NiddlerMessageListener> = HashSet()
@@ -57,7 +57,7 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient
         val json = JsonParser().parse(message).asJsonObject
         val messageType = json.get("type").asString
 
-        if (messageType == "protocol") {
+        if (messageType == MESSAGE_TYPE_PROTOCOL) {
             registerProtocolHandler(json.get("protocolVersion").asInt)
             return
         }

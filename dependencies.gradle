@@ -1,0 +1,30 @@
+def versions = [
+        kotlin        : '1.3.31',
+        websocket     : '1.4.0',
+        gson          : '2.8.5',
+        jadb          : 'v1.1.0',
+        httpcore      : '4.4.11',
+        dokkaPlugin   : '0.9.17',
+        versionsPlugin: '0.21.0',
+]
+
+ext.versions = versions
+
+def gradlePlugins = [
+        kotlin  : "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
+        versions: "com.github.ben-manes:gradle-versions-plugin:${versions.versionsPlugin}",
+        dokka   : "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokkaPlugin}",
+]
+
+def compile = [
+        kotlin   : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
+        websocket: "org.java-websocket:Java-WebSocket:${versions.websocket}",
+        gson     : "com.google.code.gson:gson:${versions.gson}",
+        jadb     : "com.github.vidstige:jadb:${versions.jadb}",
+        httpcore : "org.apache.httpcomponents:httpcore:${versions.httpcore}"
+]
+
+ext.deps = [
+        'compile'      : compile,
+        'gradlePlugins': gradlePlugins,
+]

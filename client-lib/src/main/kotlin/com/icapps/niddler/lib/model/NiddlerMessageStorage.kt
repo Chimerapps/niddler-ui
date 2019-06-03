@@ -3,7 +3,7 @@ package com.icapps.niddler.lib.model
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 
 /**
- * @author nicolaverbeeck
+ * @author Nicola Verbeeck
  */
 interface NiddlerMessageStorage<T : NiddlerMessage> {
 

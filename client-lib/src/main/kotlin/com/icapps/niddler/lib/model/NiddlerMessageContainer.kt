@@ -1,18 +1,18 @@
 package com.icapps.niddler.lib.model
 
 import com.icapps.niddler.lib.connection.NiddlerClient
-import com.icapps.niddler.lib.connection.NiddlerMessageListenerAdapter
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
+import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
 
 /**
- * @author nicolaverbeeck
+ * @author Nicola Verbeeck
  */
 class NiddlerMessageContainer<T : NiddlerMessage>(val converter: (NiddlerMessage) -> T,
                                                   val storage: NiddlerMessageStorage<T>) {
 
     private val listeners: MutableSet<ParsedNiddlerMessageListener<T>> = hashSetOf()
 
-    private val messageAdapter = object : NiddlerMessageListenerAdapter() {
+    private val messageAdapter = object : NiddlerMessageListener {
         override fun onServiceMessage(niddlerMessage: NiddlerMessage) {
             val parsedMessage = converter(niddlerMessage)
             storage.addMessage(parsedMessage)

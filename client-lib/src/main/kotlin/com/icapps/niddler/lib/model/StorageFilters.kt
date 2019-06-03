@@ -3,7 +3,7 @@ package com.icapps.niddler.lib.model
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 
 /**
- * @author nicolaverbeeck
+ * @author Nicola Verbeeck
  */
 class SimpleUrlMatchFilter<T : NiddlerMessage>(toMatch: String) : NiddlerMessageStorage.Filter<T> {
 

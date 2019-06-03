@@ -3,7 +3,7 @@ package com.icapps.niddler.lib.debugger
 import com.icapps.niddler.lib.debugger.model.saved.DebuggerConfiguration
 
 /**
- * @author nicolaverbeeck
+ * @author Nicola Verbeeck
  */
 interface DebuggingSession {
 

@@ -1,0 +1,15 @@
+buildscript {
+    apply from: './dependencies.gradle'
+
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        deps.gradlePlugins.each { name, dep -> 
+            classpath dep
+        }
+    }
+
+}

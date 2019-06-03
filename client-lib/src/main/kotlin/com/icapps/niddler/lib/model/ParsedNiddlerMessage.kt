@@ -4,7 +4,6 @@ import com.icapps.niddler.lib.connection.model.NiddlerMessage
 
 /**
  * @author Nicola Verbeeck
- * @date 15/11/16.
  */
 class ParsedNiddlerMessage(val message: NiddlerMessage,
                            val bodyFormat: BodyFormat,
