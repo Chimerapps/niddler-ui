@@ -16,7 +16,7 @@ class NiddlerToolWindowFactory : ToolWindowFactory, DumbAware {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val contentService = ContentFactory.SERVICE.getInstance()
 
-        val window = NiddlerToolWindow()
+        val window = NiddlerToolWindow(project, toolWindow.contentManager)
 
         val content = contentService.createContent(window, "", true)
         toolWindow.contentManager.addContent(content)

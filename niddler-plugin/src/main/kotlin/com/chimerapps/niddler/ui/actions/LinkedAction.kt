@@ -1,13 +1,14 @@
 package com.chimerapps.niddler.ui.actions
 
-import com.chimerapps.niddler.ui.NiddlerToolWindow
-import com.chimerapps.niddler.ui.ViewMode
+import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
+import com.chimerapps.niddler.ui.component.ViewMode
+import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.project.DumbAware
-import javax.swing.Icon
 
-class LinkedAction(private val window: NiddlerToolWindow, text: String?, description: String?, icon: Icon) : ToggleAction(text, description, icon), DumbAware {
+class LinkedAction(private val window: NiddlerSessionWindow)
+    : ToggleAction("Linked", "View request and responses grouped together", window.loadIcon("/ic_linked.png")), DumbAware {
 
     override fun isSelected(e: AnActionEvent): Boolean {
         return window.currentViewMode == ViewMode.VIEW_MODE_LINKED

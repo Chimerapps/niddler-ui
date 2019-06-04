@@ -35,8 +35,7 @@
     <depends>com.intellij.modules.lang</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Niddler" anchor="bottom" factoryClass="com.chimerapps.niddler.ui.NiddlerToolWindowFactory"
-                    icon="/niddler_small.png" />
+        <toolWindow id="Niddler" anchor="bottom" factoryClass="com.chimerapps.niddler.ui.NiddlerToolWindowFactory" icon="/niddler_small.png" />
     </extensions>
 
     <actions>
