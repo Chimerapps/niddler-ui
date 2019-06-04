@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.component.view
 
+import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.chimerapps.niddler.ui.util.ui.setColumnPreferredWidth
 import com.icapps.niddler.lib.connection.model.NetworkNiddlerMessage
@@ -22,6 +23,22 @@ import javax.swing.table.AbstractTableModel
 
 class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) : JPanel(BorderLayout()), MessagesView {
 
+    private companion object {
+        private const val PREFERENCE_KEY_TIMESTAMP_WIDTH = "timeline.timestamp.width"
+        private const val PREFERENCE_KEY_INDEX_DIRECTION_WIDTH = "timeline.direction.width"
+        private const val PREFERENCE_KEY_INDEX_METHOD_WIDTH = "timeline.method.width"
+        private const val PREFERENCE_KEY_INDEX_URL_WIDTH = "timeline.url.width"
+        private const val PREFERENCE_KEY_INDEX_STATUS_WIDTH = "timeline.status.width"
+        private const val PREFERENCE_KEY_INDEX_FORMAT_WIDTH = "timeline.format.width"
+
+        private const val DEFAULT_TIMESTAMP_WIDTH = 90
+        private const val DEFAULT_DIRECTION_WIDTH = 36
+        private const val DEFAULT_METHOD_WIDTH = 70
+        private const val DEFAULT_URL_WIDTH = 400
+        private const val DEFAULT_STATUS_WIDTH = -1
+        private const val DEFAULT_FORMAT_WIDTH = -1
+    }
+
     private val model = LinkedTableModel(messageContainer)
     private val tableView = JBTable(model).apply {
         fillsViewportHeight = false
@@ -31,12 +48,34 @@ class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>
         autoResizeMode = JTable.AUTO_RESIZE_OFF
         tableHeader = null
 
-        addMouseListener(TableResizeAdapter(this))
+        addMouseListener(TableResizeAdapter(this) { columnIndex, newWidth ->
+            val key = when (columnIndex) {
+                LinkedTableModel.INDEX_TIMESTAMP -> PREFERENCE_KEY_TIMESTAMP_WIDTH
+                LinkedTableModel.INDEX_DIRECTION -> PREFERENCE_KEY_INDEX_DIRECTION_WIDTH
+                LinkedTableModel.INDEX_METHOD -> PREFERENCE_KEY_INDEX_METHOD_WIDTH
+                LinkedTableModel.INDEX_URL -> PREFERENCE_KEY_INDEX_URL_WIDTH
+                LinkedTableModel.INDEX_STATUS_CODE -> PREFERENCE_KEY_INDEX_STATUS_WIDTH
+                LinkedTableModel.INDEX_FORMAT -> PREFERENCE_KEY_INDEX_FORMAT_WIDTH
+                else -> return@TableResizeAdapter
+            }
+            val defaultForKey = when (columnIndex) {
+                LinkedTableModel.INDEX_TIMESTAMP -> DEFAULT_TIMESTAMP_WIDTH
+                LinkedTableModel.INDEX_DIRECTION -> DEFAULT_DIRECTION_WIDTH
+                LinkedTableModel.INDEX_METHOD -> DEFAULT_METHOD_WIDTH
+                LinkedTableModel.INDEX_URL -> DEFAULT_URL_WIDTH
+                LinkedTableModel.INDEX_STATUS_CODE -> DEFAULT_STATUS_WIDTH
+                LinkedTableModel.INDEX_FORMAT -> DEFAULT_FORMAT_WIDTH
+                else -> return@TableResizeAdapter
+            }
+            AppPreferences.put(key, newWidth, defaultForKey)
+        })
 
-        setColumnPreferredWidth(LinkedTableModel.INDEX_TIMESTAMP, 90)
-        setColumnPreferredWidth(LinkedTableModel.INDEX_DIRECTION, 36)
-        setColumnPreferredWidth(LinkedTableModel.INDEX_METHOD, 70)
-        setColumnPreferredWidth(LinkedTableModel.INDEX_URL, 400)
+        setColumnPreferredWidth(LinkedTableModel.INDEX_TIMESTAMP, AppPreferences.get(PREFERENCE_KEY_TIMESTAMP_WIDTH, DEFAULT_TIMESTAMP_WIDTH))
+        setColumnPreferredWidth(LinkedTableModel.INDEX_DIRECTION, AppPreferences.get(PREFERENCE_KEY_INDEX_DIRECTION_WIDTH, DEFAULT_DIRECTION_WIDTH))
+        setColumnPreferredWidth(LinkedTableModel.INDEX_METHOD, AppPreferences.get(PREFERENCE_KEY_INDEX_METHOD_WIDTH, DEFAULT_METHOD_WIDTH))
+        setColumnPreferredWidth(LinkedTableModel.INDEX_URL, AppPreferences.get(PREFERENCE_KEY_INDEX_URL_WIDTH, DEFAULT_URL_WIDTH))
+        setColumnPreferredWidth(LinkedTableModel.INDEX_FORMAT, AppPreferences.get(PREFERENCE_KEY_INDEX_FORMAT_WIDTH, DEFAULT_FORMAT_WIDTH))
+        setColumnPreferredWidth(LinkedTableModel.INDEX_STATUS_CODE, AppPreferences.get(PREFERENCE_KEY_INDEX_STATUS_WIDTH, DEFAULT_STATUS_WIDTH))
     }
 
     init {

@@ -7,7 +7,7 @@ import javax.swing.JTable
 import javax.swing.event.MouseInputAdapter
 import javax.swing.table.TableColumn
 
-class TableResizeAdapter(private val table: JTable) : MouseInputAdapter() {
+class TableResizeAdapter(private val table: JTable, private val resizeListener: (columnIndex: Int, size: Int) -> Unit) : MouseInputAdapter() {
 
     private var resizingColumn: TableColumn? = null
     private var mouseXOffset: Int = 0
@@ -81,6 +81,7 @@ class TableResizeAdapter(private val table: JTable) : MouseInputAdapter() {
     }
 
     override fun mouseReleased(e: MouseEvent?) {
+        resizingColumn?.let { resizeListener(it.modelIndex, it.preferredWidth) }
         resizingColumn = null
     }
 
