@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.util.ui
 
+import com.intellij.openapi.application.ApplicationManager
 import javax.swing.JTable
 
 /**
@@ -10,4 +11,8 @@ fun JTable.setColumnPreferredWidth(columnIndex: Int, width: Int) {
     if (width < 0) return
     val column = columnModel.getColumn(columnIndex) ?: return
     column.preferredWidth = width
+}
+
+fun dispatchMain(toExecute: () -> Unit) {
+    ApplicationManager.getApplication().invokeLater(toExecute)
 }
