@@ -1,5 +1,5 @@
 rootProject.name = 'niddler'
 
-//include 'niddler-plugin'
- include 'client-lib'
+include 'niddler-plugin'
+include 'client-lib'
 

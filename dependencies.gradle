@@ -8,6 +8,8 @@ def versions = [
         versionsPlugin: '0.21.0',
         junit4        : '4.12',
         mockk         : '1.9.3',
+        intelliJPlugin: '0.4.8',
+        minIntelliJ   : '2018.1',
 ]
 
 ext.versions = versions
@@ -16,9 +18,10 @@ def gradlePlugins = [
         kotlin  : "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
         versions: "com.github.ben-manes:gradle-versions-plugin:${versions.versionsPlugin}",
         dokka   : "org.jetbrains.dokka:dokka-gradle-plugin:${versions.dokkaPlugin}",
+        intelliJ: "gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:${versions.intelliJPlugin}",
 ]
 
-def compile = [
+def libCompile = [
         kotlin   : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
         websocket: "org.java-websocket:Java-WebSocket:${versions.websocket}",
         gson     : "com.google.code.gson:gson:${versions.gson}",
@@ -26,13 +29,18 @@ def compile = [
         httpcore : "org.apache.httpcomponents:httpcore:${versions.httpcore}"
 ]
 
-def testCompile = [
+def pluginCompile = [
+        kotlin: "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
+]
+
+def libTestCompile = [
         junit4: "junit:junit:${versions.junit4}",
         mockk : "io.mockk:mockk:${versions.mockk}",
 ]
 
 ext.deps = [
-        'compile'      : compile,
-        'gradlePlugins': gradlePlugins,
-        'testCompile'  : testCompile,
+        'libCompile'    : libCompile,
+        'gradlePlugins' : gradlePlugins,
+        'libTestCompile': libTestCompile,
+        'pluginCompile' : pluginCompile,
 ]
