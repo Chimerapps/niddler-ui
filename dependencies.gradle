@@ -6,6 +6,8 @@ def versions = [
         httpcore      : '4.4.11',
         dokkaPlugin   : '0.9.17',
         versionsPlugin: '0.21.0',
+        junit4        : '4.12',
+        mockk         : '1.9.3',
 ]
 
 ext.versions = versions
@@ -24,7 +26,13 @@ def compile = [
         httpcore : "org.apache.httpcomponents:httpcore:${versions.httpcore}"
 ]
 
+def testCompile = [
+        junit4: "junit:junit:${versions.junit4}",
+        mockk : "io.mockk:mockk:${versions.mockk}",
+]
+
 ext.deps = [
         'compile'      : compile,
         'gradlePlugins': gradlePlugins,
+        'testCompile'  : testCompile,
 ]

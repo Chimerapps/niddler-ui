@@ -16,9 +16,10 @@ dependencies {
     deps.compile.each { name, dep ->
         implementation dep
     }
-   
-    testCompile 'junit:junit:4.12'
-    testCompile 'io.mockk:mockk:1.8'
+    
+    deps.testCompile.each { name, dep -> 
+        testImplementation dep
+    }
 }
 
 compileKotlin {
