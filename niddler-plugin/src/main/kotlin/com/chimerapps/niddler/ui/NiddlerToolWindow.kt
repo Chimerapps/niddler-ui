@@ -17,10 +17,11 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.content.ContentManagerEvent
 import com.intellij.ui.content.ContentManagerListener
+import com.intellij.util.ui.AsyncProcessIcon
 import java.awt.BorderLayout
 import java.awt.Color
-import javax.swing.Box
-import javax.swing.BoxLayout
+import java.awt.GridBagLayout
+import javax.swing.BorderFactory
 import javax.swing.JPanel
 
 class NiddlerToolWindow(project: Project, disposable: Disposable) : SimpleToolWindowPanel(/* vertical */ false, /* borderless */ true) {
@@ -62,17 +63,25 @@ class NiddlerToolWindow(project: Project, disposable: Disposable) : SimpleToolWi
             }
         }, disposable)
 
-        val loadingContent = JPanel()
-        BoxLayout(loadingContent, BoxLayout.LINE_AXIS)
-        loadingContent.add(Box.createHorizontalGlue())
-        loadingContent.add(JBLabel("Starting adb").also {
+        adbBootstrap = ADBBootstrap(ADBUtils.guessPaths(project))
+        bootStrapADB()
+    }
+
+    private fun bootStrapADB() {
+        val loadingContent = JPanel(GridBagLayout())
+
+        val labelAndLoading = JPanel(BorderLayout())
+
+        labelAndLoading.add(JBLabel("Starting adb").also {
             it.font = it.font.deriveFont(50.0f)
             it.foreground = Color.lightGray
-        })
-        loadingContent.add(Box.createHorizontalGlue())
+        }, BorderLayout.NORTH)
+        labelAndLoading.add(AsyncProcessIcon.Big("ADBLoadingIndicator").also { it.border = BorderFactory.createEmptyBorder(10, 0, 0, 0) }, BorderLayout.CENTER)
+
+        loadingContent.add(labelAndLoading)
         setContent(loadingContent)
 
-        adbBootstrap = ADBBootstrap(ADBUtils.guessPaths(project))
+
         Thread({
             adbInterface = adbBootstrap.bootStrap()
             dispatchMain {
