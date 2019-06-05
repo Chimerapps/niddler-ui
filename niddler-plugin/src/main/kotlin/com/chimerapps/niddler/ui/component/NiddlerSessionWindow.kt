@@ -17,6 +17,7 @@ import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 
 class NiddlerSessionWindow : JPanel(BorderLayout()) {
 
@@ -62,6 +63,7 @@ class NiddlerSessionWindow : JPanel(BorderLayout()) {
         val actionGroup = DefaultActionGroup()
 
         actionGroup.add(ConnectAction(this) {
+            ConnectDialog.show(SwingUtilities.getWindowAncestor(this))
             connectionMode = ConnectionMode.MODE_CONNECTED
         })
         actionGroup.add(DisconnectAction(this) {
