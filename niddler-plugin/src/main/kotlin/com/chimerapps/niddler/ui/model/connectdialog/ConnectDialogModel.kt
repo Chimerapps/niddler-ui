@@ -23,14 +23,18 @@ class RootNode : DefaultMutableTreeNode() {
     private var devices: List<DeviceModel> = emptyList()
 
     fun update(newDevices: List<DeviceModel>) {
-        if (newDevices == devices)
-            return
-
-        removeAllChildren() //TODO optimize this
-        devices = newDevices
-
-        devices.forEach {
-            add(ConnectDialogDeviceNode(it))
+        if (devices != newDevices) {
+            devices = newDevices
+            removeAllChildren() //TODO optimize this?
+            devices.forEach {
+                add(ConnectDialogDeviceNode(it))
+            }
+        } else {
+            devices = newDevices
+            devices.forEachIndexed { index, device ->
+                val deviceNode = getChildAt(index) as ConnectDialogDeviceNode
+                deviceNode.update(device)
+            }
         }
     }
 
@@ -42,9 +46,26 @@ class ConnectDialogProcessNode(val device: DeviceModel, val session: NiddlerSess
 
 }
 
-class ConnectDialogDeviceNode(val device: DeviceModel) : DefaultMutableTreeNode() {
+class ConnectDialogDeviceNode(var device: DeviceModel) : DefaultMutableTreeNode() {
 
     init {
+        buildChildNodes()
+    }
+
+    fun update(device: DeviceModel) {
+        //Same sessions -> ignore
+        if (this.device.sessions == device.sessions) {
+            this.device = device
+            return
+        }
+
+        this.device = device
+
+        removeAllChildren()
+        buildChildNodes()
+    }
+
+    private fun buildChildNodes() {
         device.sessions.forEach {
             add(ConnectDialogProcessNode(device, it))
         }

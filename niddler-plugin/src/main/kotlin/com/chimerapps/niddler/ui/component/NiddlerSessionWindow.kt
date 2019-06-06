@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.component
 
+import com.chimerapps.niddler.ui.NiddlerToolWindow
 import com.chimerapps.niddler.ui.actions.ConnectAction
 import com.chimerapps.niddler.ui.actions.DisconnectAction
 import com.chimerapps.niddler.ui.actions.LinkedAction
@@ -19,7 +20,7 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
-class NiddlerSessionWindow : JPanel(BorderLayout()) {
+class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : JPanel(BorderLayout()) {
 
     private val rootContent = JPanel(BorderLayout())
     private val connectToolbar = setupConnectToolbar()
@@ -63,7 +64,7 @@ class NiddlerSessionWindow : JPanel(BorderLayout()) {
         val actionGroup = DefaultActionGroup()
 
         actionGroup.add(ConnectAction(this) {
-            ConnectDialog.show(SwingUtilities.getWindowAncestor(this))
+            ConnectDialog.show(SwingUtilities.getWindowAncestor(this), niddlerToolWindow.adbInterface ?: return@ConnectAction)
             connectionMode = ConnectionMode.MODE_CONNECTED
         })
         actionGroup.add(DisconnectAction(this) {

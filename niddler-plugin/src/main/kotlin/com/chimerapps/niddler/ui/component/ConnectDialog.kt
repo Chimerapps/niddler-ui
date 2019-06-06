@@ -3,11 +3,9 @@ package com.chimerapps.niddler.ui.component
 import com.chimerapps.niddler.ui.component.renderer.ConnectDialogTreeCellRenderer
 import com.chimerapps.niddler.ui.model.connectdialog.ConnectDialogModel
 import com.chimerapps.niddler.ui.model.connectdialog.DeviceModel
+import com.chimerapps.niddler.ui.model.connectdialog.DeviceScanner
 import com.chimerapps.niddler.ui.util.ui.SpringUtilities
-import com.icapps.niddler.lib.device.Device
-import com.icapps.niddler.lib.device.NiddlerSession
-import com.icapps.niddler.lib.device.PreparedDeviceConnection
-import com.intellij.icons.AllIcons
+import com.icapps.niddler.lib.device.adb.ADBInterface
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import java.awt.BorderLayout
@@ -29,42 +27,36 @@ import javax.swing.JTextField
 import javax.swing.KeyStroke
 import javax.swing.SpringLayout
 import javax.swing.WindowConstants
+import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
 
-class ConnectDialog(parent: Window?) : ConnectDialogUI(parent, "Select a device to connect to") {
+class ConnectDialog(parent: Window?, adbInterface: ADBInterface) : ConnectDialogUI(parent, "Select a device to connect to") {
 
     companion object {
-        fun show(parent: Window?) {
-            val dialog = ConnectDialog(parent)
+        fun show(parent: Window?, adbInterface: ADBInterface) {
+            val dialog = ConnectDialog(parent, adbInterface)
             dialog.pack()
             dialog.setSize(500, 350)
             if (dialog.parent != null)
                 dialog.setLocationRelativeTo(parent)
 
-            dialog.deviceModel.updateModel(listOf(DeviceModel("Test", "Info", AllIcons.Gutter.OverridenMethod, "123", object : Device {
-                override fun getNiddlerSessions(): List<NiddlerSession> {
-                    return emptyList()
-                }
-
-                override fun prepareConnection(suggestedLocalPort: Int, remotePort: Int): PreparedDeviceConnection {
-                    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                }
-            }, listOf(NiddlerSession(object : Device {
-                override fun getNiddlerSessions(): List<NiddlerSession> {
-                    return emptyList()
-                }
-
-                override fun prepareConnection(suggestedLocalPort: Int, remotePort: Int): PreparedDeviceConnection {
-                    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                }
-            }, "com.test.test",1,1,1)))))
             dialog.devicesTree.expandPath(TreePath(dialog.deviceModel.devicesRoot.path))
-
 
             dialog.isVisible = true
         }
+    }
+
+    private val deviceScanner = DeviceScanner(adbInterface, ::onDevicesUpdated)
+
+    init {
+        deviceScanner.startScanning()
+    }
+
+    override fun dispose() {
+        deviceScanner.stopScanning()
+        super.dispose()
     }
 
     override fun onCancel() {
@@ -73,6 +65,18 @@ class ConnectDialog(parent: Window?) : ConnectDialogUI(parent, "Select a device 
 
     override fun onConnect() {
         dispose()
+    }
+
+    private fun onDevicesUpdated(devices: List<DeviceModel>) {
+        deviceModel.updateModel(devices)
+        deviceModel.reload()
+        val devicesRoot = deviceModel.devicesRoot
+        devicesTree.expandPath(TreePath(devicesRoot.path))
+
+        for (i in 0 until devicesRoot.childCount) {
+            val path = (devicesRoot.getChildAt(i) as DefaultMutableTreeNode).path
+            devicesTree.expandPath(TreePath(path))
+        }
     }
 
 }

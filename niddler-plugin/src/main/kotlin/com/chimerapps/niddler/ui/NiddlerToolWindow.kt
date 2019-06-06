@@ -34,11 +34,11 @@ class NiddlerToolWindow(project: Project, disposable: Disposable) : SimpleToolWi
         get() = adbInterface != null
 
     private var adbBootstrap: ADBBootstrap
-    private var adbInterface: ADBInterface? = null
+    var adbInterface: ADBInterface? = null
         get() = synchronized(this@NiddlerToolWindow) {
             field
         }
-        set(value) {
+        private set(value) {
             synchronized(this@NiddlerToolWindow) {
                 field = value
             }
@@ -95,7 +95,7 @@ class NiddlerToolWindow(project: Project, disposable: Disposable) : SimpleToolWi
     }
 
     private fun newSessionWindow() {
-        val content = tabsContainer.createContent("${c++}-contentId", NiddlerSessionWindow(), "Session $c", null, null)
+        val content = tabsContainer.createContent("${c++}-contentId", NiddlerSessionWindow(this), "Session $c", null, null)
         content.isCloseable = true
         tabsContainer.addContent(content, -1, PlaceInGrid.center, false)
     }

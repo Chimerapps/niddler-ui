@@ -13,13 +13,12 @@ import se.vidstige.jadb.DeviceWatcher
 import se.vidstige.jadb.JadbConnection
 import se.vidstige.jadb.JadbDevice
 import java.io.IOException
-import java.lang.Exception
 import java.net.ServerSocket
 
 /**
  * @author Nicola Verbeeck
  */
-class ADBInterface(private val bootstrap: ADBBootstrap, private val connection: JadbConnection? = null) {
+class ADBInterface(val bootstrap: ADBBootstrap, private val connection: JadbConnection? = null) {
 
     private companion object {
         private val log = logger<ADBInterface>()

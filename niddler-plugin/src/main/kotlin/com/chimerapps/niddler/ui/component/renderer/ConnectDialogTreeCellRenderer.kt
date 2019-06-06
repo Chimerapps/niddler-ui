@@ -21,7 +21,7 @@ class ConnectDialogTreeCellRenderer : ColoredTreeCellRenderer() {
                 val session = value.session
                 icon = null
                 append(session.packageName)
-                append(" (Port: ${session.port})", SimpleTextAttributes.GRAYED_ATTRIBUTES)
+                append(" (port: ${session.port})", SimpleTextAttributes.GRAYED_ATTRIBUTES)
             }
             is ConnectDialogDeviceNode -> {
                 val device = value.device

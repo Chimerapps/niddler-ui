@@ -95,7 +95,6 @@ abstract class BaseDevice : Device {
             socket.getOutputStream().also { stream ->
                 stream.write(Device.REQUEST_QUERY)
                 stream.flush()
-                socket.shutdownOutput() //Close the stream to signal the client no more data is coming
             }
             return try {
                 val line = socket.getInputStream().bufferedReader().readLine()
