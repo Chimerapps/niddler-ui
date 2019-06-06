@@ -18,54 +18,35 @@ import com.icapps.niddler.lib.utils.logger
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.drafts.Draft_6455
 import org.java_websocket.handshake.ServerHandshake
+import java.io.Closeable
 import java.net.URI
 import java.util.HashSet
 
 /**
  * @author Nicola Verbeeck
  */
-class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient(serverURI, Draft_6455()),
+class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : Closeable,
         NiddlerMessageListener, NiddlerDebugListener, NiddlerDebuggerConnection {
 
     companion object {
-        private val log = logger<NiddlerClient>()
         const val MESSAGE_TYPE_PROTOCOL = "protocol"
     }
 
-    private val clientListeners: MutableSet<NiddlerMessageListener> = HashSet()
+    private val socketClient = WebSocketNiddlerClient(serverURI, this)
+
+    internal val clientListeners: MutableSet<NiddlerMessageListener> = HashSet()
     @Volatile
     var debugListener: NiddlerDebugListener? = null
-    private var protocolHandler: NiddlerProtocol? = null
+    internal var protocolHandler: NiddlerProtocol? = null
 
     val staticBlacklist = StaticBlacklistConfiguration()
 
-    override fun onOpen(handshakeData: ServerHandshake?) {
-        log.debug("Connection succeeded: ${connection.remoteSocketAddress}")
-        staticBlacklist.clear()
+    fun connect() {
+        socketClient.connect()
     }
 
-    override fun onClose(code: Int, reason: String?, remote: Boolean) {
-        log.debug("Connection closed: $reason")
-        synchronized(clientListeners) {
-            clientListeners.forEach { it.onClosed() }
-        }
-        staticBlacklist.clear()
-    }
-
-    override fun onMessage(message: String) {
-        log.debug("Got message: $message")
-        val json = JsonParser().parse(message).asJsonObject
-        val messageType = json.get("type").asString
-
-        if (messageType == MESSAGE_TYPE_PROTOCOL) {
-            registerProtocolHandler(json.get("protocolVersion").asInt)
-            return
-        }
-        protocolHandler?.onMessage(this, json)
-    }
-
-    override fun onError(ex: Exception?) {
-        log.debug(ex.toString())
+    override fun close() {
+        socketClient.close()
     }
 
     fun registerMessageListener(listener: NiddlerMessageListener) {
@@ -81,7 +62,7 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient
         }
     }
 
-    private fun registerProtocolHandler(protocolVersion: Int) {
+    internal fun registerProtocolHandler(protocolVersion: Int) {
         when (protocolVersion) {
             1 -> protocolHandler = NiddlerV1ProtocolHandler(this)
             2, 3 -> protocolHandler = NiddlerV2ProtocolHandler(this, protocolVersion)
@@ -156,7 +137,7 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient
     }
 
     override fun sendMessage(message: String) {
-        send(message)
+        socketClient.sendString(message)
     }
 
     override fun onStaticBlacklistUpdated(id: String, name: String, entries: List<StaticBlacklistEntry>) {
@@ -172,7 +153,7 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : WebSocketClient
         json.addProperty("id", id)
         json.addProperty("pattern", pattern)
         json.addProperty("enabled", enabled)
-        send(json.toString())
+        socketClient.sendString(json.toString())
     }
 
 }
@@ -201,5 +182,45 @@ class StaticBlacklistConfiguration {
         synchronized(configuration) {
             configuration.clear()
         }
+    }
+}
+
+private class WebSocketNiddlerClient(serverURI: URI, private val parent: NiddlerClient) : WebSocketClient(serverURI, Draft_6455()) {
+
+    companion object {
+        private val log = logger<WebSocketNiddlerClient>()
+    }
+
+    override fun onOpen(handshakeData: ServerHandshake?) {
+        log.debug("Connection succeeded: ${connection.remoteSocketAddress}")
+        parent.staticBlacklist.clear()
+    }
+
+    override fun onClose(code: Int, reason: String?, remote: Boolean) {
+        log.debug("Connection closed: $reason")
+        synchronized(parent.clientListeners) {
+            parent.clientListeners.forEach { it.onClosed() }
+        }
+        parent.staticBlacklist.clear()
+    }
+
+    override fun onMessage(message: String) {
+        log.debug("Got message: $message")
+        val json = JsonParser().parse(message).asJsonObject
+        val messageType = json.get("type").asString
+
+        if (messageType == NiddlerClient.MESSAGE_TYPE_PROTOCOL) {
+            parent.registerProtocolHandler(json.get("protocolVersion").asInt)
+            return
+        }
+        parent.protocolHandler?.onMessage(this, json)
+    }
+
+    override fun onError(ex: Exception?) {
+        log.debug(ex.toString())
+    }
+
+    fun sendString(data: String) {
+        send(data)
     }
 }

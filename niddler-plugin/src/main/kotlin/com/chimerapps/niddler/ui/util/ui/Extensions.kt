@@ -1,7 +1,12 @@
 package com.chimerapps.niddler.ui.util.ui
 
 import com.intellij.openapi.application.ApplicationManager
+import java.beans.PropertyChangeEvent
 import javax.swing.JTable
+import javax.swing.JTextField
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
+import javax.swing.text.Document
 
 /**
  * @param columnIndex   The index of the column to adjust
@@ -15,4 +20,35 @@ fun JTable.setColumnPreferredWidth(columnIndex: Int, width: Int) {
 
 fun dispatchMain(toExecute: () -> Unit) {
     ApplicationManager.getApplication().invokeLater(toExecute)
+}
+
+fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {
+    val dl = object : DocumentListener {
+        private var lastChange = 0
+        private var lastNotifiedChange = 0
+
+        override fun insertUpdate(e: DocumentEvent) {
+            changedUpdate(e)
+        }
+
+        override fun removeUpdate(e: DocumentEvent) {
+            changedUpdate(e)
+        }
+
+        override fun changedUpdate(e: DocumentEvent?) {
+            lastChange++
+            dispatchMain {
+                if (lastNotifiedChange != lastChange) {
+                    lastNotifiedChange = lastChange
+                    changeListener.invoke(this@addChangeListener)
+                }
+            }
+        }
+    }
+    addPropertyChangeListener("document") { e: PropertyChangeEvent ->
+        (e.oldValue as Document?)?.removeDocumentListener(dl)
+        (e.newValue as Document?)?.addDocumentListener(dl)
+        dl.changedUpdate(null)
+    }
+    document?.addDocumentListener(dl)
 }

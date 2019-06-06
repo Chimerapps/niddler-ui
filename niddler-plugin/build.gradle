@@ -34,7 +34,9 @@ dependencies {
     deps.pluginCompile.each { name, dep ->
         implementation dep
     }
-    implementation project(':client-lib')
+    implementation(project(':client-lib')) {
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+    }
 }
 
 tasks.create('uploadToInternalServer') {

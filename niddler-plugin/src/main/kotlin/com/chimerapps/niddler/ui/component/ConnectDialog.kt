@@ -1,10 +1,15 @@
 package com.chimerapps.niddler.ui.component
 
 import com.chimerapps.niddler.ui.component.renderer.ConnectDialogTreeCellRenderer
+import com.chimerapps.niddler.ui.model.connectdialog.ConnectDialogDeviceNode
 import com.chimerapps.niddler.ui.model.connectdialog.ConnectDialogModel
+import com.chimerapps.niddler.ui.model.connectdialog.ConnectDialogProcessNode
 import com.chimerapps.niddler.ui.model.connectdialog.DeviceModel
 import com.chimerapps.niddler.ui.model.connectdialog.DeviceScanner
 import com.chimerapps.niddler.ui.util.ui.SpringUtilities
+import com.chimerapps.niddler.ui.util.ui.addChangeListener
+import com.icapps.niddler.lib.device.Device
+import com.icapps.niddler.lib.device.NiddlerSession
 import com.icapps.niddler.lib.device.adb.ADBInterface
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
@@ -22,6 +27,7 @@ import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JDialog
 import javax.swing.JLabel
+import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JTextField
 import javax.swing.KeyStroke
@@ -31,11 +37,17 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
+data class ManualConnection(val ip: String, val port: Int)
+data class DiscoveredDeviceConnection(val device: Device, val session: NiddlerSession)
+
+data class ConnectDialogResult(val direct: ManualConnection?, val discovered: DiscoveredDeviceConnection?)
 
 class ConnectDialog(parent: Window?, adbInterface: ADBInterface) : ConnectDialogUI(parent, "Select a device to connect to") {
 
     companion object {
-        fun show(parent: Window?, adbInterface: ADBInterface) {
+        private const val PORT_MAX = 65535
+
+        fun show(parent: Window?, adbInterface: ADBInterface): ConnectDialogResult? {
             val dialog = ConnectDialog(parent, adbInterface)
             dialog.pack()
             dialog.setSize(500, 350)
@@ -45,13 +57,18 @@ class ConnectDialog(parent: Window?, adbInterface: ADBInterface) : ConnectDialog
             dialog.devicesTree.expandPath(TreePath(dialog.deviceModel.devicesRoot.path))
 
             dialog.isVisible = true
+            return dialog.result
         }
     }
 
     private val deviceScanner = DeviceScanner(adbInterface, ::onDevicesUpdated)
 
+    var result: ConnectDialogResult? = null
+        private set
+
     init {
         deviceScanner.startScanning()
+        onDeviceSelectionChanged()
     }
 
     override fun dispose() {
@@ -64,7 +81,49 @@ class ConnectDialog(parent: Window?, adbInterface: ADBInterface) : ConnectDialog
     }
 
     override fun onConnect() {
+        val ip = deviceIpField.text?.trim() ?: ""
+        val port = deviceIpField.text?.trim() ?: ""
+        val node = devicesTree.selectionPath?.lastPathComponent
+
+        if (ip.isEmpty() || port.isEmpty()) {
+            (node as? ConnectDialogProcessNode)?.let {
+                connectToSession(it.device.device, it.session)
+                return
+            }
+            (node as? ConnectDialogDeviceNode)?.let {
+                if (it.device.sessions.size == 1)
+                    connectToSession(it.device.device, it.device.sessions[0])
+                return
+            }
+            return
+        }
+        val parsedPort = port.toIntOrNull()
+        if (parsedPort == null || parsedPort < 0 || parsedPort > PORT_MAX) {
+            JOptionPane.showMessageDialog(this, "Invalid port", "Could not connect", JOptionPane.ERROR_MESSAGE)
+            return
+        }
+        connectDirectly(ip, parsedPort)
+    }
+
+    override fun onDeviceSelectionChanged() = updateButtonState()
+
+    override fun onDeviceIpChanged() = updateButtonState()
+
+    override fun onPortChanged() = updateButtonState()
+
+    private fun connectToSession(device: Device, niddlerSession: NiddlerSession) {
+        result = ConnectDialogResult(direct = null, discovered = DiscoveredDeviceConnection(device, niddlerSession))
         dispose()
+    }
+
+    private fun connectDirectly(ip: String, port: Int) {
+        result = ConnectDialogResult(direct = ManualConnection(ip, port), discovered = null)
+        dispose()
+    }
+
+    private fun updateButtonState() {
+        val node = devicesTree.selectionPath?.lastPathComponent
+        connectButton.isEnabled = (node is ConnectDialogProcessNode) || (!deviceIpField.text.isNullOrBlank() && !portField.text.isNullOrBlank())
     }
 
     private fun onDevicesUpdated(devices: List<DeviceModel>) {
@@ -89,6 +148,7 @@ abstract class ConnectDialogUI(parent: Window?, title: String) : JDialog(parent,
         it.isRootVisible = false
         it.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
         it.cellRenderer = ConnectDialogTreeCellRenderer()
+        it.selectionModel.addTreeSelectionListener { onDeviceSelectionChanged() }
 
         it.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
@@ -107,8 +167,12 @@ abstract class ConnectDialogUI(parent: Window?, title: String) : JDialog(parent,
     }
     private val deviceIpLabel = JLabel("Device ip:")
     private val portLabel = JLabel("Port:")
-    protected val deviceIpField = JTextField()
-    protected val portField = JTextField()
+    protected val deviceIpField = JTextField().also {
+        it.addChangeListener { onDeviceIpChanged() }
+    }
+    protected val portField = JTextField().also {
+        it.addChangeListener { onPortChanged() }
+    }
 
     private val buttonContainer = JPanel(FlowLayout(FlowLayout.RIGHT)).also {
         it.add(connectButton)
@@ -155,5 +219,11 @@ abstract class ConnectDialogUI(parent: Window?, title: String) : JDialog(parent,
     protected abstract fun onCancel()
 
     protected abstract fun onConnect()
+
+    protected abstract fun onDeviceSelectionChanged()
+
+    protected abstract fun onDeviceIpChanged()
+
+    protected abstract fun onPortChanged()
 
 }

@@ -4,13 +4,18 @@ import com.chimerapps.niddler.ui.NiddlerToolWindow
 import com.chimerapps.niddler.ui.actions.ConnectAction
 import com.chimerapps.niddler.ui.actions.DisconnectAction
 import com.chimerapps.niddler.ui.actions.LinkedAction
+import com.chimerapps.niddler.ui.actions.SimpleAction
 import com.chimerapps.niddler.ui.actions.TimelineAction
 import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.TimelineView
+import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
 import com.icapps.niddler.lib.model.NiddlerMessageBodyParser
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessageListener
 import com.icapps.niddler.lib.model.classifier.HeaderBodyClassifier
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DefaultActionGroup
@@ -20,7 +25,7 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
-class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : JPanel(BorderLayout()) {
+class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : JPanel(BorderLayout()), ParsedNiddlerMessageListener<ParsedNiddlerMessage> {
 
     private val rootContent = JPanel(BorderLayout())
     private val connectToolbar = setupConnectToolbar()
@@ -43,10 +48,13 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
     private var currentMessagesView: MessagesView? = null
     private val bodyParser = NiddlerMessageBodyParser(HeaderBodyClassifier(emptyList())) //TODO extensions!
     private val messageContainer = NiddlerMessageContainer(bodyParser::parseBody, InMemoryNiddlerMessageStorage())
+    private var niddlerClient: NiddlerClient? = null
 
     init {
         add(rootContent, BorderLayout.CENTER)
         updateView()
+
+        messageContainer.registerListener(this)
     }
 
     fun currentViewModeUnselected() {
@@ -57,17 +65,31 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
     }
 
     fun onClosed() {
-        //TODO disconnect AND clear
+        niddlerClient?.let { messageContainer.detach(it) }
+        niddlerClient?.close()
+        niddlerClient = null
+
+        messageContainer.storage.clear()
+        messageContainer.unregisterListener(this)
     }
 
     private fun setupConnectToolbar(): ActionToolbar {
         val actionGroup = DefaultActionGroup()
 
         actionGroup.add(ConnectAction(this) {
-            ConnectDialog.show(SwingUtilities.getWindowAncestor(this), niddlerToolWindow.adbInterface ?: return@ConnectAction)
-            connectionMode = ConnectionMode.MODE_CONNECTED
+            val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this), niddlerToolWindow.adbInterface ?: return@ConnectAction) ?: return@ConnectAction
+
+            result.discovered?.let {
+                tryConnectSession(it)
+            }
+            result.direct?.let {
+                tryConnectDirect(it)
+            }
         })
         actionGroup.add(DisconnectAction(this) {
+            niddlerClient?.close()
+            niddlerClient = null
+
             connectionMode = ConnectionMode.MODE_DISCONNECTED
         })
 
@@ -85,6 +107,12 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
         val linkedAction = LinkedAction(this)
         actionGroup.add(linkedAction)
 
+        actionGroup.addSeparator()
+        actionGroup.add(SimpleAction("Clear local", "Remove locally cached messages", icon = AllIcons.Actions.GC) {
+            messageContainer.storage.clear()
+            currentMessagesView?.onMessagesUpdated()
+        })
+
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, false)
         add(toolbar.component, BorderLayout.WEST)
         return toolbar
@@ -101,6 +129,28 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
         (currentMessagesView as? Component)?.let(rootContent::remove)
         currentMessagesView = messagesView
         rootContent.add(messagesView, BorderLayout.CENTER)
+    }
+
+    private fun tryConnectDirect(directConnection: ManualConnection) {
+        //TODO
+        connectionMode = ConnectionMode.MODE_CONNECTED
+    }
+
+    private fun tryConnectSession(discovered: DiscoveredDeviceConnection) {
+        niddlerClient?.close()
+        niddlerClient = null
+
+        val connection = discovered.device.prepareConnection(6555, discovered.session.port)
+
+        niddlerClient = NiddlerClient(connection.uri, withDebugger = false).also {
+            messageContainer.attach(it)
+        }
+        niddlerClient?.connect()
+        connectionMode = ConnectionMode.MODE_CONNECTED
+    }
+
+    override fun onMessage(message: ParsedNiddlerMessage) {
+        currentMessagesView?.onMessagesUpdated()
     }
 }
 
