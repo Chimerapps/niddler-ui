@@ -1,19 +1,17 @@
 package com.icapps.niddler.lib.device.adb
 
 import com.icapps.niddler.lib.device.BaseDevice
-import com.icapps.niddler.lib.device.Device
 import com.icapps.niddler.lib.device.DirectPreparedConnection
 import com.icapps.niddler.lib.device.NiddlerSession
 import com.icapps.niddler.lib.device.PreparedDeviceConnection
 import com.icapps.niddler.lib.utils.debug
 import com.icapps.niddler.lib.utils.error
+import com.icapps.niddler.lib.utils.freePort
 import com.icapps.niddler.lib.utils.logger
 import se.vidstige.jadb.DeviceDetectionListener
 import se.vidstige.jadb.DeviceWatcher
 import se.vidstige.jadb.JadbConnection
 import se.vidstige.jadb.JadbDevice
-import java.io.IOException
-import java.net.ServerSocket
 
 /**
  * @author Nicola Verbeeck
@@ -102,14 +100,8 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) : BaseD
     }
 
     override fun getNiddlerSessions(): List<NiddlerSession> {
-        val freePort: Int
-        try {
-            val serverSocket = ServerSocket(0)
-            freePort = serverSocket.localPort
-            serverSocket.close()
-            forwardTCPPort(freePort, Device.ANNOUNCEMENT_PORT)
-        } catch (e: IOException) {
-            log.error("Failed to find and forward free port", e)
+        val freePort = freePort()
+        if (freePort <= 0) {
             return emptyList()
         }
 

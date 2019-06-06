@@ -10,12 +10,15 @@ import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
 import com.icapps.niddler.lib.connection.NiddlerClient
+import com.icapps.niddler.lib.device.DirectPreparedConnection
+import com.icapps.niddler.lib.device.PreparedDeviceConnection
 import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
 import com.icapps.niddler.lib.model.NiddlerMessageBodyParser
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessageListener
 import com.icapps.niddler.lib.model.classifier.HeaderBodyClassifier
+import com.icapps.niddler.lib.utils.freePort
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
@@ -135,16 +138,21 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
     }
 
     private fun tryConnectDirect(directConnection: ManualConnection) {
-        //TODO
-        connectionMode = ConnectionMode.MODE_CONNECTED
+        niddlerClient?.close()
+        niddlerClient = null
+
+        connectOnConnection(DirectPreparedConnection(directConnection.ip, directConnection.port))
     }
 
     private fun tryConnectSession(discovered: DiscoveredDeviceConnection) {
         niddlerClient?.close()
         niddlerClient = null
 
-        val connection = discovered.device.prepareConnection(6555, discovered.session.port)
+        val connection = discovered.device.prepareConnection(freePort(), discovered.session.port)
+        connectOnConnection(connection)
+    }
 
+    private fun connectOnConnection(connection: PreparedDeviceConnection) {
         niddlerClient = NiddlerClient(connection.uri, withDebugger = false).also {
             messageContainer.attach(it)
             it.registerMessageListener(statusBar)
