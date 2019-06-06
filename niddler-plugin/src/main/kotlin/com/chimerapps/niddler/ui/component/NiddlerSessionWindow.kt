@@ -7,6 +7,7 @@ import com.chimerapps.niddler.ui.actions.LinkedAction
 import com.chimerapps.niddler.ui.actions.SimpleAction
 import com.chimerapps.niddler.ui.actions.TimelineAction
 import com.chimerapps.niddler.ui.component.view.MessagesView
+import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
@@ -30,6 +31,7 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
     private val rootContent = JPanel(BorderLayout())
     private val connectToolbar = setupConnectToolbar()
     private val viewToolbar = setupViewToolbar()
+    private val statusBar = NiddlerStatusBar()
 
     var currentViewMode: ViewMode = ViewMode.VIEW_MODE_TIMELINE
         set(value) {
@@ -52,6 +54,7 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
 
     init {
         add(rootContent, BorderLayout.CENTER)
+        add(statusBar, BorderLayout.SOUTH)
         updateView()
 
         messageContainer.registerListener(this)
@@ -144,6 +147,7 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
 
         niddlerClient = NiddlerClient(connection.uri, withDebugger = false).also {
             messageContainer.attach(it)
+            it.registerMessageListener(statusBar)
         }
         niddlerClient?.connect()
         connectionMode = ConnectionMode.MODE_CONNECTED
