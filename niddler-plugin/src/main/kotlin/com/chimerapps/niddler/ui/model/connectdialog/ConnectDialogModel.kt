@@ -3,6 +3,7 @@ package com.chimerapps.niddler.ui.model.connectdialog
 import com.icapps.niddler.lib.device.NiddlerSession
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.MutableTreeNode
 
 class ConnectDialogModel : DefaultTreeModel(DefaultMutableTreeNode()) {
 
@@ -13,7 +14,7 @@ class ConnectDialogModel : DefaultTreeModel(DefaultMutableTreeNode()) {
     }
 
     fun updateModel(devices: List<DeviceModel>) {
-        devicesRoot.update(devices)
+        devicesRoot.update(devices, this)
     }
 
 }
@@ -22,18 +23,22 @@ class RootNode : DefaultMutableTreeNode() {
 
     private var devices: List<DeviceModel> = emptyList()
 
-    fun update(newDevices: List<DeviceModel>) {
+    fun update(newDevices: List<DeviceModel>, model: DefaultTreeModel) {
         if (devices != newDevices) {
             devices = newDevices
-            removeAllChildren() //TODO optimize this?
+
+            for (i in childCount - 1 downTo 0) {
+                val node = getChildAt(i) as MutableTreeNode
+                model.removeNodeFromParent(node)
+            }
             devices.forEach {
-                add(ConnectDialogDeviceNode(it))
+                model.insertNodeInto(ConnectDialogDeviceNode(it), this, childCount)
             }
         } else {
             devices = newDevices
             devices.forEachIndexed { index, device ->
                 val deviceNode = getChildAt(index) as ConnectDialogDeviceNode
-                deviceNode.update(device)
+                deviceNode.update(device, model)
             }
         }
     }
@@ -49,10 +54,10 @@ class ConnectDialogProcessNode(val device: DeviceModel, val session: NiddlerSess
 class ConnectDialogDeviceNode(var device: DeviceModel) : DefaultMutableTreeNode() {
 
     init {
-        buildChildNodes()
+        buildChildNodes(model = null)
     }
 
-    fun update(device: DeviceModel) {
+    fun update(device: DeviceModel, model: DefaultTreeModel) {
         //Same sessions -> ignore
         if (this.device.sessions == device.sessions) {
             this.device = device
@@ -61,13 +66,21 @@ class ConnectDialogDeviceNode(var device: DeviceModel) : DefaultMutableTreeNode(
 
         this.device = device
 
-        removeAllChildren()
-        buildChildNodes()
+        for (i in childCount - 1 downTo 0) {
+            val node = getChildAt(i) as MutableTreeNode
+            model.removeNodeFromParent(node)
+        }
+
+        buildChildNodes(model)
     }
 
-    private fun buildChildNodes() {
+    private fun buildChildNodes(model: DefaultTreeModel?) {
         device.sessions.forEach {
-            add(ConnectDialogProcessNode(device, it))
+            if (model != null) {
+                model.insertNodeInto(ConnectDialogProcessNode(device, it), this, childCount)
+            } else {
+                add(ConnectDialogProcessNode(device, it))
+            }
         }
     }
 

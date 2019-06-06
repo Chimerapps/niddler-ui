@@ -69,7 +69,6 @@ class ConnectDialog(parent: Window?, adbInterface: ADBInterface) : ConnectDialog
 
     private fun onDevicesUpdated(devices: List<DeviceModel>) {
         deviceModel.updateModel(devices)
-        deviceModel.reload()
         val devicesRoot = deviceModel.devicesRoot
         devicesTree.expandPath(TreePath(devicesRoot.path))
 
