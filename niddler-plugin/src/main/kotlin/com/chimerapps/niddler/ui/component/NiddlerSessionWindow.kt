@@ -54,6 +54,7 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
     private val bodyParser = NiddlerMessageBodyParser(HeaderBodyClassifier(emptyList())) //TODO extensions!
     private val messageContainer = NiddlerMessageContainer(bodyParser::parseBody, InMemoryNiddlerMessageStorage())
     private var niddlerClient: NiddlerClient? = null
+    private var lastConnection: PreparedDeviceConnection? = null
 
     init {
         add(rootContent, BorderLayout.CENTER)
@@ -74,6 +75,8 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
         niddlerClient?.let { messageContainer.detach(it) }
         niddlerClient?.close()
         niddlerClient = null
+        lastConnection?.tearDown()
+        lastConnection = null
 
         messageContainer.storage.clear()
         messageContainer.unregisterListener(this)
@@ -95,6 +98,8 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
         actionGroup.add(DisconnectAction(this) {
             niddlerClient?.close()
             niddlerClient = null
+            lastConnection?.tearDown()
+            lastConnection = null
 
             connectionMode = ConnectionMode.MODE_DISCONNECTED
         })
@@ -140,6 +145,8 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
     private fun tryConnectDirect(directConnection: ManualConnection) {
         niddlerClient?.close()
         niddlerClient = null
+        lastConnection?.tearDown()
+        lastConnection = null
 
         connectOnConnection(DirectPreparedConnection(directConnection.ip, directConnection.port))
     }
@@ -147,6 +154,8 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
     private fun tryConnectSession(discovered: DiscoveredDeviceConnection) {
         niddlerClient?.close()
         niddlerClient = null
+        lastConnection?.tearDown()
+        lastConnection = null
 
         val connection = discovered.device.prepareConnection(freePort(), discovered.session.port)
         connectOnConnection(connection)
@@ -158,6 +167,7 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
             it.registerMessageListener(statusBar)
         }
         niddlerClient?.connect()
+        lastConnection = connection
         connectionMode = ConnectionMode.MODE_CONNECTED
     }
 

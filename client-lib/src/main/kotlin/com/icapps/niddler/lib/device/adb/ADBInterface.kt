@@ -104,7 +104,6 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) : BaseD
         if (freePort <= 0) {
             return emptyList()
         }
-
         try {
             return readAnnouncement(freePort)
         } finally {
@@ -114,7 +113,12 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) : BaseD
 
     override fun prepareConnection(suggestedLocalPort: Int, remotePort: Int): PreparedDeviceConnection {
         forwardTCPPort(suggestedLocalPort, remotePort)
-        return DirectPreparedConnection("127.0.0.1", suggestedLocalPort)
+        return object : DirectPreparedConnection("127.0.0.1", suggestedLocalPort) {
+            override fun tearDown() {
+                super.tearDown()
+                removeTCPForward(suggestedLocalPort)
+            }
+        }
     }
 
     override fun equals(other: Any?): Boolean {

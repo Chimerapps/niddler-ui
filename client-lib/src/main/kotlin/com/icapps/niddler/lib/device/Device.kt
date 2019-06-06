@@ -30,6 +30,8 @@ interface Device {
 
 interface PreparedDeviceConnection {
     val uri: URI
+
+    fun tearDown()
 }
 
 data class NiddlerSession(val device: Device,
@@ -60,9 +62,9 @@ private data class NiddlerAnnouncementMessage(
         val protocol: Int
 )
 
-class DirectPreparedConnection(ip: String, port: Int) : PreparedDeviceConnection {
+open class DirectPreparedConnection(ip: String, port: Int) : PreparedDeviceConnection {
 
-    override val uri: URI
+    final override val uri: URI
 
     init {
         val tempUri = URI.create("sis://$ip")
@@ -71,6 +73,9 @@ class DirectPreparedConnection(ip: String, port: Int) : PreparedDeviceConnection
         uri = URI.create("ws://${tempUri.host}:$usePort")
     }
 
+    override fun tearDown() {
+        //No-op
+    }
 }
 
 abstract class BaseDevice : Device {
