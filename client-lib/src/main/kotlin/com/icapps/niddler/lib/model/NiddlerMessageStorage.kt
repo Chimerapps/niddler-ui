@@ -7,7 +7,7 @@ import com.icapps.niddler.lib.connection.model.NiddlerMessage
  */
 interface NiddlerMessageStorage<T : NiddlerMessage> {
 
-    val messagesChronological: List<T>
+    val messagesChronological: ObservableChronologicalMessageList<T>
     val messagesLinked: Map<String, List<T>>
     var filter: Filter<T>?
 
@@ -34,60 +34,37 @@ interface NiddlerMessageStorage<T : NiddlerMessage> {
 
 class InMemoryNiddlerMessageStorage<T : NiddlerMessage> : NiddlerMessageStorage<T> {
 
-    private val messagesList: MutableList<T> = arrayListOf()
     private val messagesMapped = SemiOrderedMappingStorage<T>()
 
-    override val messagesChronological: List<T>
-        get() = synchronized(messagesList) {
-            filter?.let { activeFilter ->
-                messagesList.filter { activeFilter.messageFilter(it, this) }
-            } ?: ArrayList(messagesList)
-        }
+    override val messagesChronological: ObservableChronologicalMessageList<T> = ObservableChronologicalMessageList(this)
 
     override val messagesLinked: Map<String, List<T>>
         get() = messagesLinkedWithFilter(filter)
 
     override var filter: NiddlerMessageStorage.Filter<T>? = null
         set(value) {
-            synchronized(messagesList) {
+            synchronized(this) {
                 field = value
             }
         }
-        get() = synchronized(messagesList) { field }
+        get() = synchronized(this) { field }
 
     override fun clear() {
-        synchronized(messagesList) {
-            messagesList.clear()
+        synchronized(this) {
+            messagesChronological.clear()
             messagesMapped.clear()
         }
     }
 
     override fun addMessage(message: T) {
-        synchronized(messagesList) {
-            val size = messagesList.size
-            var insertIndex = 0
-            var duplicateTimestamps = false
-            for (i in 0 until size) {
-                val item = messagesList[size - i - 1]
-                if (item.timestamp < message.timestamp) {
-                    insertIndex = size - i
-                    break
-                } else if (item.timestamp == message.timestamp) {
-                    duplicateTimestamps = true
-                    insertIndex = size - i
-                    break
-                }
-            }
-            if (duplicateTimestamps && messagesList.indexOfFirst { it.messageId == message.messageId } != -1) {
-                return
-            }
-            messagesList.add(insertIndex, message)
-            messagesMapped.add(message.requestId, message)
+        synchronized(this) {
+            if (messagesChronological.addMessage(message))
+                messagesMapped.add(message.requestId, message)
         }
     }
 
     override fun getMessagesWithRequestId(requestId: String): List<T> {
-        return synchronized(messagesList) {
+        return synchronized(this) {
             messagesMapped[requestId] ?: emptyList()
         }
     }
@@ -105,12 +82,12 @@ class InMemoryNiddlerMessageStorage<T : NiddlerMessage> : NiddlerMessageStorage<
     override fun messagesLinkedWithFilter(filter: NiddlerMessageStorage.Filter<T>?)
             : Map<String, List<T>> {
         if (filter == null) {
-            return synchronized(messagesList) {
+            return synchronized(this) {
                 messagesMapped.toMap()
             }
         }
 
-        return synchronized(messagesList) {
+        return synchronized(this) {
             messagesMapped.toMap(filter)
         }
     }

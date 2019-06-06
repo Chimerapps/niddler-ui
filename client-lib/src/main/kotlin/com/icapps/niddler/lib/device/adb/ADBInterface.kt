@@ -1,6 +1,7 @@
 package com.icapps.niddler.lib.device.adb
 
 import com.icapps.niddler.lib.device.BaseDevice
+import com.icapps.niddler.lib.device.Device
 import com.icapps.niddler.lib.device.DirectPreparedConnection
 import com.icapps.niddler.lib.device.NiddlerSession
 import com.icapps.niddler.lib.device.PreparedDeviceConnection
@@ -105,6 +106,7 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) : BaseD
             return emptyList()
         }
         try {
+            forwardTCPPort(freePort, Device.ANNOUNCEMENT_PORT)
             return readAnnouncement(freePort)
         } finally {
             removeTCPForward(freePort)

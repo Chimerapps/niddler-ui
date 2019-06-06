@@ -1,12 +1,13 @@
 package com.chimerapps.niddler.ui.component.view
 
 import com.chimerapps.niddler.ui.model.AppPreferences
+import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.chimerapps.niddler.ui.util.ui.setColumnPreferredWidth
 import com.icapps.niddler.lib.connection.model.NetworkNiddlerMessage
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.BodyFormat
-import com.icapps.niddler.lib.model.BodyFormatType
+import com.icapps.niddler.lib.model.ChronologicalMessagesView
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.utils.getStatusCodeString
@@ -92,7 +93,7 @@ class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>
 
 }
 
-class LinkedTableModel(private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) : AbstractTableModel(), MessagesView {
+class LinkedTableModel(private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) : AbstractTableModel(), MessagesView, ChronologicalMessagesView.MessagesListener {
 
     companion object {
         const val INDEX_TIMESTAMP = 0
@@ -101,6 +102,18 @@ class LinkedTableModel(private val messageContainer: NiddlerMessageStorage<Parse
         const val INDEX_URL = 3
         const val INDEX_STATUS_CODE = 4
         const val INDEX_FORMAT = 5
+
+        private val empty = ParsedNiddlerMessage(
+                NetworkNiddlerMessage(
+                        requestId = "",
+                        messageId = "",
+                        timestamp = 0
+                ),
+                BodyFormat.NONE,
+                bodyData = null,
+                parsedNetworkReply = null,
+                parsedNetworkRequest = null
+        )
     }
 
     private val timeFormatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
@@ -112,39 +125,9 @@ class LinkedTableModel(private val messageContainer: NiddlerMessageStorage<Parse
 
     private val upIcon = loadIcon("/ic_up.png")
     private val downIcon = loadIcon("/ic_down.png")
-    private var messages: List<ParsedNiddlerMessage> = listOf(ParsedNiddlerMessage(
-            NetworkNiddlerMessage(
-                    "1",
-                    "2",
-                    System.currentTimeMillis(),
-                    "https://www.google.com",
-                    "GET",
-                    null,
-                    null,
-                    200,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-            ),
-            BodyFormat(BodyFormatType.FORMAT_XML, null, null),
-            null,
-            null,
-            null
-    ))
-
-    init {
-    }
+    private var messages = messageContainer.messagesChronological.newView(filter = null, messageListener = this)
 
     override fun onMessagesUpdated() {
-        //TODO optimized
-        messages = messageContainer.messagesChronological
-        fireTableDataChanged()
     }
 
     override fun getRowCount(): Int = messages.size
@@ -152,7 +135,7 @@ class LinkedTableModel(private val messageContainer: NiddlerMessageStorage<Parse
     override fun getColumnCount(): Int = 6
 
     override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? {
-        val message = messages[rowIndex]
+        val message = messages[rowIndex] ?: return empty
         val other = if (message.isRequest) messageContainer.findResponse(message) else messageContainer.findRequest(message)
 
         return when (columnIndex) {
@@ -194,6 +177,21 @@ class LinkedTableModel(private val messageContainer: NiddlerMessageStorage<Parse
     }
 
     override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = false
+
+    override fun onChanged() {
+        print("Data changed :(")
+        dispatchMain { fireTableDataChanged() }
+    }
+
+    override fun onItemAdded(index: Int) {
+        print("Item added!!!")
+        dispatchMain { fireTableRowsInserted(index, index) }
+    }
+
+    override fun onCleared() {
+        print("Cleared")
+        dispatchMain { fireTableDataChanged() }
+    }
 
     private fun formatStatusCode(statusCode: Int?): String {
         return if (statusCode == null) {
