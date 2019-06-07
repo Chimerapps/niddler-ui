@@ -4,11 +4,13 @@ import com.chimerapps.niddler.ui.NiddlerToolWindow
 import com.chimerapps.niddler.ui.actions.ConnectAction
 import com.chimerapps.niddler.ui.actions.DisconnectAction
 import com.chimerapps.niddler.ui.actions.LinkedAction
+import com.chimerapps.niddler.ui.actions.ScrollToBottomAction
 import com.chimerapps.niddler.ui.actions.SimpleAction
 import com.chimerapps.niddler.ui.actions.TimelineAction
 import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
+import com.chimerapps.niddler.ui.model.AppPreferences
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.device.DirectPreparedConnection
 import com.icapps.niddler.lib.device.PreparedDeviceConnection
@@ -31,6 +33,10 @@ import javax.swing.SwingUtilities
 
 class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : JPanel(BorderLayout()), ParsedNiddlerMessageListener<ParsedNiddlerMessage> {
 
+    private companion object {
+        private const val APP_PREFERENCE_SCROLL_TO_END = "scrollToEnd"
+    }
+
     private val rootContent = JPanel(BorderLayout())
     private val connectToolbar = setupConnectToolbar()
     private val viewToolbar = setupViewToolbar()
@@ -50,6 +56,17 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
             field = value
             connectToolbar.updateActionsImmediately()
         }
+    var scrollToEnd: Boolean = AppPreferences.get(APP_PREFERENCE_SCROLL_TO_END, default = true)
+        set(value) {
+            if (field == value)
+                return
+
+            currentMessagesView?.updateScrollToEnd(value)
+            AppPreferences.put(APP_PREFERENCE_SCROLL_TO_END, value, default = true)
+            field = value
+            viewToolbar.updateActionsImmediately()
+        }
+
     private var currentMessagesView: MessagesView? = null
     private val bodyParser = NiddlerMessageBodyParser(HeaderBodyClassifier(emptyList())) //TODO extensions!
     private val messageContainer = NiddlerMessageContainer(bodyParser::parseBody, InMemoryNiddlerMessageStorage())
@@ -112,17 +129,21 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
     private fun setupViewToolbar(): ActionToolbar {
         val actionGroup = DefaultActionGroup()
 
-        val timelineAction = TimelineAction(this)
+        val timelineAction = TimelineAction(window = this)
         actionGroup.add(timelineAction)
 
-        val linkedAction = LinkedAction(this)
+        val linkedAction = LinkedAction(window = this)
         actionGroup.add(linkedAction)
 
         actionGroup.addSeparator()
+        actionGroup.add(ScrollToBottomAction(window = this))
+        actionGroup.addSeparator()
+
         actionGroup.add(SimpleAction("Clear local", "Remove locally cached messages", icon = AllIcons.Actions.GC) {
             messageContainer.storage.clear()
             currentMessagesView?.onMessagesUpdated()
         })
+
 
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, false)
         add(toolbar.component, BorderLayout.WEST)
@@ -138,6 +159,7 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
 
     private fun <T> replaceMessagesView(messagesView: T) where T : JComponent, T : MessagesView {
         (currentMessagesView as? Component)?.let(rootContent::remove)
+        messagesView.updateScrollToEnd(scrollToEnd)
         currentMessagesView = messagesView
         rootContent.add(messagesView, BorderLayout.CENTER)
     }

@@ -7,6 +7,8 @@ interface MessagesView {
 
     var urlHider: BaseUrlHider?
 
+    fun updateScrollToEnd(scrollToEnd: Boolean)
+
     fun onMessagesUpdated()
 
 }

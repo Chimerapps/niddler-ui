@@ -14,6 +14,8 @@ import com.icapps.niddler.lib.utils.getStatusCodeString
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import java.awt.BorderLayout
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -79,6 +81,12 @@ class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>
         setColumnPreferredWidth(LinkedTableModel.INDEX_STATUS_CODE, AppPreferences.get(PREFERENCE_KEY_INDEX_STATUS_WIDTH, DEFAULT_STATUS_WIDTH))
     }
 
+    private val scrollToEndListener = object : ComponentAdapter() {
+        override fun componentResized(e: ComponentEvent?) {
+            tableView.scrollRectToVisible(tableView.getCellRect(tableView.rowCount - 1, 0, true))
+        }
+    }
+
     init {
         add(JBScrollPane(tableView), BorderLayout.CENTER)
     }
@@ -89,11 +97,18 @@ class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>
             model.urlHider = value
         }
 
-    override fun onMessagesUpdated() = model.onMessagesUpdated()
+    override fun updateScrollToEnd(scrollToEnd: Boolean) {
+        tableView.removeComponentListener(scrollToEndListener)
+        if (scrollToEnd)
+            tableView.addComponentListener(scrollToEndListener)
+    }
+
+    override fun onMessagesUpdated() {
+    }
 
 }
 
-class LinkedTableModel(private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) : AbstractTableModel(), MessagesView, ChronologicalMessagesView.MessagesListener {
+class LinkedTableModel(private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) : AbstractTableModel(), ChronologicalMessagesView.MessagesListener {
 
     companion object {
         const val INDEX_TIMESTAMP = 0
@@ -117,7 +132,7 @@ class LinkedTableModel(private val messageContainer: NiddlerMessageStorage<Parse
     }
 
     private val timeFormatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
-    override var urlHider: BaseUrlHider? = null
+    var urlHider: BaseUrlHider? = null
         set(value) {
             field = value
             fireTableDataChanged()
@@ -126,9 +141,6 @@ class LinkedTableModel(private val messageContainer: NiddlerMessageStorage<Parse
     private val upIcon = loadIcon("/ic_up.png")
     private val downIcon = loadIcon("/ic_down.png")
     private var messages = messageContainer.messagesChronological.newView(filter = null, messageListener = this)
-
-    override fun onMessagesUpdated() {
-    }
 
     override fun getRowCount(): Int = messages.size
 
@@ -179,17 +191,14 @@ class LinkedTableModel(private val messageContainer: NiddlerMessageStorage<Parse
     override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = false
 
     override fun onChanged() {
-        print("Data changed :(")
         dispatchMain { fireTableDataChanged() }
     }
 
     override fun onItemAdded(index: Int) {
-        print("Item added!!!")
         dispatchMain { fireTableRowsInserted(index, index) }
     }
 
     override fun onCleared() {
-        print("Cleared")
         dispatchMain { fireTableDataChanged() }
     }
 
