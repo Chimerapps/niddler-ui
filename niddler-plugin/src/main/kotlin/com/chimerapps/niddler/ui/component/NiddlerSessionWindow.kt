@@ -7,6 +7,7 @@ import com.chimerapps.niddler.ui.actions.LinkedAction
 import com.chimerapps.niddler.ui.actions.ScrollToBottomAction
 import com.chimerapps.niddler.ui.actions.SimpleAction
 import com.chimerapps.niddler.ui.actions.TimelineAction
+import com.chimerapps.niddler.ui.component.view.MessageDetailView
 import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
@@ -25,8 +26,8 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.ui.JBSplitter
 import java.awt.BorderLayout
-import java.awt.Component
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
@@ -35,12 +36,15 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
 
     private companion object {
         private const val APP_PREFERENCE_SCROLL_TO_END = "scrollToEnd"
+        private const val APP_PREFERENCE_SPLITTER_STATE = "${AppPreferences.NIDDLER_PREFIX}detailSplitter"
     }
 
     private val rootContent = JPanel(BorderLayout())
     private val connectToolbar = setupConnectToolbar()
     private val viewToolbar = setupViewToolbar()
     private val statusBar = NiddlerStatusBar()
+    private val splitter = JBSplitter(APP_PREFERENCE_SPLITTER_STATE, 0.6f)
+    private val detailView = MessageDetailView()
 
     var currentViewMode: ViewMode = ViewMode.VIEW_MODE_TIMELINE
         set(value) {
@@ -78,6 +82,9 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
         add(statusBar, BorderLayout.SOUTH)
         updateView()
 
+        splitter.secondComponent = detailView
+
+        rootContent.add(splitter, BorderLayout.CENTER)
         messageContainer.registerListener(this)
     }
 
@@ -158,10 +165,10 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
     }
 
     private fun <T> replaceMessagesView(messagesView: T) where T : JComponent, T : MessagesView {
-        (currentMessagesView as? Component)?.let(rootContent::remove)
+        splitter.firstComponent = messagesView
+
         messagesView.updateScrollToEnd(scrollToEnd)
         currentMessagesView = messagesView
-        rootContent.add(messagesView, BorderLayout.CENTER)
     }
 
     private fun tryConnectDirect(directConnection: ManualConnection) {

@@ -4,7 +4,7 @@ import com.intellij.ide.util.PropertiesComponent
 
 object AppPreferences {
 
-    private const val NIDDLER_PREFIX = "com.chimerapps.niddler."
+    const val NIDDLER_PREFIX = "com.chimerapps.niddler."
 
     private val properties = PropertiesComponent.getInstance()
 
