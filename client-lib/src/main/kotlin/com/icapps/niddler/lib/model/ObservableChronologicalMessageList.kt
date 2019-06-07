@@ -5,16 +5,15 @@ import java.lang.ref.WeakReference
 
 class ObservableChronologicalMessageList<T : NiddlerMessage>(private val storage: NiddlerMessageStorage<T>) {
 
-    private val internalList = ArrayList<T>()
-    private val views = ArrayList<WeakReference<ChronologicalMessagesView<T>>>()
+    companion object {
+        internal data class InsertPosition(val index: Int, val isDuplicateTimeStamp: Boolean)
 
-    fun addMessage(message: T): Boolean {
-        synchronized(internalList) {
-            val size = internalList.size
+        internal fun <T : NiddlerMessage> calculateInsertPosition(message: T, list: List<T>): InsertPosition {
+            val size = list.size
             var insertIndex = 0
             var duplicateTimestamps = false
             for (i in 0 until size) {
-                val item = internalList[size - i - 1]
+                val item = list[size - i - 1]
                 if (item.timestamp < message.timestamp) {
                     insertIndex = size - i
                     break
@@ -24,11 +23,21 @@ class ObservableChronologicalMessageList<T : NiddlerMessage>(private val storage
                     break
                 }
             }
+            return InsertPosition(insertIndex, duplicateTimestamps)
+        }
+    }
+
+    private val internalList = ArrayList<T>()
+    private val views = ArrayList<WeakReference<ChronologicalMessagesView<T>>>()
+
+    fun addMessage(message: T): Boolean {
+        synchronized(internalList) {
+            val insertPos = calculateInsertPosition(message, internalList)
             //Damn, we found a duplicate timestamp. Check if we have a duplicate message
-            if (duplicateTimestamps && internalList.indexOfFirst { it.messageId == message.messageId } != -1) {
+            if (insertPos.isDuplicateTimeStamp && internalList.indexOfFirst { it.messageId == message.messageId } != -1) {
                 return false
             }
-            internalList.add(insertIndex, message)
+            internalList.add(insertPos.index, message)
             dispatchToViews { notifyMessageInsert(message) }
         }
         return true
@@ -83,21 +92,10 @@ class ChronologicalMessagesView<T : NiddlerMessage>(private val messageListener:
             if (filter?.messageFilter(message, storage) == true)
                 return
 
-            //Search for our index to insert, uses same logic as container parent to keep the inserting the same. Dispatches the updated index!
+            val insertPos = ObservableChronologicalMessageList.calculateInsertPosition(message, filteredMessages)
 
-            var insertIndex = 0
-            for (i in 0 until size) {
-                val item = filteredMessages[size - i - 1]
-                if (item.timestamp < message.timestamp) {
-                    insertIndex = size - i
-                    break
-                } else if (item.timestamp == message.timestamp) {
-                    insertIndex = size - i
-                    break
-                }
-            }
-            filteredMessages.add(insertIndex, message)
-            messageListener.onItemAdded(filteredMessages.size)
+            filteredMessages.add(insertPos.index, message)
+            messageListener.onItemAdded(insertPos.index)
         }
     }
 
