@@ -22,9 +22,11 @@ import java.util.Locale
 import javax.swing.Icon
 import javax.swing.JPanel
 import javax.swing.JTable
+import javax.swing.ListSelectionModel
 import javax.swing.table.AbstractTableModel
 
-class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) : JPanel(BorderLayout()), MessagesView {
+class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>,
+                   private val selectionListener: MessageSelectionListener) : JPanel(BorderLayout()), MessagesView {
 
     private companion object {
         private const val PREFERENCE_KEY_TIMESTAMP_WIDTH = "timeline.timestamp.width"
@@ -42,7 +44,7 @@ class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>
         private const val DEFAULT_FORMAT_WIDTH = -1
     }
 
-    private val model = LinkedTableModel(messageContainer)
+    private val model = TimelineTableModel(messageContainer)
     private val tableView = JBTable(model).apply {
         fillsViewportHeight = false
         rowHeight = 32
@@ -51,34 +53,40 @@ class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>
         autoResizeMode = JTable.AUTO_RESIZE_OFF
         tableHeader = null
 
+        selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
+        selectionModel.addListSelectionListener {
+            val row = selectedRow
+            selectionListener.onMessageSelectionChanged(this@TimelineView.model.getMessageAtRow(row))
+        }
+
         addMouseListener(TableResizeAdapter(this) { columnIndex, newWidth ->
             val key = when (columnIndex) {
-                LinkedTableModel.INDEX_TIMESTAMP -> PREFERENCE_KEY_TIMESTAMP_WIDTH
-                LinkedTableModel.INDEX_DIRECTION -> PREFERENCE_KEY_INDEX_DIRECTION_WIDTH
-                LinkedTableModel.INDEX_METHOD -> PREFERENCE_KEY_INDEX_METHOD_WIDTH
-                LinkedTableModel.INDEX_URL -> PREFERENCE_KEY_INDEX_URL_WIDTH
-                LinkedTableModel.INDEX_STATUS_CODE -> PREFERENCE_KEY_INDEX_STATUS_WIDTH
-                LinkedTableModel.INDEX_FORMAT -> PREFERENCE_KEY_INDEX_FORMAT_WIDTH
+                TimelineTableModel.INDEX_TIMESTAMP -> PREFERENCE_KEY_TIMESTAMP_WIDTH
+                TimelineTableModel.INDEX_DIRECTION -> PREFERENCE_KEY_INDEX_DIRECTION_WIDTH
+                TimelineTableModel.INDEX_METHOD -> PREFERENCE_KEY_INDEX_METHOD_WIDTH
+                TimelineTableModel.INDEX_URL -> PREFERENCE_KEY_INDEX_URL_WIDTH
+                TimelineTableModel.INDEX_STATUS_CODE -> PREFERENCE_KEY_INDEX_STATUS_WIDTH
+                TimelineTableModel.INDEX_FORMAT -> PREFERENCE_KEY_INDEX_FORMAT_WIDTH
                 else -> return@TableResizeAdapter
             }
             val defaultForKey = when (columnIndex) {
-                LinkedTableModel.INDEX_TIMESTAMP -> DEFAULT_TIMESTAMP_WIDTH
-                LinkedTableModel.INDEX_DIRECTION -> DEFAULT_DIRECTION_WIDTH
-                LinkedTableModel.INDEX_METHOD -> DEFAULT_METHOD_WIDTH
-                LinkedTableModel.INDEX_URL -> DEFAULT_URL_WIDTH
-                LinkedTableModel.INDEX_STATUS_CODE -> DEFAULT_STATUS_WIDTH
-                LinkedTableModel.INDEX_FORMAT -> DEFAULT_FORMAT_WIDTH
+                TimelineTableModel.INDEX_TIMESTAMP -> DEFAULT_TIMESTAMP_WIDTH
+                TimelineTableModel.INDEX_DIRECTION -> DEFAULT_DIRECTION_WIDTH
+                TimelineTableModel.INDEX_METHOD -> DEFAULT_METHOD_WIDTH
+                TimelineTableModel.INDEX_URL -> DEFAULT_URL_WIDTH
+                TimelineTableModel.INDEX_STATUS_CODE -> DEFAULT_STATUS_WIDTH
+                TimelineTableModel.INDEX_FORMAT -> DEFAULT_FORMAT_WIDTH
                 else -> return@TableResizeAdapter
             }
             AppPreferences.put(key, newWidth, defaultForKey)
         })
 
-        setColumnPreferredWidth(LinkedTableModel.INDEX_TIMESTAMP, AppPreferences.get(PREFERENCE_KEY_TIMESTAMP_WIDTH, DEFAULT_TIMESTAMP_WIDTH))
-        setColumnPreferredWidth(LinkedTableModel.INDEX_DIRECTION, AppPreferences.get(PREFERENCE_KEY_INDEX_DIRECTION_WIDTH, DEFAULT_DIRECTION_WIDTH))
-        setColumnPreferredWidth(LinkedTableModel.INDEX_METHOD, AppPreferences.get(PREFERENCE_KEY_INDEX_METHOD_WIDTH, DEFAULT_METHOD_WIDTH))
-        setColumnPreferredWidth(LinkedTableModel.INDEX_URL, AppPreferences.get(PREFERENCE_KEY_INDEX_URL_WIDTH, DEFAULT_URL_WIDTH))
-        setColumnPreferredWidth(LinkedTableModel.INDEX_FORMAT, AppPreferences.get(PREFERENCE_KEY_INDEX_FORMAT_WIDTH, DEFAULT_FORMAT_WIDTH))
-        setColumnPreferredWidth(LinkedTableModel.INDEX_STATUS_CODE, AppPreferences.get(PREFERENCE_KEY_INDEX_STATUS_WIDTH, DEFAULT_STATUS_WIDTH))
+        setColumnPreferredWidth(TimelineTableModel.INDEX_TIMESTAMP, AppPreferences.get(PREFERENCE_KEY_TIMESTAMP_WIDTH, DEFAULT_TIMESTAMP_WIDTH))
+        setColumnPreferredWidth(TimelineTableModel.INDEX_DIRECTION, AppPreferences.get(PREFERENCE_KEY_INDEX_DIRECTION_WIDTH, DEFAULT_DIRECTION_WIDTH))
+        setColumnPreferredWidth(TimelineTableModel.INDEX_METHOD, AppPreferences.get(PREFERENCE_KEY_INDEX_METHOD_WIDTH, DEFAULT_METHOD_WIDTH))
+        setColumnPreferredWidth(TimelineTableModel.INDEX_URL, AppPreferences.get(PREFERENCE_KEY_INDEX_URL_WIDTH, DEFAULT_URL_WIDTH))
+        setColumnPreferredWidth(TimelineTableModel.INDEX_FORMAT, AppPreferences.get(PREFERENCE_KEY_INDEX_FORMAT_WIDTH, DEFAULT_FORMAT_WIDTH))
+        setColumnPreferredWidth(TimelineTableModel.INDEX_STATUS_CODE, AppPreferences.get(PREFERENCE_KEY_INDEX_STATUS_WIDTH, DEFAULT_STATUS_WIDTH))
     }
 
     private val scrollToEndListener = object : ComponentAdapter() {
@@ -108,7 +116,7 @@ class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>
 
 }
 
-class LinkedTableModel(private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) : AbstractTableModel(), ChronologicalMessagesView.MessagesListener {
+class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) : AbstractTableModel(), ChronologicalMessagesView.MessagesListener {
 
     companion object {
         const val INDEX_TIMESTAMP = 0
@@ -141,6 +149,10 @@ class LinkedTableModel(private val messageContainer: NiddlerMessageStorage<Parse
     private val upIcon = loadIcon("/ic_up.png")
     private val downIcon = loadIcon("/ic_down.png")
     private var messages = messageContainer.messagesChronological.newView(filter = null, messageListener = this)
+
+    fun getMessageAtRow(rowIndex: Int): ParsedNiddlerMessage? {
+        return messages[rowIndex]
+    }
 
     override fun getRowCount(): Int = messages.size
 

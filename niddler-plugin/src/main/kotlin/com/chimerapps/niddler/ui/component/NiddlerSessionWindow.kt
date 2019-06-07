@@ -13,6 +13,7 @@ import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
 import com.chimerapps.niddler.ui.model.AppPreferences
 import com.icapps.niddler.lib.connection.NiddlerClient
+import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
 import com.icapps.niddler.lib.device.DirectPreparedConnection
 import com.icapps.niddler.lib.device.PreparedDeviceConnection
 import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
@@ -159,7 +160,7 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
 
     private fun updateView() {
         when (currentViewMode) {
-            ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(messageContainer.storage))
+            ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(messageContainer.storage, detailView))
             ViewMode.VIEW_MODE_LINKED -> TODO()
         }
     }
@@ -194,6 +195,11 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
         niddlerClient = NiddlerClient(connection.uri, withDebugger = false).also {
             messageContainer.attach(it)
             it.registerMessageListener(statusBar)
+            it.registerMessageListener(object : NiddlerMessageListener {
+                override fun onClosed() {
+                    connectionMode = ConnectionMode.MODE_DISCONNECTED
+                }
+            })
         }
         niddlerClient?.connect()
         lastConnection = connection
