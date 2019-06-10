@@ -24,16 +24,20 @@ import com.icapps.niddler.lib.model.ParsedNiddlerMessageListener
 import com.icapps.niddler.lib.model.classifier.HeaderBodyClassifier
 import com.icapps.niddler.lib.utils.freePort
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.project.Project
 import com.intellij.ui.JBSplitter
 import java.awt.BorderLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
-class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : JPanel(BorderLayout()), ParsedNiddlerMessageListener<ParsedNiddlerMessage> {
+class NiddlerSessionWindow(project: Project,
+                           disposable: Disposable,
+                           private val niddlerToolWindow: NiddlerToolWindow) : JPanel(BorderLayout()), ParsedNiddlerMessageListener<ParsedNiddlerMessage> {
 
     private companion object {
         private const val APP_PREFERENCE_SCROLL_TO_END = "scrollToEnd"
@@ -45,7 +49,6 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
     private val viewToolbar = setupViewToolbar()
     private val statusBar = NiddlerStatusBar()
     private val splitter = JBSplitter(APP_PREFERENCE_SPLITTER_STATE, 0.6f)
-    private val detailView = MessageDetailView()
 
     var currentViewMode: ViewMode = ViewMode.VIEW_MODE_TIMELINE
         set(value) {
@@ -77,6 +80,7 @@ class NiddlerSessionWindow(private val niddlerToolWindow: NiddlerToolWindow) : J
     private val messageContainer = NiddlerMessageContainer(bodyParser::parseBody, InMemoryNiddlerMessageStorage())
     private var niddlerClient: NiddlerClient? = null
     private var lastConnection: PreparedDeviceConnection? = null
+    private val detailView = MessageDetailView(project, disposable, messageContainer.storage)
 
     init {
         add(rootContent, BorderLayout.CENTER)

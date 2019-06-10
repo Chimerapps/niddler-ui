@@ -42,7 +42,7 @@ open class NiddlerV2ProtocolHandler(messageListener: NiddlerMessageListener,
                 NiddlerServerInfo(
                         serverName = serverInfo["serverName"].asString,
                         serverDescription = serverInfo["serverDescription"].asString,
-                        icon = if (serverInfo.has("icon")) serverInfo["icon"].asString else null,
+                        icon = if (serverInfo["icon"]?.isJsonNull == false) serverInfo["icon"].asString else null,
                         protocol = protocolVersion))
     }
 

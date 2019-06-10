@@ -1,18 +1,19 @@
 package com.chimerapps.niddler.ui.component.view
 
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
-import com.intellij.ui.components.JBScrollPane
+import com.intellij.execution.ui.RunnerLayoutUi
+import com.intellij.execution.ui.layout.PlaceInGrid
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
-import javax.swing.BorderFactory
-import javax.swing.BoxLayout
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.SwingConstants
-import javax.swing.border.EmptyBorder
-import javax.swing.border.TitledBorder
-import kotlin.random.Random
 
-class MessageDetailView : JPanel(BorderLayout()), MessageSelectionListener {
+class MessageDetailView(project: Project,
+                        disposable: Disposable,
+                        private val storage: NiddlerMessageStorage<ParsedNiddlerMessage>) : JPanel(BorderLayout()), MessageSelectionListener {
 
     var currentMessage: ParsedNiddlerMessage? = null
         set(value) {
@@ -27,31 +28,20 @@ class MessageDetailView : JPanel(BorderLayout()), MessageSelectionListener {
         }
 
     private var currentlyEmpty = false
-    private val generalPanel = JPanel()
-    private val headersPanel = JPanel()
-    private val tracePanel = JPanel()
-    private val contextPanel = JPanel()
-    private val detailContainer = JPanel().also {
-        it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
-        it.add(generalPanel)
-        it.add(headersPanel)
-        it.add(tracePanel)
-        it.add(contextPanel)
-    }
-
-    private val contentScroller = JBScrollPane(JPanel(BorderLayout()).also { it.add(detailContainer, BorderLayout.NORTH) })
+    private val generalDetailPanel = GeneralMessageDetailPanel()
+    private val tabsContainer: RunnerLayoutUi
 
     init {
         setEmpty()
 
-        generalPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0),
-                "General", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
-        headersPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0),
-                "Headers", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
-        tracePanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0),
-                "Stacktrace", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
-        contextPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0),
-                "Context", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
+        tabsContainer = RunnerLayoutUi.Factory.getInstance(project).create("niddler-ui", "Detail tabs", "Some session name?", disposable)
+        val detailsContent = tabsContainer.createContent("DetailViewDetails", generalDetailPanel, "Details", null, null)
+        detailsContent.isCloseable = false
+        tabsContainer.addContent(detailsContent, -1, PlaceInGrid.center, false)
+
+        val bodyContent = tabsContainer.createContent("DetailViewBody", JPanel(), "Body", null, null)
+        bodyContent.isCloseable = false
+        tabsContainer.addContent(bodyContent, -1, PlaceInGrid.center, false)
     }
 
     override fun onMessageSelectionChanged(message: ParsedNiddlerMessage?) {
@@ -75,7 +65,7 @@ class MessageDetailView : JPanel(BorderLayout()), MessageSelectionListener {
 
         currentlyEmpty = false
         removeAll()
-        add(contentScroller, BorderLayout.CENTER)
+        add(tabsContainer.component, BorderLayout.CENTER)
         revalidate()
         repaint()
     }
@@ -83,8 +73,13 @@ class MessageDetailView : JPanel(BorderLayout()), MessageSelectionListener {
     private fun updateUi(message: ParsedNiddlerMessage) {
         setDetailUI()
 
-    }
+        val other = if (message.isRequest)
+            storage.findResponse(message)
+        else
+            storage.findRequest(message)
 
+        generalDetailPanel.init(message, other)
+    }
 
 }
 

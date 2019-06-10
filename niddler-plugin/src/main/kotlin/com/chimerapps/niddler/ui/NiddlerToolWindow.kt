@@ -24,7 +24,7 @@ import java.awt.GridBagLayout
 import javax.swing.BorderFactory
 import javax.swing.JPanel
 
-class NiddlerToolWindow(project: Project, disposable: Disposable) : SimpleToolWindowPanel(/* vertical */ false, /* borderless */ true) {
+class NiddlerToolWindow(private val project: Project, private val disposable: Disposable) : SimpleToolWindowPanel(/* vertical */ false, /* borderless */ true) {
 
     private val tabsContainer: RunnerLayoutUi
     private var c = 0
@@ -95,7 +95,7 @@ class NiddlerToolWindow(project: Project, disposable: Disposable) : SimpleToolWi
     }
 
     private fun newSessionWindow() {
-        val content = tabsContainer.createContent("${c++}-contentId", NiddlerSessionWindow(this), "Session $c", null, null)
+        val content = tabsContainer.createContent("${c++}-contentId", NiddlerSessionWindow(project, disposable, this), "Session $c", null, null)
         content.isCloseable = true
         tabsContainer.addContent(content, -1, PlaceInGrid.center, false)
     }
