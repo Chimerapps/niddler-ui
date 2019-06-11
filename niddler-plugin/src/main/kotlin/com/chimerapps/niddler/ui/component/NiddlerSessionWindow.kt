@@ -196,6 +196,8 @@ class NiddlerSessionWindow(project: Project,
     }
 
     private fun connectOnConnection(connection: PreparedDeviceConnection) {
+        messageContainer.storage.clear()
+
         niddlerClient = NiddlerClient(connection.uri, withDebugger = false).also {
             messageContainer.attach(it)
             it.registerMessageListener(statusBar)
