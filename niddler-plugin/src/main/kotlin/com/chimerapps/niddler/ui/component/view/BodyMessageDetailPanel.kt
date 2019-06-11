@@ -18,15 +18,6 @@ class BodyMessageDetailPanel : JPanel(BorderLayout()) {
     private val structuredButton = JToggleButton("Structured", AllIcons.Hierarchy.Callee)
     private val prettyButton = JToggleButton("Pretty", loadIcon("/ic_pretty.png"))
     private val rawButton = JToggleButton("Raw", AllIcons.Debugger.Db_primitive)
-    private val buttonsContainer = JToolBar().also {
-        it.isFloatable = false
-        it.add(Box.createHorizontalGlue())
-        it.add(structuredButton)
-        it.add(prettyButton)
-        it.add(rawButton)
-
-        add(it, BorderLayout.NORTH)
-    }
 
     private var previousStructuredComponent: JComponent? = null
     private var previousPrettyComponent: JComponent? = null
@@ -38,6 +29,16 @@ class BodyMessageDetailPanel : JPanel(BorderLayout()) {
     private var currentView = CurrentView.STRUCTURED
 
     init {
+        JToolBar().also {
+            it.isFloatable = false
+            it.add(Box.createHorizontalGlue())
+            it.add(structuredButton)
+            it.add(prettyButton)
+            it.add(rawButton)
+
+            add(it, BorderLayout.NORTH)
+        }
+
         ButtonGroup().also {
             it.add(structuredButton)
             it.add(prettyButton)
