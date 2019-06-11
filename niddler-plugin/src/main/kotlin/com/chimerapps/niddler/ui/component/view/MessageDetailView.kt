@@ -29,6 +29,7 @@ class MessageDetailView(project: Project,
 
     private var currentlyEmpty = false
     private val generalDetailPanel = GeneralMessageDetailPanel()
+    private val bodyDetailPanel = BodyMessageDetailPanel()
     private val tabsContainer: RunnerLayoutUi
 
     init {
@@ -39,7 +40,7 @@ class MessageDetailView(project: Project,
         detailsContent.isCloseable = false
         tabsContainer.addContent(detailsContent, -1, PlaceInGrid.center, false)
 
-        val bodyContent = tabsContainer.createContent("DetailViewBody", JPanel(), "Body", null, null)
+        val bodyContent = tabsContainer.createContent("DetailViewBody", bodyDetailPanel, "Body", null, null)
         bodyContent.isCloseable = false
         tabsContainer.addContent(bodyContent, -1, PlaceInGrid.center, false)
     }
@@ -79,6 +80,7 @@ class MessageDetailView(project: Project,
             storage.findRequest(message)
 
         generalDetailPanel.init(message, other)
+        bodyDetailPanel.init(message)
     }
 
 }

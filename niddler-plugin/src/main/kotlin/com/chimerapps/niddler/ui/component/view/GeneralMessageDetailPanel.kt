@@ -78,6 +78,9 @@ class GeneralMessageDetailPanel : JPanel(BorderLayout()) {
 
         tracePanel.isVisible = false
         contextPanel.isVisible = false
+
+        revalidate()
+        repaint()
     }
 
     private fun fillGeneral(message: ParsedNiddlerMessage, other: ParsedNiddlerMessage?) {

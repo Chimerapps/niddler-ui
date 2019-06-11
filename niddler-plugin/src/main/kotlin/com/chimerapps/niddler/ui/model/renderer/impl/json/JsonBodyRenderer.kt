@@ -23,7 +23,7 @@ import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
 import javax.swing.tree.TreeSelectionModel
 
-class JsonBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
+object JsonBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
 
     override val supportsStructure: Boolean = true
     override val supportsPretty: Boolean = true
