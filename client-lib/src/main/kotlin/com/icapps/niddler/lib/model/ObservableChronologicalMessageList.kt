@@ -119,6 +119,10 @@ class ChronologicalMessagesView<T : NiddlerMessage>(private val messageListener:
         }
     }
 
+    fun indexOf(message: T): Int {
+        return synchronized(this) { filteredMessages.indexOf(message) }
+    }
+
     interface MessagesListener {
         fun onChanged()
         fun onItemAdded(index: Int)

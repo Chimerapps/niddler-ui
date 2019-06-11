@@ -16,6 +16,8 @@ import com.intellij.ui.table.JBTable
 import java.awt.BorderLayout
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -79,6 +81,23 @@ class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>
                 else -> return@TableResizeAdapter
             }
             AppPreferences.put(key, newWidth, defaultForKey)
+        })
+        addKeyListener(object: KeyAdapter() {
+            override fun keyPressed(e: KeyEvent) {
+                if (e.keyCode == KeyEvent.VK_R) {
+                    val current = this@TimelineView.model.getMessageAtRow(selectedRow) ?:return
+                    val other = if (current.isRequest) {
+                        messageContainer.findResponse(current)
+                    } else {
+                        messageContainer.findRequest(current)
+                    } ?: return
+                    val index = this@TimelineView.model.findMessageIndex(other)
+                    if (index != -1) {
+                        selectionModel.clearSelection()
+                        selectionModel.addSelectionInterval(index, index)
+                    }
+                }
+            }
         })
 
         setColumnPreferredWidth(TimelineTableModel.INDEX_TIMESTAMP, AppPreferences.get(PREFERENCE_KEY_TIMESTAMP_WIDTH, DEFAULT_TIMESTAMP_WIDTH))
@@ -229,5 +248,9 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<Par
 
         //u2026 = …
         return "\u2026" + url.substring(baseToStrip.length)
+    }
+
+    fun findMessageIndex(message: ParsedNiddlerMessage): Int {
+        return messages.indexOf(message)
     }
 }
