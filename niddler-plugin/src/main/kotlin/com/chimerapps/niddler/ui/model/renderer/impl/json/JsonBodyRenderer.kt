@@ -1,6 +1,7 @@
 package com.chimerapps.niddler.ui.model.renderer.impl.json
 
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
+import com.chimerapps.niddler.ui.model.renderer.textAreaRenderer
 import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
@@ -39,30 +40,12 @@ object JsonBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
 
     override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
         val stringData = GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(message.bodyData)
-
-        return textArea(stringData, reuseComponent)
+        return textAreaRenderer(stringData, reuseComponent)
     }
 
     override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
         val stringData = message.message.getBodyAsString(message.bodyFormat.encoding) ?: ""
-        return textArea(stringData, reuseComponent)
-    }
-
-    private fun textArea(stringData: String, reuseComponent: JComponent?): JComponent {
-        val component = if (reuseComponent is JBScrollPane && reuseComponent.componentCount != 0 && reuseComponent.getComponent(0) is JTextArea) {
-            reuseComponent to reuseComponent.getComponent(0) as JTextArea
-        } else {
-            val textArea = JTextArea().also {
-                it.isEditable = false
-                it.font = JBFont.create(Font("Monospaced", 0, 10))
-            }
-            JBScrollPane(textArea) to textArea
-        }
-
-        val doc = component.second.document
-        doc.remove(0, doc.length)
-        doc.insertString(0, stringData, null)
-        return component.first
+        return textAreaRenderer(stringData, reuseComponent)
     }
 
 }

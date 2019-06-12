@@ -18,6 +18,15 @@ fun JTable.setColumnPreferredWidth(columnIndex: Int, width: Int) {
     column.preferredWidth = width
 }
 
+fun JTable.setColumnFixedWidth(columnIndex: Int, width: Int) {
+    if (width < 0) return
+    val column = columnModel.getColumn(columnIndex) ?: return
+    column.preferredWidth = width
+    column.maxWidth = width
+    column.minWidth = width
+}
+
+
 fun dispatchMain(toExecute: () -> Unit) {
     ApplicationManager.getApplication().invokeLater(toExecute)
 }
