@@ -32,7 +32,9 @@ dependencies {
         }
     }
     deps.pluginCompile.each { name, dep ->
-        implementation dep
+        implementation(dep) {
+            exclude group: 'org.slf4j', module: 'slf4j-api'
+        }
     }
     implementation(project(':client-lib')) {
         exclude group: 'org.slf4j', module: 'slf4j-api'

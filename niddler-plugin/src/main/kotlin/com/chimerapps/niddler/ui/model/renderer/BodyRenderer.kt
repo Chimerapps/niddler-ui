@@ -2,6 +2,7 @@ package com.chimerapps.niddler.ui.model.renderer
 
 import com.chimerapps.niddler.ui.model.renderer.impl.binary.BinaryBodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.impl.form.FormEncodedBodyRenderer
+import com.chimerapps.niddler.ui.model.renderer.impl.html.HTMLBodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.impl.image.ImageBodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.impl.json.JsonBodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.impl.plain.PlainBodyRenderer
@@ -36,6 +37,7 @@ fun bodyRendererForFormat(format: BodyFormat): BodyRenderer<ParsedNiddlerMessage
         BodyFormatType.FORMAT_BINARY -> BinaryBodyRenderer
         BodyFormatType.FORMAT_FORM_ENCODED -> FormEncodedBodyRenderer
         BodyFormatType.FORMAT_XML -> XMLBodyRenderer
+        BodyFormatType.FORMAT_HTML -> HTMLBodyRenderer
         else -> null
     }
 }

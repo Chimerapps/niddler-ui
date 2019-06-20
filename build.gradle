@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        deps.gradlePlugins.each { name, dep -> 
+        deps.gradlePlugins.each { name, dep ->
             classpath dep
         }
     }
@@ -18,8 +18,6 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven {
-            url "https://jitpack.io"
-        }
+        maven { url "https://jitpack.io" }
     }
 }
