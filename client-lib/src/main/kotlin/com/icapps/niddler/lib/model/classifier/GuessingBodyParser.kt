@@ -21,7 +21,9 @@ class GuessingBodyParser(private val initialBodyFormat: BodyClassifierResult, pr
         if (bodyBytes == null || bodyBytes.isEmpty())
             return ConcreteBody(initialBodyFormat.format.type, initialBodyFormat.format.rawMimeType, data = null)
 
-        if (initialBodyFormat.format.type == BodyFormatType.FORMAT_BINARY || initialBodyFormat.format.type == BodyFormatType.FORMAT_EMPTY)
+        if (initialBodyFormat.format.type == BodyFormatType.FORMAT_BINARY
+                || initialBodyFormat.format.type == BodyFormatType.FORMAT_EMPTY
+                || initialBodyFormat.format.type == BodyFormatType.FORMAT_PLAIN)
             return determineBodyFromContent(bodyBytes) ?: ConcreteBody(initialBodyFormat.format.type,
                     initialBodyFormat.format.rawMimeType,
                     data = bodyBytes)

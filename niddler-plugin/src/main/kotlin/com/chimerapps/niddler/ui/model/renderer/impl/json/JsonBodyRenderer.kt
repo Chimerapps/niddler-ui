@@ -18,7 +18,6 @@ import java.awt.Point
 import java.awt.event.MouseEvent
 import java.util.Enumeration
 import javax.swing.JComponent
-import javax.swing.JTextArea
 import javax.swing.JTree
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
@@ -149,11 +148,13 @@ private class JsonTreeCellRenderer : ColoredTreeCellRenderer() {
     private val intIcon = loadIcon("/ic_int.png")
     private val stringIcon = loadIcon("/ic_string.png")
     private val doubleIcon = loadIcon("/ic_double.png")
+    private val monoSpaced = JBFont.create(Font("Monospaced", 0, 12))
 
     override fun customizeCellRenderer(tree: JTree, value: Any?, selected: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean) {
         if (value !is JsonNode<*>)
             return
 
+        font = monoSpaced
         var useItalic = false
 
         icon = when (value.actualType()) {
