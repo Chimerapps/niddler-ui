@@ -23,7 +23,7 @@ object FormEncodedBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     @Suppress("UNCHECKED_CAST")
     override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
         val data = message.bodyData as? Map<String, List<String>>
-        val component = reuseOrNew(reuseComponent) {
+        val component = reuseOrNew("formEncoded", reuseComponent) {
             PopupTable(FormEncodedTableModel(emptyMap()), rowAtIndexCb = { model, index -> model.valueAt(index) }, popupMenuForSelectionCb = ::makePopup).also {
                 it.fillsViewportHeight = false
                 it.rowHeight = 24

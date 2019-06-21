@@ -35,7 +35,7 @@ object XMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
 
     override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
         val data = (message.bodyData as? Document)
-        val component = reuseOrNew(reuseComponent) { NiddlerXmlTree() }
+        val component = reuseOrNew("xmlTree", reuseComponent) { NiddlerXmlTree() }
         component.second.resetModel(data?.documentElement)
         return component.first
     }

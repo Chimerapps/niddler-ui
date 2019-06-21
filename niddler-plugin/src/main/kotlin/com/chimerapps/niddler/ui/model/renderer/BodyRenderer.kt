@@ -42,8 +42,11 @@ fun bodyRendererForFormat(format: BodyFormat): BodyRenderer<ParsedNiddlerMessage
     }
 }
 
+private const val REUSE_COMPONENT_KEY = "niddler_reuse_component_key"
+internal const val REUSE_KEY_MONOSPACED_TEXT = "monospaced_text"
+
 internal fun textAreaRenderer(stringData: String, reuseComponent: JComponent?): JComponent {
-    val component = reuseOrNew(reuseComponent) {
+    val component = reuseOrNew(REUSE_KEY_MONOSPACED_TEXT, reuseComponent) {
         JTextArea().also {
             it.isEditable = false
             it.font = JBFont.create(Font("Monospaced", 0, 10))
@@ -56,11 +59,12 @@ internal fun textAreaRenderer(stringData: String, reuseComponent: JComponent?): 
     return component.first
 }
 
-internal inline fun <reified T : JComponent> reuseOrNew(reuseComponent: JComponent?, componentCreator: () -> T): Pair<JBScrollPane, T> {
-    return if (reuseComponent is JBScrollPane && reuseComponent.componentCount != 0 && reuseComponent.getComponent(0) is T) {
+internal inline fun <reified T : JComponent> reuseOrNew(key: String, reuseComponent: JComponent?, componentCreator: () -> T): Pair<JBScrollPane, T> {
+    return if (reuseComponent is JBScrollPane && reuseComponent.componentCount != 0
+            && reuseComponent.getComponent(0) is T && reuseComponent.getClientProperty(REUSE_COMPONENT_KEY) == key) {
         reuseComponent to reuseComponent.getComponent(0) as T
     } else {
         val component = componentCreator()
-        JBScrollPane(component) to component
+        JBScrollPane(component).also { it.putClientProperty(REUSE_COMPONENT_KEY, key) } to component
     }
 }
