@@ -21,7 +21,6 @@ import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
-import javax.swing.JScrollPane
 import javax.swing.border.BevelBorder
 import javax.swing.border.EmptyBorder
 import javax.swing.border.TitledBorder
@@ -29,11 +28,17 @@ import javax.swing.border.TitledBorder
 class GeneralMessageDetailPanel : JPanel(BorderLayout()) {
 
     private companion object {
-        fun wrapHorizontalScrollbar(component: JComponent): JComponent {
-            val scrollPane = JBScrollPane(component, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
-            scrollPane.border = BorderFactory.createEmptyBorder(0, 0, 10, 0)
+        private fun createOuterContainer(title: String, inner: JComponent): JPanel {
+            val border = BorderFactory.createTitledBorder(
+                    BorderFactory.createCompoundBorder(
+                            BorderFactory.createBevelBorder(BevelBorder.LOWERED),
+                            EmptyBorder(5, 5, 5, 5)
+                    ), title, TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
 
-            return scrollPane
+            return JPanel(BorderLayout()).also {
+                it.border = border
+                it.add(inner, BorderLayout.CENTER)
+            }
         }
     }
 
@@ -43,10 +48,12 @@ class GeneralMessageDetailPanel : JPanel(BorderLayout()) {
     private val contextPanel = JPanel()
     private val detailContainer = JPanel().also {
         it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
-        it.add(wrapHorizontalScrollbar(generalPanel))
-        it.add(wrapHorizontalScrollbar(headersPanel))
-        it.add(wrapHorizontalScrollbar(tracePanel))
-        it.add(wrapHorizontalScrollbar(contextPanel))
+
+
+        it.add(createOuterContainer("General", generalPanel))
+        it.add(createOuterContainer("Headers", headersPanel))
+        it.add(createOuterContainer("Stacktrace", tracePanel))
+        it.add(createOuterContainer("Context", contextPanel))
     }
 
     private val contentScroller = JBScrollPane(JPanel(BorderLayout()).also {
@@ -60,15 +67,6 @@ class GeneralMessageDetailPanel : JPanel(BorderLayout()) {
     private val timestampFormatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
 
     init {
-        generalPanel.border = BorderFactory.createTitledBorder(BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5)),
-                "General", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
-        headersPanel.border = BorderFactory.createTitledBorder(BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5)),
-                "Headers", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
-        tracePanel.border = BorderFactory.createTitledBorder(BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5)),
-                "Stacktrace", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
-        contextPanel.border = BorderFactory.createTitledBorder(BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5)),
-                "Context", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
-
         add(contentScroller, BorderLayout.CENTER)
     }
 
