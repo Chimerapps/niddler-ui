@@ -3,6 +3,7 @@ package com.chimerapps.niddler.ui.util.ui
 import com.icapps.niddler.lib.model.BodyFormatType
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.ide.ClipboardSynchronizer
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.util.ui.EmptyClipboardOwner
 import java.awt.Image
 import java.awt.datatransfer.DataFlavor
@@ -71,7 +72,11 @@ object ClipboardUtil {
             }
             BodyFormatType.FORMAT_BINARY -> {
                 message.getBodyAsBytes?.let { data ->
-                    chooseSaveFile("Save data to", "")?.let { file -> file.writeBytes(data) }
+                    chooseSaveFile("Save data to", "")?.let { file ->
+                        runWriteAction {
+                            file.writeBytes(data)
+                        }
+                    }
                 }
             }
             else -> {

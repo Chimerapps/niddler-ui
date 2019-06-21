@@ -18,17 +18,17 @@ import com.icapps.niddler.lib.model.BodyFormatType
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.utils.UrlUtil
-import java.io.File
-import java.io.FileOutputStream
+import java.io.OutputStream
 import java.util.Date
 
 /**
  * @author Nicola Verbeeck
  */
-class HarExport<T : ParsedNiddlerMessage>(private val targetFile: File) : Exporter<T> {
+class HarExport<T : ParsedNiddlerMessage>() : Exporter<T> {
 
-    override fun export(messages: NiddlerMessageStorage<T>, filter: NiddlerMessageStorage.Filter<T>?) {
-        val writer = StreamingHarWriter(target = FileOutputStream(targetFile).buffered(),
+    override fun export(target: OutputStream, messages: NiddlerMessageStorage<T>, filter: NiddlerMessageStorage.Filter<T>?) {
+        val buffered = target.buffered()
+        val writer = StreamingHarWriter(target = buffered,
                 creator = Creator("Niddler", "1.0"))
 
         exportTo(messages.messagesLinkedWithFilter(filter = filter), writer)

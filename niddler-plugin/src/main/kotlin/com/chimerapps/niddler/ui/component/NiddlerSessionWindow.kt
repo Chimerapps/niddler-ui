@@ -12,6 +12,7 @@ import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
 import com.chimerapps.niddler.ui.model.AppPreferences
+import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
 import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.icapps.niddler.lib.connection.NiddlerClient
@@ -34,18 +35,20 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.ui.FilterComponent
 import com.intellij.ui.JBSplitter
 import java.awt.BorderLayout
 import java.io.File
+import java.io.FileOutputStream
 import javax.swing.BorderFactory
 import javax.swing.JComponent
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
-class NiddlerSessionWindow(project: Project,
+class NiddlerSessionWindow(private val project: Project,
                            disposable: Disposable,
                            private val niddlerToolWindow: NiddlerToolWindow) : JPanel(BorderLayout()), ParsedNiddlerMessageListener<ParsedNiddlerMessage>, BaseUrlHideListener {
 
@@ -150,7 +153,7 @@ class NiddlerSessionWindow(project: Project,
         val filter = object : FilterComponent("niddler-filter", 10, true) {
             override fun filter() {
                 val filter = filter.trim()
-                val currentFilter : NiddlerMessageStorage.Filter<ParsedNiddlerMessage>? = if (filter.isNotEmpty())
+                val currentFilter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>? = if (filter.isNotEmpty())
                     SimpleUrlMatchFilter(filter)
                 else
                     null
@@ -198,12 +201,15 @@ class NiddlerSessionWindow(project: Project,
                 }
             }
             val chosenFile = chooseSaveFile("Save export to", ".har") ?: return@SimpleAction
-            val exportFile = if (chosenFile.extension.isEmpty())
-                File(chosenFile.absolutePath + ".har")
-            else
-                chosenFile
+            runWriteAction {
+                val exportFile = if (chosenFile.extension.isEmpty()) {
+                    File(chosenFile.absolutePath + ".har")
+                } else
+                    chosenFile
 
-            HarExport<ParsedNiddlerMessage>(exportFile).export(messageContainer.storage, if (applyFilter) filter else null)
+                HarExport<ParsedNiddlerMessage>().export(FileOutputStream(exportFile), messageContainer.storage, if (applyFilter) filter else null)
+                NotificationUtil.info("Save complete", "<html>Export completed to <a href=\"file://${chosenFile.absolutePath}\">${chosenFile.name}</a></html>", project)
+            }
         })
 
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, false)

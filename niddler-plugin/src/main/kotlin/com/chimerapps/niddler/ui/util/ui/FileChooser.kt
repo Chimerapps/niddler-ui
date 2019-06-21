@@ -1,13 +1,13 @@
 package com.chimerapps.niddler.ui.util.ui
 
+import com.intellij.openapi.fileChooser.FileChooserFactory
+import com.intellij.openapi.fileChooser.FileSaverDescriptor
 import java.io.File
-import javax.swing.JFileChooser
 
 fun chooseSaveFile(title: String, extension: String): File? {
-    val dialog = JFileChooser()
-    dialog.dialogTitle = title
-    if (dialog.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-        return dialog.selectedFile
-    }
-    return null
+    val descriptor = FileSaverDescriptor(title, "")
+    val dialog = FileChooserFactory.getInstance().createSaveFileDialog(descriptor, null)
+    val result = dialog.save(null, null)
+
+    return result?.file
 }
