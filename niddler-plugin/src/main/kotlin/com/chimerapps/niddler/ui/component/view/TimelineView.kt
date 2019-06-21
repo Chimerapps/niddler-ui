@@ -1,12 +1,14 @@
 package com.chimerapps.niddler.ui.component.view
 
 import com.chimerapps.niddler.ui.model.AppPreferences
+import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
 import com.chimerapps.niddler.ui.util.ui.Popup
 import com.chimerapps.niddler.ui.util.ui.PopupAction
 import com.chimerapps.niddler.ui.util.ui.action
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.chimerapps.niddler.ui.util.ui.setColumnPreferredWidth
+import com.icapps.niddler.lib.codegen.CurlCodeGenerator
 import com.icapps.niddler.lib.connection.model.NetworkNiddlerMessage
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.BodyFormat
@@ -18,6 +20,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import java.awt.BorderLayout
 import java.awt.Point
+import java.awt.datatransfer.StringSelection
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.KeyAdapter
@@ -68,8 +71,16 @@ class TimelineView(private val messageContainer: NiddlerMessageStorage<ParsedNid
             val urlContainer = if (message.isRequest) message else messageContainer.findRequest(message)
 
             val actions = mutableListOf<PopupAction>()
-
             val url = urlContainer?.url
+
+            if (url != null) {
+                actions += "Copy URL" action { ClipboardUtil.copyToClipboard(StringSelection(url)) }
+            }
+            actions += "Copy body" action { ClipboardUtil.copyToClipboard(message) }
+
+            if (urlContainer != null)
+                actions += "Export cUrl request" action { ClipboardUtil.copyToClipboard(StringSelection(CurlCodeGenerator().generateRequestCode(urlContainer))) }
+
             if (url != null) {
                 val hider = urlHider
                 val hiddenBaseUrl = hider?.getHiddenBaseUrl(url)
@@ -86,6 +97,7 @@ class TimelineView(private val messageContainer: NiddlerMessageStorage<ParsedNid
                     }
                 }
             }
+
             if (actions.isEmpty())
                 return super.getComponentPopupMenu()
 

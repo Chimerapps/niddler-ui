@@ -1,14 +1,18 @@
 package com.chimerapps.niddler.ui.util.ui
 
+import com.icapps.niddler.lib.model.BodyFormatType
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.ide.ClipboardSynchronizer
 import com.intellij.util.ui.EmptyClipboardOwner
 import java.awt.Image
 import java.awt.datatransfer.DataFlavor
+import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import javax.imageio.ImageIO
+import javax.swing.JFileChooser
 
 object ClipboardUtil {
 
@@ -17,11 +21,11 @@ object ClipboardUtil {
     }
 
     fun imageTransferableFromBytes(bytes: ByteArray?): Transferable? {
-        try {
+        return try {
             val inputStream = ByteArrayInputStream(bytes)
-            return TransferableImage(ImageIO.read(inputStream))
+            TransferableImage(ImageIO.read(inputStream))
         } catch (e: IOException) {
-            return null
+            null
         }
     }
 
@@ -51,6 +55,34 @@ object ClipboardUtil {
             }
             return false
         }
+    }
+
+    fun copyToClipboard(message: ParsedNiddlerMessage) {
+        var clipboardData: Transferable? = null
+        when (message.bodyFormat.type) {
+            BodyFormatType.FORMAT_IMAGE -> {
+                clipboardData = imageTransferableFromBytes(message.message.getBodyAsBytes)
+            }
+            BodyFormatType.FORMAT_PLAIN,
+            BodyFormatType.FORMAT_JSON,
+            BodyFormatType.FORMAT_HTML,
+            BodyFormatType.FORMAT_FORM_ENCODED,
+            BodyFormatType.FORMAT_XML -> {
+                clipboardData = StringSelection(message.message.getBodyAsString(message.bodyFormat.encoding))
+            }
+            BodyFormatType.FORMAT_BINARY -> {
+                message.getBodyAsBytes?.let { data ->
+                    val dialog = JFileChooser()
+                    dialog.dialogTitle = "Save data to"
+                    if (dialog.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+                        dialog.selectedFile.writeBytes(data)
+                    }
+                }
+            }
+            else -> {
+            } //Nothing to copy
+        }
+        clipboardData?.let { copyToClipboard(it) }
     }
 
 }

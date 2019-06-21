@@ -1,10 +1,9 @@
-package com.icapps.niddler.ui.codegen
+package com.icapps.niddler.lib.codegen
 
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 
 /**
  * @author Nicola Verbeeck
- * @date 14/06/2017.
  */
 interface CodeGenerator {
 
