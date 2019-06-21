@@ -1,6 +1,9 @@
 package com.chimerapps.niddler.ui.model.renderer.impl.xml
 
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
 import com.intellij.util.ui.EmptyClipboardOwner
+import org.w3c.dom.Node
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.StringSelection
@@ -15,6 +18,21 @@ import javax.xml.transform.stream.StreamResult
 
 internal class XmlTreeTransferHandler(private val delegate: TransferHandler) : TransferHandler() {
 
+    companion object {
+        fun formatXML(node: Node): String {
+            val transformer = TransformerFactory.newInstance().newTransformer()
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")
+            transformer.setOutputProperty(OutputKeys.METHOD, "xml")
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes")
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
+
+            val writer = StringWriter()
+            transformer.transform(DOMSource(node), StreamResult(writer))
+
+            return writer.toString()
+        }
+    }
+
     override fun exportToClipboard(comp: JComponent, clip: Clipboard, action: Int) {
         if (comp !is JTree) {
             delegate.exportToClipboard(comp, clip, action)
@@ -26,18 +44,7 @@ internal class XmlTreeTransferHandler(private val delegate: TransferHandler) : T
             return
         }
 
-        val transformer = TransformerFactory.newInstance().newTransformer()
-        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")
-        transformer.setOutputProperty(OutputKeys.METHOD, "xml")
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes")
-        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
-
-        val writer = StringWriter()
-        transformer.transform(DOMSource(node.xmlElement), StreamResult(writer))
-
-        val text = writer.toString()
-
-        clip.setContents(StringSelection(text), EmptyClipboardOwner.INSTANCE)
+        clip.setContents(StringSelection(formatXML(node.xmlElement)), EmptyClipboardOwner.INSTANCE)
     }
 
     override fun getSourceActions(c: JComponent?): Int = COPY

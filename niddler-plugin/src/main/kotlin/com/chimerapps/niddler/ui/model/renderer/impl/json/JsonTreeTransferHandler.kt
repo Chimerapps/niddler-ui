@@ -1,7 +1,7 @@
 package com.chimerapps.niddler.ui.model.renderer.impl.json
 
-import com.chimerapps.niddler.ui.model.renderer.impl.json.JsonNode
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
 import com.intellij.util.ui.EmptyClipboardOwner
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.DataFlavor
@@ -11,6 +11,12 @@ import javax.swing.JTree
 import javax.swing.TransferHandler
 
 internal class JsonTreeTransferHandler(private val delegate: TransferHandler) : TransferHandler() {
+
+    companion object {
+        fun formatJson(jsonElement: JsonElement): String {
+            return GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(jsonElement)
+        }
+    }
 
     override fun exportToClipboard(comp: JComponent, clip: Clipboard, action: Int) {
         if (comp !is JTree) {
@@ -22,8 +28,7 @@ internal class JsonTreeTransferHandler(private val delegate: TransferHandler) : 
             delegate.exportToClipboard(comp, clip, action)
             return
         }
-        val text = GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(node.jsonElement)
-        clip.setContents(StringSelection(text), EmptyClipboardOwner.INSTANCE)
+        clip.setContents(StringSelection(formatJson(node.jsonElement)), EmptyClipboardOwner.INSTANCE)
     }
 
     override fun getSourceActions(c: JComponent?): Int = COPY

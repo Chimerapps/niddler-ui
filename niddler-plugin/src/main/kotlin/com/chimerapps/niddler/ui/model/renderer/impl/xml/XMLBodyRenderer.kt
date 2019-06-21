@@ -3,6 +3,10 @@ package com.chimerapps.niddler.ui.model.renderer.impl.xml
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.reuseOrNew
 import com.chimerapps.niddler.ui.model.renderer.textAreaRenderer
+import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
+import com.chimerapps.niddler.ui.util.ui.Popup
+import com.chimerapps.niddler.ui.util.ui.PopupAction
+import com.chimerapps.niddler.ui.util.ui.action
 import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.icons.AllIcons
@@ -14,17 +18,14 @@ import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.awt.Font
 import java.awt.Point
+import java.awt.datatransfer.StringSelection
 import java.awt.event.MouseEvent
-import java.io.StringWriter
 import javax.swing.JComponent
+import javax.swing.JPopupMenu
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeSelectionModel
-import javax.xml.transform.OutputKeys
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
 
 object XMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
 
@@ -40,17 +41,10 @@ object XMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     }
 
     override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
-        val transformer = TransformerFactory.newInstance().newTransformer()
-        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no")
-        transformer.setOutputProperty(OutputKeys.METHOD, "xml")
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes")
-        transformer.setOutputProperty(OutputKeys.ENCODING, message.bodyFormat.encoding ?: "UTF-8")
-        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4")
+        val data = (message.bodyData as? Document)
+        val text = data?.let { XmlTreeTransferHandler.formatXML(it) } ?: ""
 
-        val writer = StringWriter()
-        transformer.transform(DOMSource(message.bodyData as Document?), StreamResult(writer))
-
-        return textAreaRenderer(writer.toString(), reuseComponent)
+        return textAreaRenderer(text, reuseComponent)
     }
 
     override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
@@ -61,8 +55,6 @@ object XMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
 }
 
 private class NiddlerXmlTree : Tree() {
-
-    //var popup: NiddlerStructuredViewPopupMenu? = null
 
     init {
         isEditable = false
@@ -89,20 +81,18 @@ private class NiddlerXmlTree : Tree() {
         return super.getPopupLocation(event)
     }
 
-//    override fun getComponentPopupMenu(): JPopupMenu? {
-//        val path = selectionPath ?: return null
-//        val popup = popup ?: return null
-//
-//        val node = path.lastPathComponent as JsonTreeNode
-//        if (node.isLeaf) {
-//            popup.init(key = node.name, value = node.value)
-//        } else {
-//            val value = GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(node.jsonElement)
-//            popup.init(key = node.name, value = value)
-//        }
-//
-//        return popup
-//    }
+    override fun getComponentPopupMenu(): JPopupMenu? {
+        val path = selectionPath ?: return null
+
+        val node = path.lastPathComponent as XMLTreeNode
+        val actions = mutableListOf<PopupAction>()
+        actions += "Copy XML tree" action {
+            ClipboardUtil.copyToClipboard(StringSelection(XmlTreeTransferHandler.formatXML(node.xmlElement)))
+        }
+        actions += "Copy value" action { ClipboardUtil.copyToClipboard(StringSelection(node.toString())) }
+
+        return Popup(actions)
+    }
 }
 
 

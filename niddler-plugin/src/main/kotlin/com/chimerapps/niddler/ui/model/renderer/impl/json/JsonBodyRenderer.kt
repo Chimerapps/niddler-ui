@@ -2,6 +2,10 @@ package com.chimerapps.niddler.ui.model.renderer.impl.json
 
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.textAreaRenderer
+import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
+import com.chimerapps.niddler.ui.util.ui.Popup
+import com.chimerapps.niddler.ui.util.ui.PopupAction
+import com.chimerapps.niddler.ui.util.ui.action
 import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
@@ -15,9 +19,11 @@ import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBFont
 import java.awt.Font
 import java.awt.Point
+import java.awt.datatransfer.StringSelection
 import java.awt.event.MouseEvent
 import java.util.Enumeration
 import javax.swing.JComponent
+import javax.swing.JPopupMenu
 import javax.swing.JTree
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
@@ -51,8 +57,6 @@ object JsonBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
 
 private class NiddlerJsonTree(json: JsonElement) : Tree() {
 
-    //var popup: NiddlerStructuredViewPopupMenu? = null
-
     init {
         isEditable = false
         setShowsRootHandles(true)
@@ -76,20 +80,19 @@ private class NiddlerJsonTree(json: JsonElement) : Tree() {
         return super.getPopupLocation(event)
     }
 
-//    override fun getComponentPopupMenu(): JPopupMenu? {
-//        val path = selectionPath ?: return null
-//        val popup = popup ?: return null
-//
-//        val node = path.lastPathComponent as JsonTreeNode
-//        if (node.isLeaf) {
-//            popup.init(key = node.name, value = node.value)
-//        } else {
-//            val value = GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(node.jsonElement)
-//            popup.init(key = node.name, value = value)
-//        }
-//
-//        return popup
-//    }
+    override fun getComponentPopupMenu(): JPopupMenu? {
+        val path = selectionPath ?: return null
+
+        val node = path.lastPathComponent as JsonTreeNode
+        val actions = mutableListOf<PopupAction>()
+        actions += "Copy Json" action {
+            ClipboardUtil.copyToClipboard(StringSelection(JsonTreeTransferHandler.formatJson(node.jsonElement)))
+        }
+        node.name?.let { actions += "Copy key" action { ClipboardUtil.copyToClipboard(StringSelection(it)) } }
+        node.value?.let { actions += "Copy value" action { ClipboardUtil.copyToClipboard(StringSelection(it)) } }
+
+        return Popup(actions)
+    }
 }
 
 
