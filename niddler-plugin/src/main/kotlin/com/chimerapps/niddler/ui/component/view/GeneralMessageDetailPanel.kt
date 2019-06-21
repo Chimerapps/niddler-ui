@@ -1,9 +1,10 @@
 package com.chimerapps.niddler.ui.component.view
 
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
+import com.chimerapps.niddler.ui.util.ui.Popup
+import com.chimerapps.niddler.ui.util.ui.PopupAction
+import com.chimerapps.niddler.ui.util.ui.action
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
-import com.intellij.openapi.ui.JBMenuItem
-import com.intellij.openapi.ui.JBPopupMenu
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBFont
@@ -86,7 +87,6 @@ class GeneralMessageDetailPanel : JPanel(BorderLayout()) {
 
         val constraints = CellConstraints()
 
-
         generalPanel.add(buildLabel("Timestamp"), constraints.xy(1, 1))
         generalPanel.add(buildValue(timestampFormatter.format(Date(message.timestamp))), constraints.xy(3, 1))
 
@@ -134,40 +134,36 @@ class GeneralMessageDetailPanel : JPanel(BorderLayout()) {
         val constraints = CellConstraints()
         var row = 1
         message.headers?.forEach {
-            headersPanel.add(buildLabel(it.key, withPopupMenu = true), constraints.xy(1, row))
-            headersPanel.add(buildValue(it.value.joinToString(", ")), constraints.xy(3, row))
+            val values = it.value.joinToString(", ")
+            headersPanel.add(buildLabel(it.key, value = values, withPopupMenu = true), constraints.xy(1, row))
+            headersPanel.add(buildValue(values, key = it.key), constraints.xy(3, row))
 
             ++row
         }
     }
 
-    private fun buildLabel(text: String, withPopupMenu: Boolean = false): JBLabel {
+    private fun buildLabel(text: String, value: String? = null, withPopupMenu: Boolean = false): JBLabel {
         return JBLabel(text).also {
             it.font = labelFont
             if (withPopupMenu) {
-                it.componentPopupMenu = JBPopupMenu().also { menu ->
-
-                    menu.add(JBMenuItem("Copy").also { menuItem ->
-                        menuItem.addActionListener {
-                            ClipboardUtil.copyToClipboard(StringSelection(text))
-                        }
-                    })
-                }
+                val actions = mutableListOf<PopupAction>()
+                actions += "Copy" action { ClipboardUtil.copyToClipboard(StringSelection(text)) }
+                if (value != null)
+                    actions += "Copy key and value" action { ClipboardUtil.copyToClipboard(StringSelection("$text: $value")) }
+                it.componentPopupMenu = Popup(actions)
             }
         }
     }
 
-    private fun buildValue(text: String?): JBLabel {
+    private fun buildValue(text: String?, key: String? = null): JBLabel {
         return JBLabel(text ?: "").also {
             it.font = valueFont
-            it.componentPopupMenu = JBPopupMenu().also { menu ->
 
-                menu.add(JBMenuItem("Copy").also { menuItem ->
-                    menuItem.addActionListener {
-                        ClipboardUtil.copyToClipboard(StringSelection(text))
-                    }
-                })
-            }
+            val actions = mutableListOf<PopupAction>()
+            actions += "Copy" action { ClipboardUtil.copyToClipboard(StringSelection(text)) }
+            if (key != null)
+                actions += "Copy key and value" action { ClipboardUtil.copyToClipboard(StringSelection("$key: $text")) }
+            it.componentPopupMenu = Popup(actions)
         }
     }
 

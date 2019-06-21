@@ -5,9 +5,9 @@ import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.reuseOrNew
 import com.chimerapps.niddler.ui.model.renderer.textAreaRenderer
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
+import com.chimerapps.niddler.ui.util.ui.Popup
+import com.chimerapps.niddler.ui.util.ui.action
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
-import com.intellij.openapi.ui.JBMenuItem
-import com.intellij.openapi.ui.JBPopupMenu
 import java.awt.datatransfer.StringSelection
 import javax.swing.JComponent
 import javax.swing.JPopupMenu
@@ -59,18 +59,8 @@ object FormEncodedBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     private fun makePopup(@Suppress("UNUSED_PARAMETER") model: FormEncodedTableModel, data: Pair<String, String>?): JPopupMenu? {
         data ?: return null
 
-        return JBPopupMenu().also {
-            it.add(JBMenuItem("Copy key").also {
-                it.addActionListener {
-                    ClipboardUtil.copyToClipboard(StringSelection(data.first))
-                }
-            })
-            it.add(JBMenuItem("Copy value").also {
-                it.addActionListener {
-                    ClipboardUtil.copyToClipboard(StringSelection(data.second))
-                }
-            })
-        }
+        return Popup("Copy key" action { ClipboardUtil.copyToClipboard(StringSelection(data.first)) },
+                "Copy value" action { ClipboardUtil.copyToClipboard(StringSelection(data.second)) })
     }
 }
 
