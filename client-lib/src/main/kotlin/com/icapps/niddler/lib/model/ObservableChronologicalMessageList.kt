@@ -89,7 +89,7 @@ class ChronologicalMessagesView<T : NiddlerMessage>(private val messageListener:
 
     fun notifyMessageInsert(message: T) {
         synchronized(this) {
-            if (filter?.messageFilter(message, storage) == true)
+            if (filter?.messageFilter(message, storage) == false)
                 return
 
             val insertPos = ObservableChronologicalMessageList.calculateInsertPosition(message, filteredMessages)
@@ -113,7 +113,7 @@ class ChronologicalMessagesView<T : NiddlerMessage>(private val messageListener:
             if (filter == null)
                 filteredMessages.addAll(newList)
             else
-                newList.filterNotTo(filteredMessages) { filter.messageFilter(it, storage) }
+                newList.filterTo(filteredMessages) { filter.messageFilter(it, storage) }
 
             messageListener.onChanged()
         }

@@ -82,10 +82,10 @@ class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>
             }
             AppPreferences.put(key, newWidth, defaultForKey)
         })
-        addKeyListener(object: KeyAdapter() {
+        addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
                 if (e.keyCode == KeyEvent.VK_R) {
-                    val current = this@TimelineView.model.getMessageAtRow(selectedRow) ?:return
+                    val current = this@TimelineView.model.getMessageAtRow(selectedRow) ?: return
                     val other = if (current.isRequest) {
                         messageContainer.findResponse(current)
                     } else {
@@ -120,9 +120,11 @@ class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>
 
     override var urlHider: BaseUrlHider?
         get() = model.urlHider
-        set(value) {
-            model.urlHider = value
-        }
+        set(value) { model.urlHider = value }
+
+    override var filter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>?
+        get() = model.filter
+        set(value) { model.filter = value }
 
     override fun updateScrollToEnd(scrollToEnd: Boolean) {
         tableView.removeComponentListener(scrollToEndListener)
@@ -164,10 +166,18 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<Par
             field = value
             fireTableDataChanged()
         }
+    var filter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>? = null
+        set(value) {
+            if (field == value)
+                return
+            field = value
+            messages = messageContainer.messagesChronological.newView(filter = filter, messageListener = this)
+            fireTableDataChanged()
+        }
 
     private val upIcon = loadIcon("/ic_up.png")
     private val downIcon = loadIcon("/ic_down.png")
-    private var messages = messageContainer.messagesChronological.newView(filter = null, messageListener = this)
+    private var messages = messageContainer.messagesChronological.newView(filter = filter, messageListener = this)
 
     fun getMessageAtRow(rowIndex: Int): ParsedNiddlerMessage? {
         return messages[rowIndex]

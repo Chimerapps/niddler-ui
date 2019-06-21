@@ -21,6 +21,7 @@ import com.icapps.niddler.lib.model.NiddlerMessageBodyParser
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessageListener
+import com.icapps.niddler.lib.model.SimpleUrlMatchFilter
 import com.icapps.niddler.lib.model.classifier.HeaderBodyClassifier
 import com.icapps.niddler.lib.utils.freePort
 import com.intellij.icons.AllIcons
@@ -29,8 +30,10 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
+import com.intellij.ui.FilterComponent
 import com.intellij.ui.JBSplitter
 import java.awt.BorderLayout
+import javax.swing.BorderFactory
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
@@ -134,7 +137,22 @@ class NiddlerSessionWindow(project: Project,
         })
 
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, true)
-        rootContent.add(toolbar.component, BorderLayout.NORTH)
+        val toolbarContainer = JPanel(BorderLayout())
+        toolbarContainer.add(toolbar.component, BorderLayout.WEST)
+
+        val filter = object : FilterComponent("niddler-filter", 10, true) {
+            override fun filter() {
+                val filter = filter.trim()
+                if (filter.isEmpty())
+                    currentMessagesView?.onFilterUpdated(null)
+                else
+                    currentMessagesView?.onFilterUpdated(SimpleUrlMatchFilter(filter))
+            }
+        }
+        filter.border = BorderFactory.createEmptyBorder(0, 0, 0, 10)
+        toolbarContainer.add(filter, BorderLayout.EAST)
+
+        rootContent.add(toolbarContainer, BorderLayout.NORTH)
         return toolbar
     }
 

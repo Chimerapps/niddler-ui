@@ -9,7 +9,6 @@ interface NiddlerMessageStorage<T : NiddlerMessage> {
 
     val messagesChronological: ObservableChronologicalMessageList<T>
     val messagesLinked: Map<String, List<T>>
-    var filter: Filter<T>?
 
     fun messagesLinkedWithFilter(filter: Filter<T>?): Map<String, List<T>>
 
@@ -39,15 +38,7 @@ class InMemoryNiddlerMessageStorage<T : NiddlerMessage> : NiddlerMessageStorage<
     override val messagesChronological: ObservableChronologicalMessageList<T> = ObservableChronologicalMessageList(this)
 
     override val messagesLinked: Map<String, List<T>>
-        get() = messagesLinkedWithFilter(filter)
-
-    override var filter: NiddlerMessageStorage.Filter<T>? = null
-        set(value) {
-            synchronized(this) {
-                field = value
-            }
-        }
-        get() = synchronized(this) { field }
+        get() = messagesLinkedWithFilter(null)
 
     override fun clear() {
         synchronized(this) {
