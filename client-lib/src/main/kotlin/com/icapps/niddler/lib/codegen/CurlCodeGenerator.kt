@@ -18,12 +18,17 @@ class CurlCodeGenerator : CodeGenerator {
 
         return when (request.method!!.toLowerCase()) {
             "get" -> generateGet(request.message)
+            "options" -> generateOptions(request.message)
             "delete" -> generateDelete(request.message)
             "head" -> generateHead(request.message)
             "post" -> generatePost(request)
             "put" -> generatePut(request)
             else -> "<request type not yet supported>"
         }
+    }
+
+    private fun generateOptions(request: NiddlerMessage): String {
+        return generateNoBodyRequest(request, "OPTIONS")
     }
 
     private fun generateHead(request: NiddlerMessage): String {
