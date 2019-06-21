@@ -22,6 +22,8 @@ interface NiddlerMessageStorage<T : NiddlerMessage> {
 
     fun clear()
 
+    fun isEmpty(): Boolean
+
     interface Filter<T : NiddlerMessage> {
 
         fun messageFilter(message: T, storage: NiddlerMessageStorage<T>): Boolean
@@ -81,6 +83,10 @@ class InMemoryNiddlerMessageStorage<T : NiddlerMessage> : NiddlerMessageStorage<
         return synchronized(this) {
             messagesMapped.toMap(filter)
         }
+    }
+
+    override fun isEmpty(): Boolean {
+        return messagesChronological.isEmpty()
     }
 }
 

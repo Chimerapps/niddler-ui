@@ -74,6 +74,12 @@ class ObservableChronologicalMessageList<T : NiddlerMessage>(private val storage
         }
     }
 
+    fun isEmpty(): Boolean {
+        synchronized(internalList) {
+            return internalList.isEmpty()
+        }
+    }
+
 }
 
 class ChronologicalMessagesView<T : NiddlerMessage>(private val messageListener: MessagesListener,

@@ -3,6 +3,7 @@ package com.chimerapps.niddler.ui.component
 import com.chimerapps.niddler.ui.NiddlerToolWindow
 import com.chimerapps.niddler.ui.actions.ConnectAction
 import com.chimerapps.niddler.ui.actions.DisconnectAction
+import com.chimerapps.niddler.ui.actions.ExportAction
 import com.chimerapps.niddler.ui.actions.ScrollToBottomAction
 import com.chimerapps.niddler.ui.actions.SimpleAction
 import com.chimerapps.niddler.ui.actions.TimelineAction
@@ -14,6 +15,7 @@ import com.chimerapps.niddler.ui.component.view.TimelineView
 import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
+import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
@@ -59,6 +61,7 @@ class NiddlerSessionWindow(private val project: Project,
 
     private val rootContent = JPanel(BorderLayout())
     private val connectToolbar = setupConnectToolbar()
+    private val exportAction = ExportAction(::doExport)
     private val viewToolbar = setupViewToolbar()
     private val statusBar = NiddlerStatusBar()
     private val splitter = JBSplitter(APP_PREFERENCE_SPLITTER_STATE, 0.6f)
@@ -174,43 +177,18 @@ class NiddlerSessionWindow(private val project: Project,
         val timelineAction = TimelineAction(window = this)
         actionGroup.add(timelineAction)
 
-//        val linkedAction = LinkedAction(window = this)
-//        actionGroup.add(linkedAction)
-
         actionGroup.addSeparator()
         actionGroup.add(ScrollToBottomAction(window = this))
         actionGroup.addSeparator()
 
         actionGroup.add(SimpleAction("Clear local", "Remove locally cached messages", icon = AllIcons.Actions.GC) {
             messageContainer.storage.clear()
+            exportAction.isEnabled = !messageContainer.storage.isEmpty()
+            viewToolbar.updateActionsImmediately()
             currentMessagesView?.onMessagesUpdated()
         })
         actionGroup.addSeparator()
-        actionGroup.add(SimpleAction("Export", "Export messages to HAR", icon = AllIcons.Actions.Menu_saveall) {
-            //TODO
-            val filter = currentFilter
-            var applyFilter = false
-            if (filter != null) {
-                val option = JOptionPane.showOptionDialog(this, "A filter is active.\nDo you wish to export only the items matching the filter?",
-                        "Export options", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
-                        loadIcon("/niddler_logo.png"),
-                        arrayOf("Current view", "All"), "All")
-                when (option) {
-                    0 -> applyFilter = true
-                    -1 -> return@SimpleAction
-                }
-            }
-            val chosenFile = chooseSaveFile("Save export to", ".har") ?: return@SimpleAction
-            runWriteAction {
-                val exportFile = if (chosenFile.extension.isEmpty()) {
-                    File(chosenFile.absolutePath + ".har")
-                } else
-                    chosenFile
-
-                HarExport<ParsedNiddlerMessage>().export(FileOutputStream(exportFile), messageContainer.storage, if (applyFilter) filter else null)
-                NotificationUtil.info("Save complete", "<html>Export completed to <a href=\"file://${chosenFile.absolutePath}\">${chosenFile.name}</a></html>", project)
-            }
-        })
+        actionGroup.add(exportAction)
 
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, false)
         add(toolbar.component, BorderLayout.WEST)
@@ -272,6 +250,12 @@ class NiddlerSessionWindow(private val project: Project,
 
     override fun onMessage(message: ParsedNiddlerMessage) {
         currentMessagesView?.onMessagesUpdated()
+
+        val canExport = !messageContainer.storage.isEmpty()
+        if (exportAction.isEnabled != canExport) {
+            exportAction.isEnabled = canExport
+            dispatchMain(viewToolbar::updateActionsImmediately)
+        }
     }
 
     override fun hideBaseUrl(baseUrl: String) {
@@ -292,6 +276,31 @@ class NiddlerSessionWindow(private val project: Project,
         if (!hider.hasHiddenBaseUrls)
             baseUrlHider = null
         currentMessagesView?.urlHider = baseUrlHider
+    }
+
+    private fun doExport() {
+        val filter = currentFilter
+        var applyFilter = false
+        if (filter != null) {
+            val option = JOptionPane.showOptionDialog(this, "A filter is active.\nDo you wish to export only the items matching the filter?",
+                    "Export options", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+                    loadIcon("/niddler_logo.png"),
+                    arrayOf("Current view", "All"), "All")
+            when (option) {
+                0 -> applyFilter = true
+                -1 -> return
+            }
+        }
+        val chosenFile = chooseSaveFile("Save export to", ".har") ?: return
+        runWriteAction {
+            val exportFile = if (chosenFile.extension.isEmpty()) {
+                File(chosenFile.absolutePath + ".har")
+            } else
+                chosenFile
+
+            HarExport<ParsedNiddlerMessage>().export(FileOutputStream(exportFile), messageContainer.storage, if (applyFilter) filter else null)
+            NotificationUtil.info("Save complete", "<html>Export completed to <a href=\"file://${chosenFile.absolutePath}\">${chosenFile.name}</a></html>", project)
+        }
     }
 }
 
