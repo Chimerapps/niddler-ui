@@ -12,6 +12,7 @@ import com.icapps.niddler.lib.codegen.CurlCodeGenerator
 import com.icapps.niddler.lib.connection.model.NetworkNiddlerMessage
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.BodyFormat
+import com.icapps.niddler.lib.model.BodyFormatType
 import com.icapps.niddler.lib.model.ChronologicalMessagesView
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
@@ -76,7 +77,8 @@ class TimelineView(private val messageContainer: NiddlerMessageStorage<ParsedNid
             if (url != null) {
                 actions += "Copy URL" action { ClipboardUtil.copyToClipboard(StringSelection(url)) }
             }
-            actions += "Copy body" action { ClipboardUtil.copyToClipboard(message) }
+            if (message.bodyFormat.type != BodyFormatType.FORMAT_EMPTY && !message.body.isNullOrEmpty())
+                actions += "Copy body" action { ClipboardUtil.copyToClipboard(message) }
 
             if (urlContainer != null)
                 actions += "Export cUrl request" action { ClipboardUtil.copyToClipboard(StringSelection(CurlCodeGenerator().generateRequestCode(urlContainer))) }
