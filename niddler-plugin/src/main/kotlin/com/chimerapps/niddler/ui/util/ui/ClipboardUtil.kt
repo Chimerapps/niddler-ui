@@ -12,7 +12,6 @@ import java.awt.datatransfer.UnsupportedFlavorException
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import javax.imageio.ImageIO
-import javax.swing.JFileChooser
 
 object ClipboardUtil {
 
@@ -72,11 +71,7 @@ object ClipboardUtil {
             }
             BodyFormatType.FORMAT_BINARY -> {
                 message.getBodyAsBytes?.let { data ->
-                    val dialog = JFileChooser()
-                    dialog.dialogTitle = "Save data to"
-                    if (dialog.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-                        dialog.selectedFile.writeBytes(data)
-                    }
+                    chooseSaveFile("Save data to", "")?.let { file -> file.writeBytes(data) }
                 }
             }
             else -> {

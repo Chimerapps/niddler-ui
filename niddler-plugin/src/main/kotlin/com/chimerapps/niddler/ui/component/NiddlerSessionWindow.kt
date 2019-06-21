@@ -3,7 +3,6 @@ package com.chimerapps.niddler.ui.component
 import com.chimerapps.niddler.ui.NiddlerToolWindow
 import com.chimerapps.niddler.ui.actions.ConnectAction
 import com.chimerapps.niddler.ui.actions.DisconnectAction
-import com.chimerapps.niddler.ui.actions.LinkedAction
 import com.chimerapps.niddler.ui.actions.ScrollToBottomAction
 import com.chimerapps.niddler.ui.actions.SimpleAction
 import com.chimerapps.niddler.ui.actions.TimelineAction
@@ -13,14 +12,18 @@ import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
 import com.chimerapps.niddler.ui.model.AppPreferences
+import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
+import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
 import com.icapps.niddler.lib.device.DirectPreparedConnection
 import com.icapps.niddler.lib.device.PreparedDeviceConnection
+import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
 import com.icapps.niddler.lib.model.NiddlerMessageBodyParser
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessageListener
 import com.icapps.niddler.lib.model.SimpleUrlMatchFilter
@@ -35,8 +38,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.FilterComponent
 import com.intellij.ui.JBSplitter
 import java.awt.BorderLayout
+import java.io.File
 import javax.swing.BorderFactory
 import javax.swing.JComponent
+import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
@@ -55,6 +60,7 @@ class NiddlerSessionWindow(project: Project,
     private val statusBar = NiddlerStatusBar()
     private val splitter = JBSplitter(APP_PREFERENCE_SPLITTER_STATE, 0.6f)
     private var baseUrlHider: BaseUrlHider? = null
+    private var currentFilter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>? = null
 
     var currentViewMode: ViewMode = ViewMode.VIEW_MODE_TIMELINE
         set(value) {
@@ -144,10 +150,12 @@ class NiddlerSessionWindow(project: Project,
         val filter = object : FilterComponent("niddler-filter", 10, true) {
             override fun filter() {
                 val filter = filter.trim()
-                currentMessagesView?.filter = if (filter.isEmpty())
-                    null
-                else
+                val currentFilter : NiddlerMessageStorage.Filter<ParsedNiddlerMessage>? = if (filter.isNotEmpty())
                     SimpleUrlMatchFilter(filter)
+                else
+                    null
+                this@NiddlerSessionWindow.currentFilter = currentFilter
+                currentMessagesView?.filter = currentFilter
             }
         }
         filter.border = BorderFactory.createEmptyBorder(0, 0, 0, 10)
@@ -177,6 +185,25 @@ class NiddlerSessionWindow(project: Project,
         actionGroup.addSeparator()
         actionGroup.add(SimpleAction("Export", "Export messages to HAR", icon = AllIcons.Actions.Menu_saveall) {
             //TODO
+            val filter = currentFilter
+            var applyFilter = false
+            if (filter != null) {
+                val option = JOptionPane.showOptionDialog(this, "A filter is active.\nDo you wish to export only the items matching the filter?",
+                        "Export options", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+                        loadIcon("/niddler_logo.png"),
+                        arrayOf("Current view", "All"), "All")
+                when (option) {
+                    0 -> applyFilter = true
+                    -1 -> return@SimpleAction
+                }
+            }
+            val chosenFile = chooseSaveFile("Save export to", ".har") ?: return@SimpleAction
+            val exportFile = if (chosenFile.extension.isEmpty())
+                File(chosenFile.absolutePath + ".har")
+            else
+                chosenFile
+
+            HarExport<ParsedNiddlerMessage>(exportFile).export(messageContainer.storage, if (applyFilter) filter else null)
         })
 
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, false)
@@ -194,6 +221,7 @@ class NiddlerSessionWindow(project: Project,
     private fun <T> replaceMessagesView(messagesView: T) where T : JComponent, T : MessagesView {
         splitter.firstComponent = messagesView
 
+        messagesView.filter = currentFilter
         messagesView.urlHider = baseUrlHider
 
         messagesView.updateScrollToEnd(scrollToEnd)
