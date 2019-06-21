@@ -4,7 +4,6 @@ import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.reuseOrNew
 import com.chimerapps.niddler.ui.model.renderer.textAreaRenderer
 import com.chimerapps.niddler.ui.util.ui.loadIcon
-import com.google.gson.GsonBuilder
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.icons.AllIcons
 import com.intellij.ui.ColoredTreeCellRenderer
@@ -72,6 +71,8 @@ private class NiddlerXmlTree : Tree() {
 
         setCellRenderer(XmlTreeCellRenderer())
         selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
+
+        transferHandler = XmlTreeTransferHandler(transferHandler)
     }
 
     fun resetModel(root: Element?) {

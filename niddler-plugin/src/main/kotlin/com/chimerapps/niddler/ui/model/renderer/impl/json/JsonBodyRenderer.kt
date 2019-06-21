@@ -61,6 +61,8 @@ private class NiddlerJsonTree(json: JsonElement) : Tree() {
 
         setCellRenderer(JsonTreeCellRenderer())
         selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
+
+        transferHandler = JsonTreeTransferHandler(transferHandler)
     }
 
     fun resetModel(json: JsonElement) {

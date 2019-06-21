@@ -7,7 +7,7 @@ import org.w3c.dom.Text
 import java.util.Enumeration
 import javax.swing.tree.TreeNode
 
-internal class XMLTreeNode(private val xmlElement: Node, private val parent: TreeNode?, val name: String = xmlElement.asString()) : TreeNode {
+internal class XMLTreeNode(val xmlElement: Node, private val parent: TreeNode?, val name: String = xmlElement.asString()) : TreeNode {
 
     private val children: MutableList<XMLTreeNode> = arrayListOf()
 
