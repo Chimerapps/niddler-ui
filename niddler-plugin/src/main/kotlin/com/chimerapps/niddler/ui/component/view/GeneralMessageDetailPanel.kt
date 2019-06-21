@@ -5,8 +5,10 @@ import com.chimerapps.niddler.ui.util.ui.Popup
 import com.chimerapps.niddler.ui.util.ui.PopupAction
 import com.chimerapps.niddler.ui.util.ui.action
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.util.containers.isNullOrEmpty
 import com.intellij.util.ui.JBFont
 import com.jgoodies.forms.layout.CellConstraints
 import com.jgoodies.forms.layout.FormLayout
@@ -26,7 +28,7 @@ import javax.swing.border.BevelBorder
 import javax.swing.border.EmptyBorder
 import javax.swing.border.TitledBorder
 
-class GeneralMessageDetailPanel : JPanel(BorderLayout()) {
+class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
 
     private companion object {
         private fun createOuterContainer(title: String, inner: JComponent): JPanel {
@@ -45,11 +47,10 @@ class GeneralMessageDetailPanel : JPanel(BorderLayout()) {
 
     private val generalPanel = JPanel(FormLayout("left:default, 3dlu, pref", "pref, pref, pref, pref, pref, pref"))
     private val headersPanel = JPanel(FormLayout("left:default, 3dlu, pref", "pref, pref, pref, pref, pref, pref"))
-    private val tracePanel = JPanel()
+    private val tracePanel = StackTraceView(project)
     private val contextPanel = JPanel()
     private val detailContainer = JPanel().also {
         it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
-
 
         it.add(createOuterContainer("General", generalPanel))
         it.add(createOuterContainer("Headers", headersPanel))
@@ -75,8 +76,14 @@ class GeneralMessageDetailPanel : JPanel(BorderLayout()) {
         fillGeneral(message, other)
         fillHeaders(message)
 
-        tracePanel.isVisible = false
-        contextPanel.isVisible = false
+        val trace = message.trace
+        if (!trace.isNullOrEmpty()) {
+            tracePanel.setStackTrace(trace)
+            tracePanel.parent.isVisible = true
+        } else {
+            tracePanel.parent.isVisible = false
+        }
+        contextPanel.parent.isVisible = false
 
         revalidate()
         repaint()
