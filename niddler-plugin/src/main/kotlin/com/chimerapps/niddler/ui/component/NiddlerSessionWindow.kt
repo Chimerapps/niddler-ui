@@ -7,6 +7,7 @@ import com.chimerapps.niddler.ui.actions.LinkedAction
 import com.chimerapps.niddler.ui.actions.ScrollToBottomAction
 import com.chimerapps.niddler.ui.actions.SimpleAction
 import com.chimerapps.niddler.ui.actions.TimelineAction
+import com.chimerapps.niddler.ui.component.view.BaseUrlHideListener
 import com.chimerapps.niddler.ui.component.view.MessageDetailView
 import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
@@ -16,6 +17,7 @@ import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
 import com.icapps.niddler.lib.device.DirectPreparedConnection
 import com.icapps.niddler.lib.device.PreparedDeviceConnection
+import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
 import com.icapps.niddler.lib.model.NiddlerMessageBodyParser
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
@@ -40,7 +42,7 @@ import javax.swing.SwingUtilities
 
 class NiddlerSessionWindow(project: Project,
                            disposable: Disposable,
-                           private val niddlerToolWindow: NiddlerToolWindow) : JPanel(BorderLayout()), ParsedNiddlerMessageListener<ParsedNiddlerMessage> {
+                           private val niddlerToolWindow: NiddlerToolWindow) : JPanel(BorderLayout()), ParsedNiddlerMessageListener<ParsedNiddlerMessage>, BaseUrlHideListener {
 
     private companion object {
         private const val APP_PREFERENCE_SCROLL_TO_END = "scrollToEnd"
@@ -52,6 +54,7 @@ class NiddlerSessionWindow(project: Project,
     private val viewToolbar = setupViewToolbar()
     private val statusBar = NiddlerStatusBar()
     private val splitter = JBSplitter(APP_PREFERENCE_SPLITTER_STATE, 0.6f)
+    private var baseUrlHider: BaseUrlHider? = null
 
     var currentViewMode: ViewMode = ViewMode.VIEW_MODE_TIMELINE
         set(value) {
@@ -143,10 +146,10 @@ class NiddlerSessionWindow(project: Project,
         val filter = object : FilterComponent("niddler-filter", 10, true) {
             override fun filter() {
                 val filter = filter.trim()
-                if (filter.isEmpty())
-                    currentMessagesView?.onFilterUpdated(null)
+                currentMessagesView?.filter = if (filter.isEmpty())
+                    null
                 else
-                    currentMessagesView?.onFilterUpdated(SimpleUrlMatchFilter(filter))
+                    SimpleUrlMatchFilter(filter)
             }
         }
         filter.border = BorderFactory.createEmptyBorder(0, 0, 0, 10)
@@ -182,13 +185,15 @@ class NiddlerSessionWindow(project: Project,
 
     private fun updateView() {
         when (currentViewMode) {
-            ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(messageContainer.storage, detailView))
+            ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(messageContainer.storage, detailView, baseUrlHideListener = this))
             ViewMode.VIEW_MODE_LINKED -> TODO()
         }
     }
 
     private fun <T> replaceMessagesView(messagesView: T) where T : JComponent, T : MessagesView {
         splitter.firstComponent = messagesView
+
+        messagesView.urlHider = baseUrlHider
 
         messagesView.updateScrollToEnd(scrollToEnd)
         currentMessagesView = messagesView
@@ -232,6 +237,26 @@ class NiddlerSessionWindow(project: Project,
 
     override fun onMessage(message: ParsedNiddlerMessage) {
         currentMessagesView?.onMessagesUpdated()
+    }
+
+    override fun hideBaseUrl(baseUrl: String) {
+        val hider = if (baseUrlHider == null) {
+            val newHider = BaseUrlHider()
+            baseUrlHider = newHider
+            newHider
+        } else {
+            baseUrlHider!!
+        }
+        hider.hideBaseUrl(baseUrl)
+        currentMessagesView?.urlHider = hider
+    }
+
+    override fun showBaseUrl(baseUrl: String) {
+        val hider = baseUrlHider ?: return
+        hider.unhideBaseUrl(baseUrl)
+        if (!hider.hasHiddenBaseUrls)
+            baseUrlHider = null
+        currentMessagesView?.urlHider = baseUrlHider
     }
 }
 

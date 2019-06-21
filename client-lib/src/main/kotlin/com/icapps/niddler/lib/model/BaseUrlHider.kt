@@ -11,6 +11,9 @@ class BaseUrlHider {
 
     private val hiddenBaseUrls = CopyOnWriteArrayList<String>()
 
+    val hasHiddenBaseUrls: Boolean
+        get() = hiddenBaseUrls.isNotEmpty()
+
     /**
      * Attempts to strip of the longest configured base url from the given url
      *

@@ -88,3 +88,8 @@ class MessageDetailView(project: Project,
 interface MessageSelectionListener {
     fun onMessageSelectionChanged(message: ParsedNiddlerMessage?)
 }
+
+interface BaseUrlHideListener {
+    fun hideBaseUrl(baseUrl: String)
+    fun showBaseUrl(baseUrl: String)
+}

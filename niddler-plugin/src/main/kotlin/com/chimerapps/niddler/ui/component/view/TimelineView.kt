@@ -1,6 +1,9 @@
 package com.chimerapps.niddler.ui.component.view
 
 import com.chimerapps.niddler.ui.model.AppPreferences
+import com.chimerapps.niddler.ui.util.ui.Popup
+import com.chimerapps.niddler.ui.util.ui.PopupAction
+import com.chimerapps.niddler.ui.util.ui.action
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.chimerapps.niddler.ui.util.ui.setColumnPreferredWidth
@@ -14,21 +17,26 @@ import com.icapps.niddler.lib.utils.getStatusCodeString
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import java.awt.BorderLayout
+import java.awt.Point
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
+import java.awt.event.MouseEvent
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.swing.Icon
+import javax.swing.JOptionPane
 import javax.swing.JPanel
+import javax.swing.JPopupMenu
 import javax.swing.JTable
 import javax.swing.ListSelectionModel
 import javax.swing.table.AbstractTableModel
 
-class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>,
-                   private val selectionListener: MessageSelectionListener) : JPanel(BorderLayout()), MessagesView {
+class TimelineView(private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>,
+                   private val selectionListener: MessageSelectionListener,
+                   private val baseUrlHideListener: BaseUrlHideListener) : JPanel(BorderLayout()), MessagesView {
 
     private companion object {
         private const val PREFERENCE_KEY_TIMESTAMP_WIDTH = "timeline.timestamp.width"
@@ -47,7 +55,43 @@ class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>
     }
 
     private val model = TimelineTableModel(messageContainer)
-    private val tableView = JBTable(model).apply {
+    private val tableView = object : JBTable(model) {
+        override fun getPopupLocation(event: MouseEvent): Point? {
+            val r = rowAtPoint(event.point)
+            clearSelection()
+            setRowSelectionInterval(r, r)
+            return super.getPopupLocation(event)
+        }
+
+        override fun getComponentPopupMenu(): JPopupMenu? {
+            val message = this@TimelineView.model.getMessageAtRow(selectedRow) ?: return super.getComponentPopupMenu()
+            val urlContainer = if (message.isRequest) message else messageContainer.findRequest(message)
+
+            val actions = mutableListOf<PopupAction>()
+
+            val url = urlContainer?.url
+            if (url != null) {
+                val hider = urlHider
+                val hiddenBaseUrl = hider?.getHiddenBaseUrl(url)
+                actions += if (hiddenBaseUrl == null) {
+                    "Hide base urls" action {
+                        val result = JOptionPane.showInputDialog("Hide base url", url)
+                        if (!result.isNullOrBlank()) {
+                            baseUrlHideListener.hideBaseUrl(result)
+                        }
+                    }
+                } else {
+                    "Show base urls" action {
+                        baseUrlHideListener.showBaseUrl(hiddenBaseUrl)
+                    }
+                }
+            }
+            if (actions.isEmpty())
+                return super.getComponentPopupMenu()
+
+            return Popup(actions)
+        }
+    }.apply {
         fillsViewportHeight = false
         rowHeight = 32
         showHorizontalLines = true
@@ -60,6 +104,7 @@ class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>
             val row = selectedRow
             selectionListener.onMessageSelectionChanged(this@TimelineView.model.getMessageAtRow(row))
         }
+
 
         addMouseListener(TableResizeAdapter(this) { columnIndex, newWidth ->
             val key = when (columnIndex) {
@@ -120,11 +165,15 @@ class TimelineView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>
 
     override var urlHider: BaseUrlHider?
         get() = model.urlHider
-        set(value) { model.urlHider = value }
+        set(value) {
+            model.urlHider = value
+        }
 
     override var filter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>?
         get() = model.filter
-        set(value) { model.filter = value }
+        set(value) {
+            model.filter = value
+        }
 
     override fun updateScrollToEnd(scrollToEnd: Boolean) {
         tableView.removeComponentListener(scrollToEndListener)
@@ -164,7 +213,7 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<Par
     var urlHider: BaseUrlHider? = null
         set(value) {
             field = value
-            fireTableDataChanged()
+            fireTableRowsUpdated(0, rowCount)
         }
     var filter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>? = null
         set(value) {
