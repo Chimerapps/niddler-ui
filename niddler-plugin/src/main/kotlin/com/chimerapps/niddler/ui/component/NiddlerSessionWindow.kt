@@ -100,10 +100,8 @@ class NiddlerSessionWindow(project: Project,
     }
 
     fun currentViewModeUnselected() {
-        when (currentViewMode) {
-            ViewMode.VIEW_MODE_TIMELINE -> currentViewMode = ViewMode.VIEW_MODE_LINKED
-            ViewMode.VIEW_MODE_LINKED -> currentViewMode = ViewMode.VIEW_MODE_TIMELINE
-        }
+        //Do not switch to other view mode until other view mode is supported
+        viewToolbar.updateActionsImmediately() //Update ui
     }
 
     fun onClosed() {
@@ -165,8 +163,8 @@ class NiddlerSessionWindow(project: Project,
         val timelineAction = TimelineAction(window = this)
         actionGroup.add(timelineAction)
 
-        val linkedAction = LinkedAction(window = this)
-        actionGroup.add(linkedAction)
+//        val linkedAction = LinkedAction(window = this)
+//        actionGroup.add(linkedAction)
 
         actionGroup.addSeparator()
         actionGroup.add(ScrollToBottomAction(window = this))
@@ -176,7 +174,10 @@ class NiddlerSessionWindow(project: Project,
             messageContainer.storage.clear()
             currentMessagesView?.onMessagesUpdated()
         })
-
+        actionGroup.addSeparator()
+        actionGroup.add(SimpleAction("Export", "Export messages to HAR", icon = AllIcons.Actions.Menu_saveall) {
+            //TODO
+        })
 
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, false)
         add(toolbar.component, BorderLayout.WEST)
