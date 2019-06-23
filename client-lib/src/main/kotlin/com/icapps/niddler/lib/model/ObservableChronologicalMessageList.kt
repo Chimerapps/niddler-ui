@@ -1,6 +1,7 @@
 package com.icapps.niddler.lib.model
 
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
+import com.icapps.niddler.lib.utils.ObservableMutableList
 import java.lang.ref.WeakReference
 
 class ObservableChronologicalMessageList<T : NiddlerMessage>(private val storage: NiddlerMessageStorage<T>) {
@@ -50,7 +51,7 @@ class ObservableChronologicalMessageList<T : NiddlerMessage>(private val storage
         }
     }
 
-    fun newView(filter: NiddlerMessageStorage.Filter<T>?, messageListener: ChronologicalMessagesView.MessagesListener): ChronologicalMessagesView<T> {
+    fun newView(filter: NiddlerMessageStorage.Filter<T>?, messageListener: ObservableMutableList.Observer): ChronologicalMessagesView<T> {
         return ChronologicalMessagesView(messageListener, storage, filter).also {
             synchronized(internalList) {
                 it.notifyMessagesChanged(internalList)
@@ -82,11 +83,11 @@ class ObservableChronologicalMessageList<T : NiddlerMessage>(private val storage
 
 }
 
-class ChronologicalMessagesView<T : NiddlerMessage>(private val messageListener: MessagesListener,
+class ChronologicalMessagesView<T : NiddlerMessage>(messageListener: ObservableMutableList.Observer,
                                                     private val storage: NiddlerMessageStorage<T>,
                                                     private val filter: NiddlerMessageStorage.Filter<T>?) {
 
-    private val filteredMessages = ArrayList<T>()
+    private val filteredMessages = ObservableMutableList<T>(ArrayList()).also { it.observer = messageListener }
 
     val size: Int
         get() = synchronized(this) { filteredMessages.size }
@@ -101,14 +102,12 @@ class ChronologicalMessagesView<T : NiddlerMessage>(private val messageListener:
             val insertPos = ObservableChronologicalMessageList.calculateInsertPosition(message, filteredMessages)
 
             filteredMessages.add(insertPos.index, message)
-            messageListener.onItemAdded(insertPos.index)
         }
     }
 
     fun notifyMessagesCleared() {
         synchronized(this) {
             filteredMessages.clear()
-            messageListener.onCleared()
         }
     }
 
@@ -120,19 +119,11 @@ class ChronologicalMessagesView<T : NiddlerMessage>(private val messageListener:
                 filteredMessages.addAll(newList)
             else
                 newList.filterTo(filteredMessages) { filter.messageFilter(it, storage) }
-
-            messageListener.onChanged()
         }
     }
 
     fun indexOf(message: T): Int {
         return synchronized(this) { filteredMessages.indexOf(message) }
-    }
-
-    interface MessagesListener {
-        fun onChanged()
-        fun onItemAdded(index: Int)
-        fun onCleared()
     }
 
 }

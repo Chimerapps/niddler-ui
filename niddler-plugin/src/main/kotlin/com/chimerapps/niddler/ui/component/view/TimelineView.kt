@@ -16,6 +16,7 @@ import com.icapps.niddler.lib.model.BodyFormatType
 import com.icapps.niddler.lib.model.ChronologicalMessagesView
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.utils.ObservableMutableList
 import com.icapps.niddler.lib.utils.getStatusCodeString
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
@@ -200,7 +201,7 @@ class TimelineView(private val messageContainer: NiddlerMessageStorage<ParsedNid
 
 }
 
-class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) : AbstractTableModel(), ChronologicalMessagesView.MessagesListener {
+class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) : AbstractTableModel(), ObservableMutableList.Observer {
 
     companion object {
         const val INDEX_TIMESTAMP = 0
@@ -294,16 +295,16 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<Par
 
     override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = false
 
-    override fun onChanged() {
-        dispatchMain { fireTableDataChanged() }
+    override fun itemsInserted(startIndex: Int, endIndex: Int) {
+        dispatchMain { fireTableRowsInserted(startIndex, endIndex) }
     }
 
-    override fun onItemAdded(index: Int) {
-        dispatchMain { fireTableRowsInserted(index, index) }
+    override fun itemChanged(index: Int) {
+        dispatchMain { fireTableRowsUpdated(index, index) }
     }
 
-    override fun onCleared() {
-        dispatchMain { fireTableDataChanged() }
+    override fun itemsRemoved(startIndex: Int, endIndex: Int) {
+        dispatchMain { fireTableRowsDeleted(startIndex, endIndex) }
     }
 
     private fun formatStatusCode(statusCode: Int?): String {
