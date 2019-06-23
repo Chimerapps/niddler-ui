@@ -8,9 +8,7 @@ import com.icapps.niddler.lib.connection.model.NiddlerMessage
 interface NiddlerMessageStorage<T : NiddlerMessage> {
 
     val messagesChronological: ObservableChronologicalMessageList<T>
-    val messagesLinked: Map<String, List<T>>
-
-    fun messagesLinkedWithFilter(filter: Filter<T>?): Map<String, List<T>>
+    val messagesLinked: ObservableLinkedMessageList<T>
 
     fun addMessage(message: T)
 
@@ -35,30 +33,26 @@ interface NiddlerMessageStorage<T : NiddlerMessage> {
 
 class InMemoryNiddlerMessageStorage<T : NiddlerMessage> : NiddlerMessageStorage<T> {
 
-    private val messagesMapped = SemiOrderedMappingStorage<T>()
-
     override val messagesChronological: ObservableChronologicalMessageList<T> = ObservableChronologicalMessageList(this)
-
-    override val messagesLinked: Map<String, List<T>>
-        get() = messagesLinkedWithFilter(null)
+    override val messagesLinked = ObservableLinkedMessageList(this)
 
     override fun clear() {
         synchronized(this) {
             messagesChronological.clear()
-            messagesMapped.clear()
+            messagesLinked.clear()
         }
     }
 
     override fun addMessage(message: T) {
         synchronized(this) {
             if (messagesChronological.addMessage(message))
-                messagesMapped.add(message.requestId, message)
+                messagesLinked.addMessage(message)
         }
     }
 
     override fun getMessagesWithRequestId(requestId: String): List<T> {
         return synchronized(this) {
-            messagesMapped[requestId] ?: emptyList()
+            messagesLinked[requestId] ?: emptyList()
         }
     }
 
@@ -69,71 +63,10 @@ class InMemoryNiddlerMessageStorage<T : NiddlerMessage> : NiddlerMessageStorage<
     }
 
     override fun findRequest(message: T): T? {
-        return getMessagesWithRequestId(message.requestId).find(NiddlerMessage::isRequest)
-    }
-
-    override fun messagesLinkedWithFilter(filter: NiddlerMessageStorage.Filter<T>?)
-            : Map<String, List<T>> {
-        if (filter == null) {
-            return synchronized(this) {
-                messagesMapped.toMap()
-            }
-        }
-
-        return synchronized(this) {
-            messagesMapped.toMap(filter)
-        }
+        return getMessagesWithRequestId(message.requestId).findLast(NiddlerMessage::isRequest)
     }
 
     override fun isEmpty(): Boolean {
         return messagesChronological.isEmpty()
     }
 }
-
-private class SemiOrderedMappingStorage<T : NiddlerMessage> {
-
-    private val data = mutableListOf<MappingEntry<T>>()
-
-    fun add(key: String, message: T) {
-        val toFind = data.lastOrNull { it.key == key }
-        if (toFind == null) {
-            data += MappingEntry(message.timestamp, key, mutableListOf(message))
-            data.sortBy(MappingEntry<T>::time)
-            return
-        }
-        toFind.items += message
-        toFind.items.sortBy(NiddlerMessage::timestamp)
-        if (toFind.time > message.timestamp) {
-            toFind.time = message.timestamp
-            data.sortBy(MappingEntry<T>::time)
-        }
-    }
-
-    fun clear() {
-        data.clear()
-    }
-
-    operator fun get(key: String): List<T>? {
-        return data.find { it.key == key }?.items
-    }
-
-    fun toMap(): Map<String, List<T>> {
-        val map = LinkedHashMap<String, List<T>>()
-        data.forEach {
-            map[it.key] = ArrayList(it.items)
-        }
-        return map
-    }
-
-    fun toMap(filter: NiddlerMessageStorage.Filter<T>): Map<String, List<T>> {
-        val map = LinkedHashMap<String, List<T>>()
-        data.forEach {
-            val copy = filter.messageFilter(it.items)
-            if (copy.isNotEmpty())
-                map[it.key] = copy
-        }
-        return map
-    }
-}
-
-private data class MappingEntry<T : NiddlerMessage>(var time: Long, val key: String, val items: MutableList<T>)

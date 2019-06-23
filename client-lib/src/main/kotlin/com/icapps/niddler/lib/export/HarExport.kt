@@ -15,7 +15,9 @@ import com.icapps.niddler.lib.export.har.Response
 import com.icapps.niddler.lib.export.har.StreamingHarWriter
 import com.icapps.niddler.lib.export.har.Timings
 import com.icapps.niddler.lib.model.BodyFormatType
+import com.icapps.niddler.lib.model.LinkedMessageHolder
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
+import com.icapps.niddler.lib.model.ObservableLinkedMessagesView
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.utils.UrlUtil
 import java.io.OutputStream
@@ -31,24 +33,24 @@ class HarExport<T : ParsedNiddlerMessage>() : Exporter<T> {
         val writer = StreamingHarWriter(target = buffered,
                 creator = Creator("Niddler", "1.0"))
 
-        exportTo(messages.messagesLinkedWithFilter(filter = filter), writer)
+        exportTo(messages.messagesLinked.newView(filter, rootMessageListener = null), writer)
 
         writer.close()
     }
 
-    private fun exportTo(messages: Map<String, List<T>>, writer: StreamingHarWriter) {
-        messages.forEach {
-            exportTo(it.value, writer)
+    private fun exportTo(messages: ObservableLinkedMessagesView<T>, writer: StreamingHarWriter) {
+        messages.snapshot().forEach {
+            exportTo(it, writer)
         }
     }
 
-    private fun exportTo(niddlerMessages: List<T>, writer: StreamingHarWriter) {
-        val request = niddlerMessages.find { it.isRequest } ?: return
-        val response = niddlerMessages.firstOrNull { !it.isRequest } ?: return
+    private fun exportTo(niddlerMessages: LinkedMessageHolder<T>, writer: StreamingHarWriter) {
+        val request = niddlerMessages.request ?: return
+        val response = niddlerMessages.responses.firstOrNull() ?: return
 
         val time = (response.timestamp - request.timestamp).toDouble()
         val harEntry = Entry(
-                startedDateTime = Entry.format(request.timestamp.let { Date(it) }),
+                startedDateTime = Entry.format(Date(request.timestamp)),
                 time = time,
                 request = makeRequest(request),
                 response = makeResponse(response),
