@@ -170,7 +170,7 @@ data class LinkedMessage<T : NiddlerMessage>(val request: T?, val responses: Lis
 internal data class LinkedMessageHolder<T : NiddlerMessage>(val requestId: String,
                                                             var time: Long,
                                                             var request: T?,
-                                                            val responses: MutableList<T> = mutableListOf()) {
+                                                            val responses: ObservableMutableList<T> = ObservableMutableList(mutableListOf())) {
 
     fun addResponse(message: T) {
         if (responses.isEmpty()) {
