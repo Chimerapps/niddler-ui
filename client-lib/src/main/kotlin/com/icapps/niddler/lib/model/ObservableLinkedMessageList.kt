@@ -123,8 +123,6 @@ class ObservableLinkedMessagesView<T : NiddlerMessage>(rootMessageListener: Obse
     val size: Int
         get() = synchronized(this) { filteredMessages.size }
 
-    operator fun get(index: Int): LinkedMessage<T>? = synchronized(this) { filteredMessages.getOrNull(index)?.let { LinkedMessage(it.request, it.responses) } }
-
     fun notifyMessageInsert(message: T) {
         synchronized(this) {
             if (filter?.messageFilter(message, storage) == false)
@@ -132,6 +130,10 @@ class ObservableLinkedMessagesView<T : NiddlerMessage>(rootMessageListener: Obse
 
             ObservableLinkedMessageList.addMessage(message, filteredMessages)
         }
+    }
+
+    operator fun get(index: Int): LinkedMessageHolder<T>? {
+        return synchronized(this) { filteredMessages.getOrNull(index) }
     }
 
     fun notifyMessagesCleared() {
@@ -165,28 +167,32 @@ class ObservableLinkedMessagesView<T : NiddlerMessage>(rootMessageListener: Obse
 
 }
 
-data class LinkedMessage<T : NiddlerMessage>(val request: T?, val responses: List<T>)
+data class LinkedMessageHolder<T : NiddlerMessage>(internal val requestId: String,
+                                                   internal var time: Long,
+                                                   var request: T?,
+                                                   val responses: ObservableMutableList<T> = ObservableMutableList(mutableListOf())) {
 
-internal data class LinkedMessageHolder<T : NiddlerMessage>(val requestId: String,
-                                                            var time: Long,
-                                                            var request: T?,
-                                                            val responses: ObservableMutableList<T> = ObservableMutableList(mutableListOf())) {
-
-    fun addResponse(message: T) {
-        if (responses.isEmpty()) {
-            responses.add(message)
-        } else {
-            val time = message.timestamp
-            if (responses.last().timestamp < time) {
+    internal fun addResponse(message: T) {
+        synchronized(this) {
+            if (responses.isEmpty()) {
                 responses.add(message)
             } else {
-                val index = responses.indexOfLast { it.timestamp > time }
-                if (index == -1) //Can't find any, this should not be the case anyway
+                val time = message.timestamp
+                if (responses.last().timestamp < time) {
                     responses.add(message)
-                else
-                    responses.add(index, message)
+                } else {
+                    val index = responses.indexOfLast { it.timestamp > time }
+                    if (index == -1) //Can't find any, this should not be the case anyway
+                        responses.add(message)
+                    else
+                        responses.add(index, message)
+                }
             }
         }
+    }
+
+    fun indexOf(child: T): Int {
+        return synchronized(this) { responses.indexOf(child) }
     }
 
 }

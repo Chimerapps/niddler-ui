@@ -4,10 +4,12 @@ import com.chimerapps.niddler.ui.NiddlerToolWindow
 import com.chimerapps.niddler.ui.actions.ConnectAction
 import com.chimerapps.niddler.ui.actions.DisconnectAction
 import com.chimerapps.niddler.ui.actions.ExportAction
+import com.chimerapps.niddler.ui.actions.LinkedAction
 import com.chimerapps.niddler.ui.actions.ScrollToBottomAction
 import com.chimerapps.niddler.ui.actions.SimpleAction
 import com.chimerapps.niddler.ui.actions.TimelineAction
 import com.chimerapps.niddler.ui.component.view.BaseUrlHideListener
+import com.chimerapps.niddler.ui.component.view.LinkedView
 import com.chimerapps.niddler.ui.component.view.MessageDetailView
 import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
@@ -113,6 +115,11 @@ class NiddlerSessionWindow(private val project: Project,
 
     fun currentViewModeUnselected() {
         //Do not switch to other view mode until other view mode is supported
+        if (currentViewMode == ViewMode.VIEW_MODE_LINKED) {
+            currentViewMode = ViewMode.VIEW_MODE_TIMELINE
+        } else {
+            currentViewMode = ViewMode.VIEW_MODE_LINKED
+        }
         viewToolbar.updateActionsImmediately() //Update ui
     }
 
@@ -174,8 +181,8 @@ class NiddlerSessionWindow(private val project: Project,
     private fun setupViewToolbar(): ActionToolbar {
         val actionGroup = DefaultActionGroup()
 
-        val timelineAction = TimelineAction(window = this)
-        actionGroup.add(timelineAction)
+        actionGroup.add(TimelineAction(window = this))
+        actionGroup.add(LinkedAction(window = this))
 
         actionGroup.addSeparator()
         actionGroup.add(ScrollToBottomAction(window = this))
@@ -198,7 +205,7 @@ class NiddlerSessionWindow(private val project: Project,
     private fun updateView() {
         when (currentViewMode) {
             ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(messageContainer.storage, detailView, baseUrlHideListener = this))
-            ViewMode.VIEW_MODE_LINKED -> TODO()
+            ViewMode.VIEW_MODE_LINKED -> replaceMessagesView(LinkedView(messageContainer.storage, detailView, baseUrlHideListener = this))
         }
     }
 

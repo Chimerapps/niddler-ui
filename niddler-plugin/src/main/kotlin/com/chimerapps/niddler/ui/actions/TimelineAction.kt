@@ -9,7 +9,7 @@ import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.project.DumbAware
 
 class TimelineAction(private val window: NiddlerSessionWindow)
-    : ToggleAction("Timeline", "View in chronological order", AllIcons.Actions.MoveDown), DumbAware {
+    : ToggleAction("Timeline", "View in chronological order", AllIcons.Actions.NextOccurence), DumbAware {
 
     override fun isSelected(e: AnActionEvent): Boolean {
         return window.currentViewMode == ViewMode.VIEW_MODE_TIMELINE
