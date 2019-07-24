@@ -3,10 +3,10 @@ package com.chimerapps.niddler.ui.model.renderer.impl.json
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.textAreaRenderer
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
+import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.Popup
 import com.chimerapps.niddler.ui.util.ui.PopupAction
 import com.chimerapps.niddler.ui.util.ui.action
-import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
@@ -149,10 +149,10 @@ private class JsonTreeNode(override val jsonElement: JsonElement, private val pa
 
 private class JsonTreeCellRenderer : ColoredTreeCellRenderer() {
 
-    private val booleanIcon = loadIcon("/ic_boolean.png")
-    private val intIcon = loadIcon("/ic_int.png")
-    private val stringIcon = loadIcon("/ic_string.png")
-    private val doubleIcon = loadIcon("/ic_double.png")
+    private val booleanIcon = IncludedIcons.Types.boolean
+    private val intIcon = IncludedIcons.Types.int
+    private val stringIcon = IncludedIcons.Types.string
+    private val doubleIcon = IncludedIcons.Types.double
     private val monoSpaced = JBFont.create(Font("Monospaced", 0, 12))
 
     override fun customizeCellRenderer(tree: JTree, value: Any?, selected: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean) {

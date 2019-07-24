@@ -2,7 +2,6 @@ package com.chimerapps.niddler.ui.actions
 
 import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
 import com.chimerapps.niddler.ui.component.ViewMode
-import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ToggleAction

@@ -15,10 +15,10 @@ import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
 import com.chimerapps.niddler.ui.model.AppPreferences
+import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
-import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
 import com.icapps.niddler.lib.device.DirectPreparedConnection
@@ -290,8 +290,7 @@ class NiddlerSessionWindow(private val project: Project,
         var applyFilter = false
         if (filter != null) {
             val option = JOptionPane.showOptionDialog(this, "A filter is active.\nDo you wish to export only the items matching the filter?",
-                    "Export options", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
-                    loadIcon("/niddler_logo.png"),
+                    "Export options", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, IncludedIcons.Status.logo,
                     arrayOf("Current view", "All"), "All")
             when (option) {
                 0 -> applyFilter = true

@@ -1,9 +1,7 @@
 package com.chimerapps.niddler.ui.util.ui
 
 import com.intellij.openapi.application.ApplicationManager
-import java.awt.Dimension
 import java.beans.PropertyChangeEvent
-import javax.swing.JComponent
 import javax.swing.JTable
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent

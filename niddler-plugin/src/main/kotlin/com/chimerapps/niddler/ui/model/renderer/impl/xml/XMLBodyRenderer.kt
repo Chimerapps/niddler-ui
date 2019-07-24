@@ -4,10 +4,10 @@ import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.reuseOrNew
 import com.chimerapps.niddler.ui.model.renderer.textAreaRenderer
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
+import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.Popup
 import com.chimerapps.niddler.ui.util.ui.PopupAction
 import com.chimerapps.niddler.ui.util.ui.action
-import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.icons.AllIcons
 import com.intellij.ui.ColoredTreeCellRenderer
@@ -98,7 +98,7 @@ private class NiddlerXmlTree : Tree() {
 
 private class XmlTreeCellRenderer : ColoredTreeCellRenderer() {
 
-    private val stringIcon = loadIcon("/ic_string.png")
+    private val stringIcon = IncludedIcons.Types.string
     private val nodeIcon = AllIcons.Nodes.Folder
     private val commentIcon = AllIcons.Nodes.Advice
     private val monoSpaced = JBFont.create(Font("Monospaced", 0, 12))

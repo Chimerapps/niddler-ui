@@ -2,7 +2,7 @@ package com.chimerapps.niddler.ui.component.view
 
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.bodyRendererForFormat
-import com.chimerapps.niddler.ui.util.ui.loadIcon
+import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.icons.AllIcons
 import java.awt.BorderLayout
@@ -16,7 +16,7 @@ import javax.swing.JToolBar
 class BodyMessageDetailPanel : JPanel(BorderLayout()) {
 
     private val structuredButton = JToggleButton("Structured", AllIcons.Hierarchy.Callee)
-    private val prettyButton = JToggleButton("Pretty", loadIcon("/ic_pretty.png"))
+    private val prettyButton = JToggleButton("Pretty", IncludedIcons.Action.pretty)
     private val rawButton = JToggleButton("Raw", AllIcons.Debugger.Db_primitive)
 
     private var previousStructuredComponent: JComponent? = null

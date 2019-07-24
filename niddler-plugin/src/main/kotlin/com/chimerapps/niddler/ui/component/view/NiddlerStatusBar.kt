@@ -1,6 +1,6 @@
 package com.chimerapps.niddler.ui.component.view
 
-import com.chimerapps.niddler.ui.util.ui.loadIcon
+import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
 import com.intellij.ui.components.JBLabel
@@ -53,11 +53,10 @@ class NiddlerStatusBar : JPanel(BorderLayout()), NiddlerMessageListener {
     }
 
     private fun updateStatusIcon() {
-        val resourceString = when (status) {
-            Status.CONNECTED -> "/ic_connected.png"
-            Status.DISCONNECTED -> "/ic_disconnected.png"
+        statusText.icon = when (status) {
+            Status.CONNECTED -> IncludedIcons.Status.connected
+            Status.DISCONNECTED -> IncludedIcons.Status.disconnected
         }
-        statusText.icon = loadIcon(resourceString)
     }
 
     @Suppress("SameParameterValue")

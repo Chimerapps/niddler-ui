@@ -2,7 +2,7 @@ package com.chimerapps.niddler.ui.component.renderer
 
 import com.chimerapps.niddler.ui.component.view.LinkedResponseNode
 import com.chimerapps.niddler.ui.component.view.LinkedRootNode
-import com.chimerapps.niddler.ui.util.ui.loadIcon
+import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.icapps.niddler.lib.utils.getStatusCodeString
 import com.intellij.ui.JBDefaultTreeCellRenderer
 import com.intellij.ui.components.JBLabel
@@ -23,8 +23,8 @@ import javax.swing.SwingConstants
 class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
 
     private val timeFormatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
-    private val directionUp = loadIcon("/ic_up.png")
-    private val directionDown = loadIcon("/ic_down.png")
+    private val directionUp = IncludedIcons.Status.outgoing
+    private val directionDown = IncludedIcons.Status.incoming
     private val timeCache = Date()
 
     private var myFocusedCalculated = false

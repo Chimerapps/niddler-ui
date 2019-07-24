@@ -2,18 +2,17 @@ package com.chimerapps.niddler.ui.component.view
 
 import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
+import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.Popup
 import com.chimerapps.niddler.ui.util.ui.PopupAction
 import com.chimerapps.niddler.ui.util.ui.action
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
-import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.chimerapps.niddler.ui.util.ui.setColumnPreferredWidth
 import com.icapps.niddler.lib.codegen.CurlCodeGenerator
 import com.icapps.niddler.lib.connection.model.NetworkNiddlerMessage
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.BodyFormat
 import com.icapps.niddler.lib.model.BodyFormatType
-import com.icapps.niddler.lib.model.ChronologicalMessagesView
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.utils.ObservableMutableList
@@ -239,8 +238,8 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<Par
             fireTableDataChanged()
         }
 
-    private val upIcon = loadIcon("/ic_up.png")
-    private val downIcon = loadIcon("/ic_down.png")
+    private val upIcon = IncludedIcons.Status.outgoing
+    private val downIcon = IncludedIcons.Status.incoming
     private var messages = messageContainer.messagesChronological.newView(filter = filter, messageListener = this)
 
     fun getMessageAtRow(rowIndex: Int): ParsedNiddlerMessage? {

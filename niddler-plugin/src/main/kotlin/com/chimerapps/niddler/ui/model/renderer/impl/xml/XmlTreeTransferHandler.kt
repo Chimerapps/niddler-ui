@@ -1,7 +1,5 @@
 package com.chimerapps.niddler.ui.model.renderer.impl.xml
 
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonElement
 import com.intellij.util.ui.EmptyClipboardOwner
 import org.w3c.dom.Node
 import java.awt.datatransfer.Clipboard

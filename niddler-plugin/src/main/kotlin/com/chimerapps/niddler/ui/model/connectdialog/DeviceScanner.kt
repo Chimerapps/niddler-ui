@@ -1,7 +1,7 @@
 package com.chimerapps.niddler.ui.model.connectdialog
 
+import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
-import com.chimerapps.niddler.ui.util.ui.loadIcon
 import com.icapps.niddler.lib.device.NiddlerSession
 import com.icapps.niddler.lib.device.adb.ADBBootstrap
 import com.icapps.niddler.lib.device.adb.ADBDevice
@@ -14,6 +14,7 @@ import com.icapps.tools.aec.EmulatorFactory
 import com.intellij.openapi.application.ApplicationManager
 import java.awt.event.ActionListener
 import java.io.File
+import javax.swing.Icon
 import javax.swing.SwingWorker
 import javax.swing.Timer
 
@@ -136,7 +137,7 @@ private class ScanningSwingWorker(private val adbInterface: ADBInterface,
             val version = bootstrap.executeADBCommand("-s", serial, "shell", "getprop", "ro.build.version.release")
             val extraInfo = "(Android $version, API $sdkVersion)"
 
-            return DeviceModel(name ?: "", extraInfo, loadIcon(getDeviceIcon(emulated)),
+            return DeviceModel(name ?: "", extraInfo, getDeviceIcon(emulated),
                     serial, adbDevice, adbDevice.getNiddlerSessions())
         } catch (e: Throwable) {
             logger<ScanningSwingWorker>().warn("Failed to build device model:", e)
@@ -145,7 +146,7 @@ private class ScanningSwingWorker(private val adbInterface: ADBInterface,
     }
 
     private fun buildDeviceModel(localDevice: LocalDevice, niddlerSessions: List<NiddlerSession>): DeviceModel {
-        return DeviceModel(localName, "", loadIcon("/ic_device_computer.png"),
+        return DeviceModel(localName, "", IncludedIcons.Devices.computer,
                 "local", localDevice, niddlerSessions)
     }
 
@@ -172,7 +173,7 @@ private class ScanningSwingWorker(private val adbInterface: ADBInterface,
         return adb.executeADBCommand("-s", serial, "shell", "getprop", "ro.product.model")
     }
 
-    fun getDeviceIcon(emulator: Boolean): String {
-        return if (emulator) "/ic_device_emulator.png" else "/ic_device_real.png"
+    fun getDeviceIcon(emulator: Boolean): Icon {
+        return if (emulator) IncludedIcons.Devices.emulator else IncludedIcons.Devices.real
     }
 }

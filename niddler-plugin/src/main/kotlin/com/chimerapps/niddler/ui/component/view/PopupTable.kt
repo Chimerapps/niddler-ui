@@ -6,8 +6,8 @@ import java.awt.event.MouseEvent
 import javax.swing.JPopupMenu
 import javax.swing.table.TableModel
 
-open class PopupTable<Model: TableModel, RowType>(model: Model, private val rowAtIndexCb: (model: Model, index: Int) -> RowType?,
-                               private val popupMenuForSelectionCb: (model: Model, row: RowType?) -> JPopupMenu?) : JBTable(model) {
+open class PopupTable<Model : TableModel, RowType>(model: Model, private val rowAtIndexCb: (model: Model, index: Int) -> RowType?,
+                                                   private val popupMenuForSelectionCb: (model: Model, row: RowType?) -> JPopupMenu?) : JBTable(model) {
 
     override fun getPopupLocation(event: MouseEvent): Point? {
         val r = rowAtPoint(event.point)
