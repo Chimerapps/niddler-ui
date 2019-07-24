@@ -11,14 +11,14 @@ private fun Any.loadIcon(path: String): Icon {
 object IncludedIcons {
 
     private val supportsSvg = ApplicationInfo.getInstance().build.baselineVersion >= 182 //2018.2
-    private val isFlat = supportsSvg //2018.2
+    private val isFlat = supportsSvg //also 2018.2
     private val hasSvgExtension = if (supportsSvg) ".svg" else ".png"
 
     object Types {
-        val boolean = loadIcon("/ic_boolean.png")
-        val double = loadIcon("/ic_double.png")
-        val int = loadIcon("/ic_int.png")
-        val string = loadIcon("/ic_string.png")
+        val boolean = loadIcon("/ic_boolean$hasSvgExtension")
+        val double = loadIcon("/ic_double$hasSvgExtension")
+        val int = loadIcon("/ic_int$hasSvgExtension")
+        val string = loadIcon("/ic_string$hasSvgExtension")
     }
 
     object Devices {
@@ -36,9 +36,9 @@ object IncludedIcons {
     }
 
     object Action {
-        val pretty = loadIcon("/ic_pretty.png")
+        val pretty = loadIcon("/ic_pretty$hasSvgExtension")
         val chronological = if (isFlat)
-                loadIcon("/ic_chronological_flat$hasSvgExtension")
+            loadIcon("/ic_chronological_flat$hasSvgExtension")
         else
             loadIcon("/ic_chronological_no_flat$hasSvgExtension")
     }
