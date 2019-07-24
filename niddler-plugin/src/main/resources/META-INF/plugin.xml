@@ -1,40 +1,28 @@
-<idea-plugin version="2">
+<idea-plugin>
     <id>com.icapps.niddler</id>
     <name>Niddler</name>
-    <version>1.0.1</version>
+    <version>2.0.0</version>
     <vendor email="support@icapps.com" url="https://www.icapps.com">iCapps &amp; Chimerapps</vendor>
 
     <description>This plugin enables the niddler ui inside the IDE</description>
 
     <change-notes><![CDATA[
-    <b>1.0.0 - First 'public' release</b>
+    <b>2.0.0 - Complete internal rework!</b>
     <ul>
-        <li>1.0.2 - Do not fail on newer versions of the protocol</li>
-        <li>1.0.1 - Filtering was not case insensitive</li>
-        <li>1.0.0 - Disconnect button</li>
-        <li>0.0.19 - Filtering on url</li>
-        <li>0.0.18 - Fixed HAR export of base64, charles did not like url encoding. Show status line with code when we have
-        it</li>
-        <li>0.0.17 - Fixed HAR exports using wrong url</li>
-        <li>0.0.16 - Fixed exception when the server uses a different format. Support for exporting to HAR 1.2</li>
-        <li>0.0.15 - Better handle empty bodies (from network requests/replies)</li>
-        <li>0.0.14 - Support for actual network requests</li>
-        <li>0.0.13 - Experimental export for exporting to curl. Highlight row when right-clicking cell</li>
-        <li>0.0.12 - Fixed non-themed UI in details and reworked details UI</li>
-        <li>0.0.11 - Support copy of message detail values and header names</li>
-        <li>0.0.10 - Support for linked mode (alpha)</li>
-        <li>0.0.9 - Remove required dependency on adb</li>
+        <li>Tighter integration with intellij platform</li>
+        <li>Performance optimizations</li>
+        <li>Removed linked view (WIP)</li>
     </ul>
         ]]>
     </change-notes>
 
-    <idea-version since-build="141.0"/>
+    <idea-version since-build="181.0" />
 
     <depends>com.intellij.modules.lang</depends>
+    <depends optional="true">com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Niddler" anchor="bottom" factoryClass="com.icapps.niddler.ui.NiddlerToolWindow"
-                    icon="/niddler_small.png"/>
+        <toolWindow id="Niddler" anchor="bottom" factoryClass="com.chimerapps.niddler.ui.NiddlerToolWindowFactory" icon="/niddler_small.png" />
     </extensions>
 
     <actions>

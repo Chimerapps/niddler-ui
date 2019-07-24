@@ -1,8 +1,11 @@
 package com.icapps.niddler.ui.model.ui
 
-import com.icapps.niddler.ui.model.MessageContainer
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
-import java.util.*
+import com.icapps.niddler.lib.model.BaseUrlHider
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import java.util.ArrayList
+import java.util.Collections
+import java.util.Enumeration
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
@@ -14,12 +17,13 @@ import javax.swing.tree.TreeNode
 class LinkedMessagesModel : DefaultTreeModel(DefaultMutableTreeNode()), MessagesModel {
 
     private var messages: Map<String, List<ParsedNiddlerMessage>> = Collections.emptyMap()
-    private lateinit var container: MessageContainer
+    private lateinit var container: NiddlerMessageStorage<ParsedNiddlerMessage>
 
-    override fun updateMessages(messages: MessageContainer) {
-        this.messages = messages.getMessagesLinked()
+    override fun updateMessages(messages: NiddlerMessageStorage<ParsedNiddlerMessage>, urlHider: BaseUrlHider) {
+        this.messages = messages.messagesLinked
         container = messages
 
+        //TODO fix url hider
         setRoot(MessageRootNode(this.messages))
     }
 

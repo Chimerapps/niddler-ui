@@ -1,5 +1,6 @@
 
 # Created by https://www.gitignore.io/api/osx,git,java,intellij,gradle
+local.properties
 
 ### OSX ###
 *.DS_Store
@@ -119,3 +120,5 @@ niddler-ui/build
 niddler-plugin/build
 niddler-ui/out
 niddler-plugin/out
+client-lib/build
+client-lib/out

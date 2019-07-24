@@ -1,11 +1,7 @@
 package com.icapps.niddler.ui.model.ui.json
 
-import com.google.gson.JsonArray
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.google.gson.JsonPrimitive
 import com.icapps.niddler.ui.asEnumeration
-import java.math.BigInteger
 import java.util.*
 import javax.swing.tree.TreeNode
 
@@ -13,12 +9,12 @@ import javax.swing.tree.TreeNode
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-class JsonTreeNode(private val jsonElement: JsonElement, private val parent: TreeNode?, private val name: String?) : TreeNode {
+class JsonTreeNode(override val jsonElement: JsonElement, private val parent: TreeNode?, override val name: String?) : TreeNode, JsonNode<JsonTreeNode> {
 
-    private val children: MutableList<JsonTreeNode> = arrayListOf()
-    private var value: String? = null
-    private var type: Type = Type.PRIMITIVE
-    private lateinit var primitiveNumber : Number
+    override val children: MutableList<JsonTreeNode> = arrayListOf()
+    override var value: String? = null
+    override var type: JsonNode.Type = JsonNode.Type.PRIMITIVE
+    override lateinit var primitiveNumber: Number
 
     init {
         if (jsonElement.isJsonArray)
@@ -31,36 +27,13 @@ class JsonTreeNode(private val jsonElement: JsonElement, private val parent: Tre
             initLeafPrimitive(jsonElement.asJsonPrimitive)
     }
 
-    private fun populateFromArray(jsonArray: JsonArray) {
-        jsonArray.forEach {
-            children.add(JsonTreeNode(it, this, null))
-        }
-        type = Type.ARRAY
+    //region JsonNode
+    override fun createElement(value: JsonElement, key: String?): JsonTreeNode {
+        return JsonTreeNode(value, this, key)
     }
+    //endregion
 
-    private fun populateFromObject(jsonObject: JsonObject) {
-        jsonObject.entrySet().forEach {
-            children.add(JsonTreeNode(it.value, this, it.key))
-        }
-        type = Type.OBJECT
-    }
-
-    private fun initLeaf(valueAsString: String) {
-        value = valueAsString
-    }
-
-    private fun initLeafPrimitive(jsonPrimitive: JsonPrimitive) {
-        value = jsonPrimitive.toString()
-
-        if (jsonPrimitive.isNumber) {
-            try{
-                primitiveNumber = jsonPrimitive.asLong
-            }catch(e:NumberFormatException){
-                primitiveNumber = jsonPrimitive.asDouble
-            }
-        }
-    }
-
+    //region TreeNode
     override fun children(): Enumeration<*> {
         return children.iterator().asEnumeration()
     }
@@ -88,49 +61,13 @@ class JsonTreeNode(private val jsonElement: JsonElement, private val parent: Tre
     override fun getAllowsChildren(): Boolean {
         return true //No idea?
     }
+    //endregion
 
     override fun toString(): String {
         return when (type) {
-            Type.ARRAY -> if (name != null) "$name[$childCount]" else "array[$childCount]"
-            Type.OBJECT -> name ?: "object"
-            Type.PRIMITIVE -> if (name != null) "$name : $value" else "$value"
-            else -> ""
+            JsonNode.Type.ARRAY -> if (name != null) "$name[$childCount]" else "array[$childCount]"
+            JsonNode.Type.OBJECT -> name ?: "object"
+            JsonNode.Type.PRIMITIVE -> if (name != null) "$name : $value" else "$value"
         }
     }
-
-    fun actualType(): JsonDataType {
-        return when (type) {
-            Type.ARRAY -> JsonDataType.ARRAY
-            Type.OBJECT -> JsonDataType.OBJECT
-            Type.PRIMITIVE -> {
-                if (jsonElement.isJsonNull)
-                    return JsonDataType.NULL
-
-                val primitive = jsonElement.asJsonPrimitive
-                if (primitive.isBoolean)
-                    return JsonDataType.BOOLEAN
-                else if (primitive.isString)
-                    return JsonDataType.STRING
-
-                val number = primitiveNumber
-                if (number is BigInteger || number is Long || number is Int
-                        || number is Short || number is Byte)
-                    return JsonDataType.INT
-                return JsonDataType.DOUBLE
-            }
-        }
-    }
-
-    fun isAnonymous(): Boolean {
-        return name == null
-    }
-
-    private enum class Type {
-        ARRAY, OBJECT, PRIMITIVE
-    }
-
-    enum class JsonDataType {
-        ARRAY, OBJECT, BOOLEAN, INT, STRING, DOUBLE, NULL
-    }
-
 }

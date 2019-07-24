@@ -1,7 +1,9 @@
 package com.icapps.niddler.ui.form.detail
 
-import com.icapps.niddler.ui.model.MessageContainer
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.ui.form.ComponentsFactory
+import com.icapps.niddler.ui.form.components.StackTraceComponent
 import com.icapps.niddler.ui.util.ClipboardUtil
 import com.jgoodies.forms.layout.CellConstraints
 import com.jgoodies.forms.layout.FormLayout
@@ -9,9 +11,19 @@ import com.jgoodies.forms.layout.RowSpec
 import java.awt.BorderLayout
 import java.awt.Font
 import java.awt.datatransfer.StringSelection
+import java.net.URLDecoder
 import java.text.SimpleDateFormat
-import java.util.*
-import javax.swing.*
+import java.util.Date
+import java.util.Locale
+import javax.swing.BorderFactory
+import javax.swing.BoxLayout
+import javax.swing.JComponent
+import javax.swing.JLabel
+import javax.swing.JMenuItem
+import javax.swing.JPanel
+import javax.swing.JPopupMenu
+import javax.swing.SwingConstants
+import javax.swing.border.BevelBorder
 import javax.swing.border.EmptyBorder
 import javax.swing.border.TitledBorder
 
@@ -20,13 +32,17 @@ import javax.swing.border.TitledBorder
  * @author Nicola Verbeeck
  * @date 18/11/16.
  */
-class MessageDetailPanel(private val messages: MessageContainer) : JPanel(BorderLayout()) {
+class MessageDetailPanel(private val messages: NiddlerMessageStorage<ParsedNiddlerMessage>, componentsFactory: ComponentsFactory) : JPanel(BorderLayout()) {
 
     private val generalPanel = JPanel(BorderLayout())
     private val headersPanel = JPanel(BorderLayout())
+    private val tracePanel = JPanel(BorderLayout())
+    private val contextPanel = JPanel(BorderLayout())
     private val generalContentPanel: JPanel
     private val headersContentPanel: JPanel
     private val containerPanel = JPanel()
+    private val stackTraceComponent: StackTraceComponent?
+    private val contextComponent: StackTraceComponent?
 
     private val formatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
     private val boldFont: Font
@@ -37,19 +53,38 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
         border = EmptyBorder(5, 5, 5, 5)
         containerPanel.layout = BoxLayout(containerPanel, BoxLayout.Y_AXIS)
 
-        generalPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0), "General", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
-        headersPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0), "Headers", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
+        generalPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0),
+                "General", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
+        headersPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0),
+                "Headers", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
+        tracePanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0),
+                "Stacktrace", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
+        contextPanel.border = BorderFactory.createTitledBorder(EmptyBorder(0, 0, 0, 0),
+                "Context", TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
 
-        generalContentPanel = JPanel(FormLayout("left:default, 3dlu, pref", "pref, pref, pref, pref, pref"))
-        generalContentPanel.border = EmptyBorder(5, 5, 5, 5)
-        generalPanel.add(JScrollPane(generalContentPanel))
+
+        generalContentPanel = JPanel(FormLayout("left:default, 3dlu, pref", "pref, pref, pref, pref, pref, pref"))
+        generalContentPanel.border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5))
+        generalPanel.add(generalContentPanel)
 
         headersContentPanel = JPanel(FormLayout("left:default, 3dlu, pref", ""))
-        headersContentPanel.border = EmptyBorder(5, 5, 5, 5)
-        headersPanel.add(JScrollPane(headersContentPanel))
+        headersContentPanel.border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5))
+        headersPanel.add(headersContentPanel)
 
         containerPanel.add(generalPanel)
         containerPanel.add(headersPanel)
+        containerPanel.add(tracePanel)
+        containerPanel.add(contextPanel)
+
+        stackTraceComponent = componentsFactory.createTraceComponent()?.also {
+            (it.asComponent as? JComponent)?.border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5))
+            tracePanel.add(it.asComponent)
+        }
+
+        contextComponent = componentsFactory.createTraceComponent()?.also {
+            (it.asComponent as? JComponent)?.border = BorderFactory.createCompoundBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED), EmptyBorder(5, 5, 5, 5))
+            contextPanel.add(it.asComponent)
+        }
 
         boldFont = Font("Monospaced", Font.BOLD, 12)
         normalFont = Font("Monospaced", 0, 12)
@@ -77,13 +112,28 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
         generalContentPanel.add(boldLabel("URL"), constraints.xy(1, 3))
         generalContentPanel.add(selectableLabel(message.url ?: other?.url), constraints.xy(3, 3))
 
-        generalContentPanel.add(boldLabel("Status"), constraints.xy(1, 4))
-        generalContentPanel.add(selectableLabel((message.statusCode ?: other?.statusCode)?.toString()), constraints.xy(3, 4))
+        var row = 4
 
-        generalContentPanel.add(boldLabel("Execution time"), constraints.xy(1, 5))
-        generalContentPanel.add(makeExecutionTimeLabel(message, other), constraints.xy(3, 5))
+        (message.url ?: other?.url)?.let { url ->
+            val urlDecoded = URLDecoder.decode(url, "utf-8")
+            if (urlDecoded != url) {
+                generalContentPanel.add(boldLabel("Decoded URL"), constraints.xy(1, row))
+                generalContentPanel.add(selectableLabel(urlDecoded), constraints.xy(3, row))
+                ++row
+            }
+        }
+
+        generalContentPanel.add(boldLabel("Status"), constraints.xy(1, row))
+        generalContentPanel.add(selectableLabel((message.statusCode
+                ?: other?.statusCode)?.toString()), constraints.xy(3, row))
+        ++row
+
+        generalContentPanel.add(boldLabel("Execution time"), constraints.xy(1, row))
+        generalContentPanel.add(makeExecutionTimeLabel(message, other), constraints.xy(3, row))
 
         populateHeaders(message)
+        populateStackTrace(message)
+        populateContext(message)
 
         headersContentPanel.revalidate()
         generalContentPanel.revalidate()
@@ -95,7 +145,7 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
     private fun populateHeaders(message: ParsedNiddlerMessage) {
         val layout = headersContentPanel.layout as FormLayout
         val numRows = layout.rowCount
-        for (i in 0..numRows - 1) {
+        for (i in 0 until numRows) {
             layout.removeRow(1)
         }
         val spec = RowSpec.decodeSpecs("pref")[0]
@@ -110,6 +160,36 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
 
             ++row
         }
+    }
+
+    private fun populateStackTrace(message: ParsedNiddlerMessage) {
+        val request = if (message.isRequest) {
+            message
+        } else {
+            messages.findRequest(message)
+        }
+        val trace = request?.trace
+        tracePanel.isVisible = trace != null
+        stackTraceComponent?.setStackTrace(trace)
+        stackTraceComponent?.invalidate()
+        stackTraceComponent?.repaint()
+        tracePanel.invalidate()
+        tracePanel.repaint()
+    }
+
+    private fun populateContext(message: ParsedNiddlerMessage) {
+        val request = if (message.isRequest) {
+            message
+        } else {
+            messages.findRequest(message)
+        }
+        val context = request?.context
+        contextPanel.isVisible = context != null
+        contextComponent?.setStackTrace(context)
+        contextComponent?.invalidate()
+        contextComponent?.repaint()
+        contextPanel.invalidate()
+        contextPanel.repaint()
     }
 
     fun clear() {
@@ -131,13 +211,13 @@ class MessageDetailPanel(private val messages: MessageContainer) : JPanel(Border
     }
 
     private fun findResponse(message: ParsedNiddlerMessage): ParsedNiddlerMessage? {
-        return messages.getMessagesWithRequestId(message.requestId)?.find {
+        return messages.getMessagesWithRequestId(message.requestId).find {
             !it.isRequest
         }
     }
 
     private fun findRequest(message: ParsedNiddlerMessage): ParsedNiddlerMessage? {
-        return messages.getMessagesWithRequestId(message.requestId)?.find(ParsedNiddlerMessage::isRequest)
+        return messages.getMessagesWithRequestId(message.requestId).find(ParsedNiddlerMessage::isRequest)
     }
 
     private fun boldLabel(text: String?): JComponent {

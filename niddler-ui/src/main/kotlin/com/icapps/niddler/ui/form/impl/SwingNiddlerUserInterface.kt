@@ -1,20 +1,28 @@
 package com.icapps.niddler.ui.form.impl
 
+import com.icapps.niddler.lib.model.NiddlerMessageContainer
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.ui.button
 import com.icapps.niddler.ui.form.ComponentsFactory
+import com.icapps.niddler.ui.form.MainThreadDispatcher
 import com.icapps.niddler.ui.form.components.HintTextField
-import com.icapps.niddler.ui.form.components.NiddlerToolbar
+import com.icapps.niddler.ui.form.components.NiddlerMainToolbar
 import com.icapps.niddler.ui.form.components.SplitPane
 import com.icapps.niddler.ui.form.components.impl.SwingToolbar
+import com.icapps.niddler.ui.form.debug.view.DebugView
+import com.icapps.niddler.ui.form.ui.AbstractAction
 import com.icapps.niddler.ui.form.ui.NiddlerDetailUserInterface
 import com.icapps.niddler.ui.form.ui.NiddlerOverviewUserInterface
+import com.icapps.niddler.ui.form.ui.NiddlerStatusbar
 import com.icapps.niddler.ui.form.ui.NiddlerUserInterface
-import com.icapps.niddler.ui.model.MessageContainer
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
-import java.awt.Component
 import java.awt.Dimension
-import java.awt.FlowLayout
-import javax.swing.*
-import javax.swing.border.EmptyBorder
+import javax.swing.JComponent
+import javax.swing.JOptionPane
+import javax.swing.JPanel
+import javax.swing.JScrollPane
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
@@ -22,28 +30,29 @@ import javax.swing.event.DocumentListener
  * @author Nicola Verbeeck
  * @date 14/11/2017.
  */
-open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsFactory) : NiddlerUserInterface, SwingNiddlerOverviewUserInterface.NiddlerOverviewParent {
+open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsFactory)
+    : NiddlerUserInterface, SwingNiddlerOverviewUserInterface.NiddlerOverviewParent {
 
     override var connectButtonListener: (() -> Unit)? = null
     override var filterListener: ((String?) -> Unit)? = null
     override var disconnectButtonListener: (() -> Unit)? = null
+    override var debugButtonListener: (() -> Unit)? = null
+    override var staticBlacklistButtonListener: (() -> Unit)? = null
 
     override val asComponent: JComponent
         get() = rootPanel
-    override lateinit var toolbar: NiddlerToolbar
+    override lateinit var toolbar: NiddlerMainToolbar
 
     override lateinit var overview: NiddlerOverviewUserInterface
     override lateinit var detail: NiddlerDetailUserInterface
-    override lateinit var disconnectButton: Component
+    override lateinit var statusBar: NiddlerStatusbar
 
     protected val rootPanel: JPanel
 
     private lateinit var splitPane: SplitPane
-    private lateinit var statusBar: JPanel
-    private lateinit var connectButton: JButton
+    override lateinit var disconnectButton: AbstractAction
     private lateinit var messagesScroller: JScrollPane
-
-    private lateinit var statusText: JLabel
+    override lateinit var debugView: DebugView
 
     init {
         rootPanel = JPanel()
@@ -55,14 +64,19 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         return rootPanel
     }
 
-    override fun init(messageContainer: MessageContainer) {
+    override fun init(messageContainer: NiddlerMessageContainer<ParsedNiddlerMessage>) {
+        debugView = DebugView(componentsFactory, ::onDebugMessagesUpdated, messageContainer)
         initStatusbar()
-        initDetail(messageContainer)
+        initDetail(messageContainer.storage)
         initOverview()
         initScroller()
         initSplitPane()
         initConnectPanel()
         initToolbar()
+    }
+
+    override fun selectMessage(parsedNiddlerMessage: ParsedNiddlerMessage) {
+        overview.messagesAsTable.selectRowFor(parsedNiddlerMessage)
     }
 
     protected open fun initSplitPane() {
@@ -79,18 +93,9 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     }
 
     protected open fun initStatusbar() {
-        statusBar = JPanel()
-        statusBar.layout = BorderLayout(0, 0)
-        uiContainer().add(statusBar, BorderLayout.SOUTH)
-        statusBar.border = BorderFactory.createTitledBorder(BorderFactory.createLoweredBevelBorder(), null)
-        statusText = JLabel().apply {
-            isFocusable = false
-            text = ""
-            verifyInputWhenFocusTarget = false
-            putClientProperty("html.disable", java.lang.Boolean.FALSE)
-        }
-        statusBar.add(statusText, BorderLayout.CENTER)
-        statusBar.border = BorderFactory.createCompoundBorder(statusBar.border, EmptyBorder(1, 6, 1, 6))
+        val statusBar = SwingNiddlerStatusbar()
+        uiContainer().add(statusBar.statusBar, BorderLayout.SOUTH)
+        this.statusBar = statusBar
     }
 
     protected open fun initConnectPanel() {
@@ -98,24 +103,27 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         topPanel.layout = BorderLayout(5, 5)
         uiContainer().add(topPanel, BorderLayout.NORTH)
 
-        val buttonsPanel = JPanel().apply { layout = FlowLayout(FlowLayout.LEFT, 0, 0) }
-        topPanel.add(buttonsPanel, BorderLayout.WEST)
-
-        connectButton = JButton()
-        connectButton.text = "Connect"
-
-        connectButton.addActionListener { connectButtonListener?.invoke() }
-
-        disconnectButton = JButton().apply {
-            text = "Disconnect"
-            isEnabled = false
-            addActionListener { disconnectButtonListener?.invoke() }
+        val toolbar = componentsFactory.createHorizontalToolbar()
+        toolbar.addAction(loadIcon("/execute.png"), "Connect without debugger") {
+            connectButtonListener?.invoke()
+        }
+        toolbar.addAction(loadIcon("/startDebugger.png"), "Connect with debugger") {
+            debugButtonListener?.invoke()
+        }
+        disconnectButton = toolbar.addAction(loadIcon("/suspend.png"), "Disconnect") {
+            it.isEnabled = false
+            disconnectButtonListener?.invoke()
         }
 
-        buttonsPanel.add(connectButton)
-        buttonsPanel.add(disconnectButton)
+        topPanel.add(toolbar.component, BorderLayout.WEST)
 
-        initFilter(topPanel)
+        val rightPanel = JPanel(BorderLayout())
+        topPanel.add(rightPanel, BorderLayout.EAST)
+
+        rightPanel.add(button("Blacklist") {
+            staticBlacklistButtonListener?.invoke()
+        })
+        initFilter(rightPanel)
     }
 
     protected open fun initFilter(parent: JPanel) {
@@ -147,15 +155,7 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
         toolbar = SwingToolbar(uiContainer())
     }
 
-    override fun setStatusText(statusText: String?) {
-        this.statusText.text = statusText
-    }
-
-    override fun setStatusIcon(icon: ImageIcon?) {
-        this.statusText.icon = icon
-    }
-
-    protected open fun initDetail(messagesContainer: MessageContainer) {
+    protected open fun initDetail(messagesContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) {
         detail = SwingNiddlerDetailUserInterface(componentsFactory, messagesContainer)
         detail.init()
     }
@@ -166,10 +166,50 @@ open class SwingNiddlerUserInterface(override val componentsFactory: ComponentsF
     }
 
     override fun showTable() {
+        if (splitPane.asComponent.parent == null) {
+            uiContainer().let {
+                it.remove(debugView)
+                it.add(splitPane.asComponent)
+                it.invalidate()
+                it.repaint()
+                it.revalidate()
+            }
+        }
         messagesScroller.setViewportView(overview.messagesAsTable)
     }
 
     override fun showLinked() {
+        if (splitPane.asComponent.parent == null) {
+            uiContainer().let {
+                it.remove(debugView)
+                it.add(splitPane.asComponent)
+                it.invalidate()
+                it.repaint()
+                it.revalidate()
+            }
+        }
         messagesScroller.setViewportView(overview.messagesAsTree)
+    }
+
+    override fun showDebugView() {
+        if (splitPane.asComponent.parent != null) {
+            uiContainer().let {
+                it.remove(splitPane.asComponent)
+                it.add(debugView)
+                it.invalidate()
+                it.repaint()
+                it.revalidate()
+            }
+        }
+    }
+
+    override fun showWarningMessage(title: String, message: String) {
+        JOptionPane.showMessageDialog(rootPanel, message, title, JOptionPane.WARNING_MESSAGE)
+    }
+
+    private fun onDebugMessagesUpdated(numItems: Int) {
+        MainThreadDispatcher.dispatch {
+            toolbar.hasWaitingBreakpoint = (numItems != 0)
+        }
     }
 }

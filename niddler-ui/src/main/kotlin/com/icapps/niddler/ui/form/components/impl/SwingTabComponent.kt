@@ -21,6 +21,9 @@ class SwingTabComponent : JTabbedPane(), TabComponent {
     override val numTabs: Int
         get() = tabCount
 
+    override val currentTab: Int
+        get() = selectedIndex
+
     override fun get(index: Int): Component {
         return getComponentAt(index)
     }

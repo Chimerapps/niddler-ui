@@ -1,0 +1,88 @@
+buildscript {
+    ext.kotlin_version = '1.3.21'
+
+    repositories {
+        maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
+        jcenter()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
+    }
+}
+
+plugins {
+    id "org.jetbrains.intellij" version "0.4.2"
+    id "com.github.ben-manes.versions" version "0.20.0"
+}
+
+apply plugin: 'kotlin'
+
+def actualPluginVersion = hasProperty("internalBuildNumber") ? "$pluginVersion-$internalBuildNumber" : "$pluginVersion"
+
+group 'com.icapps'
+version actualPluginVersion
+sourceCompatibility = 1.8
+
+intellij {
+    version '2016.3.1'
+    updateSinceUntilBuild false
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://jitpack.io"
+    }
+}
+
+configurations {
+    ftpAntTask
+}
+
+dependencies {
+    compile(project(':niddler-ui')) {
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+    }
+    ftpAntTask("org.apache.ant:ant-commons-net:1.10.5") {
+        module("commons-net:commons-net:1.4.1") {
+            dependencies "oro:oro:2.0.8:jar"
+        }
+    }
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+}
+
+task uploadToInternalServer << {
+    ant {
+        taskdef(name: 'ftp',
+                classname: 'org.apache.tools.ant.taskdefs.optional.net.FTP',
+                classpath: configurations.ftpAntTask.asPath)
+
+        def properties = new Properties()
+        properties.load(new File("local.properties").newDataInputStream())
+        def internalServer = properties.internalServer
+        def internalServerUser = properties.internalServerUser
+        def internalServerPassword = properties.internalServerPassword
+        def internalServerDir = properties.internalServerDir
+        def publicPath = properties.internalServerPublicPath
+
+        def pluginFileContents = "<plugins><plugin id=\"com.icapps.niddler\" url=\"$publicPath/versions/niddler-plugin-${actualPluginVersion}.zip\" version=\"$actualPluginVersion\"/></plugins>"
+        def pluginDescriptorFile = new File("niddler-plugin/build/distributions/updatePlugins.xml")
+        pluginDescriptorFile.write pluginFileContents
+
+        ftp(server: "$internalServer", userid: "$internalServerUser", password: "$internalServerPassword",
+                remoteDir: "$internalServerDir", passive:'yes') {
+            fileset(dir: "build/distributions") {
+                include(name: "niddler-plugin-${actualPluginVersion}.zip")
+                include(name: "updatePlugins.xml")
+            }
+        }
+    }
+}
+

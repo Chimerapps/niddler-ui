@@ -1,6 +1,6 @@
 package com.icapps.niddler.ui.form.ui
 
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import java.awt.Component
 
 /**

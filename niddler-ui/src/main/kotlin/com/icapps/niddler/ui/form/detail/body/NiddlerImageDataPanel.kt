@@ -1,7 +1,7 @@
 package com.icapps.niddler.ui.form.detail.body
 
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.ui.hex.JHexEditor
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
 import java.awt.image.BufferedImage
 import javax.swing.ImageIcon
 import javax.swing.JLabel
@@ -12,7 +12,7 @@ import javax.swing.JScrollPane
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-class NiddlerImageDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(false, true, message) {
+class NiddlerImageDataPanel(savedState: Map<String, Any>?, message: ParsedNiddlerMessage) : NiddlerStructuredDataPanel(false, true, savedState, message) {
 
 
     init {
@@ -21,7 +21,10 @@ class NiddlerImageDataPanel(message: ParsedNiddlerMessage) : NiddlerStructuredDa
 
     override fun initAsPretty() {
         val label = JLabel()
-        label.icon = ImageIcon(message.bodyData as BufferedImage)
+        if (message.bodyData is BufferedImage)
+            label.icon = ImageIcon(message.bodyData as BufferedImage)
+        else
+            label.icon = null
         replacePanel(JScrollPane(label))
     }
 

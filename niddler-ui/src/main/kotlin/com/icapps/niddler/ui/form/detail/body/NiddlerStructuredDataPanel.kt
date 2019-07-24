@@ -1,16 +1,31 @@
 package com.icapps.niddler.ui.form.detail.body
 
-import com.icapps.niddler.ui.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.ui.form.NiddlerStructuredViewPopupMenu
+import com.icapps.niddler.ui.util.ClipboardUtil
+import com.icapps.niddler.ui.util.loadIcon
 import java.awt.BorderLayout
 import java.awt.Font
-import javax.swing.*
+import java.awt.datatransfer.StringSelection
+import javax.swing.Box
+import javax.swing.ButtonGroup
+import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.JScrollPane
+import javax.swing.JTextArea
+import javax.swing.JToggleButton
+import javax.swing.JToolBar
 import javax.swing.text.Document
 
 /**
  * @author Nicola Verbeeck
  * @date 15/11/16.
  */
-abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, protected val message: ParsedNiddlerMessage) : JPanel() {
+abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, savedState: Map<String, Any>?, protected val message: ParsedNiddlerMessage) : JPanel() {
+
+    private companion object {
+        private const val STATE_STRUCTURE = "current_state"
+    }
 
     private var currentContentPanel: JComponent? = null
 
@@ -21,13 +36,25 @@ abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, 
     private val rawButton: JToggleButton
     private var toolbar: JToolBar
     private val monospaceFont: Font
+    private var currentStructureState: NiddlerStructureState
+
+    protected val popup = NiddlerStructuredViewPopupMenu(object : NiddlerStructuredViewPopupMenu.Listener {
+        override fun onCopyKeyClicked(key: Any) {
+            ClipboardUtil.copyToClipboard(StringSelection(key.toString()))
+        }
+
+        override fun onCopyValueClicked(value: Any) {
+            ClipboardUtil.copyToClipboard(StringSelection(value.toString()))
+        }
+
+    })
 
     init {
         layout = BorderLayout()
 
-        treeButton = JToggleButton("Structure", ImageIcon(javaClass.getResource("/ic_as_tree.png")))
-        prettyButton = JToggleButton("Pretty", ImageIcon(javaClass.getResource("/ic_pretty.png")))
-        rawButton = JToggleButton("Raw", ImageIcon(javaClass.getResource("/ic_raw.png")))
+        treeButton = JToggleButton("Structure", loadIcon("/ic_as_tree.png"))
+        prettyButton = JToggleButton("Pretty", loadIcon("/ic_pretty.png"))
+        rawButton = JToggleButton("Raw", loadIcon("/ic_raw.png"))
 
         val buttonGroup = ButtonGroup()
         if (hasTree)
@@ -35,6 +62,8 @@ abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, 
         if (hasPretty)
             buttonGroup.add(prettyButton)
         buttonGroup.add(rawButton)
+
+        currentStructureState = determineDefaultStructureState(hasTree, hasPretty, savedState?.get(STATE_STRUCTURE) as? NiddlerStructureState)
 
         toolbar = JToolBar()
         toolbar.isFloatable = false
@@ -45,17 +74,31 @@ abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, 
             toolbar.add(prettyButton)
         toolbar.add(rawButton)
 
-        if (hasTree) {
-            treeButton.isSelected = true
-            treeButton.addItemListener { if (treeButton.isSelected) initAsTree() }
-        } else if (hasPretty) {
-            prettyButton.isSelected = true
-        } else {
-            rawButton.isSelected = true
+        treeButton.isSelected = currentStructureState == NiddlerStructureState.STATE_TREE
+        prettyButton.isSelected = currentStructureState == NiddlerStructureState.STATE_PRETTY
+        rawButton.isSelected = currentStructureState == NiddlerStructureState.STATE_RAW
+
+        treeButton.addItemListener {
+            if (treeButton.isSelected) {
+                currentStructureState = NiddlerStructureState.STATE_TREE
+                initAsTree()
+            }
         }
-        if (hasPretty)
-            prettyButton.addItemListener { if (prettyButton.isSelected) initAsPretty() }
-        rawButton.addItemListener { if (rawButton.isSelected) initAsRaw() }
+        prettyButton.addItemListener {
+            if (prettyButton.isSelected) {
+                currentStructureState = NiddlerStructureState.STATE_PRETTY
+                initAsPretty()
+            }
+        }
+        rawButton.addItemListener {
+            if (rawButton.isSelected) {
+                currentStructureState = NiddlerStructureState.STATE_RAW
+                initAsRaw()
+            }
+        }
+        if (treeButton.isSelected) treeButton.requestFocusInWindow()
+        if (prettyButton.isSelected) treeButton.requestFocusInWindow()
+        if (rawButton.isSelected) treeButton.requestFocusInWindow()
 
         monospaceFont = Font("Monospaced", Font.PLAIN, 10)
     }
@@ -64,12 +107,15 @@ abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, 
         add(toolbar, BorderLayout.NORTH)
 
         createStructuredView()
-        if (treeButton.isSelected)
-            initAsTree()
-        else if (prettyButton.isSelected)
-            initAsPretty()
-        else
-            initAsRaw()
+        when {
+            treeButton.isSelected -> initAsTree()
+            prettyButton.isSelected -> initAsPretty()
+            else -> initAsRaw()
+        }
+    }
+
+    open fun saveState(data: MutableMap<String, Any>) {
+        data[STATE_STRUCTURE] = currentStructureState
     }
 
     protected open fun createStructuredView() {}
@@ -104,4 +150,26 @@ abstract class NiddlerStructuredDataPanel(hasTree: Boolean, hasPretty: Boolean, 
         repaint()
     }
 
+    private fun determineDefaultStructureState(hasTree: Boolean, hasPretty: Boolean, oldState: NiddlerStructureState?): NiddlerStructureState {
+        if (oldState != null) {
+            when (oldState) {
+                NiddlerStructureState.STATE_PRETTY -> if (hasPretty) return oldState
+                NiddlerStructureState.STATE_TREE -> if (hasTree) return oldState
+                NiddlerStructureState.STATE_RAW -> return oldState
+            }
+        }
+
+        return when {
+            hasTree -> NiddlerStructureState.STATE_TREE
+            hasPretty -> NiddlerStructureState.STATE_PRETTY
+            else -> NiddlerStructureState.STATE_RAW
+        }
+    }
+
+}
+
+enum class NiddlerStructureState {
+    STATE_PRETTY,
+    STATE_TREE,
+    STATE_RAW
 }
