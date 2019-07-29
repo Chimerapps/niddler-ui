@@ -6,7 +6,7 @@ import javax.swing.Icon
 
 open class SimpleAction(text: String?, description: String?, icon: Icon, protected val actionListener: () -> Unit) : DumbAwareAction(text, description, icon) {
 
-    override fun actionPerformed(e: AnActionEvent?) {
+    override fun actionPerformed(e: AnActionEvent) {
         actionListener()
     }
 

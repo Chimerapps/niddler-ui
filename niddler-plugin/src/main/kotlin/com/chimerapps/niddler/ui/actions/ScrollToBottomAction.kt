@@ -9,11 +9,11 @@ import com.intellij.openapi.project.DumbAware
 class ScrollToBottomAction(private val window: NiddlerSessionWindow)
     : ToggleAction("Scroll to the end", "Keep the view scrolled to the end", AllIcons.RunConfigurations.Scroll_down), DumbAware {
 
-    override fun isSelected(e: AnActionEvent?): Boolean {
+    override fun isSelected(e: AnActionEvent): Boolean {
         return window.scrollToEnd
     }
 
-    override fun setSelected(e: AnActionEvent?, state: Boolean) {
+    override fun setSelected(e: AnActionEvent, state: Boolean) {
         window.scrollToEnd = state
     }
 }

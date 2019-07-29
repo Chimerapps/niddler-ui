@@ -15,7 +15,7 @@ abstract class DisableableAction(text: String?, description: String?, icon: Icon
         e.presentation.isEnabled = isEnabled
     }
 
-    override fun actionPerformed(e: AnActionEvent?) {
+    override fun actionPerformed(e: AnActionEvent) {
         if (isEnabled)
             actionListener()
     }

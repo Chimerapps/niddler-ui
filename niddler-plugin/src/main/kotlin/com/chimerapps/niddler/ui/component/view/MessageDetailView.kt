@@ -37,10 +37,12 @@ class MessageDetailView(project: Project,
 
         tabsContainer = RunnerLayoutUi.Factory.getInstance(project).create("niddler-ui", "Detail tabs", "Some session name?", disposable)
         val detailsContent = tabsContainer.createContent("DetailViewDetails", generalDetailPanel, "Details", null, null)
+        detailsContent.setPreferredFocusedComponent { generalDetailPanel }
         detailsContent.isCloseable = false
         tabsContainer.addContent(detailsContent, -1, PlaceInGrid.center, false)
 
         val bodyContent = tabsContainer.createContent("DetailViewBody", bodyDetailPanel, "Body", null, null)
+        bodyContent.setPreferredFocusedComponent { bodyDetailPanel }
         bodyContent.isCloseable = false
         tabsContainer.addContent(bodyContent, -1, PlaceInGrid.center, false)
     }

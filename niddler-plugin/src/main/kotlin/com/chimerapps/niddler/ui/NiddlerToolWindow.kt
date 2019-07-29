@@ -49,13 +49,13 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
 
         tabsContainer = RunnerLayoutUi.Factory.getInstance(project).create("niddler-ui", "Detail tabs", "Some session name?", disposable)
         tabsContainer.addListener(object : ContentManagerListener {
-            override fun contentAdded(event: ContentManagerEvent?) {
+            override fun contentAdded(event: ContentManagerEvent) {
             }
 
-            override fun contentRemoveQuery(event: ContentManagerEvent?) {
+            override fun contentRemoveQuery(event: ContentManagerEvent) {
             }
 
-            override fun selectionChanged(event: ContentManagerEvent?) {
+            override fun selectionChanged(event: ContentManagerEvent) {
             }
 
             override fun contentRemoved(event: ContentManagerEvent) {
@@ -95,7 +95,10 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
     }
 
     private fun newSessionWindow() {
-        val content = tabsContainer.createContent("${c++}-contentId", NiddlerSessionWindow(project, disposable, this), "Session $c", null, null)
+        val sessionWindow = NiddlerSessionWindow(project, disposable, this)
+        val content = tabsContainer.createContent("${c++}-contentId", sessionWindow, "Session $c", null, null)
+        content.setPreferredFocusedComponent { sessionWindow }
+
         content.isCloseable = true
         tabsContainer.addContent(content, -1, PlaceInGrid.center, false)
     }
