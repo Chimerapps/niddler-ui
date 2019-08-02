@@ -15,7 +15,7 @@ import javax.swing.JToolBar
 
 class BodyMessageDetailPanel : JPanel(BorderLayout()) {
 
-    private val structuredButton = JToggleButton("Structured", AllIcons.Hierarchy.Callee)
+    private val structuredButton = JToggleButton("Structured", AllIcons.Hierarchy.Subtypes)
     private val prettyButton = JToggleButton("Pretty", IncludedIcons.Action.pretty)
     private val rawButton = JToggleButton("Raw", AllIcons.Debugger.Db_primitive)
 

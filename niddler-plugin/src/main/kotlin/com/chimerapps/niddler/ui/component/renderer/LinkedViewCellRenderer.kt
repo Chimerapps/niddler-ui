@@ -136,14 +136,14 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
 
     private fun updatePanel(panel: JPanel, tree: JTree) {
         if (UIUtil.isFullRowSelectionLAF()) {
-            panel.background = if (selected) UIUtil.getTreeSelectionBackground() else null
+            panel.background = if (selected) UIUtil.getTreeSelectionBackground(true) else null
         } else if (WideSelectionTreeUI.isWideSelection(tree)) {
             if (selected) {
-                requestPanel.background = if (hasFocus) UIUtil.getTreeSelectionBackground() else UIUtil.getTreeUnfocusedSelectionBackground()
+                requestPanel.background = if (hasFocus) UIUtil.getTreeSelectionBackground(true) else UIUtil.getTreeSelectionBackground(false)
             }
         } else if (selected) {
             if (isFocused()) {
-                panel.background = UIUtil.getTreeSelectionBackground()
+                panel.background = UIUtil.getTreeSelectionBackground(true)
             } else {
                 panel.background = null
             }
@@ -164,6 +164,7 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
 
     private fun updateForeground(label: JBLabel) {
         if (mySelected && isFocused()) {
+            @Suppress("DEPRECATION")
             label.foreground = UIUtil.getTreeSelectionForeground()
         } else if (mySelected && UIUtil.isUnderAquaBasedLookAndFeel()) {
             label.foreground = UIUtil.getTreeForeground()

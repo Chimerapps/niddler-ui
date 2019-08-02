@@ -100,7 +100,7 @@ private class XmlTreeCellRenderer : ColoredTreeCellRenderer() {
 
     private val stringIcon = IncludedIcons.Types.string
     private val nodeIcon = AllIcons.Nodes.Folder
-    private val commentIcon = AllIcons.Nodes.Advice
+    private val commentIcon = AllIcons.Nodes.Tag
     private val monoSpaced = JBFont.create(Font("Monospaced", 0, 12))
 
     override fun customizeCellRenderer(tree: JTree, value: Any?, selected: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean) {
