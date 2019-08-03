@@ -17,7 +17,7 @@ import javax.swing.Icon
 import javax.swing.SwingWorker
 import javax.swing.Timer
 
-class DeviceScanner(private val adbInterface: ADBInterface, private val listener: (List<DeviceModel>) -> Unit) {
+class DeviceScanner(private val adbInterface: ADBInterface, private val announcementPort: Int, private val listener: (List<DeviceModel>) -> Unit) {
 
     private companion object {
         private const val REFRESH_PROCESS_DELAY = 4000
@@ -56,7 +56,7 @@ class DeviceScanner(private val adbInterface: ADBInterface, private val listener
                 scanningWorker?.cancel(true)
             } catch (e: Throwable) {
             }
-            scanningWorker = ScanningSwingWorker(adbInterface, listener).also { it.execute() }
+            scanningWorker = ScanningSwingWorker(adbInterface, announcementPort, listener).also { it.execute() }
 
             refreshTimer?.stop()
             refreshTimer = Timer(REFRESH_PROCESS_DELAY, ActionListener {
@@ -65,7 +65,7 @@ class DeviceScanner(private val adbInterface: ADBInterface, private val listener
                         scanningWorker?.cancel(true)
                     } catch (e: Throwable) {
                     }
-                    scanningWorker = ScanningSwingWorker(adbInterface, listener).also { it.execute() }
+                    scanningWorker = ScanningSwingWorker(adbInterface, announcementPort, listener).also { it.execute() }
                 }
             }).also {
                 it.isRepeats = true
@@ -82,6 +82,7 @@ class DeviceScanner(private val adbInterface: ADBInterface, private val listener
 }
 
 private class ScanningSwingWorker(private val adbInterface: ADBInterface,
+                                  private val announcementPort: Int,
                                   private val listener: (List<DeviceModel>) -> Unit)
     : SwingWorker<List<DeviceModel>, Void>() {
 
@@ -96,7 +97,7 @@ private class ScanningSwingWorker(private val adbInterface: ADBInterface,
 
         val adbDevices = adbInterface.devices.mapNotNull { device -> buildDeviceModel(device) }
         val localDeviceSessions = try {
-            localDevice.getSessions()
+            localDevice.getSessions(announcementPort)
         } catch (e: Throwable) {
             logger<ScanningSwingWorker>().warn("Failed to get local sessions: ", e)
             null
@@ -137,7 +138,7 @@ private class ScanningSwingWorker(private val adbInterface: ADBInterface,
             val extraInfo = "(Android $version, API $sdkVersion)"
 
             return DeviceModel(name ?: "", extraInfo, getDeviceIcon(emulated),
-                    serial, adbDevice, adbDevice.getSessions())
+                    serial, adbDevice, adbDevice.getSessions(announcementPort))
         } catch (e: Throwable) {
             logger<ScanningSwingWorker>().warn("Failed to build device model:", e)
             return null

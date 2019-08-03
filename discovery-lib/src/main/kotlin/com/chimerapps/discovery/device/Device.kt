@@ -19,10 +19,11 @@ interface Device {
 
     companion object {
         const val REQUEST_QUERY = 0x01
-        const val ANNOUNCEMENT_PORT = 6394
+        const val NIDDLER_ANNOUNCEMENT_PORT = 6394
+        const val PREFERENCE_SPY_ANNOUNCEMENT_PORT = 6394
     }
 
-    fun getSessions(): List<DiscoveredSession>
+    fun getSessions(announcementPort: Int): List<DiscoveredSession>
 
     fun prepareConnection(suggestedLocalPort: Int, remotePort: Int): PreparedDeviceConnection
 

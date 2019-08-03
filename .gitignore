@@ -122,3 +122,4 @@ niddler-ui/out
 niddler-plugin/out
 client-lib/build
 client-lib/out
+discovery-lib-plugin-ui/build

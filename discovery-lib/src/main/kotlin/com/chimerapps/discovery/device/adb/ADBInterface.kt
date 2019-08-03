@@ -1,7 +1,6 @@
 package com.chimerapps.discovery.device.adb
 
 import com.chimerapps.discovery.device.BaseDevice
-import com.chimerapps.discovery.device.Device
 import com.chimerapps.discovery.device.DirectPreparedConnection
 import com.chimerapps.discovery.device.DiscoveredSession
 import com.chimerapps.discovery.device.PreparedDeviceConnection
@@ -100,13 +99,13 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) : BaseD
         return bootstrap.executeADBCommand(timeoutInSeconds, *newArgs)
     }
 
-    override fun getSessions(): List<DiscoveredSession> {
+    override fun getSessions(announcementPort: Int): List<DiscoveredSession> {
         val freePort = freePort()
         if (freePort <= 0) {
             return emptyList()
         }
         try {
-            forwardTCPPort(freePort, Device.ANNOUNCEMENT_PORT)
+            forwardTCPPort(freePort, announcementPort)
             return readAnnouncement(freePort)
         } finally {
             removeTCPForward(freePort)

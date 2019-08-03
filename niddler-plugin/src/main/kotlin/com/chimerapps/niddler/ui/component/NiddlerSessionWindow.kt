@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.component
 
+import com.chimerapps.discovery.device.Device
 import com.chimerapps.discovery.device.DirectPreparedConnection
 import com.chimerapps.discovery.device.PreparedDeviceConnection
 import com.chimerapps.discovery.ui.ConnectDialog
@@ -141,7 +142,8 @@ class NiddlerSessionWindow(private val project: Project,
         val actionGroup = DefaultActionGroup()
 
         actionGroup.add(ConnectAction(this) {
-            val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this), niddlerToolWindow.adbInterface ?: return@ConnectAction) ?: return@ConnectAction
+            val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
+                    niddlerToolWindow.adbInterface ?: return@ConnectAction, Device.NIDDLER_ANNOUNCEMENT_PORT) ?: return@ConnectAction
 
             result.discovered?.let {
                 tryConnectSession(it)

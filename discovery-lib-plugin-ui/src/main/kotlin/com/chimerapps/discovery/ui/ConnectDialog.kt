@@ -45,13 +45,13 @@ data class DiscoveredDeviceConnection(val device: Device, val session: Discovere
 
 data class ConnectDialogResult(val direct: ManualConnection?, val discovered: DiscoveredDeviceConnection?)
 
-class ConnectDialog(parent: Window?, adbInterface: ADBInterface) : ConnectDialogUI(parent, "Select a device to connect to") {
+class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInterface) : ConnectDialogUI(parent, "Select a device to connect to") {
 
     companion object {
         private const val PORT_MAX = 65535
 
-        fun show(parent: Window?, adbInterface: ADBInterface): ConnectDialogResult? {
-            val dialog = ConnectDialog(parent, adbInterface)
+        fun show(parent: Window?, adbInterface: ADBInterface, announcementPort: Int): ConnectDialogResult? {
+            val dialog = ConnectDialog(parent, announcementPort, adbInterface)
             dialog.pack()
             dialog.setSize(500, 350)
             if (dialog.parent != null)
@@ -64,7 +64,7 @@ class ConnectDialog(parent: Window?, adbInterface: ADBInterface) : ConnectDialog
         }
     }
 
-    private val deviceScanner = DeviceScanner(adbInterface, ::onDevicesUpdated)
+    private val deviceScanner = DeviceScanner(adbInterface, announcementPort, ::onDevicesUpdated)
 
     var result: ConnectDialogResult? = null
         private set

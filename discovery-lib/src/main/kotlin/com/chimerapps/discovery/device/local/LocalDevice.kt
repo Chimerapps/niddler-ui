@@ -1,7 +1,6 @@
 package com.chimerapps.discovery.device.local
 
 import com.chimerapps.discovery.device.BaseDevice
-import com.chimerapps.discovery.device.Device
 import com.chimerapps.discovery.device.DirectPreparedConnection
 import com.chimerapps.discovery.device.DiscoveredSession
 import com.chimerapps.discovery.device.PreparedDeviceConnection
@@ -11,8 +10,8 @@ import com.chimerapps.discovery.device.PreparedDeviceConnection
  */
 class LocalDevice : BaseDevice() {
 
-    override fun getSessions(): List<DiscoveredSession> {
-        return readAnnouncement(Device.ANNOUNCEMENT_PORT)
+    override fun getSessions(announcementPort: Int): List<DiscoveredSession> {
+        return readAnnouncement(announcementPort)
     }
 
     override fun prepareConnection(suggestedLocalPort: Int, remotePort: Int): PreparedDeviceConnection {
