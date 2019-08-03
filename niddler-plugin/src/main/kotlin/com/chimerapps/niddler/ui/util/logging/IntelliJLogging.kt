@@ -1,7 +1,7 @@
 package com.chimerapps.niddler.ui.util.logging
 
-import com.icapps.niddler.lib.utils.Logger
-import com.icapps.niddler.lib.utils.LoggerFactory
+import com.chimerapps.discovery.utils.Logger
+import com.chimerapps.discovery.utils.LoggerFactory
 
 internal class IdeaLoggerFactory : LoggerFactory {
 

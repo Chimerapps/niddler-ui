@@ -1,7 +1,7 @@
 package com.icapps.niddler.lib.export.har
 
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 /**
  * @author Nicola Verbeeck

@@ -6,10 +6,10 @@ apply plugin: "com.github.ben-manes.versions"
 
 dependencies {
     deps.libCompile.each { name, dep ->
-        implementation dep
+        api dep
     }
-    
-    deps.libTestCompile.each { name, dep -> 
+
+    deps.libTestCompile.each { name, dep ->
         testImplementation dep
     }
 }
@@ -20,6 +20,3 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
-
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8

@@ -1,5 +1,11 @@
 package com.chimerapps.niddler.ui.component
 
+import com.chimerapps.discovery.device.DirectPreparedConnection
+import com.chimerapps.discovery.device.PreparedDeviceConnection
+import com.chimerapps.discovery.ui.ConnectDialog
+import com.chimerapps.discovery.ui.DiscoveredDeviceConnection
+import com.chimerapps.discovery.ui.ManualConnection
+import com.chimerapps.discovery.utils.freePort
 import com.chimerapps.niddler.ui.NiddlerToolWindow
 import com.chimerapps.niddler.ui.actions.ConnectAction
 import com.chimerapps.niddler.ui.actions.DisconnectAction
@@ -21,8 +27,6 @@ import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
-import com.icapps.niddler.lib.device.DirectPreparedConnection
-import com.icapps.niddler.lib.device.PreparedDeviceConnection
 import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
@@ -33,7 +37,6 @@ import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessageListener
 import com.icapps.niddler.lib.model.SimpleUrlMatchFilter
 import com.icapps.niddler.lib.model.classifier.HeaderBodyClassifier
-import com.icapps.niddler.lib.utils.freePort
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager

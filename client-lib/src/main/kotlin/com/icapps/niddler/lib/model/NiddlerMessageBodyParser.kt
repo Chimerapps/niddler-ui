@@ -1,11 +1,11 @@
 package com.icapps.niddler.lib.model
 
+import com.chimerapps.discovery.utils.error
+import com.chimerapps.discovery.utils.logger
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.model.classifier.BodyClassifier
 import com.icapps.niddler.lib.model.classifier.ConcreteBody
 import com.icapps.niddler.lib.model.classifier.GuessingBodyParser
-import com.icapps.niddler.lib.utils.error
-import com.icapps.niddler.lib.utils.logger
 
 /**
  * @author Nicola Verbeeck

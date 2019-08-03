@@ -1,11 +1,11 @@
 package com.icapps.niddler.lib.model.bodyparser
 
+import com.chimerapps.discovery.utils.debug
+import com.chimerapps.discovery.utils.logger
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.icapps.niddler.lib.model.BodyFormat
 import com.icapps.niddler.lib.model.BodyParser
-import com.icapps.niddler.lib.utils.debug
-import com.icapps.niddler.lib.utils.logger
 import java.io.ByteArrayInputStream
 import java.io.InputStreamReader
 

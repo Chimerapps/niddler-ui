@@ -1,5 +1,7 @@
 package com.icapps.niddler.lib.connection
 
+import com.chimerapps.discovery.utils.debug
+import com.chimerapps.discovery.utils.logger
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
@@ -13,8 +15,6 @@ import com.icapps.niddler.lib.connection.protocol.NiddlerV4ProtocolHandler
 import com.icapps.niddler.lib.debugger.NiddlerDebuggerConnection
 import com.icapps.niddler.lib.debugger.model.DebugRequest
 import com.icapps.niddler.lib.debugger.model.DebugResponse
-import com.icapps.niddler.lib.utils.debug
-import com.icapps.niddler.lib.utils.logger
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.drafts.Draft_6455
 import org.java_websocket.handshake.ServerHandshake

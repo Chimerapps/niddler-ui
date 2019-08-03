@@ -1,9 +1,9 @@
 package com.icapps.niddler.lib.model.bodyparser
 
+import com.chimerapps.discovery.utils.debug
+import com.chimerapps.discovery.utils.logger
 import com.icapps.niddler.lib.model.BodyFormat
 import com.icapps.niddler.lib.model.BodyParser
-import com.icapps.niddler.lib.utils.debug
-import com.icapps.niddler.lib.utils.logger
 import org.w3c.dom.Document
 import java.io.ByteArrayInputStream
 import javax.xml.parsers.DocumentBuilderFactory

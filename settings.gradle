@@ -2,4 +2,5 @@ rootProject.name = 'niddler'
 
 include 'niddler-plugin'
 include 'client-lib'
-
+include 'discovery-lib'
+include 'discovery-lib-plugin-ui'

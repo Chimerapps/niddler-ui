@@ -1,11 +1,11 @@
 package com.chimerapps.niddler.ui
 
+import com.chimerapps.discovery.device.adb.ADBBootstrap
+import com.chimerapps.discovery.device.adb.ADBInterface
 import com.chimerapps.niddler.ui.actions.NewSessionAction
 import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
 import com.chimerapps.niddler.ui.util.adb.ADBUtils
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
-import com.icapps.niddler.lib.device.adb.ADBBootstrap
-import com.icapps.niddler.lib.device.adb.ADBInterface
 import com.intellij.execution.ui.RunnerLayoutUi
 import com.intellij.execution.ui.layout.PlaceInGrid
 import com.intellij.openapi.Disposable

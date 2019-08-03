@@ -1,5 +1,7 @@
 package com.icapps.niddler.lib.connection.protocol
 
+import com.chimerapps.discovery.utils.logger
+import com.chimerapps.discovery.utils.warn
 import com.google.gson.JsonObject
 import com.icapps.niddler.lib.connection.StaticBlacklistEntry
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
@@ -7,8 +9,6 @@ import com.icapps.niddler.lib.debugger.model.DebugReplyPayload
 import com.icapps.niddler.lib.debugger.model.MESSAGE_DEBUG_REPLY
 import com.icapps.niddler.lib.debugger.model.NiddlerDebugControlMessage
 import com.icapps.niddler.lib.debugger.model.mergeToJson
-import com.icapps.niddler.lib.utils.logger
-import com.icapps.niddler.lib.utils.warn
 import org.java_websocket.client.WebSocketClient
 
 /**

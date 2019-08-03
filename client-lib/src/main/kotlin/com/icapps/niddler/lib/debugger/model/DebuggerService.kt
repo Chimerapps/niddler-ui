@@ -2,7 +2,7 @@ package com.icapps.niddler.lib.debugger.model
 
 import com.google.gson.GsonBuilder
 import com.icapps.niddler.lib.debugger.NiddlerDebuggerConnection
-import java.util.*
+import java.util.UUID
 
 /**
  * @author nicolaverbeeck

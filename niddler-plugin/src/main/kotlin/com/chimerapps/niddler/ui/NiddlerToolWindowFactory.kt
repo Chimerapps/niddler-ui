@@ -1,7 +1,7 @@
 package com.chimerapps.niddler.ui
 
+import com.chimerapps.discovery.utils.LoggerFactory
 import com.chimerapps.niddler.ui.util.logging.IdeaLoggerFactory
-import com.icapps.niddler.lib.utils.LoggerFactory
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow

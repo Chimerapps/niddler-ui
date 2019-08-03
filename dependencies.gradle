@@ -11,6 +11,8 @@ def versions = [
         intelliJPlugin        : '0.4.8',
         minIntelliJ           : '2018.1',
         androidEmulatorControl: '0.1.2',
+        discoveryLib          : '1.0.0',
+        discoveryPluginLib    : '1.0.0',
 ]
 
 ext.versions = versions
@@ -22,17 +24,28 @@ def gradlePlugins = [
         intelliJ: "gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:${versions.intelliJPlugin}",
 ]
 
+def discoveryCompile = [
+        kotlin: "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
+        jadb  : "com.github.vidstige:jadb:${versions.jadb}",
+        gson  : "com.google.code.gson:gson:${versions.gson}",
+]
+
+def discoveryPluginCompile = [
+        kotlin                : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
+        discoveryLib          : "com.chimerapps:discovery-lib:${versions.discoveryLib}",
+        androidEmulatorControl: "com.github.icapps:android-emulator-control:${versions.androidEmulatorControl}",
+]
+
 def libCompile = [
-        kotlin   : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
-        websocket: "org.java-websocket:Java-WebSocket:${versions.websocket}",
-        gson     : "com.google.code.gson:gson:${versions.gson}",
-        jadb     : "com.github.vidstige:jadb:${versions.jadb}",
-        httpcore : "org.apache.httpcomponents:httpcore:${versions.httpcore}"
+        kotlin      : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
+        websocket   : "org.java-websocket:Java-WebSocket:${versions.websocket}",
+        httpcore    : "org.apache.httpcomponents:httpcore:${versions.httpcore}",
+        discoveryLib: "com.chimerapps:discovery-lib:${versions.discoveryLib}",
 ]
 
 def pluginCompile = [
-        kotlin                : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
-        androidEmulatorControl: "com.github.icapps:android-emulator-control:${versions.androidEmulatorControl}",
+        kotlin      : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
+        discoveryLib: "com.chimerapps:discovery-plugin-ui:${versions.discoveryLib}",
 ]
 
 def libTestCompile = [
@@ -41,8 +54,10 @@ def libTestCompile = [
 ]
 
 ext.deps = [
-        'libCompile'    : libCompile,
-        'gradlePlugins' : gradlePlugins,
-        'libTestCompile': libTestCompile,
-        'pluginCompile' : pluginCompile,
+        'libCompile'            : libCompile,
+        'gradlePlugins'         : gradlePlugins,
+        'libTestCompile'        : libTestCompile,
+        'pluginCompile'         : pluginCompile,
+        'discoveryCompile'      : discoveryCompile,
+        'discoveryPluginCompile': discoveryPluginCompile,
 ]

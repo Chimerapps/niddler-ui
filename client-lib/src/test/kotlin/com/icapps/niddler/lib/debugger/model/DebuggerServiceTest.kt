@@ -1,7 +1,11 @@
 package com.icapps.niddler.lib.debugger.model
 
 import com.icapps.niddler.lib.debugger.NiddlerDebuggerConnection
-import io.mockk.*
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 

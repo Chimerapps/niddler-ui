@@ -1,9 +1,9 @@
 package com.icapps.niddler.lib.connection.protocol
 
+import com.chimerapps.discovery.utils.logger
+import com.chimerapps.discovery.utils.warn
 import com.google.gson.JsonObject
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
-import com.icapps.niddler.lib.utils.logger
-import com.icapps.niddler.lib.utils.warn
 import org.java_websocket.client.WebSocketClient
 import java.security.MessageDigest
 import java.util.Base64

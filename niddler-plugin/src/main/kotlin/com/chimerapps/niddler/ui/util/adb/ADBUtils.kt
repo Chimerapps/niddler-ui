@@ -1,8 +1,8 @@
 package com.chimerapps.niddler.ui.util.adb
 
-import com.icapps.niddler.lib.device.adb.ADBBootstrap
-import com.icapps.niddler.lib.utils.info
-import com.icapps.niddler.lib.utils.logger
+import com.chimerapps.discovery.device.adb.ADBBootstrap
+import com.chimerapps.discovery.utils.info
+import com.chimerapps.discovery.utils.logger
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.project.Project
 

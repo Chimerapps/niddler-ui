@@ -21,12 +21,6 @@ object IncludedIcons {
         val string = loadIcon("/ic_string$hasSvgExtension")
     }
 
-    object Devices {
-        val computer = loadIcon("/ic_device_computer$hasSvgExtension")
-        val emulator = loadIcon("/ic_device_emulator$hasSvgExtension")
-        val real = loadIcon("/ic_device_real$hasSvgExtension")
-    }
-
     object Status {
         val connected = loadIcon("/ic_connected$hasSvgExtension")
         val disconnected = loadIcon("/ic_disconnected$hasSvgExtension")
