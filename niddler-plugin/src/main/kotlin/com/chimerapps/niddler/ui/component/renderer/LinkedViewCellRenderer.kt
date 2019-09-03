@@ -3,6 +3,7 @@ package com.chimerapps.niddler.ui.component.renderer
 import com.chimerapps.niddler.ui.component.view.LinkedResponseNode
 import com.chimerapps.niddler.ui.component.view.LinkedRootNode
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.utils.getStatusCodeString
 import com.intellij.ui.JBDefaultTreeCellRenderer
 import com.intellij.ui.components.JBLabel
@@ -87,16 +88,15 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
         myFocusedCalculated = false
 
         when (value) {
-            is LinkedRootNode -> return getRequestComponent(value)
+            is LinkedRootNode -> return getRequestComponent(value.entry.request)
             is LinkedResponseNode -> return getResponseComponent(value)
         }
         return this
     }
 
-    private fun getRequestComponent(value: LinkedRootNode): Component {
+    private fun getRequestComponent(request: ParsedNiddlerMessage?): Component {
         updatePanel(requestPanel, myTree)
 
-        val request = value.entry.request
         if (request == null) {
             requestTimeLabel.text = ""
             methodLabel.text = ""
@@ -118,6 +118,9 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
     }
 
     private fun getResponseComponent(value: LinkedResponseNode): Component {
+        if (value.response.isRequest)
+            return getRequestComponent(value.response)
+
         updatePanel(responsePanel, myTree)
 
         val response = value.response

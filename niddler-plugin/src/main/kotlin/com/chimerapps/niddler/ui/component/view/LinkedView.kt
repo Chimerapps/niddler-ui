@@ -163,6 +163,13 @@ internal class LinkedRootNode(val entry: LinkedMessageHolder<ParsedNiddlerMessag
         synchronized(view) {
             responses.observer = this
             responses.forEach {
+                it.parsedNetworkRequest?.let { network ->
+                    treeParent.insertNodeInto(LinkedResponseNode(network), this, childCount)
+                }
+                it.parsedNetworkReply?.let { network ->
+                    treeParent.insertNodeInto(LinkedResponseNode(network), this, childCount)
+                }
+
                 treeParent.insertNodeInto(LinkedResponseNode(it), this, childCount)
             }
         }
@@ -176,9 +183,18 @@ internal class LinkedRootNode(val entry: LinkedMessageHolder<ParsedNiddlerMessag
 
     override fun itemsInserted(startIndex: Int, endIndex: Int) {
         synchronized(view) {
+            var actualIndex = startIndex
             for (i in startIndex..endIndex) {
                 val entry = responses.getOrNull(i) ?: return
-                treeParent.insertNodeInto(LinkedResponseNode(entry), this, i)
+
+                entry.parsedNetworkRequest?.let {
+                    treeParent.insertNodeInto(LinkedResponseNode(it), this, actualIndex++)
+                }
+                entry.parsedNetworkReply?.let {
+                    treeParent.insertNodeInto(LinkedResponseNode(it), this, actualIndex++)
+                }
+
+                treeParent.insertNodeInto(LinkedResponseNode(entry), this, actualIndex++)
             }
         }
     }
