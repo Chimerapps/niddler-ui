@@ -3,6 +3,7 @@ package com.chimerapps.niddler.ui.component.renderer
 import com.chimerapps.niddler.ui.component.view.LinkedResponseNode
 import com.chimerapps.niddler.ui.component.view.LinkedRootNode
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
+import com.icapps.niddler.lib.connection.model.isCachedResponse
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.utils.getStatusCodeString
 import com.intellij.ui.JBDefaultTreeCellRenderer
@@ -26,6 +27,7 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
     private val timeFormatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
     private val directionUp = IncludedIcons.Status.outgoing
     private val directionDown = IncludedIcons.Status.incoming
+    private val directionDownCached = IncludedIcons.Status.incoming_cached
     private val timeCache = Date()
 
     private var myFocusedCalculated = false
@@ -127,6 +129,8 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
         responseTimeLabel.text = formatTime(response.timestamp)
         responseStatusLabel.text = formatStatusCode(response.statusCode)
         responseTypeLabel.text = response.bodyFormat.toString()
+
+        responseDirectionLabel.icon = if (response.isCachedResponse) directionDownCached else directionDown
 
         updateForeground(responseTimeLabel)
         updateForeground(responseStatusLabel)

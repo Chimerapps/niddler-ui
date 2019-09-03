@@ -25,6 +25,7 @@ object IncludedIcons {
         val connected = loadIcon("/ic_connected$hasSvgExtension")
         val disconnected = loadIcon("/ic_disconnected$hasSvgExtension")
         val incoming = loadIcon("/ic_down$hasSvgExtension")
+        val incoming_cached = loadIcon("/ic_down_cache$hasSvgExtension")
         val outgoing = loadIcon("/ic_up$hasSvgExtension")
         val logo = loadIcon("/niddler_logo.png")
     }

@@ -51,6 +51,9 @@ interface NiddlerMessage {
 
 }
 
+val NiddlerMessage.isCachedResponse: Boolean
+    get() = !isRequest && (networkReply?.statusCode == 304)
+
 class NetworkNiddlerMessage(
         override val requestId: String,
         override val messageId: String,

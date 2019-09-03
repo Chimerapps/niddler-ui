@@ -10,6 +10,7 @@ import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.chimerapps.niddler.ui.util.ui.setColumnPreferredWidth
 import com.icapps.niddler.lib.codegen.CurlCodeGenerator
 import com.icapps.niddler.lib.connection.model.NetworkNiddlerMessage
+import com.icapps.niddler.lib.connection.model.isCachedResponse
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.BodyFormat
 import com.icapps.niddler.lib.model.BodyFormatType
@@ -240,6 +241,7 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<Par
 
     private val upIcon = IncludedIcons.Status.outgoing
     private val downIcon = IncludedIcons.Status.incoming
+    private val downCacheIcon = IncludedIcons.Status.incoming_cached
     private var messages = messageContainer.messagesChronological.newView(filter = filter, messageListener = this)
 
     fun getMessageAtRow(rowIndex: Int): ParsedNiddlerMessage? {
@@ -256,7 +258,7 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<Par
 
         return when (columnIndex) {
             INDEX_TIMESTAMP -> timeFormatter.format(Date(message.timestamp))
-            INDEX_DIRECTION -> if (message.isRequest) upIcon else downIcon
+            INDEX_DIRECTION -> if (message.isRequest) upIcon else if (message.isCachedResponse) downCacheIcon else downIcon
             INDEX_METHOD -> message.method ?: other?.method
             INDEX_URL -> hideBaseUrl(message.url ?: other?.url)
             INDEX_STATUS_CODE -> {
