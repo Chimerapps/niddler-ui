@@ -140,24 +140,40 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         }
         val constraints = CellConstraints()
         var row = 1
-        message.headers?.forEach {
+        val messageHeaders = message.headers
+        messageHeaders?.forEach {
             val values = it.value.joinToString(", ")
             headersPanel.add(buildLabel(it.key, value = values, withPopupMenu = true), constraints.xy(1, row))
             headersPanel.add(buildValue(values, key = it.key), constraints.xy(3, row))
 
             ++row
         }
+        val otherHeaders = if (message.isRequest) {
+            message.parsedNetworkRequest?.headers
+        } else {
+            message.parsedNetworkReply?.headers
+        }
+
+        if (!otherHeaders.isNullOrEmpty() && messageHeaders != null) {
+            val extra = otherHeaders.filterNot { messageHeaders.containsKey(it.key) && it.value == messageHeaders[it.key] }
+            extra.forEach { _ ->
+                layout.appendRow(spec)
+            }
+            extra.forEach {
+                val values = it.value.joinToString(", ")
+                headersPanel.add(buildLabel("* ${it.key}", value = values, withPopupMenu = true), constraints.xy(1, row))
+                headersPanel.add(buildValue(values, key = it.key), constraints.xy(3, row))
+
+                ++row
+            }
+        }
     }
 
-    private fun buildLabel(text: String, value: String? = null, withPopupMenu: Boolean = false): JBLabel {
+    private fun buildLabel(text: String, value: String? = null, withPopupMenu: Boolean = false, rawText: String = text): JBLabel {
         return JBLabel(text).also {
             it.font = labelFont
             if (withPopupMenu) {
-                val actions = mutableListOf<PopupAction>()
-                actions += "Copy" action { ClipboardUtil.copyToClipboard(StringSelection(text)) }
-                if (value != null)
-                    actions += "Copy key and value" action { ClipboardUtil.copyToClipboard(StringSelection("$text: $value")) }
-                it.componentPopupMenu = Popup(actions)
+                it.componentPopupMenu = makePopup(rawText, rawText, value)
             }
         }
     }
@@ -166,11 +182,7 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         return JBLabel(text ?: "").also {
             it.font = valueFont
 
-            val actions = mutableListOf<PopupAction>()
-            actions += "Copy" action { ClipboardUtil.copyToClipboard(StringSelection(text)) }
-            if (key != null)
-                actions += "Copy key and value" action { ClipboardUtil.copyToClipboard(StringSelection("$key: $text")) }
-            it.componentPopupMenu = Popup(actions)
+            it.componentPopupMenu = makePopup(key ?: "", text ?: "", text ?: "")
         }
     }
 
@@ -183,5 +195,13 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         else
             secondMessage.timestamp - firstMessage.timestamp
         return buildValue("$time msec")
+    }
+
+    private fun makePopup(key: String, valueToCopySolo: String, value: String?): Popup {
+        val actions = mutableListOf<PopupAction>()
+        actions += "Copy" action { ClipboardUtil.copyToClipboard(StringSelection(valueToCopySolo)) }
+        if (value != null)
+            actions += "Copy key and value" action { ClipboardUtil.copyToClipboard(StringSelection("$key: $value")) }
+        return Popup(actions)
     }
 }

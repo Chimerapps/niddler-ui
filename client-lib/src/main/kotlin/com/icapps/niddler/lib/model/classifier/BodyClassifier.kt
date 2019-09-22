@@ -30,7 +30,7 @@ interface BodyFormatClassifierExtension {
 
     fun classifyFormat(message: NiddlerMessage): BodyClassifierResult?
 
-    fun classifyFormat(mimeType: String, charset: String?): BodyClassifierResult?
+    fun classifyFormat(mimeType: String, charset: String?, contentType: ContentType): BodyClassifierResult?
 
 }
 
@@ -48,19 +48,19 @@ class HeaderBodyClassifier(private val bodyFormatExtensions: Iterable<BodyFormat
             val parsedContentType = ContentType.parse(contentTypeString)
 
             bodyFormatExtensions.forEach {
-                val extensionFormat = it.classifyFormat(parsedContentType.mimeType, parsedContentType.charset?.name())
+                val extensionFormat = it.classifyFormat(parsedContentType.mimeType, parsedContentType.charset?.name(), parsedContentType)
                 if (extensionFormat != null)
                     return extensionFormat
             }
 
-            val type = classifyFromMimeType(parsedContentType.mimeType, parsedContentType.charset?.name())
+            val type = classifyFromMimeType(parsedContentType.mimeType, parsedContentType.charset?.name(), parsedContentType)
             if (type != null)
                 return type
         }
         return BodyClassifierResult(BodyFormat.NONE, bodyParser = BinaryBodyParser())
     }
 
-    private fun classifyFromMimeType(mimeType: String, charset: String?): BodyClassifierResult? {
+    private fun classifyFromMimeType(mimeType: String, charset: String?, contentType: ContentType): BodyClassifierResult? {
         return when (mimeType.toLowerCase()) {
             "application/json" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_JSON, mimeType, charset), JsonBodyParser())
             "application/xml", "text/xml", "application/dash+xml" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_XML, mimeType, charset), XmlBodyParser())
@@ -70,6 +70,7 @@ class HeaderBodyClassifier(private val bodyFormatExtensions: Iterable<BodyFormat
             "application/x-www-form-urlencoded" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_FORM_ENCODED, mimeType, charset), URLEncodedBodyParser())
             "image/bmp", "image/png", "image/tiff", "image/jpg", "image/jpeg",
             "image/gif", "image/webp", "application/svg+xml" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_IMAGE, mimeType, charset), ImageBodyParser())
+            //"multipart/form-data" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_MULTIPART_FORM, mimeType, charset), MultiPartFormBodyParser(contentType))
             else -> null
         }
     }

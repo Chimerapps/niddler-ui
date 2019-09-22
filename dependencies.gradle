@@ -13,6 +13,7 @@ def versions = [
         androidEmulatorControl: '0.1.2',
         discoveryLib          : '1.0.1',
         discoveryPluginLib    : '1.0.1',
+        multiPart             : '1.1.0',
 ]
 
 ext.versions = versions
@@ -41,6 +42,7 @@ def libCompile = [
         websocket   : "org.java-websocket:Java-WebSocket:${versions.websocket}",
         httpcore    : "org.apache.httpcomponents:httpcore:${versions.httpcore}",
         discoveryLib: "com.chimerapps:discovery-lib:${versions.discoveryLib}",
+        multiPart   : "org.synchronoss.cloud:nio-multipart-parser:${versions.multiPart}",
 ]
 
 def pluginCompile = [

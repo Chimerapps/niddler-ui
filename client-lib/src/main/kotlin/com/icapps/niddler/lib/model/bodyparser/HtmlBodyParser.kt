@@ -16,5 +16,4 @@ class HtmlBodyParser : BodyParser<String> {
         return delegate.parse(bodyFormat, bytes)
     }
 
-
 }

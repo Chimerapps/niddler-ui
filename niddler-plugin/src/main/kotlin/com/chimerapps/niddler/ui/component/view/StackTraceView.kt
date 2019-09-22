@@ -43,7 +43,7 @@ class StackTraceView(project: Project) : JPanel() {
         textArea.font = normalFont
         textArea.border = null
         textArea.foreground = UIManager.getColor("Label.foreground")
-        textArea.background = null
+        textArea.background = UIManager.getColor("EditorPane.background")
 
         if (exceptionFilter != null) {
             val defaultCursor = textArea.cursor

@@ -50,5 +50,6 @@ data class BodyFormatType(val verbose: String) {
         val FORMAT_HTML = BodyFormatType("text/html")
         val FORMAT_EMPTY = BodyFormatType("")
         val FORMAT_FORM_ENCODED = BodyFormatType("x-www-form-urlencoded")
+        val FORMAT_MULTIPART_FORM = BodyFormatType("multipart/form-data")
     }
 }
