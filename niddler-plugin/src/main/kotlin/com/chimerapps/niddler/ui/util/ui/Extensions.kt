@@ -30,6 +30,13 @@ fun dispatchMain(toExecute: () -> Unit) {
     ApplicationManager.getApplication().invokeLater(toExecute)
 }
 
+fun ensureMain(toExecute: () -> Unit) {
+    if (ApplicationManager.getApplication().isDispatchThread)
+        toExecute()
+    else
+        dispatchMain(toExecute)
+}
+
 fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {
     val dl = object : DocumentListener {
         private var lastChange = 0

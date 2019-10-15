@@ -26,6 +26,7 @@ import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
+import com.chimerapps.niddler.ui.util.ui.ensureMain
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
 import com.icapps.niddler.lib.export.HarExport
@@ -80,23 +81,29 @@ class NiddlerSessionWindow(private val project: Project,
                 return
 
             field = value
-            updateView()
-            viewToolbar.updateActionsImmediately()
+            ensureMain {
+                updateView()
+                viewToolbar.updateActionsImmediately()
+            }
         }
     var connectionMode: ConnectionMode = ConnectionMode.MODE_DISCONNECTED
         private set(value) {
             field = value
-            connectToolbar.updateActionsImmediately()
+            ensureMain {
+                connectToolbar.updateActionsImmediately()
+            }
         }
     var scrollToEnd: Boolean = AppPreferences.get(APP_PREFERENCE_SCROLL_TO_END, default = true)
         set(value) {
             if (field == value)
                 return
 
-            currentMessagesView?.updateScrollToEnd(value)
-            AppPreferences.put(APP_PREFERENCE_SCROLL_TO_END, value, default = true)
-            field = value
-            viewToolbar.updateActionsImmediately()
+            ensureMain {
+                currentMessagesView?.updateScrollToEnd(value)
+                AppPreferences.put(APP_PREFERENCE_SCROLL_TO_END, value, default = true)
+                field = value
+                viewToolbar.updateActionsImmediately()
+            }
         }
 
     private var currentMessagesView: MessagesView? = null
@@ -208,9 +215,11 @@ class NiddlerSessionWindow(private val project: Project,
     }
 
     private fun updateView() {
-        when (currentViewMode) {
-            ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(messageContainer.storage, detailView, baseUrlHideListener = this))
-            ViewMode.VIEW_MODE_LINKED -> replaceMessagesView(LinkedView(messageContainer.storage, detailView, baseUrlHideListener = this))
+        ensureMain {
+            when (currentViewMode) {
+                ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(messageContainer.storage, detailView, baseUrlHideListener = this))
+                ViewMode.VIEW_MODE_LINKED -> replaceMessagesView(LinkedView(messageContainer.storage, detailView, baseUrlHideListener = this))
+            }
         }
     }
 

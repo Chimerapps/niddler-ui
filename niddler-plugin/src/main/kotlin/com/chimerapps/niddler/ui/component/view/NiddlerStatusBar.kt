@@ -1,6 +1,7 @@
 package com.chimerapps.niddler.ui.component.view
 
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
+import com.chimerapps.niddler.ui.util.ui.ensureMain
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
 import com.intellij.ui.components.JBLabel
@@ -49,13 +50,17 @@ class NiddlerStatusBar : JPanel(BorderLayout()), NiddlerMessageListener {
             Status.CONNECTED -> buildText("Connected", "to")
             Status.DISCONNECTED -> "Disconnected"
         }
-        statusText.text = text
+        ensureMain {
+            statusText.text = text
+        }
     }
 
     private fun updateStatusIcon() {
-        statusText.icon = when (status) {
-            Status.CONNECTED -> IncludedIcons.Status.connected
-            Status.DISCONNECTED -> IncludedIcons.Status.disconnected
+        ensureMain {
+            statusText.icon = when (status) {
+                Status.CONNECTED -> IncludedIcons.Status.connected
+                Status.DISCONNECTED -> IncludedIcons.Status.disconnected
+            }
         }
     }
 
