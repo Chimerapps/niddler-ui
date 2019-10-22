@@ -1,12 +1,21 @@
 <idea-plugin>
     <id>com.icapps.niddler</id>
     <name>Niddler</name>
-    <version>2.2.1</version>
+    <version>2.3.0</version>
     <vendor email="support@chimerapps.com" url="https://www.icapps.com">Chimerapps &amp; icapps</vendor>
 
     <description>This plugin enables the niddler ui inside the IDE</description>
 
     <change-notes><![CDATA[
+    <p>
+        <b>2.3.0</b>
+        <ul>
+            <li>When no content type is provided, try to check if it is plain text</li>
+            <li>More support for text/* mime types</li>
+            <li>When the body cannot be determined, assume binary instead of empty</li>
+            <li>Add save button on body panel. This saves the raw body to a file</li>
+        </ul>
+    </p>
     <p>
         <b>2.2.1</b>
         <ul>
