@@ -15,6 +15,7 @@ class GuessingBodyParser(private val initialBodyFormat: BodyClassifierResult, pr
         private const val LF = 10.toByte()
         private const val CR = 13.toByte()
         private const val TAB = 9.toByte()
+        private const val MAX_ASCII_CHECK_LENGTH = 256
     }
 
     fun determineBodyType(): ConcreteBody? {
@@ -29,7 +30,19 @@ class GuessingBodyParser(private val initialBodyFormat: BodyClassifierResult, pr
                     data = bodyBytes)
 
         initialBodyFormat.bodyParser.parse(initialBodyFormat.format, bodyBytes)?.let { return ConcreteBody(initialBodyFormat.format.type, initialBodyFormat.format.rawMimeType, it) }
-        return null //Failed to parse
+        //Failed to parse. Quick check to see if this is a binary or not
+        if (bodyBytes.size < MAX_ASCII_CHECK_LENGTH) {
+            if (bodyBytes.all { it in 32..126 || it == 10.toByte() || it == 13.toByte() }) {
+                //Seems like text!
+                return ConcreteBody(BodyFormatType.FORMAT_PLAIN,
+                        initialBodyFormat.format.rawMimeType,
+                        data = bodyBytes)
+            }
+        }
+        //When all else fails, binary...
+        return ConcreteBody(BodyFormatType.FORMAT_BINARY,
+                initialBodyFormat.format.rawMimeType,
+                data = bodyBytes)
     }
 
     private fun determineBodyFromContent(content: ByteArray): ConcreteBody? {
@@ -59,7 +72,7 @@ class GuessingBodyParser(private val initialBodyFormat: BodyClassifierResult, pr
     }
 
     private fun firstBytesContainHtml(bytes: ByteArray): Boolean {
-        return String(bytes, 0, Math.min(bytes.size, 32)).contains("html", ignoreCase = true)
+        return String(bytes, 0, bytes.size.coerceAtMost(32)).contains("html", ignoreCase = true)
     }
 
 }

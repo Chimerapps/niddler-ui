@@ -33,7 +33,7 @@ data class BodyFormat(val type: BodyFormatType, val rawMimeType: String?, val en
     }
 
     override fun toString(): String {
-        return type.verbose
+        return rawMimeType ?: type.verbose
     }
 }
 

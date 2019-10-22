@@ -101,9 +101,9 @@ class HarExport<T : ParsedNiddlerMessage>() : Exporter<T> {
         val builder = PostDataBuilder()
         val format = message.bodyFormat
         when (format.type) {
-            BodyFormatType.FORMAT_JSON -> builder.withMime(BodyFormatType.FORMAT_JSON.verbose).withText(message.getBodyAsString(format.encoding) ?: "")
-            BodyFormatType.FORMAT_XML -> builder.withMime(BodyFormatType.FORMAT_XML.verbose).withText(message.getBodyAsString(format.encoding) ?: "")
-            BodyFormatType.FORMAT_PLAIN -> builder.withMime(BodyFormatType.FORMAT_PLAIN.verbose).withText(message.getBodyAsString(format.encoding) ?: "")
+            BodyFormatType.FORMAT_JSON -> builder.withMime(format.rawMimeType ?: BodyFormatType.FORMAT_JSON.verbose).withText(message.getBodyAsString(format.encoding) ?: "")
+            BodyFormatType.FORMAT_XML -> builder.withMime(format.rawMimeType ?: BodyFormatType.FORMAT_XML.verbose).withText(message.getBodyAsString(format.encoding) ?: "")
+            BodyFormatType.FORMAT_PLAIN -> builder.withMime(format.rawMimeType ?: BodyFormatType.FORMAT_PLAIN.verbose).withText(message.getBodyAsString(format.encoding) ?: "")
             BodyFormatType.FORMAT_IMAGE -> builder.withMime(format.rawMimeType ?: "").withText(message.bodyAsNormalBase64 ?: "")
             BodyFormatType.FORMAT_BINARY -> builder.withMime(format.rawMimeType ?: "").withText(message.bodyAsNormalBase64 ?: "")
             BodyFormatType.FORMAT_HTML -> builder.withMime(format.rawMimeType ?: "").withText(message.getBodyAsString(format.encoding ?: "UTF-8") ?: "")
@@ -121,9 +121,9 @@ class HarExport<T : ParsedNiddlerMessage>() : Exporter<T> {
         val builder = ContentBuilder()
         val format = message.bodyFormat
         when (format.type) {
-            BodyFormatType.FORMAT_JSON -> builder.withMime(BodyFormatType.FORMAT_JSON.verbose).withText(message.getBodyAsString(format.encoding))
-            BodyFormatType.FORMAT_XML -> builder.withMime(BodyFormatType.FORMAT_XML.verbose).withText(message.getBodyAsString(format.encoding))
-            BodyFormatType.FORMAT_PLAIN -> builder.withMime(BodyFormatType.FORMAT_PLAIN.verbose).withText(message.getBodyAsString(format.encoding))
+            BodyFormatType.FORMAT_JSON -> builder.withMime(format.rawMimeType ?: BodyFormatType.FORMAT_JSON.verbose).withText(message.getBodyAsString(format.encoding))
+            BodyFormatType.FORMAT_XML -> builder.withMime(format.rawMimeType ?: BodyFormatType.FORMAT_XML.verbose).withText(message.getBodyAsString(format.encoding))
+            BodyFormatType.FORMAT_PLAIN -> builder.withMime(format.rawMimeType ?: BodyFormatType.FORMAT_PLAIN.verbose).withText(message.getBodyAsString(format.encoding))
             BodyFormatType.FORMAT_IMAGE -> builder.withMime(format.rawMimeType ?: "").withText(message.bodyAsNormalBase64).withEncoding("base64")
             BodyFormatType.FORMAT_BINARY -> builder.withMime(format.rawMimeType ?: "").withText(message.bodyAsNormalBase64).withEncoding("base64")
             BodyFormatType.FORMAT_HTML -> builder.withMime(format.rawMimeType ?: "").withText(message.bodyAsNormalBase64).withEncoding("base64")

@@ -3,21 +3,30 @@ package com.chimerapps.niddler.ui.component.view
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.bodyRendererForFormat
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
+import com.chimerapps.niddler.ui.util.ui.NotificationUtil
+import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
+import java.io.FileOutputStream
 import javax.swing.Box
 import javax.swing.ButtonGroup
+import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JToggleButton
 import javax.swing.JToolBar
 
-class BodyMessageDetailPanel : JPanel(BorderLayout()) {
+class BodyMessageDetailPanel(private val project: Project) : JPanel(BorderLayout()) {
 
     private val structuredButton = JToggleButton("Structured", AllIcons.Hierarchy.Subtypes)
     private val prettyButton = JToggleButton("Pretty", IncludedIcons.Action.pretty)
     private val rawButton = JToggleButton("Raw", AllIcons.Debugger.Db_primitive)
+    private val saveButton = JButton("", AllIcons.Actions.Menu_saveall).also {
+        it.toolTipText = "Save body"
+    }
 
     private var previousStructuredComponent: JComponent? = null
     private var previousPrettyComponent: JComponent? = null
@@ -31,6 +40,7 @@ class BodyMessageDetailPanel : JPanel(BorderLayout()) {
     init {
         JToolBar().also {
             it.isFloatable = false
+            it.add(saveButton)
             it.add(Box.createHorizontalGlue())
             it.add(structuredButton)
             it.add(prettyButton)
@@ -47,6 +57,7 @@ class BodyMessageDetailPanel : JPanel(BorderLayout()) {
         structuredButton.addItemListener { switchToStructured() }
         prettyButton.addItemListener { switchToPretty() }
         rawButton.addItemListener { switchToRaw() }
+        saveButton.addActionListener { saveBody() }
     }
 
     fun init(message: ParsedNiddlerMessage) {
@@ -57,6 +68,8 @@ class BodyMessageDetailPanel : JPanel(BorderLayout()) {
         structuredButton.isVisible = renderer?.supportsStructure ?: false
         prettyButton.isVisible = renderer?.supportsPretty ?: false
         rawButton.isVisible = renderer?.supportsRaw ?: false
+
+        saveButton.isVisible = (structuredButton.isVisible || prettyButton.isVisible || rawButton.isVisible) && (message.body != null)
 
         currentAddedComponent?.let(::remove)
         currentAddedComponent = null
@@ -139,6 +152,18 @@ class BodyMessageDetailPanel : JPanel(BorderLayout()) {
 
         revalidate()
         repaint()
+    }
+
+    private fun saveBody() {
+        val message = currentMessage ?: return
+        message.getBodyAsBytes?.let { bytes ->
+            val chosenFile = chooseSaveFile("Save to", "") ?: return
+            runWriteAction {
+                FileOutputStream(chosenFile).use { it.write(bytes) }
+
+                NotificationUtil.info("Save complete", "<html>Export completed to <a href=\"file://${chosenFile.absolutePath}\">${chosenFile.name}</a></html>", project)
+            }
+        }
     }
 
     private enum class CurrentView {

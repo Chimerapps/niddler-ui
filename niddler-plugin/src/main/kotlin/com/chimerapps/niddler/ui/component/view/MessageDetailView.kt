@@ -29,7 +29,7 @@ class MessageDetailView(project: Project,
 
     private var currentlyEmpty = false
     private val generalDetailPanel = GeneralMessageDetailPanel(project)
-    private val bodyDetailPanel = BodyMessageDetailPanel()
+    private val bodyDetailPanel = BodyMessageDetailPanel(project)
     private val tabsContainer: RunnerLayoutUi
 
     init {

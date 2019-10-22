@@ -61,7 +61,8 @@ class HeaderBodyClassifier(private val bodyFormatExtensions: Iterable<BodyFormat
     }
 
     private fun classifyFromMimeType(mimeType: String, charset: String?, contentType: ContentType): BodyClassifierResult? {
-        return when (mimeType.toLowerCase()) {
+        val lowercased = mimeType.toLowerCase()
+        return when (lowercased) {
             "application/json" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_JSON, mimeType, charset), JsonBodyParser())
             "application/xml", "text/xml", "application/dash+xml" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_XML, mimeType, charset), XmlBodyParser())
             "application/octet-stream" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_BINARY, mimeType, charset), BinaryBodyParser())
@@ -71,7 +72,10 @@ class HeaderBodyClassifier(private val bodyFormatExtensions: Iterable<BodyFormat
             "image/bmp", "image/png", "image/tiff", "image/jpg", "image/jpeg",
             "image/gif", "image/webp", "application/svg+xml" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_IMAGE, mimeType, charset), ImageBodyParser())
             //"multipart/form-data" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_MULTIPART_FORM, mimeType, charset), MultiPartFormBodyParser(contentType))
-            else -> null
+            else -> when {
+                lowercased.matches(Regex("text/.*")) -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_PLAIN, mimeType, charset), PlainTextBodyParser())
+                else -> null
+            }
         }
     }
 
