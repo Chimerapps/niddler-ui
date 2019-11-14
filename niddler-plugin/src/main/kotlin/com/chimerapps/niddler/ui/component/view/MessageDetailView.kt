@@ -1,5 +1,8 @@
 package com.chimerapps.niddler.ui.component.view
 
+import com.chimerapps.niddler.ui.util.ui.dispatchMain
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
+import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
 import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.execution.ui.RunnerLayoutUi
@@ -13,7 +16,7 @@ import javax.swing.SwingConstants
 
 class MessageDetailView(project: Project,
                         disposable: Disposable,
-                        private val storage: NiddlerMessageStorage<ParsedNiddlerMessage>) : JPanel(BorderLayout()), MessageSelectionListener {
+                        private val storage: NiddlerMessageStorage<ParsedNiddlerMessage>) : JPanel(BorderLayout()), MessageSelectionListener, NiddlerMessageListener {
 
     var currentMessage: ParsedNiddlerMessage? = null
         set(value) {
@@ -85,6 +88,15 @@ class MessageDetailView(project: Project,
         bodyDetailPanel.init(message)
     }
 
+    override fun onServiceMessage(niddlerMessage: NiddlerMessage) {
+        super.onServiceMessage(niddlerMessage)
+        dispatchMain {
+            val currentMessage = generalDetailPanel.currentMessage ?: return@dispatchMain
+            if (generalDetailPanel.needsResponse && !niddlerMessage.isRequest && niddlerMessage.requestId == currentMessage.requestId) {
+                updateUi(currentMessage)
+            }
+        }
+    }
 }
 
 interface MessageSelectionListener {

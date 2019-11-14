@@ -68,6 +68,11 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
     private val italicFont = valueFont.asItalic()
     private val timestampFormatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
 
+    var needsResponse: Boolean = false
+        private set
+    var currentMessage: ParsedNiddlerMessage? = null
+        private set
+
     init {
         add(contentScroller, BorderLayout.CENTER)
     }
@@ -85,6 +90,9 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         }
         contextPanel.parent.isVisible = false
 
+        needsResponse = (message.isRequest && other == null)
+        currentMessage = message
+
         revalidate()
         repaint()
     }
@@ -94,14 +102,17 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
 
         val constraints = CellConstraints()
 
-        generalPanel.add(buildLabel("Timestamp"), constraints.xy(1, 1))
-        generalPanel.add(buildValue(timestampFormatter.format(Date(message.timestamp))), constraints.xy(3, 1))
+        val timestampValue = timestampFormatter.format(Date(message.timestamp))
+        generalPanel.add(buildLabel("Timestamp", value = timestampValue, withPopupMenu = true), constraints.xy(1, 1))
+        generalPanel.add(buildValue(timestampValue, key = "Timestamp"), constraints.xy(3, 1))
 
-        generalPanel.add(buildLabel("Method"), constraints.xy(1, 2))
-        generalPanel.add(buildValue(message.method ?: other?.method), constraints.xy(3, 2))
+        val methodValue = message.method ?: other?.method
+        generalPanel.add(buildLabel("Method", value = methodValue, withPopupMenu = true), constraints.xy(1, 2))
+        generalPanel.add(buildValue(methodValue, key = "Method"), constraints.xy(3, 2))
 
-        generalPanel.add(buildLabel("URL"), constraints.xy(1, 3))
-        generalPanel.add(buildValue(message.url ?: other?.url), constraints.xy(3, 3))
+        val urlValue = message.url ?: other?.url
+        generalPanel.add(buildLabel("URL", value = urlValue, withPopupMenu = true), constraints.xy(1, 3))
+        generalPanel.add(buildValue(message.url ?: other?.url, key = "URL"), constraints.xy(3, 3))
 
         var row = 4
 
@@ -109,21 +120,22 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
             try {
                 val urlDecoded = URLDecoder.decode(url, "utf-8")
                 if (urlDecoded != url) {
-                    generalPanel.add(buildLabel("Decoded URL"), constraints.xy(1, row))
-                    generalPanel.add(buildValue(urlDecoded), constraints.xy(3, row))
+                    generalPanel.add(buildLabel("Decoded URL", value = urlDecoded, withPopupMenu = true), constraints.xy(1, row))
+                    generalPanel.add(buildValue(urlDecoded, key = "Decoded URL"), constraints.xy(3, row))
                     ++row
                 }
             } catch (e: Throwable) {
             }
         }
 
-        generalPanel.add(buildLabel("Status"), constraints.xy(1, row))
-        generalPanel.add(buildValue((message.statusCode
-                ?: other?.statusCode)?.toString()), constraints.xy(3, row))
+        val statusMessage = (message.statusCode ?: other?.statusCode)?.toString()
+        generalPanel.add(buildLabel("Status", value = statusMessage, withPopupMenu = true), constraints.xy(1, row))
+        generalPanel.add(buildValue(statusMessage, key = "Status"), constraints.xy(3, row))
         ++row
 
-        generalPanel.add(buildLabel("Execution time"), constraints.xy(1, row))
-        generalPanel.add(makeExecutionTimeLabel(message, other), constraints.xy(3, row))
+        val execTimeValue = makeExecutionTimeLabel(message, other, "Execution time")
+        generalPanel.add(buildLabel("Execution time", value = execTimeValue.text, withPopupMenu = true), constraints.xy(1, row))
+        generalPanel.add(execTimeValue, constraints.xy(3, row))
     }
 
     private fun fillHeaders(message: ParsedNiddlerMessage) {
@@ -161,7 +173,7 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
             }
             extra.forEach {
                 val values = it.value.joinToString(", ")
-                headersPanel.add(buildLabel("* ${it.key}", value = values, withPopupMenu = true), constraints.xy(1, row))
+                headersPanel.add(buildLabel("* ${it.key}", value = values, withPopupMenu = true, rawText = it.key), constraints.xy(1, row))
                 headersPanel.add(buildValue(values, key = it.key), constraints.xy(3, row))
 
                 ++row
@@ -186,7 +198,7 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         }
     }
 
-    private fun makeExecutionTimeLabel(firstMessage: ParsedNiddlerMessage?, secondMessage: ParsedNiddlerMessage?): JComponent {
+    private fun makeExecutionTimeLabel(firstMessage: ParsedNiddlerMessage?, secondMessage: ParsedNiddlerMessage?, key: String): JBLabel {
         if (firstMessage == null || secondMessage == null) {
             return JBLabel("Unknown").also { it.font = italicFont }
         }
@@ -194,7 +206,7 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
             firstMessage.timestamp - secondMessage.timestamp
         else
             secondMessage.timestamp - firstMessage.timestamp
-        return buildValue("$time msec")
+        return buildValue("$time msec", key = key)
     }
 
     private fun makePopup(key: String, valueToCopySolo: String, value: String?): Popup {

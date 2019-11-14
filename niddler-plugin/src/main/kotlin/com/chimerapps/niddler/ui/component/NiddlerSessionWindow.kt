@@ -263,6 +263,7 @@ class NiddlerSessionWindow(private val project: Project,
                     connectionMode = ConnectionMode.MODE_DISCONNECTED
                 }
             })
+            it.registerMessageListener(detailView)
         }
         niddlerClient?.connect()
         lastConnection = connection
