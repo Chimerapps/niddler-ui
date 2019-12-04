@@ -124,3 +124,5 @@ client-lib/build
 client-lib/out
 discovery-lib-plugin-ui/build
 /discovery-lib/build
+discovery-lib-plugin-ui/out
+discovery-lib/out

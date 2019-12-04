@@ -4,6 +4,8 @@ import com.chimerapps.discovery.device.DiscoveredSession
 import com.chimerapps.discovery.device.adb.ADBBootstrap
 import com.chimerapps.discovery.device.adb.ADBDevice
 import com.chimerapps.discovery.device.adb.ADBInterface
+import com.chimerapps.discovery.device.idevice.IDevice
+import com.chimerapps.discovery.device.idevice.IDeviceBootstrap
 import com.chimerapps.discovery.device.local.LocalDevice
 import com.chimerapps.discovery.ui.IncludedLibIcons
 import com.chimerapps.discovery.utils.localName
@@ -17,7 +19,9 @@ import javax.swing.Icon
 import javax.swing.SwingWorker
 import javax.swing.Timer
 
-class DeviceScanner(private val adbInterface: ADBInterface, private val announcementPort: Int, private val listener: (List<DeviceModel>) -> Unit) {
+class DeviceScanner(private val adbInterface: ADBInterface, private val ideviceBootstrap: IDeviceBootstrap,
+                    private val announcementPort: Int, private val refreshDelay: Int = REFRESH_PROCESS_DELAY,
+                    private val listener: (List<DeviceModel>) -> Unit) {
 
     private companion object {
         private const val REFRESH_PROCESS_DELAY = 4000
@@ -56,16 +60,16 @@ class DeviceScanner(private val adbInterface: ADBInterface, private val announce
                 scanningWorker?.cancel(true)
             } catch (e: Throwable) {
             }
-            scanningWorker = ScanningSwingWorker(adbInterface, announcementPort, listener).also { it.execute() }
+            scanningWorker = ScanningSwingWorker(adbInterface, ideviceBootstrap, announcementPort, listener).also { it.execute() }
 
             refreshTimer?.stop()
-            refreshTimer = Timer(REFRESH_PROCESS_DELAY, ActionListener {
+            refreshTimer = Timer(refreshDelay, ActionListener {
                 synchronized(this@DeviceScanner) {
                     try {
                         scanningWorker?.cancel(true)
                     } catch (e: Throwable) {
                     }
-                    scanningWorker = ScanningSwingWorker(adbInterface, announcementPort, listener).also { it.execute() }
+                    scanningWorker = ScanningSwingWorker(adbInterface, ideviceBootstrap, announcementPort, listener).also { it.execute() }
                 }
             }).also {
                 it.isRepeats = true
@@ -82,6 +86,7 @@ class DeviceScanner(private val adbInterface: ADBInterface, private val announce
 }
 
 private class ScanningSwingWorker(private val adbInterface: ADBInterface,
+                                  private val iDeviceBootstrap: IDeviceBootstrap,
                                   private val announcementPort: Int,
                                   private val listener: (List<DeviceModel>) -> Unit)
     : SwingWorker<List<DeviceModel>, Void>() {
@@ -95,18 +100,51 @@ private class ScanningSwingWorker(private val adbInterface: ADBInterface,
     override fun doInBackground(): List<DeviceModel> {
         val localDevice = LocalDevice()
 
-        val adbDevices = adbInterface.devices.mapNotNull { device -> buildDeviceModel(device) }
-        val localDeviceSessions = try {
-            localDevice.getSessions(announcementPort)
-        } catch (e: Throwable) {
-            logger<ScanningSwingWorker>().warn("Failed to get local sessions: ", e)
-            null
+        var adbDevices: List<DeviceModel>? = null
+        var localDeviceSessions: List<DiscoveredSession>? = null
+        var iDevices: List<DeviceModel>? = null
+
+        val adbThread = Thread {
+            adbDevices = adbInterface.devices.mapNotNull { device -> buildDeviceModel(device) }
+        }.also { it.start() }
+
+        val iDevicesThread = Thread {
+            iDevices = try {
+                iDeviceBootstrap.devices.mapNotNull { device -> buildDeviceModel(device) }
+            } catch (e: Throwable) {
+                logger<ScanningSwingWorker>().warn("Failed to get local sessions: ", e)
+                null
+            }
+        }.also { it.start() }
+
+        val localDevicesThread = Thread {
+            localDeviceSessions = try {
+                localDevice.getSessions(announcementPort)
+            } catch (e: Throwable) {
+                logger<ScanningSwingWorker>().warn("Failed to get local sessions: ", e)
+                null
+            }
+        }.also { it.start() }
+
+        try {
+            adbThread.join()
+            iDevicesThread.join()
+            localDevicesThread.join()
+        } catch (e: InterruptedException) {
+            adbThread.interrupt()
+            iDevicesThread.interrupt()
+            localDevicesThread.interrupt()
         }
 
-        if (localDeviceSessions != null && localDeviceSessions.isNotEmpty())
-            return adbDevices + buildDeviceModel(localDevice, localDeviceSessions)
+        val list = adbDevices.orEmpty().toMutableList()
 
-        return adbDevices
+        iDevices?.let(list::addAll)
+
+        val capturedLocalSettings = localDeviceSessions
+        if (capturedLocalSettings != null && capturedLocalSettings.isNotEmpty())
+            list += buildDeviceModel(localDevice, capturedLocalSettings)
+
+        return list
     }
 
     override fun done() {
@@ -139,6 +177,21 @@ private class ScanningSwingWorker(private val adbInterface: ADBInterface,
 
             return DeviceModel(name ?: "", extraInfo, getDeviceIcon(emulated),
                     serial, adbDevice, adbDevice.getSessions(announcementPort))
+        } catch (e: Throwable) {
+            logger<ScanningSwingWorker>().warn("Failed to build device model:", e)
+            return null
+        }
+    }
+
+    private fun buildDeviceModel(iDevice: IDevice): DeviceModel? {
+        @Suppress("LiftReturnOrAssignment")
+        try {
+            val name = iDevice.deviceInfo.deviceName
+            val extraInfo = "(i-device)" //TODO more info
+
+            val sessions = iDevice.getSessions(announcementPort)
+            return DeviceModel(name, extraInfo, IncludedLibIcons.Devices.realApple,
+                    iDevice.deviceInfo.udid, iDevice, sessions)
         } catch (e: Throwable) {
             logger<ScanningSwingWorker>().warn("Failed to build device model:", e)
             return null
