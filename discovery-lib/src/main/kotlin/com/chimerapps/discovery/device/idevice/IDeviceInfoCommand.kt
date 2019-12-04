@@ -15,18 +15,24 @@ internal class IDeviceInfoCommand(private val udid: String) : IDeviceCommand<IDe
 
         var wifiAddress: String? = null
         var deviceName: String? = null
+        var productType: String? = null
+        var productVersion: String? = null
         stdOut.forEach { line ->
             regex.matchEntire(line)?.destructured?.let { (key, value) ->
                 val trimmedValue = value.trim()
-                if (key == "WiFiAddress")
-                    wifiAddress = trimmedValue
-                else if (key == "DeviceName")
-                    deviceName = trimmedValue
+                when (key) {
+                    "WiFiAddress" -> wifiAddress = trimmedValue
+                    "DeviceName" -> deviceName = trimmedValue
+                    "ProductType" -> productType = trimmedValue
+                    "ProductVersion" -> productVersion = trimmedValue
+                }
             }
         }
 
         return IDeviceInfoImpl(udid = udid,
                 wifiMacAddress = wifiAddress ?: return null,
-                deviceName = deviceName ?: return null)
+                deviceName = deviceName ?: return null,
+                deviceType = IDeviceType.values().find { it.productType == productType } ?: return null,
+                osVersion = productVersion ?: return null)
     }
 }

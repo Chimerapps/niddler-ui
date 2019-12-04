@@ -187,7 +187,7 @@ private class ScanningSwingWorker(private val adbInterface: ADBInterface,
         @Suppress("LiftReturnOrAssignment")
         try {
             val name = iDevice.deviceInfo.deviceName
-            val extraInfo = "(i-device)" //TODO more info
+            val extraInfo = "(${iDevice.deviceInfo.deviceType.simpleName}, ${iDevice.deviceInfo.osVersion})"
 
             val sessions = iDevice.getSessions(announcementPort)
             return DeviceModel(name, extraInfo, IncludedLibIcons.Devices.realApple,

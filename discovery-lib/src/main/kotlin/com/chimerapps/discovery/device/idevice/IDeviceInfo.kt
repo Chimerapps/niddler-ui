@@ -14,11 +14,10 @@ import java.util.concurrent.CountDownLatch
 interface IDeviceInfo {
 
     val udid: String
-
     val wifiMacAddress: String
-
     val deviceName: String
-
+    val deviceType: IDeviceType
+    val osVersion: String
 }
 
 class IDeviceBootstrap(binaryPath: File = File("/usr/local/bin/")) {
@@ -36,11 +35,13 @@ class IDeviceBootstrap(binaryPath: File = File("/usr/local/bin/")) {
 }
 
 internal data class IDeviceInfoImpl(override val udid: String,
-                           override val wifiMacAddress: String,
-                           override val deviceName: String) : IDeviceInfo
+                                    override val wifiMacAddress: String,
+                                    override val deviceName: String,
+                                    override val deviceType: IDeviceType,
+                                    override val osVersion: String) : IDeviceInfo
 
 class IDevice internal constructor(val deviceInfo: IDeviceInfo,
-              private val commandExecutor: IDeviceCommandExecutor) : BaseDevice() {
+                                   private val commandExecutor: IDeviceCommandExecutor) : BaseDevice() {
 
     private fun forwardTCPPort(localPort: Int, remotePort: Int): Thread {
         val countDownLatch = CountDownLatch(1)
