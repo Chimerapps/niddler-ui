@@ -25,6 +25,10 @@ configurations {
     ftpAntTask
 }
 
+sourceSets {
+    main.java.srcDirs += "src/main/kotlin"
+}
+
 dependencies {
     ftpAntTask("org.apache.ant:ant-commons-net:1.10.5") {
         module("commons-net:commons-net:1.4.1") {

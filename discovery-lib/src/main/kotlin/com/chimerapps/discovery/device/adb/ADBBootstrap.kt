@@ -65,7 +65,7 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>) {
 
     }
 
-    private var pathToAdb: String? = findADB(sdkPathGuesses)
+    val pathToAdb: String? = findADB(sdkPathGuesses)
     private var hasBootStrap = false
 
     fun bootStrap(): ADBInterface {
