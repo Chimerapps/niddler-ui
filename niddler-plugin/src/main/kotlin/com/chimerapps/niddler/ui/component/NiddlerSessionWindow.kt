@@ -23,6 +23,7 @@ import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
 import com.chimerapps.niddler.ui.model.AppPreferences
+import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
@@ -151,7 +152,8 @@ class NiddlerSessionWindow(private val project: Project,
 
         actionGroup.add(ConnectAction(this) {
             val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
-                    niddlerToolWindow.adbInterface ?: return@ConnectAction, IDeviceBootstrap(), Device.NIDDLER_ANNOUNCEMENT_PORT) ?: return@ConnectAction
+                    niddlerToolWindow.adbInterface ?: return@ConnectAction,
+                    IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin")), Device.NIDDLER_ANNOUNCEMENT_PORT) ?: return@ConnectAction
 
             result.discovered?.let {
                 tryConnectSession(it)

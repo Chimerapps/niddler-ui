@@ -83,7 +83,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="92384" class="com.intellij.ui.components.JBLabel" binding="resultsPane">
+              <component id="6d154" class="javax.swing.JTextPane" binding="resultsPane">
                 <constraints/>
                 <properties/>
               </component>
