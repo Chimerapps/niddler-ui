@@ -3,6 +3,7 @@ package com.chimerapps.discovery.ui
 import com.chimerapps.discovery.device.Device
 import com.chimerapps.discovery.device.DiscoveredSession
 import com.chimerapps.discovery.device.adb.ADBInterface
+import com.chimerapps.discovery.device.idevice.IDeviceBootstrap
 import com.chimerapps.discovery.model.connectdialog.ConnectDialogDeviceNode
 import com.chimerapps.discovery.model.connectdialog.ConnectDialogModel
 import com.chimerapps.discovery.model.connectdialog.ConnectDialogProcessNode
@@ -45,13 +46,14 @@ data class DiscoveredDeviceConnection(val device: Device, val session: Discovere
 
 data class ConnectDialogResult(val direct: ManualConnection?, val discovered: DiscoveredDeviceConnection?)
 
-class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInterface) : ConnectDialogUI(parent, "Select a device to connect to") {
+class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInterface,
+                    iDeviceBootstrap: IDeviceBootstrap) : ConnectDialogUI(parent, "Select a device to connect to") {
 
     companion object {
         private const val PORT_MAX = 65535
 
-        fun show(parent: Window?, adbInterface: ADBInterface, announcementPort: Int): ConnectDialogResult? {
-            val dialog = ConnectDialog(parent, announcementPort, adbInterface)
+        fun show(parent: Window?, adbInterface: ADBInterface, iDeviceBootstrap: IDeviceBootstrap, announcementPort: Int): ConnectDialogResult? {
+            val dialog = ConnectDialog(parent, announcementPort, adbInterface, iDeviceBootstrap)
             dialog.pack()
             dialog.setSize(500, 350)
             if (dialog.parent != null)
@@ -64,7 +66,7 @@ class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInt
         }
     }
 
-    private val deviceScanner = DeviceScanner(adbInterface, announcementPort, ::onDevicesUpdated)
+    private val deviceScanner = DeviceScanner(adbInterface, iDeviceBootstrap, announcementPort, listener = ::onDevicesUpdated)
 
     var result: ConnectDialogResult? = null
         private set

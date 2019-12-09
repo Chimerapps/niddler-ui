@@ -17,5 +17,6 @@ object IncludedLibIcons {
         val computer = loadIcon("/ic_device_computer$hasSvgExtension")
         val emulator = loadIcon("/ic_device_emulator$hasSvgExtension")
         val real = loadIcon("/ic_device_real$hasSvgExtension")
+        val realApple = loadIcon("/ic_device_real_apple$hasSvgExtension")
     }
 }

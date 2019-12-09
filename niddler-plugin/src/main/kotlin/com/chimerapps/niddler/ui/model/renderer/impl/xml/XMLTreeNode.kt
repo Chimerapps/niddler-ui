@@ -79,7 +79,7 @@ internal class XMLTreeNode(val xmlElement: Node, private val parent: TreeNode?, 
 }
 
 private fun Node.asString(): String {
-    val stringBuilder = StringBuilder("");
+    val stringBuilder = StringBuilder("")
     stringBuilder.append(nodeName)
 
     if (attributes != null && attributes.length > 0) {

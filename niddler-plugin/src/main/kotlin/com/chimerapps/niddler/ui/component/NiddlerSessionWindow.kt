@@ -3,6 +3,7 @@ package com.chimerapps.niddler.ui.component
 import com.chimerapps.discovery.device.Device
 import com.chimerapps.discovery.device.DirectPreparedConnection
 import com.chimerapps.discovery.device.PreparedDeviceConnection
+import com.chimerapps.discovery.device.idevice.IDeviceBootstrap
 import com.chimerapps.discovery.ui.ConnectDialog
 import com.chimerapps.discovery.ui.DiscoveredDeviceConnection
 import com.chimerapps.discovery.ui.ManualConnection
@@ -22,6 +23,7 @@ import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
 import com.chimerapps.niddler.ui.model.AppPreferences
+import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
@@ -126,10 +128,10 @@ class NiddlerSessionWindow(private val project: Project,
 
     fun currentViewModeUnselected() {
         //Do not switch to other view mode until other view mode is supported
-        if (currentViewMode == ViewMode.VIEW_MODE_LINKED) {
-            currentViewMode = ViewMode.VIEW_MODE_TIMELINE
+        currentViewMode = if (currentViewMode == ViewMode.VIEW_MODE_LINKED) {
+            ViewMode.VIEW_MODE_TIMELINE
         } else {
-            currentViewMode = ViewMode.VIEW_MODE_LINKED
+            ViewMode.VIEW_MODE_LINKED
         }
         viewToolbar.updateActionsImmediately() //Update ui
     }
@@ -150,7 +152,8 @@ class NiddlerSessionWindow(private val project: Project,
 
         actionGroup.add(ConnectAction(this) {
             val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
-                    niddlerToolWindow.adbInterface ?: return@ConnectAction, Device.NIDDLER_ANNOUNCEMENT_PORT) ?: return@ConnectAction
+                    niddlerToolWindow.adbInterface ?: return@ConnectAction,
+                    IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin")), Device.NIDDLER_ANNOUNCEMENT_PORT) ?: return@ConnectAction
 
             result.discovered?.let {
                 tryConnectSession(it)
