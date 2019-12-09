@@ -86,6 +86,6 @@ class TableResizeAdapter(private val table: JTable, private val resizeListener: 
     }
 
     companion object {
-        val resizeCursor = Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)!!
+        val resizeCursor = Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)
     }
 }

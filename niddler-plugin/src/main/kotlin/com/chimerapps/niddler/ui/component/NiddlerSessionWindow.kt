@@ -128,10 +128,10 @@ class NiddlerSessionWindow(private val project: Project,
 
     fun currentViewModeUnselected() {
         //Do not switch to other view mode until other view mode is supported
-        if (currentViewMode == ViewMode.VIEW_MODE_LINKED) {
-            currentViewMode = ViewMode.VIEW_MODE_TIMELINE
+        currentViewMode = if (currentViewMode == ViewMode.VIEW_MODE_LINKED) {
+            ViewMode.VIEW_MODE_TIMELINE
         } else {
-            currentViewMode = ViewMode.VIEW_MODE_LINKED
+            ViewMode.VIEW_MODE_LINKED
         }
         viewToolbar.updateActionsImmediately() //Update ui
     }

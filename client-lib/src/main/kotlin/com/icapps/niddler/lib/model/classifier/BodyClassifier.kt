@@ -61,8 +61,7 @@ class HeaderBodyClassifier(private val bodyFormatExtensions: Iterable<BodyFormat
     }
 
     private fun classifyFromMimeType(mimeType: String, charset: String?, contentType: ContentType): BodyClassifierResult? {
-        val lowercased = mimeType.toLowerCase()
-        return when (lowercased) {
+        return when (val lowercased = mimeType.toLowerCase()) {
             "application/json" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_JSON, mimeType, charset), JsonBodyParser())
             "application/xml", "text/xml", "application/dash+xml" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_XML, mimeType, charset), XmlBodyParser())
             "application/octet-stream" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_BINARY, mimeType, charset), BinaryBodyParser())

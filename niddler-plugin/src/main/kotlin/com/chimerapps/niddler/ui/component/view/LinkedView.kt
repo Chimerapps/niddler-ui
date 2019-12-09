@@ -46,9 +46,7 @@ class LinkedView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>,
     }
 
     override var urlHider: BaseUrlHider? = null //TODO
-        set(value) {
-            field = value
-        }
+
     override var filter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>?
         get() = model.filter
         set(value) {

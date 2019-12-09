@@ -1,5 +1,6 @@
 package com.chimerapps.discovery.device.idevice
 
+@Suppress("EnumEntryName")
 enum class IDeviceType(val productType: String, val fullName: String, val simpleName: String) {
     iPhone1_1("iPhone1,1", "iPhone", "iPhone"),
     iPhone1_2("iPhone1,2", "iPhone 3G", "iPhone 3G"),

@@ -160,12 +160,16 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
 
         panel.foreground = tree.foreground
 
-        if (UIUtil.isUnderGTKLookAndFeel()) {
-            panel.isOpaque = false  // avoid nasty background
-        } else if (WideSelectionTreeUI.isWideSelection(tree)) {
-            panel.isOpaque = false  // avoid erasing Nimbus focus frame
-        } else {
-            panel.isOpaque = selected && hasFocus || selected && isFocused() // draw selection background even for non-opaque tree
+        when {
+            UIUtil.isUnderGTKLookAndFeel() -> {
+                panel.isOpaque = false  // avoid nasty background
+            }
+            WideSelectionTreeUI.isWideSelection(tree) -> {
+                panel.isOpaque = false  // avoid erasing Nimbus focus frame
+            }
+            else -> {
+                panel.isOpaque = selected && hasFocus || selected && isFocused() // draw selection background even for non-opaque tree
+            }
         }
     }
 
