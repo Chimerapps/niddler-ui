@@ -4,6 +4,7 @@ import com.chimerapps.discovery.device.adb.ADBBootstrap
 import com.chimerapps.discovery.device.adb.ADBInterface
 import com.chimerapps.niddler.ui.actions.NewSessionAction
 import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
+import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.adb.ADBUtils
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.intellij.execution.ui.RunnerLayoutUi
@@ -63,7 +64,7 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
             }
         }, disposable)
 
-        adbBootstrap = ADBBootstrap(ADBUtils.guessPaths(project))
+        adbBootstrap = ADBBootstrap(ADBUtils.guessPaths(project)) { NiddlerSettings.instance.adbPath }
         bootStrapADB()
     }
 
@@ -80,7 +81,6 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
 
         loadingContent.add(labelAndLoading)
         setContent(loadingContent)
-
 
         Thread({
             adbInterface = adbBootstrap.bootStrap()

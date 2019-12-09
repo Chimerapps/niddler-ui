@@ -63,10 +63,10 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : Closeable,
     }
 
     internal fun registerProtocolHandler(protocolVersion: Int) {
-        when (protocolVersion) {
-            1 -> protocolHandler = NiddlerV1ProtocolHandler(this)
-            2, 3 -> protocolHandler = NiddlerV2ProtocolHandler(this, protocolVersion)
-            else -> protocolHandler = NiddlerV4ProtocolHandler(messageListener = this, debugListener = this,
+        protocolHandler = when (protocolVersion) {
+            1 -> NiddlerV1ProtocolHandler(this)
+            2, 3 -> NiddlerV2ProtocolHandler(this, protocolVersion)
+            else -> NiddlerV4ProtocolHandler(messageListener = this, debugListener = this,
                     protocolVersion = protocolVersion)
         }
     }
@@ -148,7 +148,7 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : Closeable,
     }
 
     fun setStaticBlacklistItemEnabled(id: String, pattern: String, enabled: Boolean) {
-        val json = JsonObject();
+        val json = JsonObject()
         json.addProperty("type", "controlStaticBlacklist")
         json.addProperty("id", id)
         json.addProperty("pattern", pattern)

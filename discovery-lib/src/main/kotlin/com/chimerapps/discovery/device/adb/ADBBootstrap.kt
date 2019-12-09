@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Nicola Verbeeck
  */
-class ADBBootstrap(sdkPathGuesses: Collection<String>) {
+class ADBBootstrap(sdkPathGuesses: Collection<String>, private val adbPathProvider: (() -> String?)? = null) {
 
     companion object {
         private val log = logger<ADBBootstrap>()
@@ -65,7 +65,7 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>) {
 
     }
 
-    private var pathToAdb: String? = findADB(sdkPathGuesses)
+    val pathToAdb: String? = adbPathProvider?.invoke() ?: findADB(sdkPathGuesses)
     private var hasBootStrap = false
 
     fun bootStrap(): ADBInterface {
@@ -81,7 +81,7 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>) {
     fun executeADBCommand(vararg commands: String) = executeADBCommand(DEFAULT_ADB_TIMEOUT_S, *commands)
 
     fun executeADBCommand(timeoutInSeconds: Long, vararg commands: String): String? {
-        return pathToAdb?.let {
+        return adbPathProvider?.invoke() ?: pathToAdb?.let {
             val builder = ProcessBuilder(it.prepend(commands))
             val process = builder.start()
             val success = process.waitFor(timeoutInSeconds, TimeUnit.SECONDS)

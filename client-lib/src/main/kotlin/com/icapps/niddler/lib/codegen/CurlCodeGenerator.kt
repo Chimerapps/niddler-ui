@@ -9,7 +9,7 @@ import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 class CurlCodeGenerator : CodeGenerator {
 
     companion object {
-        private val COMMAND_NAME = "curl"
+        private const val COMMAND_NAME = "curl"
     }
 
     override fun generateRequestCode(request: ParsedNiddlerMessage): String {
@@ -54,7 +54,7 @@ class CurlCodeGenerator : CodeGenerator {
     private fun addHeaders(builder: StringBuilder, request: NiddlerMessage) {
         val headers = request.headers ?: return
 
-        headers.forEach { key, values ->
+        headers.forEach { (key, values) ->
             builder.append("-H \"").append(key).append(": ").append(values.joinToString(",")).append("\" ")
         }
     }

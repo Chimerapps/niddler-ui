@@ -62,6 +62,10 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Niddler" anchor="bottom" factoryClass="com.chimerapps.niddler.ui.NiddlerToolWindowFactory" icon="/niddler_small.png" />
+        <applicationConfigurable instance="com.chimerapps.niddler.ui.settings.ConfigurationProvider" />
+        <applicationService
+            serviceImplementation="com.chimerapps.niddler.ui.settings.NiddlerSettings" />
+
     </extensions>
 
     <actions>
