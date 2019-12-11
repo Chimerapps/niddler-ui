@@ -81,7 +81,7 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>, private val adbPathProvid
     fun executeADBCommand(vararg commands: String) = executeADBCommand(DEFAULT_ADB_TIMEOUT_S, *commands)
 
     fun executeADBCommand(timeoutInSeconds: Long, vararg commands: String): String? {
-        return adbPathProvider?.invoke() ?: pathToAdb?.let {
+        return (adbPathProvider?.invoke() ?: pathToAdb)?.let {
             val builder = ProcessBuilder(it.prepend(commands))
             val process = builder.start()
             val success = process.waitFor(timeoutInSeconds, TimeUnit.SECONDS)
