@@ -11,8 +11,8 @@ def versions = [
         intelliJPlugin        : '0.4.8',
         minIntelliJ           : '2018.1',
         androidEmulatorControl: '0.1.2',
-        discoveryLib          : '1.1.1',
-        discoveryPluginLib    : '1.1.1',
+        discoveryLib          : '1.1.2',
+        discoveryPluginLib    : '1.1.2',
         multiPart             : '1.1.0',
 ]
 

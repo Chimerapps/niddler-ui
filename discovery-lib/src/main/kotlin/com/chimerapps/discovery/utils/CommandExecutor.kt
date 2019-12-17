@@ -25,11 +25,30 @@ internal class IDeviceCommandExecutor(private val binaryPath: File) {
         val future = CompletableFuture<T>()
 
         val process = builder.start()
-        command.onProcessStarted(process) { resultCode ->
-            val stdOut = process.inputStream.bufferedReader().lines().toList()
-            val stdErr = process.errorStream.bufferedReader().lines().toList()
+        val hook = Thread {
+            try {
+                process.destroy()
+            } catch (e: Throwable) {
+            }
+        }
+        Runtime.getRuntime().addShutdownHook(hook)
+        try {
+            command.onProcessStarted(process) { resultCode ->
+                try {
+                    val stdOut = process.inputStream.bufferedReader().lines().toList()
+                    val stdErr = process.errorStream.bufferedReader().lines().toList()
 
-            future.complete(command.handle(this, resultCode, stdOut, stdErr))
+                    Runtime.getRuntime().removeShutdownHook(hook)
+                    future.complete(command.handle(this, resultCode, stdOut, stdErr))
+                } catch (e: Throwable) {
+                }
+            }
+        } catch (e: Throwable) {
+            try {
+                process.destroy()
+            } catch (e: Throwable) {
+            }
+            Runtime.getRuntime().removeShutdownHook(hook)
         }
         return future
     }
