@@ -12,6 +12,7 @@ sourceCompatibility = 1.8
 intellij {
     version versions.minIntelliJ
     updateSinceUntilBuild false
+//    plugins "Dart:192.6459", "java"
 }
 
 compileKotlin {
