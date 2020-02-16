@@ -10,7 +10,9 @@ import com.chimerapps.discovery.model.connectdialog.ConnectDialogProcessNode
 import com.chimerapps.discovery.model.connectdialog.DeviceModel
 import com.chimerapps.discovery.model.connectdialog.DeviceScanner
 import com.chimerapps.discovery.ui.renderer.ConnectDialogTreeCellRenderer
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import java.awt.BorderLayout
@@ -24,6 +26,7 @@ import java.awt.event.WindowEvent
 import java.awt.event.WindowListener
 import java.beans.PropertyChangeEvent
 import javax.swing.BorderFactory
+import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JDialog
@@ -33,6 +36,7 @@ import javax.swing.JPanel
 import javax.swing.JTextField
 import javax.swing.KeyStroke
 import javax.swing.SpringLayout
+import javax.swing.SwingConstants
 import javax.swing.WindowConstants
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -72,6 +76,14 @@ class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInt
         private set
 
     init {
+        val statuses = mutableListOf<String>()
+        if (!adbInterface.isRealConnection) {
+            statuses += "ADB path not found"
+        }
+        if (!iDeviceBootstrap.isRealConnection) {
+            statuses += "iDevice path not found"
+        }
+        setStatuses(statuses)
         deviceScanner.startScanning()
         onDeviceSelectionChanged()
     }
@@ -197,10 +209,16 @@ abstract class ConnectDialogUI(parent: Window?, title: String) : JDialog(parent,
         it.add(JBScrollPane(devicesTree), BorderLayout.CENTER)
         it.add(manualConnectContainer, BorderLayout.SOUTH)
     }
+    private val statusContainer = JPanel().also {
+        it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
+    }
     private val rootContainer = JPanel(BorderLayout()).also {
         it.border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        it.add(buttonContainer, BorderLayout.SOUTH)
+        val bottomPanel = JPanel(BorderLayout())
+        bottomPanel.add(buttonContainer, BorderLayout.CENTER)
+        bottomPanel.add(statusContainer, BorderLayout.SOUTH)
         it.add(topContainer, BorderLayout.CENTER)
+        it.add(bottomPanel, BorderLayout.SOUTH)
     }
 
     init {
@@ -230,6 +248,13 @@ abstract class ConnectDialogUI(parent: Window?, title: String) : JDialog(parent,
     protected abstract fun onDeviceIpChanged()
 
     protected abstract fun onPortChanged()
+
+    protected fun setStatuses(statuses: List<String>) {
+        statusContainer.removeAll()
+        statuses.forEach { status ->
+            statusContainer.add(JBLabel(status, AllIcons.General.BalloonWarning, SwingConstants.LEFT))
+        }
+    }
 
 }
 

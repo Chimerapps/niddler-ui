@@ -22,6 +22,7 @@ import com.intellij.util.ui.AsyncProcessIcon
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.GridBagLayout
+import java.io.File
 import javax.swing.BorderFactory
 import javax.swing.JPanel
 
@@ -37,6 +38,14 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
     private var adbBootstrap: ADBBootstrap
     var adbInterface: ADBInterface? = null
         get() = synchronized(this@NiddlerToolWindow) {
+            val result = field ?: return null
+            if (!result.isRealConnection) {
+                val path = NiddlerSettings.instance.adbPath
+                if (path != null && File(path).let { it.exists() && it.canExecute() }) {
+                    adbBootstrap = ADBBootstrap(ADBUtils.guessPaths(project)) { NiddlerSettings.instance.adbPath }
+                    field = adbBootstrap.bootStrap()
+                }
+            }
             field
         }
         private set(value) {

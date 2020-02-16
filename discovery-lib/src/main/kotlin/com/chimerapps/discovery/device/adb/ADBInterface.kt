@@ -29,6 +29,9 @@ class ADBInterface(val bootstrap: ADBBootstrap, private val connection: JadbConn
             }
         } ?: emptyList()
 
+    val isRealConnection: Boolean
+        get() = connection != null
+
     /**
      * Callbacks happen on a BACKGROUND THREAD
      */

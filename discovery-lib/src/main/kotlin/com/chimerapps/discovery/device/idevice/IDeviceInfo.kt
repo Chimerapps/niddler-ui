@@ -20,7 +20,7 @@ interface IDeviceInfo {
     val osVersion: String
 }
 
-class IDeviceBootstrap(binaryPath: File = File("/usr/local/bin/")) {
+class IDeviceBootstrap(private val binaryPath: File = File("/usr/local/bin/")) {
 
     private val executor = IDeviceCommandExecutor(binaryPath)
 
@@ -32,6 +32,8 @@ class IDeviceBootstrap(binaryPath: File = File("/usr/local/bin/")) {
             return executor.execute(ListDevicesCommand()).get().map { IDevice(it, executor) }
         }
 
+    val isRealConnection: Boolean
+        get() = File(binaryPath, "idevice_id").let { it.exists() && it.canExecute() }
 }
 
 internal data class IDeviceInfoImpl(override val udid: String,

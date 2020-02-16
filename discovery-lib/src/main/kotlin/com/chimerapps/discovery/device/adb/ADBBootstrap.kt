@@ -73,7 +73,7 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>, private val adbPathProvid
             hasBootStrap = true
             executeADBCommand("start-server")
         }
-        if (pathToAdb == null)
+        if (pathToAdb == null || !File(pathToAdb).exists())
             return ADBInterface(connection = null, bootstrap = this)
         return ADBInterface(connection = JadbConnection(), bootstrap = this)
     }
