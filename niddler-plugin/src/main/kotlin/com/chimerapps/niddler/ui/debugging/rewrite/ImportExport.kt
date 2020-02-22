@@ -1,6 +1,7 @@
 package com.chimerapps.niddler.ui.debugging.rewrite
 
 import org.w3c.dom.Node
+import org.w3c.dom.NodeList
 import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -13,49 +14,32 @@ class RewriteExporter {
 
 class RewriteImporter {
 
-    fun import(stream: InputStream) {
+    fun import(stream: InputStream): List<RewriteSet> {
         val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream)
         val root = document.documentElement
         if (root.tagName != "rewriteSet-array")
             throw IOException("Not a charles rewriteSet-array document")
 
-        val rewriteSets = root.childNodes
-        for (i in 0..rewriteSets.length) {
-            val rewriteSet = root.childNodes.item(i) ?: continue
-            if (rewriteSet.nodeName != "rewriteSet") continue
-            parseRewriteSet(rewriteSet)
-        }
+        return root.childNodes.mapNotNullNodesWithName("rewriteSet", ::parseRewriteSet)
     }
 
-    private fun parseRewriteSet(rewriteSet: Node) {
+    private fun parseRewriteSet(rewriteSet: Node): RewriteSet {
         val active = rewriteSet.childWithTag("active")?.textContent?.toBoolean() ?: false
-        val name = rewriteSet.childWithTag("name")?.textContent
+        val name = rewriteSet.childWithTag("name")?.textContent ?: "<unknown>"
         val hosts = rewriteSet.childWithTag("hosts")
         val rules = rewriteSet.childWithTag("rules")
 
-        hosts?.let {
-            val hostChildren = it.childNodes
-            for (i in 0..hostChildren.length) {
-                val hostChild = hostChildren.item(i) ?: continue
-                if (hostChild.nodeName != "locationPatterns") continue
+        val locations = hosts?.childNodes?.mapNotNullNodesWithName("locationPatterns", ::parseHostLocationPattern)?.flatten()
+        val rewriteRules = rules?.childNodes?.mapNotNullNodesWithName("rewriteRule", ::parseRewriteRule)
 
-                parseHostLocationPattern(hostChild)
-            }
-        }
-        rules?.let {
-            val rulesChildren = rules.childNodes
-            for (i in 0..rulesChildren.length) {
-                val rewriteRule = rulesChildren.item(i) ?: continue
-                if (rewriteRule.nodeName != "rewriteRule") continue
-
-                parseRewriteRule(rewriteRule)
-            }
-        }
-
-        println("$name. Active: $active")
+        return RewriteSet(active = active,
+                name = name,
+                rules = rewriteRules.orEmpty(),
+                locations = locations.orEmpty()
+        )
     }
 
-    private fun parseRewriteRule(rewriteRule: Node) {
+    private fun parseRewriteRule(rewriteRule: Node): RewriteRule? {
         val active = rewriteRule.childWithTag("active")?.textContent?.toBoolean() ?: false
         val ruleTypeInt = rewriteRule.childWithTag("ruleType")?.textContent?.toInt() ?: -1
         val matchHeaderRegex = rewriteRule.childWithTag("matchHeaderRegex")?.textContent?.toBoolean() ?: false
@@ -67,11 +51,45 @@ class RewriteImporter {
         val matchWholeValue = rewriteRule.childWithTag("matchWholeValue")?.textContent?.toBoolean() ?: false
         val caseSensitive = rewriteRule.childWithTag("caseSensitive")?.textContent?.toBoolean() ?: false
         val replaceTypeInt = rewriteRule.childWithTag("replaceType")?.textContent?.toInt() ?: -1
-        //TODO
+
+        val type = RewriteType.fromCharlesCode(ruleTypeInt) ?: return null
+        val replaceType = ReplaceType.fromCharlesCode(replaceTypeInt) ?: return null
+
+        return RewriteRule(
+                active = active,
+                ruleType = type,
+                matchHeaderRegex = matchHeaderRegex,
+                matchValueRegex = matchValueRegex,
+                matchRequest = matchRequest,
+                matchResponse = matchResponse,
+                newHeaderRegex = newHeaderRegex,
+                newValueRegex = newValueRegex,
+                matchWholeValue = matchWholeValue,
+                caseSensitive = caseSensitive,
+                replaceType = replaceType
+        )
     }
 
-    private fun parseHostLocationPattern(hostChild: Node) {
-        //TODO
+    private fun parseHostLocationPattern(locationPatternNode: Node): List<RewriteLocationMatch> {
+        return locationPatternNode.childNodes.mapNotNullNodesWithName("locationMatch", ::parseLocationMatch)
+    }
+
+    private fun parseLocationMatch(locationMatchNode: Node): RewriteLocationMatch? {
+        val enabled = locationMatchNode.childWithTag("enabled")?.textContent?.toBoolean() ?: false
+        val locationNode = locationMatchNode.childWithTag("location") ?: return null
+
+        val protocol = locationNode.childWithTag("protocol")?.textContent?.trim()
+        val host = locationNode.childWithTag("host")?.textContent?.trim()
+        val port = locationNode.childWithTag("port")?.textContent?.toInt()
+        val path = locationNode.childWithTag("path")?.textContent?.trim()
+        val query = locationNode.childWithTag("query")?.textContent?.trim()
+
+        return RewriteLocationMatch(enabled = enabled,
+                location = RewriteLocation(protocol = protocol,
+                        host = host,
+                        port = port,
+                        path = path,
+                        query = query))
     }
 
 }
@@ -86,8 +104,19 @@ private fun Node.childWithTag(name: String): Node? {
     return null
 }
 
+private fun <T> NodeList.mapNotNullNodesWithName(name: String, map: (Node) -> T?): List<T> {
+    val list = mutableListOf<T>()
+    for (i in 0..length) {
+        val hostChild = item(i) ?: continue
+        if (hostChild.nodeName != name) continue
+
+        map(hostChild)?.let(list::add)
+    }
+    return list
+}
+
 fun main() {
     FileInputStream("/Users/nicolaverbeeck/Desktop/testing123.xml").use {
-        RewriteImporter().import(it)
+        println(RewriteImporter().import(it))
     }
 }
