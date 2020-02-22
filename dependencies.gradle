@@ -46,8 +46,9 @@ def libCompile = [
 ]
 
 def pluginCompile = [
-        kotlin      : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
-        discoveryLib: "com.chimerapps:discovery-plugin-ui:${versions.discoveryPluginLib}",
+        kotlin       : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
+        kotlinReflect: "org.jetbrains.kotlin:kotlin-reflect:${versions.kotlin}",
+        discoveryLib : "com.chimerapps:discovery-plugin-ui:${versions.discoveryPluginLib}",
 ]
 
 def libTestCompile = [

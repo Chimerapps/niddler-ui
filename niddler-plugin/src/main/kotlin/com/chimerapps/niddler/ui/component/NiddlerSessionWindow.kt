@@ -22,6 +22,7 @@ import com.chimerapps.niddler.ui.component.view.MessageDetailView
 import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
+import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
@@ -151,6 +152,7 @@ class NiddlerSessionWindow(private val project: Project,
         val actionGroup = DefaultActionGroup()
 
         actionGroup.add(ConnectAction(this) {
+            RewriteDialog(SwingUtilities.getWindowAncestor(this)).isVisible = true
             val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
                     niddlerToolWindow.adbInterface ?: return@ConnectAction,
                     IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin")), Device.NIDDLER_ANNOUNCEMENT_PORT) ?: return@ConnectAction
