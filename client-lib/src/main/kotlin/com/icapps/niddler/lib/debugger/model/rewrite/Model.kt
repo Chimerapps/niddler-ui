@@ -1,4 +1,4 @@
-package com.chimerapps.niddler.ui.debugging.rewrite
+package com.icapps.niddler.lib.debugger.model.rewrite
 
 enum class RewriteType(val charlesCode: Int) {
     ADD_HEADER(1),
@@ -46,7 +46,11 @@ data class RewriteRule(val active: Boolean,
                        val newValueRegex: Boolean,
                        val matchWholeValue: Boolean,
                        val caseSensitive: Boolean,
-                       val replaceType: ReplaceType)
+                       val replaceType: ReplaceType,
+                       val matchHeader: String?,
+                       val matchValue: String?,
+                       val newHeader: String?,
+                       val newValue: String?)
 
 data class RewriteLocationMatch(val location: RewriteLocation,
                                 val enabled: Boolean)
