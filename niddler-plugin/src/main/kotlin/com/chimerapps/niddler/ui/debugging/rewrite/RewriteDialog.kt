@@ -18,6 +18,7 @@ import java.awt.Toolkit
 import java.awt.Window
 import java.io.File
 import javax.swing.BorderFactory
+import javax.swing.DefaultListModel
 import javax.swing.JButton
 import javax.swing.JDialog
 import javax.swing.JPanel
@@ -69,6 +70,9 @@ private class RewriteDetailPanel(private val project: Project?) : JPanel(GridBag
         set(value) {
             field = value
             rulesList.isEnabled = value
+            val enableExportAndRemove = value && rulesList.selectedIndices.isNotEmpty()
+            exportButton.isEnabled = enableExportAndRemove
+            removeButton.isEnabled = enableExportAndRemove
         }
 
     @Suppress("MoveLambdaOutsideParentheses")
@@ -96,6 +100,11 @@ private class RewriteDetailPanel(private val project: Project?) : JPanel(GridBag
             weighty = 100.0
         }
         it.isEnabled = allEnabled
+        it.selectionModel.addListSelectionListener { _ ->
+            val hasSelection = it.selectedIndices.isNotEmpty()
+            exportButton.isEnabled = hasSelection && allEnabled
+            removeButton.isEnabled = hasSelection && allEnabled
+        }
         it.selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
         add(JBScrollPane(it).also { scroller -> scroller.border = BorderFactory.createLineBorder(Color.GRAY) }, constraints)
     }
@@ -113,7 +122,7 @@ private class RewriteDetailPanel(private val project: Project?) : JPanel(GridBag
         add(it, constraints)
     }
 
-    val removeButton = JButton("Remove").also {
+    val removeButton: JButton = JButton("Remove").also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 2
@@ -124,6 +133,11 @@ private class RewriteDetailPanel(private val project: Project?) : JPanel(GridBag
             weightx = 50.0
         }
         add(it, constraints)
+        it.addActionListener {
+            rulesList.selectedIndices.reversed().forEach { index ->
+                (rulesList.model as DefaultListModel).remove(index)
+            }
+        }
     }
 
     val importButton = JButton("Import").also {
@@ -142,19 +156,6 @@ private class RewriteDetailPanel(private val project: Project?) : JPanel(GridBag
         }
     }
 
-    private fun showImportDialog() {
-        val file = chooseOpenFile("Select file") ?: return
-        try {
-            val importedData = file.inputStream.use { RewriteImporter().import(it) }
-
-            importedData.forEach { ruleSet ->
-                rulesList.addItem(ruleSet, ruleSet.name, ruleSet.active)
-            }
-        } catch (e: Throwable) {
-            NotificationUtil.error("Failed to import", e.message ?: "Failed to parse file", project)
-        }
-    }
-
     val exportButton = JButton("Export").also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
@@ -168,6 +169,25 @@ private class RewriteDetailPanel(private val project: Project?) : JPanel(GridBag
         add(it, constraints)
         it.addActionListener {
             showExportDialog()
+        }
+    }
+
+    init {
+        val enableExportAndRemove = allEnabled && rulesList.selectedIndices.isNotEmpty()
+        exportButton.isEnabled = enableExportAndRemove
+        removeButton.isEnabled = enableExportAndRemove
+    }
+
+    private fun showImportDialog() {
+        val file = chooseOpenFile("Select file") ?: return
+        try {
+            val importedData = file.inputStream.use { RewriteImporter().import(it) }
+
+            importedData.forEach { ruleSet ->
+                rulesList.addItem(ruleSet, ruleSet.name, ruleSet.active)
+            }
+        } catch (e: Throwable) {
+            NotificationUtil.error("Failed to import", e.message ?: "Failed to parse file", project)
         }
     }
 
