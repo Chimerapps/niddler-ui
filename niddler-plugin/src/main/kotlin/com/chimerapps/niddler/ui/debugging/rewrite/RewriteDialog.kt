@@ -1,6 +1,13 @@
 package com.chimerapps.niddler.ui.debugging.rewrite
 
 import com.chimerapps.niddler.ui.util.ui.CheckBox
+import com.chimerapps.niddler.ui.util.ui.NotificationUtil
+import com.chimerapps.niddler.ui.util.ui.chooseOpenFile
+import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteExporter
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteImporter
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteSet
+import com.intellij.openapi.project.Project
 import com.intellij.ui.CheckBoxList
 import com.intellij.ui.components.JBScrollPane
 import java.awt.Color
@@ -9,16 +16,18 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Toolkit
 import java.awt.Window
+import java.io.File
 import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JDialog
 import javax.swing.JPanel
+import javax.swing.ListSelectionModel
 
-class RewriteDialog(parent: Window?) : JDialog(parent, "Rewrite settings", ModalityType.APPLICATION_MODAL) {
+class RewriteDialog(parent: Window?, private val project: Project?) : JDialog(parent, "Rewrite settings", ModalityType.APPLICATION_MODAL) {
 
     private val rootContainer = JPanel(GridBagLayout())
 
-    private val masterPanel = RewriteDetailPanel().also {
+    private val masterPanel = RewriteDetailPanel(project).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 0
@@ -54,7 +63,7 @@ class RewriteDialog(parent: Window?) : JDialog(parent, "Rewrite settings", Modal
     }
 }
 
-private class RewriteDetailPanel : JPanel(GridBagLayout()) {
+private class RewriteDetailPanel(private val project: Project?) : JPanel(GridBagLayout()) {
 
     var allEnabled: Boolean = false
         set(value) {
@@ -75,7 +84,7 @@ private class RewriteDetailPanel : JPanel(GridBagLayout()) {
         add(it, constraints)
     }
 
-    val rulesList = CheckBoxList<RewriteRuleHolder>().also {
+    val rulesList = CheckBoxList<RewriteSet>().also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 1
@@ -87,6 +96,7 @@ private class RewriteDetailPanel : JPanel(GridBagLayout()) {
             weighty = 100.0
         }
         it.isEnabled = allEnabled
+        it.selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
         add(JBScrollPane(it).also { scroller -> scroller.border = BorderFactory.createLineBorder(Color.GRAY) }, constraints)
     }
 
@@ -127,6 +137,22 @@ private class RewriteDetailPanel : JPanel(GridBagLayout()) {
             weightx = 50.0
         }
         add(it, constraints)
+        it.addActionListener {
+            showImportDialog()
+        }
+    }
+
+    private fun showImportDialog() {
+        val file = chooseOpenFile("Select file") ?: return
+        try {
+            val importedData = file.inputStream.use { RewriteImporter().import(it) }
+
+            importedData.forEach { ruleSet ->
+                rulesList.addItem(ruleSet, ruleSet.name, ruleSet.active)
+            }
+        } catch (e: Throwable) {
+            NotificationUtil.error("Failed to import", e.message ?: "Failed to parse file", project)
+        }
     }
 
     val exportButton = JButton("Export").also {
@@ -140,12 +166,21 @@ private class RewriteDetailPanel : JPanel(GridBagLayout()) {
             weightx = 50.0
         }
         add(it, constraints)
+        it.addActionListener {
+            showExportDialog()
+        }
     }
 
-    init {
-        rulesList.addItem(RewriteRuleHolder(false, "Testing123"), "Testing123", false)
-        rulesList.addItem(RewriteRuleHolder(true, "Testing1234"), "Testing123", true)
-        rulesList.addItem(RewriteRuleHolder(true, "Testing12345"), "Testing1235", true)
+    private fun showExportDialog() {
+        val items = rulesList.selectedIndices.map { rulesList.getItemAt(it) }.filterNotNull()
+        if (items.isEmpty()) return
+
+        var file = chooseSaveFile("Export to", ".xml") ?: return
+        if (file.extension.isEmpty()) {
+            file = File(file.absolutePath + ".xml")
+        }
+        file.outputStream().use { RewriteExporter().export(items, it) }
+        NotificationUtil.info("Rule export complete", "<html>Rule export completed to <a href=\"file://${file.absolutePath}\">${file.name}</a></html>", project)
     }
 
 }
@@ -154,8 +189,4 @@ private class RewriteMasterPanel : JPanel() {
     init {
         background = Color.BLUE
     }
-}
-
-private class RewriteRuleHolder(val enabled: Boolean, val name: String) {
-
 }

@@ -1,7 +1,6 @@
 package com.icapps.niddler.lib.debugger.model.rewrite
 
 import junit.framework.Assert.assertTrue
-import org.custommonkey.xmlunit.DetailedDiff
 import org.custommonkey.xmlunit.XMLUnit
 import org.junit.Before
 import org.junit.Test
@@ -9,7 +8,7 @@ import java.io.ByteArrayOutputStream
 
 class RewriteExporterTest {
 
-    lateinit var data: List<RewriteSet>
+    private lateinit var data: List<RewriteSet>
 
     @Before
     fun setup() {
@@ -20,7 +19,7 @@ class RewriteExporterTest {
     }
 
     @Test
-    fun export() {
+    fun exportMatchesImported() {
         val out = ByteArrayOutputStream()
         RewriteExporter().export(data, out)
         out.flush()
@@ -28,7 +27,6 @@ class RewriteExporterTest {
         val diff = javaClass.getResourceAsStream("/rewrite.xml").use { expect ->
             XMLUnit.compareXML(expect.reader().readText(), out.toString(Charsets.UTF_8.name()))
         }
-        val details = DetailedDiff(diff)
         assertTrue(diff.identical())
     }
 }

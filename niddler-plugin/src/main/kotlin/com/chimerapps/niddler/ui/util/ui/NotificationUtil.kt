@@ -18,4 +18,10 @@ object NotificationUtil {
         Notifications.Bus.notify(notification, project)
     }
 
+    fun error(title: String, message: String, project: Project?) {
+        val group = NotificationGroup("${NOTIFICATION_CHANNEL}_error", NotificationDisplayType.BALLOON, true)
+
+        val notification = group.createNotification(title, message, NotificationType.ERROR, null)
+        Notifications.Bus.notify(notification, project)
+    }
 }
