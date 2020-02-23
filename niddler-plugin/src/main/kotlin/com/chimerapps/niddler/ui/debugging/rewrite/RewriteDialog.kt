@@ -244,12 +244,15 @@ private class RewriteMasterPanel(private val project: Project?, private val sele
 
 private class RewriteDetailPanel(private val onItemUpdated: (RewriteSet) -> Unit) : JPanel(GridBagLayout()) {
 
-    var currentItem: RewriteSet? = null
+    private var _currentItemInternal: RewriteSet? = null
+
+    var currentItem: RewriteSet?
         set(value) {
-            if (value == field) return
-            field = value
+            if (value == _currentItemInternal) return
+            _currentItemInternal = value
             updateContents()
         }
+        get() = _currentItemInternal
 
     private val namePanel = JPanel(GridBagLayout()).also {
         val constraints = GridBagConstraints().apply {
@@ -285,13 +288,14 @@ private class RewriteDetailPanel(private val onItemUpdated: (RewriteSet) -> Unit
         }
         namePanel.add(it, constraints)
     }
-    private val locationTable = PackingJBTable(EditableTableModel() { value, row, col ->
+    private val locationTable: PackingJBTable = PackingJBTable(EditableTableModel() { value, row, col ->
         if (col == 0) {
             val item = currentItem ?: return@EditableTableModel
             val locationsCopy = item.locations.toMutableList()
             locationsCopy[row] = locationsCopy[row].copy(enabled = value == true)
-            item.copy(locations = locationsCopy)
-            onItemUpdated(item)
+            val copy = item.copy(locations = locationsCopy)
+            _currentItemInternal = copy
+            onItemUpdated(copy)
         }
     }).also {
         val constraints = GridBagConstraints().apply {
@@ -306,6 +310,14 @@ private class RewriteDetailPanel(private val onItemUpdated: (RewriteSet) -> Unit
         val model = it.model as EditableTableModel
         model.addColumn("", java.lang.Boolean::class.java)
         model.addColumn("Location", String::class.java)
+
+        it.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
+        it.rowSelectionAllowed = true
+        it.columnSelectionAllowed = false
+        it.selectionModel.addListSelectionListener { _ ->
+            val hasSelection = it.selectedRowCount != 0
+            locationRemoveButton.isEnabled = hasSelection
+        }
 
         it.setColumnFixedWidth(0, 30)
 
@@ -327,6 +339,20 @@ private class RewriteDetailPanel(private val onItemUpdated: (RewriteSet) -> Unit
     }
     private val locationRemoveButton = JButton("Remove").also {
         locationActionsPanel.add(it)
+        it.addActionListener {
+            val item = currentItem ?: return@addActionListener
+            val rows = locationTable.selectedRows
+            if (rows.isEmpty()) return@addActionListener
+
+            val locationsCopy = item.locations.toMutableList()
+            rows.reversed().forEach { row ->
+                locationsCopy.removeAt(row)
+                (locationTable.model as DefaultTableModel).removeRow(row)
+            }
+            val copy = item.copy(locations = locationsCopy)
+            _currentItemInternal = copy
+            onItemUpdated(copy)
+        }
     }
 
     private val rulesTable = PackingJBTable(EditableTableModel() { value, row, col ->
@@ -346,6 +372,14 @@ private class RewriteDetailPanel(private val onItemUpdated: (RewriteSet) -> Unit
         model.addColumn("Action", String::class.java)
 
         it.packColumn(1)
+
+        it.selectionModel.addListSelectionListener { _ ->
+            val hasSelection = it.selectedRowCount != 0
+            rulesRemoveButton.isEnabled = hasSelection
+            rulesRemoveButton.isEnabled = hasSelection
+            rulesUpButton.isEnabled = hasSelection
+            rulesDownButton.isEnabled = hasSelection
+        }
 
         it.setColumnFixedWidth(0, 30)
 
