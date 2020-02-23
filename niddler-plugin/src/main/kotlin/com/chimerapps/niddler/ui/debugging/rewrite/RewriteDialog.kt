@@ -27,12 +27,25 @@ import javax.swing.DefaultListModel
 import javax.swing.JButton
 import javax.swing.JDialog
 import javax.swing.JPanel
+import javax.swing.JWindow
 import javax.swing.ListSelectionModel
+import javax.swing.SwingUtilities
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.JTableHeader
 import javax.swing.table.TableModel
 
 class RewriteDialog(parent: Window?, private val project: Project?) : JDialog(parent, "Rewrite settings", ModalityType.APPLICATION_MODAL) {
+
+    companion object {
+        fun show(parent: Window?, project: Project?) {
+            val dialog = RewriteDialog(parent, project)
+            if (dialog.parent != null)
+                dialog.setLocationRelativeTo(parent)
+
+            dialog.isVisible = true
+            //TODO
+        }
+    }
 
     private val rootContainer = JPanel(GridBagLayout())
 
@@ -49,7 +62,7 @@ class RewriteDialog(parent: Window?, private val project: Project?) : JDialog(pa
         }
         rootContainer.add(it.also { it.border = BorderFactory.createEmptyBorder(10, 10, 10, 10) }, constraints)
     }
-    private val detailPanel = RewriteDetailPanel(::onItemUpdated).also {
+    private val detailPanel = RewriteDetailPanel(this, ::onItemUpdated).also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 0
@@ -242,7 +255,8 @@ private class RewriteMasterPanel(private val project: Project?, private val sele
 
 }
 
-private class RewriteDetailPanel(private val onItemUpdated: (RewriteSet) -> Unit) : JPanel(GridBagLayout()) {
+private class RewriteDetailPanel(private val parentWindow: Window,
+                                 private val onItemUpdated: (RewriteSet) -> Unit) : JPanel(GridBagLayout()) {
 
     private var _currentItemInternal: RewriteSet? = null
 
@@ -336,6 +350,9 @@ private class RewriteDetailPanel(private val onItemUpdated: (RewriteSet) -> Unit
     }
     private val locationAddButton = JButton("Add").also {
         locationActionsPanel.add(it)
+        it.addActionListener {
+            EditLocationDialog.show(parentWindow, null)
+        }
     }
     private val locationRemoveButton = JButton("Remove").also {
         locationActionsPanel.add(it)

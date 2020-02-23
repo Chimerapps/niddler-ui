@@ -152,7 +152,8 @@ class NiddlerSessionWindow(private val project: Project,
         val actionGroup = DefaultActionGroup()
 
         actionGroup.add(ConnectAction(this) {
-            RewriteDialog(SwingUtilities.getWindowAncestor(this), project).isVisible = true
+            RewriteDialog.show(SwingUtilities.getWindowAncestor(this), project)
+
             val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
                     niddlerToolWindow.adbInterface ?: return@ConnectAction,
                     IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin")), Device.NIDDLER_ANNOUNCEMENT_PORT) ?: return@ConnectAction
