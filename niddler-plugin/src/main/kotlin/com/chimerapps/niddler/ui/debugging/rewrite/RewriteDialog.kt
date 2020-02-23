@@ -8,6 +8,7 @@ import com.chimerapps.niddler.ui.util.ui.setColumnFixedWidth
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteExporter
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteImporter
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteSet
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 import com.intellij.openapi.project.Project
 import com.intellij.ui.CheckBoxList
 import com.intellij.ui.components.JBScrollPane
@@ -29,6 +30,7 @@ import javax.swing.JPanel
 import javax.swing.ListSelectionModel
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.JTableHeader
+import javax.swing.table.TableModel
 
 class RewriteDialog(parent: Window?, private val project: Project?) : JDialog(parent, "Rewrite settings", ModalityType.APPLICATION_MODAL) {
 
@@ -47,7 +49,7 @@ class RewriteDialog(parent: Window?, private val project: Project?) : JDialog(pa
         }
         rootContainer.add(it.also { it.border = BorderFactory.createEmptyBorder(10, 10, 10, 10) }, constraints)
     }
-    private val detailPanel = RewriteDetailPanel().also {
+    private val detailPanel = RewriteDetailPanel(::onItemUpdated).also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 0
@@ -72,6 +74,10 @@ class RewriteDialog(parent: Window?, private val project: Project?) : JDialog(pa
 
     private fun onMasterSelectionChanged(selectedItem: RewriteSet?) {
         detailPanel.currentItem = selectedItem
+    }
+
+    private fun onItemUpdated(item: RewriteSet) {
+        //TODO
     }
 }
 
@@ -236,7 +242,7 @@ private class RewriteMasterPanel(private val project: Project?, private val sele
 
 }
 
-private class RewriteDetailPanel : JPanel(GridBagLayout()) {
+private class RewriteDetailPanel(private val onItemUpdated: (RewriteSet) -> Unit) : JPanel(GridBagLayout()) {
 
     var currentItem: RewriteSet? = null
         set(value) {
@@ -279,7 +285,15 @@ private class RewriteDetailPanel : JPanel(GridBagLayout()) {
         }
         namePanel.add(it, constraints)
     }
-    private val locationTable = PackingJBTable().also {
+    private val locationTable = PackingJBTable(EditableTableModel() { value, row, col ->
+        if (col == 0) {
+            val item = currentItem ?: return@EditableTableModel
+            val locationsCopy = item.locations.toMutableList()
+            locationsCopy[row] = locationsCopy[row].copy(enabled = value == true)
+            item.copy(locations = locationsCopy)
+            onItemUpdated(item)
+        }
+    }).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 1
@@ -289,9 +303,9 @@ private class RewriteDetailPanel : JPanel(GridBagLayout()) {
             weightx = 100.0
             weighty = 50.0
         }
-        val model = it.model as DefaultTableModel
-        model.addColumn("")
-        model.addColumn("Location")
+        val model = it.model as EditableTableModel
+        model.addColumn("", java.lang.Boolean::class.java)
+        model.addColumn("Location", String::class.java)
 
         it.setColumnFixedWidth(0, 30)
 
@@ -315,7 +329,8 @@ private class RewriteDetailPanel : JPanel(GridBagLayout()) {
         locationActionsPanel.add(it)
     }
 
-    private val rulesTable = PackingJBTable().also {
+    private val rulesTable = PackingJBTable(EditableTableModel() { value, row, col ->
+    }).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 3
@@ -325,10 +340,10 @@ private class RewriteDetailPanel : JPanel(GridBagLayout()) {
             weightx = 100.0
             weighty = 50.0
         }
-        val model = it.model as DefaultTableModel
-        model.addColumn("")
-        model.addColumn("Type")
-        model.addColumn("Action")
+        val model = it.model as EditableTableModel
+        model.addColumn("", java.lang.Boolean::class.java)
+        model.addColumn("Type", String::class.java)
+        model.addColumn("Action", String::class.java)
 
         it.packColumn(1)
 
@@ -371,14 +386,42 @@ private class RewriteDetailPanel : JPanel(GridBagLayout()) {
 
     private fun clear() {
         nameField.text = ""
+        (locationTable.model as DefaultTableModel).rowCount = 0
+        (rulesTable.model as DefaultTableModel).rowCount = 0
     }
 
     private fun set(set: RewriteSet) {
         nameField.text = set.name
+
+        (locationTable.model as DefaultTableModel).let { model ->
+            model.rowCount = 0
+            set.locations.forEach { model.addRow(arrayOf(it.enabled, it.location.asString())) }
+        }
+        (rulesTable.model as DefaultTableModel).let { model ->
+            model.rowCount = 0
+            set.rules.forEach { model.addRow(arrayOf(it.active, ruleTypeString(it.ruleType), it.actionAsString())) }
+        }
+        rulesTable.packColumn(1)
+    }
+
+    private fun ruleTypeString(ruleType: RewriteType): String {
+        return when (ruleType) {
+            RewriteType.ADD_HEADER -> "Append header"
+            RewriteType.MODIFY_HEADER -> "Modify header"
+            RewriteType.REMOVE_HEADER -> "Remove header"
+            RewriteType.HOST -> "Host"
+            RewriteType.PATH -> "Path"
+            RewriteType.URL -> "URL"
+            RewriteType.ADD_QUERY_PARAM -> "Append query"
+            RewriteType.MODIFY_QUERY_PARAM -> "Modify query"
+            RewriteType.REMOVE_QUERY_PARAM -> "Remove query"
+            RewriteType.RESPONSE_STATUS -> "Status"
+            RewriteType.BODY -> "Body"
+        }
     }
 }
 
-private class PackingJBTable : JBTable() {
+private class PackingJBTable(model: TableModel) : JBTable(model) {
 
     override fun createDefaultTableHeader(): JTableHeader {
         return PackingHeader()
@@ -393,4 +436,28 @@ private class PackingJBTable : JBTable() {
             packColumn(index)
         }
     }
+}
+
+class EditableTableModel(private val changeListener: (data: Any, row: Int, col: Int) -> Unit) : DefaultTableModel() {
+
+    private val columnClasses = mutableListOf<Class<*>>()
+
+    fun addColumn(name: String, clazz: Class<*>) {
+        addColumn(name)
+        columnClasses.add(clazz)
+    }
+
+    override fun getColumnClass(columnIndex: Int): Class<*> {
+        return columnClasses[columnIndex]
+    }
+
+    override fun isCellEditable(row: Int, column: Int): Boolean {
+        return columnClasses[column] == java.lang.Boolean::class.java
+    }
+
+    override fun setValueAt(aValue: Any?, row: Int, column: Int) {
+        aValue?.let { changeListener(it, row, column) }
+        super.setValueAt(aValue, row, column)
+    }
+
 }

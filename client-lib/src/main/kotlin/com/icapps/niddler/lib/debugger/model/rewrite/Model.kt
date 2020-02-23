@@ -50,7 +50,12 @@ data class RewriteRule(val active: Boolean,
                        val matchHeader: String?,
                        val matchValue: String?,
                        val newHeader: String?,
-                       val newValue: String?)
+                       val newValue: String?) {
+
+    fun actionAsString(): String {
+        return "<TODO>"
+    }
+}
 
 data class RewriteLocationMatch(val location: RewriteLocation,
                                 val enabled: Boolean)
@@ -59,4 +64,42 @@ data class RewriteLocation(val protocol: String?,
                            val host: String?,
                            val port: Int?,
                            val path: String?,
-                           val query: String?)
+                           val query: String?) {
+
+    fun asString(): String {
+        var previousWasStar = false
+        return buildString {
+            if (protocol != null) {
+                append(protocol).append("://")
+            } else {
+                previousWasStar = true
+                append('*')
+            }
+            if (host != null) {
+                if (previousWasStar)
+                    append("://")
+                append(host)
+                previousWasStar = false
+            } else if (!previousWasStar) {
+                previousWasStar = true
+                append('*')
+            }
+            if (port != null) {
+                append(':').append(port)
+                previousWasStar = false
+            }
+            if (path != null) {
+                if (host == null && protocol == null)
+                    append('*')
+                if (!path.startsWith('/'))
+                    append('/')
+                append(path)
+            }
+            if (query != null) {
+                if (!query.startsWith('?'))
+                    append('?')
+                append(query)
+            }
+        }
+    }
+}
