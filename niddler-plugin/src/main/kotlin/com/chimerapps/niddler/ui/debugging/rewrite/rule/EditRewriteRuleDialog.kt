@@ -1,6 +1,9 @@
 package com.chimerapps.niddler.ui.debugging.rewrite.rule
 
+import com.chimerapps.niddler.ui.util.ext.trimToNull
+import com.icapps.niddler.lib.debugger.model.rewrite.ReplaceType
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 import java.awt.Dimension
 import java.awt.Window
 import java.awt.event.KeyEvent
@@ -9,7 +12,7 @@ import javax.swing.KeyStroke
 
 @Suppress("DuplicatedCode")
 class EditRewriteRuleDialog(parent: Window?,
-                            source: RewriteRule?)
+                            private val source: RewriteRule?)
     : EditRewriteRuleDialogUI(parent) {
 
     companion object {
@@ -32,7 +35,7 @@ class EditRewriteRuleDialog(parent: Window?,
 
     init {
         okButton.addActionListener {
-            //TODO
+            result = makeResult()
             dispose()
         }
         cancelButton.addActionListener {
@@ -43,4 +46,50 @@ class EditRewriteRuleDialog(parent: Window?,
         typeChooser.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
     }
 
+    private fun makeResult(): RewriteRule {
+        val type = RewriteType.values()[typeChooser.selectedIndex]
+
+        //Headers + query
+
+        var matchHeaderRegex = false
+        val matchValueRegex = this.matchValueRegex.isSelected
+        val newHeaderRegex = false
+        val newValueRegex = false //These seem false all the time in charles?!
+        var matchHeader: String? = null
+        val matchValue: String? = matchValueText.text.trimToNull()
+        var newHeader: String? = null
+        val newValue: String? = replaceValueText.text.trimToNull()
+
+        when (type) {
+            RewriteType.ADD_HEADER,
+            RewriteType.MODIFY_HEADER,
+            RewriteType.REMOVE_HEADER,
+            RewriteType.ADD_QUERY_PARAM,
+            RewriteType.MODIFY_QUERY_PARAM,
+            RewriteType.REMOVE_QUERY_PARAM -> {
+                matchHeaderRegex = matchNameRegex.isSelected
+                matchHeader = matchNameText.text.trimToNull()
+                newHeader = replaceNameText.text.trimToNull()
+            }
+            else -> {
+                //Don't check non-header stuff
+            }
+        }
+
+        return RewriteRule(active = source?.active ?: true,
+                ruleType = type,
+                matchHeaderRegex = matchHeaderRegex,
+                matchValueRegex = matchValueRegex,
+                matchRequest = requestCheckbox.isSelected,
+                matchResponse = responseCheckbox.isSelected,
+                newHeaderRegex = newHeaderRegex,
+                newValueRegex = newValueRegex,
+                matchWholeValue = matchEntire.isSelected,
+                caseSensitive = caseSensitive.isSelected,
+                replaceType = if (replaceFirst.isSelected) ReplaceType.REPLACE_FIRST else ReplaceType.REPLACE_ALL,
+                matchHeader = matchHeader,
+                matchValue = matchValue,
+                newHeader = newHeader,
+                newValue = newValue)
+    }
 }
