@@ -29,6 +29,7 @@ class RewriteMasterPanel(private val project: Project?,
         set(value) {
             field = value
             rulesList.isEnabled = value
+            enableAllToggle.isSelected = value
 
             val selectedIndices = rulesList.selectedIndices
             val enableExportAndRemove = value && selectedIndices.isNotEmpty()
@@ -186,6 +187,13 @@ class RewriteMasterPanel(private val project: Project?,
 
     fun rewriteSetUpdated(index: Int, new: RewriteSet) {
         rulesList.updateItem(rulesList.getItemAt(index)!!, new, new.name)
+    }
+
+    fun addRewriteSets(sets: List<RewriteSet>) {
+        sets.forEach { ruleSet ->
+            onRewriteSetAdded(ruleSet)
+            rulesList.addItem(ruleSet, ruleSet.name, ruleSet.active)
+        }
     }
 
 }

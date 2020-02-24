@@ -67,3 +67,18 @@ fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {
     }
     document?.addDocumentListener(dl)
 }
+
+fun runWriteAction(writeAction: () -> Unit) {
+    val application = ApplicationManager.getApplication()
+    if (application.isDispatchThread) {
+        application.runWriteAction {
+            writeAction()
+        }
+    } else {
+        application.invokeLater {
+            application.runWriteAction {
+                writeAction()
+            }
+        }
+    }
+}

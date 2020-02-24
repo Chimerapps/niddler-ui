@@ -44,6 +44,7 @@ def libCompile = [
         httpcore    : "org.apache.httpcomponents:httpcore:${versions.httpcore}",
         discoveryLib: "com.chimerapps:discovery-lib:${versions.discoveryLib}",
         multiPart   : "org.synchronoss.cloud:nio-multipart-parser:${versions.multiPart}",
+        gson        : "com.google.code.gson:gson:${versions.gson}",
 ]
 
 def pluginCompile = [
