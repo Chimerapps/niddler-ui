@@ -19,24 +19,27 @@ import javax.swing.SwingConstants
 import javax.swing.text.AbstractDocument
 
 
-class EditLocationDialog(parent: Window?) : JDialog(parent, "Edit Location", ModalityType.APPLICATION_MODAL) {
+class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(parent, "Edit Location", ModalityType.APPLICATION_MODAL) {
 
     companion object {
-        fun show(parent: Window?, source: RewriteLocation?): RewriteLocation {
-            val dialog = EditLocationDialog(parent)
+        fun show(parent: Window?, source: RewriteLocation?): RewriteLocation? {
+            val dialog = EditLocationDialog(parent, source)
             dialog.pack()
             dialog.setSize(420, dialog.height)
             if (dialog.parent != null)
                 dialog.setLocationRelativeTo(parent)
 
             dialog.isVisible = true
-            TODO()
+            return dialog.result
         }
     }
 
     private val content = JPanel(GridBagLayout()).also {
         it.border = BorderFactory.createEmptyBorder(20, 20, 0, 20)
     }
+
+    var result: RewriteLocation? = null
+        private set
 
     private val protocolChooser = ComboBox<String>().also {
         it.isEditable = true
@@ -139,15 +142,21 @@ class EditLocationDialog(parent: Window?) : JDialog(parent, "Edit Location", Mod
             gridheight = 1
             anchor = GridBagConstraints.EAST
         }
+        it.border = BorderFactory.createEmptyBorder(10, 0, 10, 0)
         content.add(it, constraints)
     }
 
     private val cancelButton = JButton("Cancel").also {
         buttonPanel.add(it)
+        it.addActionListener { dispose() }
     }
 
     private val okButton = JButton("OK").also {
         buttonPanel.add(it)
+        it.addActionListener {
+            result = makeResult()
+            dispose()
+        }
     }
 
     private fun addLabel(label: String, row: Int) {
@@ -156,12 +165,36 @@ class EditLocationDialog(parent: Window?) : JDialog(parent, "Edit Location", Mod
             gridy = row
             gridwidth = 1
             gridheight = 1
-            anchor = GridBagConstraints.WEST
+            anchor = GridBagConstraints.EAST
         }
-        content.add(JBLabel(label, SwingConstants.RIGHT), constraints)
+        content.add(JBLabel(label, SwingConstants.RIGHT).also {
+            it.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
+        }, constraints)
     }
 
     init {
         rootPane.defaultButton = okButton
+
+        source?.let { initFrom ->
+            initFrom.protocol?.let { protocolChooser.selectedItem = it }
+            initFrom.host?.let { host.text = it }
+            initFrom.port?.let { port.text = it.toString() }
+            initFrom.path?.let { path.text = it }
+            initFrom.query?.let { query.text = it }
+        }
     }
+
+    private fun makeResult(): RewriteLocation {
+        return RewriteLocation(protocol = (protocolChooser.selectedItem as String).trimToNull(),
+                host = host.text.trimToNull(),
+                path = path.text.trimToNull(),
+                query = query.text.trimToNull(),
+                port = port.text.trimToNull()?.toInt())
+    }
+}
+
+private fun String.trimToNull(): String? {
+    val trimmed = trim()
+    if (trimmed.isEmpty()) return null
+    return trimmed
 }

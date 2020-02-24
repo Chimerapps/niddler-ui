@@ -7,6 +7,7 @@ import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
 import com.chimerapps.niddler.ui.util.ui.setColumnFixedWidth
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteExporter
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteImporter
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocationMatch
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteSet
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 import com.intellij.openapi.project.Project
@@ -21,15 +22,15 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Toolkit
 import java.awt.Window
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.io.File
 import javax.swing.BorderFactory
 import javax.swing.DefaultListModel
 import javax.swing.JButton
 import javax.swing.JDialog
 import javax.swing.JPanel
-import javax.swing.JWindow
 import javax.swing.ListSelectionModel
-import javax.swing.SwingUtilities
 import javax.swing.table.DefaultTableModel
 import javax.swing.table.JTableHeader
 import javax.swing.table.TableModel
@@ -311,6 +312,15 @@ private class RewriteDetailPanel(private val parentWindow: Window,
             _currentItemInternal = copy
             onItemUpdated(copy)
         }
+    }, onRowDoubleClicked = { row, model ->
+        val item = currentItem ?: return@PackingJBTable
+        val edited = EditLocationDialog.show(parentWindow, item.locations[row].location) ?: return@PackingJBTable
+        val locationsCopy = item.locations.toMutableList()
+        locationsCopy[row] = locationsCopy[row].copy(location = edited)
+        val copy = item.copy(locations = locationsCopy)
+        (model as DefaultTableModel).setValueAt(edited.asString(), row, 1)
+        _currentItemInternal = copy
+        onItemUpdated(copy)
     }).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
@@ -351,7 +361,15 @@ private class RewriteDetailPanel(private val parentWindow: Window,
     private val locationAddButton = JButton("Add").also {
         locationActionsPanel.add(it)
         it.addActionListener {
-            EditLocationDialog.show(parentWindow, null)
+            val newLocation = EditLocationDialog.show(parentWindow, null) ?: return@addActionListener
+
+            val item = currentItem ?: return@addActionListener
+            val locationsCopy = item.locations.toMutableList()
+            locationsCopy.add(RewriteLocationMatch(newLocation, enabled = true))
+            val copy = item.copy(locations = locationsCopy)
+            (locationTable.model as DefaultTableModel).addRow(arrayOf(true, newLocation.asString()))
+            _currentItemInternal = copy
+            onItemUpdated(copy)
         }
     }
     private val locationRemoveButton = JButton("Remove").also {
@@ -373,6 +391,8 @@ private class RewriteDetailPanel(private val parentWindow: Window,
     }
 
     private val rulesTable = PackingJBTable(EditableTableModel() { value, row, col ->
+    }, onRowDoubleClicked = { _, _ ->
+        //TODO
     }).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
@@ -472,7 +492,19 @@ private class RewriteDetailPanel(private val parentWindow: Window,
     }
 }
 
-private class PackingJBTable(model: TableModel) : JBTable(model) {
+private class PackingJBTable(model: TableModel, onRowDoubleClicked: (Int, TableModel) -> Unit) : JBTable(model) {
+
+    init {
+        addMouseListener(object : MouseAdapter() {
+            override fun mousePressed(mouseEvent: MouseEvent) {
+                val point = mouseEvent.point
+                val row = rowAtPoint(point)
+                if (mouseEvent.clickCount == 2 && row != -1) {
+                    onRowDoubleClicked(row, model)
+                }
+            }
+        });
+    }
 
     override fun createDefaultTableHeader(): JTableHeader {
         return PackingHeader()
