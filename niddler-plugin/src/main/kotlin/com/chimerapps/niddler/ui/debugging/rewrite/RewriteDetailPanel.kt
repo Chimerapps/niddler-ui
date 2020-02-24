@@ -2,6 +2,7 @@ package com.chimerapps.niddler.ui.debugging.rewrite
 
 import com.chimerapps.niddler.ui.debugging.rewrite.location.EditLocationDialog
 import com.chimerapps.niddler.ui.debugging.rewrite.rule.EditRewriteRuleDialog
+import com.chimerapps.niddler.ui.util.ext.swap
 import com.chimerapps.niddler.ui.util.ui.addChangeListener
 import com.chimerapps.niddler.ui.util.ui.setColumnFixedWidth
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocationMatch
@@ -171,7 +172,7 @@ class RewriteDetailPanel(private val parentWindow: Window,
         }
     }
 
-    private val rulesTable = PackingJBTable(EditableTableModel() { value, row, col ->
+    private val rulesTable: PackingJBTable = PackingJBTable(EditableTableModel() { value, row, col ->
     }, onRowDoubleClicked = { row, model ->
         val item = currentItem ?: return@PackingJBTable
         val edited = EditRewriteRuleDialog.show(parentWindow, item.rules[row])
@@ -202,11 +203,12 @@ class RewriteDetailPanel(private val parentWindow: Window,
         it.packColumn(1)
 
         it.selectionModel.addListSelectionListener { _ ->
-            val hasSelection = it.selectedRowCount != 0
+            val numSelected = it.selectedRowCount
+            val hasSelection = numSelected != 0
             rulesRemoveButton.isEnabled = hasSelection
             rulesRemoveButton.isEnabled = hasSelection
-            rulesUpButton.isEnabled = hasSelection
-            rulesDownButton.isEnabled = hasSelection
+            rulesUpButton.isEnabled = numSelected == 1
+            rulesDownButton.isEnabled = numSelected == 1
         }
 
         it.setColumnFixedWidth(0, 30)
@@ -228,7 +230,15 @@ class RewriteDetailPanel(private val parentWindow: Window,
     private val rulesAddButton = JButton("Add").also {
         rulesActionsPanel.add(it)
         it.addActionListener {
-            EditRewriteRuleDialog.show(parentWindow, null)
+            val newRule = EditRewriteRuleDialog.show(parentWindow, null) ?: return@addActionListener
+            val item = currentItem ?: return@addActionListener
+            val rulesCopy = item.rules.toMutableList()
+            rulesCopy.add(newRule)
+
+            (rulesTable.model as DefaultTableModel).addRow(arrayOf(newRule.active, ruleTypeString(newRule.ruleType), newRule.actionAsString()))
+            val copy = item.copy(rules = rulesCopy)
+            _currentItemInternal = copy
+            onItemUpdated(item, copy)
         }
     }
     private val rulesRemoveButton = JButton("Remove").also {
@@ -236,9 +246,41 @@ class RewriteDetailPanel(private val parentWindow: Window,
     }
     private val rulesUpButton = JButton("Up").also {
         rulesActionsPanel.add(it)
+        it.addActionListener {
+            val row = rulesTable.selectedRow
+            if (row > 0) {
+                (rulesTable.model as DefaultTableModel).moveRow(row, row, row - 1)
+                rulesTable.setRowSelectionInterval(row - 1, row - 1)
+                rulesTable.scrollRectToVisible(rulesTable.getCellRect(row - 1, 0, true))
+
+                val item = currentItem ?: return@addActionListener
+                val rulesCopy = item.rules.toMutableList()
+                rulesCopy.swap(row, row - 1)
+
+                val copy = item.copy(rules = rulesCopy)
+                _currentItemInternal = copy
+                onItemUpdated(item, copy)
+            }
+        }
     }
     private val rulesDownButton = JButton("Down").also {
         rulesActionsPanel.add(it)
+        it.addActionListener {
+            val row = rulesTable.selectedRow
+            if (row < rulesTable.rowCount - 1) {
+                (rulesTable.model as DefaultTableModel).moveRow(row, row, row + 1)
+                rulesTable.setRowSelectionInterval(row + 1, row + 1)
+                rulesTable.scrollRectToVisible(rulesTable.getCellRect(row + 1, 0, true))
+
+                val item = currentItem ?: return@addActionListener
+                val rulesCopy = item.rules.toMutableList()
+                rulesCopy.swap(row, row + 1)
+
+                val copy = item.copy(rules = rulesCopy)
+                _currentItemInternal = copy
+                onItemUpdated(item, copy)
+            }
+        }
     }
 
     private fun updateContents() {

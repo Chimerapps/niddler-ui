@@ -66,11 +66,11 @@ class RewriteDialog(parent: Window?, private val project: Project) : JDialog(par
             gridy = 1
             gridwidth = 2
             gridheight = 1
-            fill = GridBagConstraints.HORIZONTAL
-            anchor = GridBagConstraints.EAST
+            anchor = GridBagConstraints.SOUTHEAST
             weightx = 100.0
         }
         it.layout = BoxLayout(it, BoxLayout.X_AXIS)
+        it.border = BorderFactory.createEmptyBorder(0, 0, 10, 10)
         rootContainer.add(it, constraints)
         it.add(Box.createGlue())
     }
@@ -89,14 +89,13 @@ class RewriteDialog(parent: Window?, private val project: Project) : JDialog(par
     }
 
     init {
-        val screenSize = Toolkit.getDefaultToolkit().screenSize
-
         contentPane = rootContainer
         rootPane.defaultButton = okButton
 
+        val screenSize = Toolkit.getDefaultToolkit().screenSize
+
         val minSize = Dimension(screenSize.width / 3, screenSize.height / 3)
         minimumSize = minSize
-        pack()
         size = minSize
 
         ProjectConfig.load<RewriteConfig>(project, ProjectConfig.CONFIG_REWRITE)?.let {
