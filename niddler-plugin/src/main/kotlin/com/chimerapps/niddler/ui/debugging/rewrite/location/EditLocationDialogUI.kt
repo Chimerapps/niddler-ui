@@ -1,47 +1,27 @@
-package com.chimerapps.niddler.ui.debugging.rewrite
+package com.chimerapps.niddler.ui.debugging.rewrite.location
 
 import com.chimerapps.niddler.ui.util.ui.NumberOnlyDocumentFilter
-import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocation
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Window
-import java.awt.event.KeyEvent
 import javax.swing.BorderFactory
 import javax.swing.JButton
-import javax.swing.JComponent
 import javax.swing.JDialog
 import javax.swing.JPanel
-import javax.swing.KeyStroke
 import javax.swing.SwingConstants
 import javax.swing.text.AbstractDocument
 
+@Suppress("DuplicatedCode")
+open class EditLocationDialogUI(parent: Window?) : JDialog(parent, "Edit Location", ModalityType.APPLICATION_MODAL) {
 
-class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(parent, "Edit Location", ModalityType.APPLICATION_MODAL) {
-
-    companion object {
-        fun show(parent: Window?, source: RewriteLocation?): RewriteLocation? {
-            val dialog = EditLocationDialog(parent, source)
-            dialog.pack()
-            dialog.setSize(420, dialog.height)
-            if (dialog.parent != null)
-                dialog.setLocationRelativeTo(parent)
-
-            dialog.isVisible = true
-            return dialog.result
-        }
-    }
-
-    private val content = JPanel(GridBagLayout()).also {
+    protected val content = JPanel(GridBagLayout()).also {
         it.border = BorderFactory.createEmptyBorder(20, 20, 0, 20)
     }
 
-    var result: RewriteLocation? = null
-        private set
-
-    private val protocolChooser = ComboBox<String>().also {
+    protected val protocolChooser = ComboBox<String>().also {
         it.isEditable = true
         it.addItem("")
         it.addItem("http")
@@ -59,7 +39,7 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(pa
         content.add(it, constraints)
     }
 
-    private val host = JBTextField().also {
+    protected val host = JBTextField().also {
         addLabel("Host:", 2)
 
         val constraints = GridBagConstraints().apply {
@@ -73,7 +53,7 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(pa
         content.add(it, constraints)
     }
 
-    private val port = JBTextField(5).also {
+    protected val port = JBTextField(5).also {
         addLabel("Port:", 3)
 
         (it.document as AbstractDocument).documentFilter = NumberOnlyDocumentFilter()
@@ -88,7 +68,7 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(pa
         content.add(it, constraints)
     }
 
-    private val path = JBTextField().also {
+    protected val path = JBTextField().also {
         addLabel("Path:", 4)
 
         val constraints = GridBagConstraints().apply {
@@ -102,7 +82,7 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(pa
         content.add(it, constraints)
     }
 
-    private val query = JBTextField().also {
+    protected val query = JBTextField().also {
         addLabel("Query:", 5)
 
         val constraints = GridBagConstraints().apply {
@@ -129,9 +109,6 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(pa
         }.also { it.border = BorderFactory.createEmptyBorder(5, 0, 0, 0) }, constraints)
 
         contentPane = content
-
-        content.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-        protocolChooser.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
     }
 
     private val buttonPanel = JPanel().also {
@@ -146,17 +123,12 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(pa
         content.add(it, constraints)
     }
 
-    private val cancelButton = JButton("Cancel").also {
+    protected val cancelButton = JButton("Cancel").also {
         buttonPanel.add(it)
-        it.addActionListener { dispose() }
     }
 
-    private val okButton = JButton("OK").also {
+    protected val okButton = JButton("OK").also {
         buttonPanel.add(it)
-        it.addActionListener {
-            result = makeResult()
-            dispose()
-        }
     }
 
     private fun addLabel(label: String, row: Int) {
@@ -171,30 +143,4 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(pa
             it.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
         }, constraints)
     }
-
-    init {
-        rootPane.defaultButton = okButton
-
-        source?.let { initFrom ->
-            initFrom.protocol?.let { protocolChooser.selectedItem = it }
-            initFrom.host?.let { host.text = it }
-            initFrom.port?.let { port.text = it.toString() }
-            initFrom.path?.let { path.text = it }
-            initFrom.query?.let { query.text = it }
-        }
-    }
-
-    private fun makeResult(): RewriteLocation {
-        return RewriteLocation(protocol = (protocolChooser.selectedItem as String).trimToNull(),
-                host = host.text.trimToNull(),
-                path = path.text.trimToNull(),
-                query = query.text.trimToNull(),
-                port = port.text.trimToNull()?.toInt())
-    }
-}
-
-private fun String.trimToNull(): String? {
-    val trimmed = trim()
-    if (trimmed.isEmpty()) return null
-    return trimmed
 }

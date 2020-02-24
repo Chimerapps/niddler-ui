@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.debugging.rewrite
 
+import com.chimerapps.niddler.ui.debugging.rewrite.location.EditLocationDialog
 import com.chimerapps.niddler.ui.util.ui.CheckBox
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseOpenFile
