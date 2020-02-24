@@ -15,6 +15,7 @@ import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JDialog
 import javax.swing.JPanel
+import javax.swing.JTextField
 import javax.swing.KeyStroke
 import javax.swing.border.Border
 
@@ -29,6 +30,7 @@ class EditRewriteRuleDialog(parent: Window?,
             dialog.pack()
             dialog.setSize(520, dialog.height)
             dialog.maximumSize = Dimension(520, dialog.height)
+            dialog.minimumSize = Dimension(520, dialog.height)
             if (dialog.parent != null)
                 dialog.setLocationRelativeTo(parent)
 
@@ -142,6 +144,69 @@ class EditRewriteRuleDialog(parent: Window?,
                 createPanelBorder("Match"))
 
         content.add(it, constraints)
+    }
+
+    private val matchLabel = JBLabel("Enter text to match or leave blank to match all").also {
+        val constraints = GridBagConstraints().apply {
+            gridx = 0
+            gridy = 0
+            gridwidth = 4
+            gridheight = 1
+            fill = GridBagConstraints.HORIZONTAL
+            anchor = GridBagConstraints.WEST
+            weightx = 100.0
+        }
+
+        matchPanel.add(it, constraints)
+    }
+
+    private val nameLabel = JBLabel("Name:").also {
+        val constraints = GridBagConstraints().apply {
+            gridx = 0
+            gridy = 1
+            gridwidth = 1
+            gridheight = 1
+            anchor = GridBagConstraints.WEST
+        }
+
+        matchPanel.add(it, constraints)
+    }
+    private val matchNameText = JTextField().also {
+        val constraints = GridBagConstraints().apply {
+            gridx = 1
+            gridy = 1
+            gridwidth = 2
+            gridheight = 1
+            fill = GridBagConstraints.HORIZONTAL
+            anchor = GridBagConstraints.WEST
+            weightx = 100.0
+        }
+
+        matchPanel.add(it, constraints)
+    }
+    private val valueLabel = JBLabel("Value:").also {
+        val constraints = GridBagConstraints().apply {
+            gridx = 0
+            gridy = 2
+            gridwidth = 1
+            gridheight = 1
+            anchor = GridBagConstraints.WEST
+        }
+
+        matchPanel.add(it, constraints)
+    }
+    private val matchValueText = JTextField().also {
+        val constraints = GridBagConstraints().apply {
+            gridx = 1
+            gridy = 2
+            gridwidth = 2
+            gridheight = 1
+            fill = GridBagConstraints.HORIZONTAL
+            anchor = GridBagConstraints.WEST
+            weightx = 100.0
+        }
+
+        matchPanel.add(it, constraints)
     }
 
     private val replacePanel = JPanel(GridBagLayout()).also {
