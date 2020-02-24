@@ -436,6 +436,9 @@ private class RewriteDetailPanel(private val parentWindow: Window,
     }
     private val rulesAddButton = JButton("Add").also {
         rulesActionsPanel.add(it)
+        it.addActionListener {
+            EditRewriteRuleDialog.show(parentWindow, null)
+        }
     }
     private val rulesRemoveButton = JButton("Remove").also {
         rulesActionsPanel.add(it)
