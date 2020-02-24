@@ -4,6 +4,7 @@ import com.chimerapps.niddler.ui.util.ui.NumberOnlyDocumentFilter
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocation
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBTextField
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Window
@@ -13,7 +14,6 @@ import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JDialog
 import javax.swing.JPanel
-import javax.swing.JTextField
 import javax.swing.KeyStroke
 import javax.swing.SwingConstants
 import javax.swing.text.AbstractDocument
@@ -59,7 +59,7 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(pa
         content.add(it, constraints)
     }
 
-    private val host = JTextField().also {
+    private val host = JBTextField().also {
         addLabel("Host:", 2)
 
         val constraints = GridBagConstraints().apply {
@@ -73,7 +73,7 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(pa
         content.add(it, constraints)
     }
 
-    private val port = JTextField(5).also {
+    private val port = JBTextField(5).also {
         addLabel("Port:", 3)
 
         (it.document as AbstractDocument).documentFilter = NumberOnlyDocumentFilter()
@@ -88,7 +88,7 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(pa
         content.add(it, constraints)
     }
 
-    private val path = JTextField().also {
+    private val path = JBTextField().also {
         addLabel("Path:", 4)
 
         val constraints = GridBagConstraints().apply {
@@ -102,7 +102,7 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(pa
         content.add(it, constraints)
     }
 
-    private val query = JTextField().also {
+    private val query = JBTextField().also {
         addLabel("Query:", 5)
 
         val constraints = GridBagConstraints().apply {
