@@ -50,9 +50,17 @@ class EditRewriteRuleDialog(parent: Window?,
         typeChooser.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
 
         if (source != null) {
-            typeChooser.selectedIndex = source.ruleType.ordinal
-            requestCheckbox.isSelected = source.matchRequest
-            responseCheckbox.isSelected = source.matchResponse
+            val overrideRequestChecked = (source.ruleType == RewriteType.HOST ||
+                    source.ruleType == RewriteType.PATH ||
+                    source.ruleType == RewriteType.URL ||
+                    source.ruleType == RewriteType.ADD_QUERY_PARAM ||
+                    source.ruleType == RewriteType.MODIFY_QUERY_PARAM ||
+                    source.ruleType == RewriteType.REMOVE_QUERY_PARAM)
+            val overrideResponseChecked = (source.ruleType == RewriteType.RESPONSE_STATUS)
+
+            typeChooser.selectedItem = source.ruleType
+            requestCheckbox.isSelected = overrideRequestChecked || source.matchRequest
+            responseCheckbox.isSelected = overrideResponseChecked || source.matchResponse
             matchNameText.text = source.matchHeader ?: ""
             matchValueText.text = source.matchValue ?: ""
             matchNameRegex.isSelected = source.matchHeaderRegex
@@ -61,7 +69,11 @@ class EditRewriteRuleDialog(parent: Window?,
             replaceNameText.text = source.newHeader ?: ""
             replaceValueText.text = source.newValue ?: ""
 
-            replaceFirst.isSelected = source.replaceType == ReplaceType.REPLACE_FIRST
+            if (source.replaceType == ReplaceType.REPLACE_FIRST) {
+                replaceFirst.isSelected = true
+            } else {
+                replaceAll.isSelected = true
+            }
         } else {
             requestCheckbox.isSelected = true
             replaceAll.isSelected = true

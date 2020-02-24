@@ -393,8 +393,17 @@ private class RewriteDetailPanel(private val parentWindow: Window,
     }
 
     private val rulesTable = PackingJBTable(EditableTableModel() { value, row, col ->
-    }, onRowDoubleClicked = { _, _ ->
-        //TODO
+    }, onRowDoubleClicked = { row, model ->
+        val item = currentItem ?: return@PackingJBTable
+        val edited = EditRewriteRuleDialog.show(parentWindow, item.rules[row]) ?: return@PackingJBTable
+        val rulesCopy = item.rules.toMutableList()
+        rulesCopy[row] = edited
+        val copy = item.copy(rules = rulesCopy)
+
+        (model as DefaultTableModel).setValueAt(ruleTypeString(edited.ruleType), row, 1)
+        model.setValueAt(edited.actionAsString(), row, 2)
+        _currentItemInternal = copy
+        onItemUpdated(copy)
     }).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
