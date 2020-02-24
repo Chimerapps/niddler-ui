@@ -1,58 +1,35 @@
-package com.chimerapps.niddler.ui.debugging.rewrite
+package com.chimerapps.niddler.ui.debugging.rewrite.rule
 
-import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.CheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.components.JBTextField
 import java.awt.Dialog
-import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Window
-import java.awt.event.KeyEvent
 import javax.swing.BorderFactory
 import javax.swing.ButtonGroup
 import javax.swing.JButton
-import javax.swing.JComponent
 import javax.swing.JDialog
 import javax.swing.JPanel
-import javax.swing.KeyStroke
 import javax.swing.border.Border
 
 @Suppress("DuplicatedCode")
-class EditRewriteRuleDialog(parent: Window?,
-                            source: RewriteRule?)
-    : JDialog(parent, "Edit Rewrite Rule", Dialog.ModalityType.APPLICATION_MODAL) {
+open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, "Edit Rewrite Rule", Dialog.ModalityType.APPLICATION_MODAL) {
 
-    companion object {
-        fun show(parent: Window?, source: RewriteRule?): RewriteRule? {
-            val dialog = EditRewriteRuleDialog(parent, source)
-            dialog.pack()
-            dialog.setSize(520, dialog.height)
-            dialog.maximumSize = Dimension(520, dialog.height)
-            dialog.minimumSize = Dimension(520, dialog.height)
-            if (dialog.parent != null)
-                dialog.setLocationRelativeTo(parent)
-
-            dialog.isVisible = true
-            return dialog.result
-        }
-
+    private companion object {
         private fun createPanelBorder(title: String): Border {
             return BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), title)
         }
     }
 
-    var result: RewriteRule? = null
-        private set
-
-    private val content = JPanel(GridBagLayout()).also {
+    protected val content = JPanel(GridBagLayout()).also {
         it.border = BorderFactory.createEmptyBorder(20, 20, 0, 20)
     }
 
-    private val typeChooser = ComboBox<String>().also {
+    protected val typeChooser = ComboBox<String>().also {
         it.addItem("")
         it.addItem("Add header")
         it.addItem("Modify header")
@@ -73,8 +50,8 @@ class EditRewriteRuleDialog(parent: Window?,
             gridheight = 1
             anchor = GridBagConstraints.WEST
         }
-        content.add(JBLabel("Type:").also {
-            it.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
+        content.add(JBLabel("Type:").also { label ->
+            label.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
         }, labelConstraints)
 
         val pickerConstraints = GridBagConstraints().apply {
@@ -106,7 +83,7 @@ class EditRewriteRuleDialog(parent: Window?,
         content.add(it, constraints)
     }
 
-    private val requestCheckbox = CheckBox("Request").also {
+    protected val requestCheckbox = CheckBox("Request").also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 0
@@ -118,7 +95,7 @@ class EditRewriteRuleDialog(parent: Window?,
         wherePanel.add(it, constraints)
     }
 
-    private val responseCheckbox = CheckBox("Response").also {
+    protected val responseCheckbox = CheckBox("Response").also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 0
@@ -176,7 +153,7 @@ class EditRewriteRuleDialog(parent: Window?,
 
         matchPanel.add(it, constraints)
     }
-    private val matchNameText = JBTextField().also {
+    protected val matchNameText = JBTextField().also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 1
@@ -189,7 +166,7 @@ class EditRewriteRuleDialog(parent: Window?,
 
         matchPanel.add(it, constraints)
     }
-    private val matchNameRegex = CheckBox("Regex").also {
+    protected val matchNameRegex = CheckBox("Regex").also {
         val constraints = GridBagConstraints().apply {
             gridx = 3
             gridy = 1
@@ -211,7 +188,7 @@ class EditRewriteRuleDialog(parent: Window?,
 
         matchPanel.add(it, constraints)
     }
-    private val matchValueText = JBTextField().also {
+    protected val matchValueText = JBTextField().also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 2
@@ -224,7 +201,7 @@ class EditRewriteRuleDialog(parent: Window?,
 
         matchPanel.add(it, constraints)
     }
-    private val matchValueRegex = CheckBox("Regex").also {
+    protected val matchValueRegex = CheckBox("Regex").also {
         val constraints = GridBagConstraints().apply {
             gridx = 3
             gridy = 2
@@ -235,7 +212,7 @@ class EditRewriteRuleDialog(parent: Window?,
 
         matchPanel.add(it, constraints)
     }
-    private val matchEntire = CheckBox("Match whole value").also {
+    protected val matchEntire = CheckBox("Match whole value").also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 3
@@ -247,7 +224,7 @@ class EditRewriteRuleDialog(parent: Window?,
 
         matchPanel.add(it, constraints)
     }
-    private val caseSensitive = CheckBox("Case sensitive").also {
+    protected val caseSensitive = CheckBox("Case sensitive").also {
         val constraints = GridBagConstraints().apply {
             gridx = 2
             gridy = 3
@@ -290,7 +267,7 @@ class EditRewriteRuleDialog(parent: Window?,
 
         replacePanel.add(it, constraints)
     }
-    private val replaceNameText = JBTextField().also {
+    protected val replaceNameText = JBTextField().also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 0
@@ -314,7 +291,7 @@ class EditRewriteRuleDialog(parent: Window?,
 
         replacePanel.add(it, constraints)
     }
-    private val replaceValueText = JBTextField().also {
+    protected val replaceValueText = JBTextField().also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 1
@@ -327,7 +304,7 @@ class EditRewriteRuleDialog(parent: Window?,
 
         replacePanel.add(it, constraints)
     }
-    private val replaceFirst = JBRadioButton("Replace first").also {
+    protected val replaceFirst = JBRadioButton("Replace first").also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 2
@@ -340,7 +317,7 @@ class EditRewriteRuleDialog(parent: Window?,
 
         replacePanel.add(it, constraints)
     }
-    private val replaceAll = JBRadioButton("Replace all").also {
+    protected val replaceAll = JBRadioButton("Replace all").also {
         val constraints = GridBagConstraints().apply {
             gridx = 2
             gridy = 2
@@ -380,17 +357,12 @@ class EditRewriteRuleDialog(parent: Window?,
         content.add(it, constraints)
     }
 
-    private val cancelButton = JButton("Cancel").also {
+    protected val cancelButton = JButton("Cancel").also {
         buttonPanel.add(it)
-        it.addActionListener { dispose() }
     }
 
-    private val okButton = JButton("OK").also {
+    protected val okButton = JButton("OK").also {
         buttonPanel.add(it)
-        it.addActionListener {
-            //TODO
-            dispose()
-        }
     }
 
     init {
@@ -401,9 +373,6 @@ class EditRewriteRuleDialog(parent: Window?,
             it.add(replaceAll)
             it.add(replaceFirst)
         }
-
-        content.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-        typeChooser.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
     }
 
 }
