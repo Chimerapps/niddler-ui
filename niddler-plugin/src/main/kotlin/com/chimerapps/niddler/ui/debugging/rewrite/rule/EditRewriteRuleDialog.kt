@@ -78,6 +78,34 @@ class EditRewriteRuleDialog(parent: Window?,
             requestCheckbox.isSelected = true
             replaceAll.isSelected = true
         }
+
+        typeChooser.addActionListener {
+            applyRules(typeChooser.selectedItem as RewriteType?)
+        }
+        applyRules(typeChooser.selectedItem as RewriteType?)
+    }
+
+    private fun applyRules(rewriteType: RewriteType?) {
+        val nameEnabled = (rewriteType == null) || (
+                rewriteType == RewriteType.ADD_HEADER || rewriteType == RewriteType.MODIFY_HEADER ||
+                        rewriteType == RewriteType.REMOVE_HEADER || rewriteType == RewriteType.ADD_QUERY_PARAM ||
+                        rewriteType == RewriteType.MODIFY_QUERY_PARAM || rewriteType == RewriteType.REMOVE_QUERY_PARAM)
+
+        val isRequestOnly = (rewriteType == RewriteType.HOST ||
+                rewriteType == RewriteType.PATH ||
+                rewriteType == RewriteType.URL ||
+                rewriteType == RewriteType.ADD_QUERY_PARAM ||
+                rewriteType == RewriteType.MODIFY_QUERY_PARAM ||
+                rewriteType == RewriteType.REMOVE_QUERY_PARAM)
+
+        val requestEnabled = (rewriteType == null || rewriteType != RewriteType.RESPONSE_STATUS)
+        val responseEnabled = (rewriteType == null || !isRequestOnly)
+
+        requestCheckbox.isEnabled = requestEnabled
+        responseCheckbox.isEnabled = responseEnabled
+        matchNameText.isEnabled = nameEnabled
+        matchNameRegex.isEnabled = nameEnabled
+        replaceNameText.isEnabled = nameEnabled
     }
 
     private fun makeResult(): RewriteRule? {
