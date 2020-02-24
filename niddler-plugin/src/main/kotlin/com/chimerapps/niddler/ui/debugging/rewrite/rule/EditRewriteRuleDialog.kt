@@ -36,7 +36,11 @@ class EditRewriteRuleDialog(parent: Window?,
     init {
         okButton.addActionListener {
             result = makeResult()
-            dispose()
+            if (result != null)
+                dispose()
+            else {
+                //TODO show error
+            }
         }
         cancelButton.addActionListener {
             dispose()
@@ -44,12 +48,30 @@ class EditRewriteRuleDialog(parent: Window?,
 
         content.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
         typeChooser.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+
+        if (source != null) {
+            typeChooser.selectedIndex = source.ruleType.ordinal
+            requestCheckbox.isSelected = source.matchRequest
+            responseCheckbox.isSelected = source.matchResponse
+            matchNameText.text = source.matchHeader ?: ""
+            matchValueText.text = source.matchValue ?: ""
+            matchNameRegex.isSelected = source.matchHeaderRegex
+            matchValueRegex.isSelected = source.matchValueRegex
+
+            replaceNameText.text = source.newHeader ?: ""
+            replaceValueText.text = source.newValue ?: ""
+
+            replaceFirst.isSelected = source.replaceType == ReplaceType.REPLACE_FIRST
+        } else {
+            requestCheckbox.isSelected = true
+            replaceAll.isSelected = true
+        }
     }
 
-    private fun makeResult(): RewriteRule {
-        val type = RewriteType.values()[typeChooser.selectedIndex]
+    private fun makeResult(): RewriteRule? {
+        val type = typeChooser.selectedItem as RewriteType? ?: return null
 
-        //Headers + query
+        //Headers + query have the matchHeader fields set
 
         var matchHeaderRegex = false
         val matchValueRegex = this.matchValueRegex.isSelected

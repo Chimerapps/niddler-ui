@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.debugging.rewrite.rule
 
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.CheckBox
 import com.intellij.ui.components.JBLabel
@@ -14,6 +15,7 @@ import javax.swing.ButtonGroup
 import javax.swing.JButton
 import javax.swing.JDialog
 import javax.swing.JPanel
+import javax.swing.ListCellRenderer
 import javax.swing.border.Border
 
 @Suppress("DuplicatedCode")
@@ -29,19 +31,29 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, "Edit Rewr
         it.border = BorderFactory.createEmptyBorder(20, 20, 0, 20)
     }
 
-    protected val typeChooser = ComboBox<String>().also {
-        it.addItem("")
-        it.addItem("Add header")
-        it.addItem("Modify header")
-        it.addItem("Remove header")
-        it.addItem("Change host")
-        it.addItem("Change path")
-        it.addItem("Change url")
-        it.addItem("Add query parameter")
-        it.addItem("Modify query parameter")
-        it.addItem("Remove query parameter")
-        it.addItem("Change response status")
-        it.addItem("Change body")
+    protected val typeChooser = ComboBox<RewriteType?>().also {
+        it.addItem(null)
+        RewriteType.values().forEach(it::addItem)
+
+        @Suppress("UNCHECKED_CAST")
+        val defaultRenderer = it.renderer as ListCellRenderer<Any>
+        it.renderer = ListCellRenderer { list, value, index, isSelected, cellHasFocus ->
+            val label = when (value) {
+                null -> ""
+                RewriteType.ADD_HEADER -> "Add header"
+                RewriteType.MODIFY_HEADER -> "Modify header"
+                RewriteType.REMOVE_HEADER -> "Remove header"
+                RewriteType.HOST -> "Host"
+                RewriteType.PATH -> "Path"
+                RewriteType.URL -> "Url"
+                RewriteType.ADD_QUERY_PARAM -> "Add query parameter"
+                RewriteType.MODIFY_QUERY_PARAM -> "Modify query parameter"
+                RewriteType.REMOVE_QUERY_PARAM -> "Remove query parameter"
+                RewriteType.RESPONSE_STATUS -> "Response status"
+                RewriteType.BODY -> "Body"
+            }
+            defaultRenderer.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus)
+        }
 
         val labelConstraints = GridBagConstraints().apply {
             gridx = 0
