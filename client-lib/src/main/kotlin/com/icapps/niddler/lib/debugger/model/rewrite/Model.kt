@@ -1,5 +1,7 @@
 package com.icapps.niddler.lib.debugger.model.rewrite
 
+import java.util.regex.Pattern
+
 enum class RewriteType(val charlesCode: Int) {
     ADD_HEADER(1),
     MODIFY_HEADER(3),
@@ -116,4 +118,44 @@ data class RewriteLocation(val protocol: String?,
             }
         }
     }
+
+    fun asRegex(): String {
+        return buildString {
+            if (protocol != null) {
+                append(protocol).append("://")
+            } else {
+                append(".*://")
+            }
+            if (host != null) {
+                append(host)
+            } else {
+                append(".*")
+            }
+            if (port != null) {
+                append(':').append(port)
+            } else {
+                append(":\\d+")
+            }
+            if (path != null) {
+                if (!path.startsWith('/'))
+                    append('/')
+                append(escapeSafeRegex(path))
+            } else {
+                append("(/[^?]*)?")
+            }
+            if (query != null) {
+                if (!query.startsWith('?'))
+                    append("\\?")
+                append(escapeSafeRegex(query))
+            } else {
+                append("(\\?[^#]*)?")
+            }
+            append("(#.*)?")
+        }
+    }
+
+}
+
+private fun escapeSafeRegex(value: String): String {
+    return Pattern.compile("[{}()\\[\\].+*?^$\\\\|]").matcher(value).replaceAll("\\\\$0")
 }
