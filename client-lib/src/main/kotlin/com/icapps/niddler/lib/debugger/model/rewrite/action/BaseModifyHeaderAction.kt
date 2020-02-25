@@ -5,64 +5,105 @@ import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 
 open class BaseModifyHeaderAction(protected val rule: RewriteRule) {
 
-    fun applies(originalHeaders: Map<String, List<String>>?): AppliesResult {
-        val newHeaderKey = rule.newHeader?.toLowerCase()
-        val newHeaderValue = rule.newValue
+    fun matches(originalHeaders: Map<String, List<String>>?): HeaderMatchResult {
         val matchHeaderKey = rule.matchHeader?.toLowerCase()
         val matchHeaderValue = rule.matchValue
 
-        if (rule.ruleType == RewriteType.ADD_HEADER || rule.ruleType == RewriteType.MODIFY_HEADER) {
-            if (newHeaderKey.isNullOrBlank() || newHeaderValue.isNullOrBlank()) return AppliesResult(false)
-        } else {
-            if (matchHeaderKey.isNullOrBlank() && matchHeaderValue.isNullOrBlank()) return AppliesResult(false)
+        return when (rule.ruleType) {
+            RewriteType.ADD_HEADER -> matchAddHeader(matchHeaderKey, matchHeaderValue, originalHeaders)
+            RewriteType.MODIFY_HEADER -> matchModifyHeader(matchHeaderKey, matchHeaderValue, originalHeaders)
+            RewriteType.REMOVE_HEADER -> matchRemoveHeader(matchHeaderKey, matchHeaderValue, originalHeaders)
+            else -> throw IllegalArgumentException("Can only be used with modify header rules")
+        }
+    }
+
+    private fun matchAddHeader(matchHeaderKey: String?, matchHeaderValue: String?, originalHeaders: Map<String, List<String>>?): HeaderMatchResult {
+        if (matchHeaderKey.isNullOrBlank() && matchHeaderValue.isNullOrBlank()) {
+            return HeaderMatchResult(matches = true)
+        } else if (originalHeaders.isNullOrEmpty()) {
+            return HeaderMatchResult(matches = false)
         }
 
-        val matchedHeaderByKey = if (!matchHeaderKey.isNullOrBlank()) {
-            if (originalHeaders == null || originalHeaders.isEmpty()) return AppliesResult(matches = false)
+        return matchHeaders(matchHeaderKey, matchHeaderValue, originalHeaders)
+    }
 
-            if (!rule.matchHeaderRegex) {
-                matchHeaderKey to (originalHeaders[matchHeaderKey] ?: return AppliesResult(matches = false))
-            } else {
-                val key = originalHeaders.keys.find { it.matches(Regex(matchHeaderKey)) } ?: return AppliesResult(matches = false)
-                key to originalHeaders.getValue(key)
-            }
+    private fun matchRemoveHeader(matchHeaderKey: String?, matchHeaderValue: String?, originalHeaders: Map<String, List<String>>?): HeaderMatchResult {
+        if ((matchHeaderKey.isNullOrBlank() && matchHeaderValue.isNullOrBlank()) || originalHeaders.isNullOrEmpty()) {
+            return HeaderMatchResult(matches = false)
+        }
+
+        return matchHeaders(matchHeaderKey, matchHeaderValue, originalHeaders)
+    }
+
+    private fun matchModifyHeader(matchHeaderKey: String?, matchHeaderValue: String?, originalHeaders: Map<String, List<String>>?): HeaderMatchResult {
+        if ((matchHeaderKey.isNullOrBlank() && matchHeaderValue.isNullOrBlank()) || originalHeaders.isNullOrEmpty()) {
+            return HeaderMatchResult(matches = false)
+        }
+
+        return matchHeaders(matchHeaderKey, matchHeaderValue, originalHeaders)
+    }
+
+    private fun matchHeaders(matchHeaderKey: String?, matchHeaderValue: String?, originalHeaders: Map<String, List<String>>): HeaderMatchResult {
+        val matchedHeaderKey = if (matchHeaderKey != null) {
+            val result = matchOnHeader(matchHeaderKey, originalHeaders)
+            if (!result.matches)
+                return result
+            result.matchedHeader
         } else null
 
-        //No need to check further
-        if (matchHeaderValue.isNullOrBlank()) return AppliesResult(matches = true, matchedHeader = matchedHeaderByKey?.first)
-        if (originalHeaders == null || originalHeaders.isEmpty()) return AppliesResult(false)
+        if (matchHeaderValue.isNullOrBlank()) {
+            if (matchedHeaderKey == null) return HeaderMatchResult(matches = true) //Can't happen due to check in beginning
+            return HeaderMatchResult(matches = true, matchedHeader = matchedHeaderKey)
+        }
 
-        if (matchedHeaderByKey != null) {
-            return valueMatches(matchHeaderValue, matchedHeaderByKey.second, matchedHeaderByKey.first) ?: return AppliesResult(false)
+        return matchHeaderValue(matchedHeaderKey, matchHeaderValue, originalHeaders)
+    }
+
+    private fun matchHeaderValue(matchedHeaderKey: String?, matchHeaderValue: String, originalHeaders: Map<String, List<String>>): HeaderMatchResult {
+        if (matchedHeaderKey != null) {
+            return valueMatches(matchHeaderValue, originalHeaders.getValue(matchedHeaderKey), matchedHeaderKey) ?: return HeaderMatchResult(matches = false)
         }
         originalHeaders.entries.forEach { (key, value) ->
             valueMatches(matchHeaderValue, value, key)?.let { return it }
         }
-        return AppliesResult(false)
+        return HeaderMatchResult(matches = false)
     }
 
-    private fun valueMatches(matchHeaderValue: String, second: List<String>, key: String): AppliesResult? {
+    private fun matchOnHeader(matchHeaderKey: String, originalHeaders: Map<String, List<String>>?): HeaderMatchResult {
+        if (originalHeaders == null || originalHeaders.isEmpty()) return HeaderMatchResult(matches = false)
+
+        val key = if (!rule.matchHeaderRegex) {
+            matchHeaderKey
+        } else {
+            originalHeaders.keys.find { it.matches(Regex(matchHeaderKey)) } ?: return HeaderMatchResult(matches = false)
+        }
+        if (!originalHeaders.containsKey(key)) return HeaderMatchResult(matches = false)
+
+        return HeaderMatchResult(matches = true, matchedHeader = key)
+    }
+
+    private fun valueMatches(matchHeaderValue: String, second: List<String>, key: String): HeaderMatchResult? {
         if (second.isEmpty()) return null
 
         if (!rule.matchValueRegex) {
             if (rule.matchWholeValue) {
                 if (second.size > 1) return null
-                return AppliesResult(matchHeaderValue.equals(second[0], ignoreCase = !rule.caseSensitive), key, matchHeaderValue)
+                return HeaderMatchResult(matchHeaderValue.equals(second[0], ignoreCase = !rule.caseSensitive), key, matchHeaderValue)
             } else {
                 val matched = second.find { it.contains(matchHeaderValue, ignoreCase = !rule.caseSensitive) }
-                return AppliesResult(matched != null, key, matched)
+                return HeaderMatchResult(matched != null, key, matched)
             }
         }
         val regex = if (rule.caseSensitive) Regex(matchHeaderValue) else Regex(matchHeaderValue, RegexOption.IGNORE_CASE)
         if (rule.matchWholeValue) {
             if (second.size > 1) return null
-            return AppliesResult(regex.matches(second[0]), key, second[0])
+            return HeaderMatchResult(regex.matches(second[0]), key, second[0])
         }
 
         val matched = second.find { regex.containsMatchIn(it) }
-        return AppliesResult(matched != null, key, matched)
+        return HeaderMatchResult(matched != null, key, matched)
     }
 
 }
 
-data class AppliesResult(val matches: Boolean, val matchedHeader: String? = null, val matchedValue: String? = null)
+data class HeaderMatchResult(val matches: Boolean, val matchedHeader: String? = null, val matchedValue: String? = null)
