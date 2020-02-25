@@ -53,7 +53,21 @@ data class RewriteRule(val active: Boolean,
                        val newValue: String?) {
 
     fun actionAsString(): String {
-        return "<TODO>"
+        return buildString {
+            var needsArrow = false
+            if (!matchHeader.isNullOrBlank()) {
+                append(matchHeader).append(':')
+                needsArrow = true
+            }
+            if (!matchValue.isNullOrBlank()) {
+                append(matchValue)
+                needsArrow = true
+            }
+            if (needsArrow) append(" -> ")
+
+            if (!newHeader.isNullOrBlank()) append(newHeader).append(':')
+            if (!newValue.isNullOrBlank()) append(newValue)
+        }
     }
 }
 
