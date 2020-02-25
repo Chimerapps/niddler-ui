@@ -5,6 +5,10 @@ import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 
 open class BaseModifyHeaderAction(protected val rule: RewriteRule) {
 
+    companion object {
+        val HAS_REPLACEMENT_REGEX = Regex(".*$\\d+.*")
+    }
+
     fun matches(originalHeaders: Map<String, List<String>>?): HeaderMatchResult {
         val matchHeaderKey = rule.matchHeader?.toLowerCase()
         val matchHeaderValue = rule.matchValue
