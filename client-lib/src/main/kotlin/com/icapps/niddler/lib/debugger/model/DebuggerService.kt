@@ -74,10 +74,14 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
         return id
     }
 
-    fun respondTo(niddlerMessageId: String, response: DebugResponse) {
-        sendMessage(NiddlerDebugControlMessage(MESSAGE_DEBUG_REPLY,
-                mergeToJson(gson, DebugReplyPayload(niddlerMessageId),
-                        response)))
+    fun respondTo(niddlerMessageId: String, response: DebugResponse?) {
+        sendMessage(NiddlerDebugControlMessage(MESSAGE_DEBUG_REPLY, messageId = niddlerMessageId,
+                payload = response))
+    }
+
+    fun sendRequest(niddlerMessageId: String, request: DebugRequest?) {
+        sendMessage(NiddlerDebugControlMessage(MESSAGE_DEBUG_REPLY, messageId = niddlerMessageId,
+                payload = request))
     }
 
     fun muteAction(id: String) {

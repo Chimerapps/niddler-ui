@@ -36,6 +36,8 @@ class RewriteLocationTest {
         assertFalse(Regex(RewriteLocation("http", null, 8888, null, null).asRegex()).matches("http://test.com:88881/api/v1/NL/getItems?matchAll=true#fragment=1029"))
         assertFalse(Regex(RewriteLocation("http", null, null, "api/v1/NL/getItems", null).asRegex()).matches("http://test.com:8888/api/v1/NL/getItems/f?matchAll=true#fragment=1029"))
         assertFalse(Regex(RewriteLocation("http", null, null, null, "matchAll=true").asRegex()).matches("http://test.com:8888/api/v1/NL/getItems/f?matchAll=true&matchNone=false#fragment=1029"))
+
+        assertTrue(Regex(RewriteLocation(null, "test.com", null, null, null).asRegex()).matches("https://test.com/posts"))
     }
 
     private fun checkMatches(regex: String) {

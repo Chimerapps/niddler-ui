@@ -22,6 +22,7 @@ internal const val MESSAGE_ADD_BLACKLIST = "addBlacklist"
 internal const val MESSAGE_REMOVE_BLACKLIST = "removeBlacklist"
 internal const val MESSAGE_ADD_DEFAULT_RESPONSE = "addDefaultResponse"
 internal const val MESSAGE_DEBUG_REPLY = "debugReply"
+internal const val MESSAGE_DEBUG_REQUEST = "debugRequest"
 internal const val MESSAGE_ADD_REQUEST = "addRequest"
 internal const val MESSAGE_REMOVE_REQUEST = "removeRequest"
 internal const val MESSAGE_ADD_RESPONSE = "addResponse"
@@ -34,7 +35,8 @@ internal const val MESSAGE_ADD_REQUEST_OVERRIDE = "addRequestOverride"
 internal const val MESSAGE_REMOVE_REQUEST_OVERRIDE = "removeRequestOverride"
 
 open class NiddlerDebugControlMessage(val controlType: String,
-                                      val payload: Any?)
+                                      val payload: Any?,
+                                      val messageId: String? = null)
     : NiddlerClientMessage(CONTROL_DEBUG)
 
 class NiddlerRootMessage(val type: String)
@@ -78,8 +80,6 @@ class RemoveResponseActionMessage(id: String)
 
 class RemoveRequestOverrideActionMessage(id: String)
     : NiddlerDebugControlMessage(MESSAGE_REMOVE_REQUEST_OVERRIDE, ActionPayload(id))
-
-data class DebugReplyPayload(val messageId: String)
 
 abstract class DebugMessage(
         @Expose var headers: Map<String, List<String>>?,

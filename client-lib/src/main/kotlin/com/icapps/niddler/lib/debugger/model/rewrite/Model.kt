@@ -36,7 +36,11 @@ enum class ReplaceType(val charlesCode: Int) {
 data class RewriteSet(val active: Boolean,
                       val name: String,
                       val locations: List<RewriteLocationMatch>,
-                      val rules: List<RewriteRule>)
+                      val rules: List<RewriteRule>) {
+    fun matchesUrl(url: String): Boolean {
+        return locations.any { Regex(it.location.asRegex()).matches(url) }
+    }
+}
 
 data class RewriteRule(val active: Boolean,
                        val ruleType: RewriteType,
@@ -134,7 +138,7 @@ data class RewriteLocation(val protocol: String?,
             if (port != null) {
                 append(':').append(port)
             } else {
-                append(":\\d+")
+                append("(:\\d+)?")
             }
             if (path != null) {
                 if (!path.startsWith('/'))

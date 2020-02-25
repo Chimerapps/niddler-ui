@@ -22,6 +22,7 @@ import com.chimerapps.niddler.ui.component.view.MessageDetailView
 import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
+import com.chimerapps.niddler.ui.debugging.rewrite.RewriteConfig
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.model.ProjectConfig
@@ -33,6 +34,9 @@ import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.chimerapps.niddler.ui.util.ui.ensureMain
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
+import com.icapps.niddler.lib.debugger.model.DebuggerService
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebugListener
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebuggerInterface
 import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
@@ -78,6 +82,8 @@ class NiddlerSessionWindow(private val project: Project,
     private val splitter = JBSplitter(APP_PREFERENCE_SPLITTER_STATE, 0.6f)
     private var baseUrlHider: BaseUrlHider? = null
     private var currentFilter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>? = null
+    private val debugListener = RewriteDebugListener()
+    private var debuggerService: DebuggerService? = null//TODO disconnect
 
     var currentViewMode: ViewMode = ViewMode.VIEW_MODE_TIMELINE
         set(value) {
@@ -264,7 +270,8 @@ class NiddlerSessionWindow(private val project: Project,
     private fun connectOnConnection(connection: PreparedDeviceConnection) {
         messageContainer.storage.clear()
 
-        niddlerClient = NiddlerClient(connection.uri, withDebugger = false).also {
+        niddlerClient = NiddlerClient(connection.uri, withDebugger = true).also {
+            it.debugListener = debugListener
             messageContainer.attach(it)
             it.registerMessageListener(statusBar)
             it.registerMessageListener(object : NiddlerMessageListener {
@@ -273,11 +280,31 @@ class NiddlerSessionWindow(private val project: Project,
                 }
             })
             it.registerMessageListener(detailView)
+
+            it.registerMessageListener(object : NiddlerMessageListener {
+                override fun onReady() {
+                    val client = niddlerClient
+                    if (client?.withDebugger == true) {
+                        val rewriteConfig = ProjectConfig.load<RewriteConfig>(project, ProjectConfig.CONFIG_REWRITE) ?: return
+                        if (rewriteConfig.allEnabled) {
+                            debuggerService = DebuggerService(client).also { service ->
+                                service.connect()
+                                RewriteDebuggerInterface(service).also { rewriteDebuggerInterface ->
+                                    debugListener.updateRuleSets(rewriteConfig.sets)
+                                    rewriteConfig.sets.forEach { set -> rewriteDebuggerInterface.addRuleSet(set) }
+                                }
+                                service.setActive(true)
+                            }
+                        }
+                    }
+                }
+            })
         }
         niddlerClient?.connect()
         lastConnection = connection
         connectionMode = ConnectionMode.MODE_CONNECTED
     }
+
 
     override fun onMessage(message: ParsedNiddlerMessage) {
         currentMessagesView?.onMessagesUpdated()
