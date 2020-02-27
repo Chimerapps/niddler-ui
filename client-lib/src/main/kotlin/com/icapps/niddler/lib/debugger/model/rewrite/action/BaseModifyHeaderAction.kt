@@ -86,25 +86,25 @@ open class BaseModifyHeaderAction(protected val rule: RewriteRule) {
         return HeaderMatchResult(matches = true, matchedHeader = key)
     }
 
-    private fun valueMatches(matchHeaderValue: String, second: List<String>, key: String): HeaderMatchResult? {
-        if (second.isEmpty()) return null
+    private fun valueMatches(matchHeaderValue: String, values: List<String>, key: String): HeaderMatchResult? {
+        if (values.isEmpty()) return null
 
         if (!rule.matchValueRegex) {
             if (rule.matchWholeValue) {
-                if (second.size > 1) return null
-                return HeaderMatchResult(matchHeaderValue.equals(second[0], ignoreCase = !rule.caseSensitive), key, matchHeaderValue)
+                if (values.size > 1) return null
+                return HeaderMatchResult(matchHeaderValue.equals(values[0], ignoreCase = !rule.caseSensitive), key, matchHeaderValue)
             } else {
-                val matched = second.find { it.contains(matchHeaderValue, ignoreCase = !rule.caseSensitive) }
+                val matched = values.find { it.contains(matchHeaderValue, ignoreCase = !rule.caseSensitive) }
                 return HeaderMatchResult(matched != null, key, matched)
             }
         }
         val regex = if (rule.caseSensitive) Regex(matchHeaderValue) else Regex(matchHeaderValue, RegexOption.IGNORE_CASE)
         if (rule.matchWholeValue) {
-            if (second.size > 1) return null
-            return HeaderMatchResult(regex.matches(second[0]), key, second[0])
+            if (values.size > 1) return null
+            return HeaderMatchResult(regex.matches(values[0]), key, values[0])
         }
 
-        val matched = second.find { regex.containsMatchIn(it) }
+        val matched = values.find { regex.containsMatchIn(it) }
         return HeaderMatchResult(matched != null, key, matched)
     }
 
