@@ -82,7 +82,7 @@ data class RewriteLocationMatch(val location: RewriteLocation,
 
 data class RewriteLocation(val protocol: String?,
                            val host: String?,
-                           val port: Int?,
+                           val port: String?,
                            val path: String?,
                            val query: String?) {
 
@@ -131,26 +131,26 @@ data class RewriteLocation(val protocol: String?,
                 append(".*://")
             }
             if (host != null) {
-                append(host)
+                append(host.replace("*", ".*"))
             } else {
                 append(".*")
             }
             if (port != null) {
-                append(':').append(port)
+                append(':').append(port.replace("*", "\\d*"))
             } else {
                 append("(:\\d+)?")
             }
             if (path != null) {
                 if (!path.startsWith('/'))
                     append('/')
-                append(escapeSafeRegex(path))
+                append(path.replace("*", ".*"))
             } else {
                 append("(/[^?]*)?")
             }
             if (query != null) {
                 if (!query.startsWith('?'))
                     append("\\?")
-                append(escapeSafeRegex(query))
+                append(query.replace("*", ".*"))
             } else {
                 append("(\\?[^#]*)?")
             }

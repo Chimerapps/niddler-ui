@@ -185,7 +185,7 @@ class RewriteImporter {
 
         val protocol = locationNode.childWithTag("protocol")?.textContent?.trim()
         val host = locationNode.childWithTag("host")?.textContent?.trim()
-        val port = locationNode.childWithTag("port")?.textContent?.toInt()
+        val port = locationNode.childWithTag("port")?.textContent?.trim()
         val path = locationNode.childWithTag("path")?.textContent?.trim()
         val query = locationNode.childWithTag("query")?.textContent?.trim()
 

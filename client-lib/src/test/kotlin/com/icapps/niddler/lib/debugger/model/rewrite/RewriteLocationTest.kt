@@ -9,7 +9,7 @@ class RewriteLocationTest {
     private companion object {
         val protocols = arrayOf("http", null)
         val hosts = arrayOf("test.com", null)
-        val ports = arrayOf(8888, null)
+        val ports = arrayOf("8888", null)
         val paths = arrayOf("/api/v1/NL/getItems", null)
         val queries = arrayOf("matchAll=true", null)
     }
@@ -33,7 +33,7 @@ class RewriteLocationTest {
     fun testWildcardToRegex() {
         assertTrue(Regex(RewriteLocation("http", null, null, null, null).asRegex()).matches("http://test.com:8888/api/v1/NL/getItems?matchAll=true#fragment=1029"))
         assertFalse(Regex(RewriteLocation("http", "test.com", null, null, null).asRegex()).matches("http://test.come:8888/api/v1/NL/getItems?matchAll=true#fragment=1029"))
-        assertFalse(Regex(RewriteLocation("http", null, 8888, null, null).asRegex()).matches("http://test.com:88881/api/v1/NL/getItems?matchAll=true#fragment=1029"))
+        assertFalse(Regex(RewriteLocation("http", null, "8888", null, null).asRegex()).matches("http://test.com:88881/api/v1/NL/getItems?matchAll=true#fragment=1029"))
         assertFalse(Regex(RewriteLocation("http", null, null, "api/v1/NL/getItems", null).asRegex()).matches("http://test.com:8888/api/v1/NL/getItems/f?matchAll=true#fragment=1029"))
         assertFalse(Regex(RewriteLocation("http", null, null, null, "matchAll=true").asRegex()).matches("http://test.com:8888/api/v1/NL/getItems/f?matchAll=true&matchNone=false#fragment=1029"))
 

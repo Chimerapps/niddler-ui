@@ -68,7 +68,8 @@ open class BaseModifyHeaderAction(protected val rule: RewriteRule) {
             return valueMatches(matchHeaderValue, originalHeaders.getValue(matchedHeaderKey), matchedHeaderKey) ?: return HeaderMatchResult(matches = false)
         }
         originalHeaders.entries.forEach { (key, value) ->
-            valueMatches(matchHeaderValue, value, key)?.let { return it }
+            val match = valueMatches(matchHeaderValue, value, key)
+            if (match?.matches == true) return match
         }
         return HeaderMatchResult(matches = false)
     }
