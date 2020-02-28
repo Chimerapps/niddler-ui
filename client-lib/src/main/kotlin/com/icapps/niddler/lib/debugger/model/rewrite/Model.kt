@@ -131,26 +131,26 @@ data class RewriteLocation(val protocol: String?,
                 append(".*://")
             }
             if (host != null) {
-                append(host.replace("*", ".*"))
+                append(host.replace("*", ".*").replace("?", ".?"))
             } else {
                 append(".*")
             }
             if (port != null) {
-                append(':').append(port.replace("*", "\\d*"))
+                append(':').append(port.replace("*", "\\d*").replace("?", "\\d?"))
             } else {
                 append("(:\\d+)?")
             }
             if (path != null) {
                 if (!path.startsWith('/'))
                     append('/')
-                append(path.replace("*", ".*"))
+                append(path.replace("*", ".*").replace("?", ".?"))
             } else {
                 append("(/[^?]*)?")
             }
             if (query != null) {
                 if (!query.startsWith('?'))
                     append("\\?")
-                append(query.replace("*", ".*"))
+                append(query.replace("*", ".*").replace("?", ".?"))
             } else {
                 append("(\\?[^#]*)?")
             }

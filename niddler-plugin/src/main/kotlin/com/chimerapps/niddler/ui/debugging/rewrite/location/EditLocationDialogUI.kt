@@ -1,6 +1,6 @@
 package com.chimerapps.niddler.ui.debugging.rewrite.location
 
-import com.chimerapps.niddler.ui.util.ui.NumberOnlyDocumentFilter
+import com.chimerapps.niddler.ui.util.ui.NumberOrRegexDocumentFilter
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
@@ -56,7 +56,7 @@ open class EditLocationDialogUI(parent: Window?) : JDialog(parent, "Edit Locatio
     protected val port = JBTextField(5).also {
         addLabel("Port:", 3)
 
-        (it.document as AbstractDocument).documentFilter = NumberOnlyDocumentFilter()
+        (it.document as AbstractDocument).documentFilter = NumberOrRegexDocumentFilter()
 
         val constraints = GridBagConstraints().apply {
             gridx = 1

@@ -4,8 +4,8 @@ import javax.swing.text.AttributeSet
 import javax.swing.text.Document
 import javax.swing.text.DocumentFilter
 
-class NumberOnlyDocumentFilter(private val allowEmpty: Boolean = true,
-                               private val allowNegative: Boolean = false) : DocumentFilter() {
+class NumberOrRegexDocumentFilter(private val allowEmpty: Boolean = true,
+                                  private val allowNegative: Boolean = false) : DocumentFilter() {
 
     override fun insertString(fb: FilterBypass, offset: Int, string: String?,
                               attr: AttributeSet?) {
@@ -22,7 +22,7 @@ class NumberOnlyDocumentFilter(private val allowEmpty: Boolean = true,
         if (allowEmpty && text.isEmpty())
             return true
 
-        val intValue = text.toIntOrNull() ?: return false
+        val intValue = text.replace("*", "").replace("?", "").toIntOrNull() ?: return false
         return (intValue >= 0 || allowNegative)
     }
 

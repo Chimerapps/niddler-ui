@@ -54,6 +54,6 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : EditLocati
                 host = host.text.trimToNull(),
                 path = path.text.trimToNull(),
                 query = query.text.trimToNull(),
-                port = port.text.trimToNull()?.toInt())
+                port = port.text.trimToNull())
     }
 }
