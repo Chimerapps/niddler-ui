@@ -4,7 +4,7 @@ import com.icapps.niddler.lib.debugger.model.rewrite.ReplaceType
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import java.util.regex.Pattern
 
-open class BaseValueMatcher(protected val rule: RewriteRule) {
+abstract class BaseValueMatcher(protected val rule: RewriteRule) {
 
     protected fun createReplacement(originalValue: String): String {
         val toMatch = rule.matchValue?.trim()
