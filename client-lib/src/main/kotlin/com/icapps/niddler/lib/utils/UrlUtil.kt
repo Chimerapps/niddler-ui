@@ -37,3 +37,20 @@ class UrlUtil(private val fullUrl: String?) {
         }
 
 }
+
+class UrlBuilder(url: URL) {
+
+    var scheme: String = url.protocol
+    var host: String = url.host
+    var port: Int = url.port
+    var file: String = url.file
+
+    fun build(): URL {
+        return URL(scheme, host, port, file)
+    }
+
+}
+
+fun URL.newBuilder(): UrlBuilder {
+    return UrlBuilder(this)
+}
