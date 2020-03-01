@@ -37,7 +37,7 @@ abstract class BaseValueMatcher(protected val rule: RewriteRule) {
             rule.matchWholeValue -> return if (originalValue.equals(toMatch, ignoreCase = !rule.caseSensitive)) replacement else originalValue
             originalValue.contains(toMatch, ignoreCase = !rule.caseSensitive) ->
                 return if (rule.replaceType == ReplaceType.REPLACE_ALL)
-                    replacement
+                    originalValue.replace(toMatch, replacement, ignoreCase = !rule.caseSensitive)
                 else
                     originalValue.replaceFirst(toMatch, replacement, ignoreCase = !rule.caseSensitive)
         }

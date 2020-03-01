@@ -1,5 +1,6 @@
 package com.icapps.niddler.lib.utils
 
+import java.net.URI
 import java.net.URL
 import java.net.URLDecoder
 
@@ -38,19 +39,22 @@ class UrlUtil(private val fullUrl: String?) {
 
 }
 
-class UrlBuilder(url: URL) {
+class UriBuilder(url: URI) {
 
-    var scheme: String = url.protocol
-    var host: String = url.host
+    var scheme: String? = url.scheme
+    var host: String? = url.host
     var port: Int = url.port
-    var file: String = url.file
+    var path: String? = url.path
+    var query: String? = url.query
+    var fragment: String? = url.fragment
+    var userInfo: String? = url.userInfo
 
-    fun build(): URL {
-        return URL(scheme, host, port, file)
+    fun build(): URI {
+        return URI(scheme, userInfo, host, port, path, query, fragment)
     }
 
 }
 
-fun URL.newBuilder(): UrlBuilder {
-    return UrlBuilder(this)
+fun URI.newBuilder(): UriBuilder {
+    return UriBuilder(this)
 }

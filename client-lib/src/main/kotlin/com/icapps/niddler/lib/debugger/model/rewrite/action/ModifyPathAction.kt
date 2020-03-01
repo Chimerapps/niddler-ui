@@ -6,9 +6,10 @@ import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 import com.icapps.niddler.lib.utils.newBuilder
 import java.net.URI
 
-class ModifyHostAction(rule: RewriteRule) : BaseValueMatcher(rule) {
+class ModifyPathAction(rule: RewriteRule) : BaseValueMatcher(rule) {
+
     init {
-        if (rule.ruleType != RewriteType.HOST) throw IllegalArgumentException("Rule is not a modify host rule")
+        if (rule.ruleType != RewriteType.PATH) throw IllegalArgumentException("Rule is not a modify path rule")
     }
 
     fun apply(debugRequest: DebugRequest): DebugRequest {
@@ -18,8 +19,8 @@ class ModifyHostAction(rule: RewriteRule) : BaseValueMatcher(rule) {
             return debugRequest
         }
 
-        val newHost = createReplacement(url.host)
-        return debugRequest.copy(url = url.newBuilder().also { it.host = newHost }.build().toString())
+        val newHost = createReplacement(url.path)
+        return debugRequest.copy(url = url.newBuilder().also { it.path = newHost }.build().toString())
     }
 
 }

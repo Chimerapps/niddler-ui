@@ -28,7 +28,7 @@ class ModifyUrlActionTest {
                 newValue = "https://www.newexample.org", newValueRegex = false, matchHeaderRegex = false)
 
         val request = ModifyUrlAction(rule).apply(request)
-        assertEquals("https://www.newexample.org", request.url)
+        assertEquals("https://https://www.newexample.org/api/upload.json", request.url)
     }
 
     @Test
