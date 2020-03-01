@@ -11,6 +11,8 @@ class ModifyStatusAction(rule: RewriteRule) : BaseValueMatcher(rule) {
     }
 
     fun apply(debugResponse: DebugResponse): DebugResponse {
+        if (!rule.matchResponse) return debugResponse
+
         val status = "${debugResponse.code} ${debugResponse.message}"
         val newStatus = createReplacement(status)
 

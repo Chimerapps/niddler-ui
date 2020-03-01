@@ -13,6 +13,7 @@ class ModifyBodyAction(rule: RewriteRule) : BaseValueMatcher(rule) {
 
     fun apply(debugRequest: DebugRequest): DebugRequest {
         if (!rule.matchRequest) return debugRequest
+
         val newBody = createReplacement(decodeBodyString(debugRequest.bodyMimeType, debugRequest.encodedBody))
         return debugRequest.copy(encodedBody = Base64.getUrlEncoder().withoutPadding().encodeToString(newBody.toByteArray(Charsets.UTF_8)))
     }

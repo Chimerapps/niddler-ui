@@ -7,7 +7,7 @@ import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 
 //TODO test
-class ModifyHeaderAction(rule: RewriteRule) : BaseModifyHeaderAction(rule) {
+class ModifyHeaderAction(rule: RewriteRule) : BaseModifyMapAction(rule) {
 
     init {
         if (rule.ruleType != RewriteType.MODIFY_HEADER) throw IllegalArgumentException("Not modify header type")

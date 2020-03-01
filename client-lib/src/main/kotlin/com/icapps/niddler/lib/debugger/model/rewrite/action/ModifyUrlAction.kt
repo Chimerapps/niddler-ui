@@ -11,6 +11,8 @@ class ModifyUrlAction(rule: RewriteRule) : BaseValueMatcher(rule) {
     }
 
     fun apply(debugRequest: DebugRequest): DebugRequest {
+        if (!rule.matchRequest) return debugRequest
+
         val newUrl = createReplacement(debugRequest.url)
         return debugRequest.copy(url = newUrl)
     }

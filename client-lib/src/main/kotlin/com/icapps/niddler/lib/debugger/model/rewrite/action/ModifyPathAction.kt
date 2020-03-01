@@ -12,7 +12,10 @@ class ModifyPathAction(rule: RewriteRule) : BaseValueMatcher(rule) {
         if (rule.ruleType != RewriteType.PATH) throw IllegalArgumentException("Rule is not a modify path rule")
     }
 
+    @Suppress("DuplicatedCode")
     fun apply(debugRequest: DebugRequest): DebugRequest {
+        if (!rule.matchRequest) return debugRequest
+
         val url = try {
             URI(debugRequest.url)
         } catch (e: Throwable) {

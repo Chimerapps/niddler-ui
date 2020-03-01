@@ -5,7 +5,7 @@ import com.icapps.niddler.lib.debugger.model.DebugResponse
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 
-class RemoveHeaderAction(rule: RewriteRule) : BaseModifyHeaderAction(rule) {
+class RemoveHeaderAction(rule: RewriteRule) : BaseModifyMapAction(rule) {
 
     init {
         if (rule.ruleType != RewriteType.REMOVE_HEADER) throw IllegalArgumentException("Not remove header type")

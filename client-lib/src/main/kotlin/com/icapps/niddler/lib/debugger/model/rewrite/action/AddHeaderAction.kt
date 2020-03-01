@@ -6,7 +6,7 @@ import com.icapps.niddler.lib.debugger.model.rewrite.ReplaceType
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 
-class AddHeaderAction(rule: RewriteRule) : BaseModifyHeaderAction(rule) {
+class AddHeaderAction(rule: RewriteRule) : BaseModifyMapAction(rule) {
 
     init {
         if (rule.ruleType != RewriteType.ADD_HEADER) throw IllegalArgumentException("Not add header type")

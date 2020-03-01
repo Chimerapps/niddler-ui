@@ -11,7 +11,10 @@ class ModifyHostAction(rule: RewriteRule) : BaseValueMatcher(rule) {
         if (rule.ruleType != RewriteType.HOST) throw IllegalArgumentException("Rule is not a modify host rule")
     }
 
+    @Suppress("DuplicatedCode")
     fun apply(debugRequest: DebugRequest): DebugRequest {
+        if (!rule.matchRequest) return debugRequest
+
         val url = try {
             URI(debugRequest.url)
         } catch (e: Throwable) {
