@@ -97,6 +97,12 @@ class DebugRequest(@Expose var url: String = "",
                    headers: Map<String, List<String>>? = null,
                    encodedBody: String? = null,
                    bodyMimeType: String? = null) : DebugMessage(headers, encodedBody, bodyMimeType) {
+
+    fun copy(url: String = this.url, method: String = this.method, headers: Map<String, List<String>>? = this.headers,
+             encodedBody: String? = this.encodedBody, bodyMimeType: String? = this.bodyMimeType): DebugRequest {
+        return DebugRequest(url, method, headers, encodedBody, bodyMimeType)
+    }
+
     override fun toString(): String {
         return url
     }
