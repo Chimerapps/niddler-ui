@@ -3,6 +3,7 @@ package com.icapps.niddler.lib.utils
 import java.net.URI
 import java.net.URL
 import java.net.URLDecoder
+import java.net.URLEncoder
 
 /**
  * @author Nicola Verbeeck
@@ -39,7 +40,18 @@ class UrlUtil(private val fullUrl: String?) {
 
 }
 
-class UriBuilder(url: URI) {
+internal fun makeQueryString(queryData: Map<String, List<String>>): String {
+    return buildString {
+        queryData.forEach { (key, values) ->
+            values.forEach { value ->
+                if (length > 0) append('&')
+                append(key).append('=').append(value)
+            }
+        }
+    }
+}
+
+internal class UriBuilder(url: URI) {
 
     var scheme: String? = url.scheme
     var host: String? = url.host
@@ -55,6 +67,6 @@ class UriBuilder(url: URI) {
 
 }
 
-fun URI.newBuilder(): UriBuilder {
+internal fun URI.newBuilder(): UriBuilder {
     return UriBuilder(this)
 }
