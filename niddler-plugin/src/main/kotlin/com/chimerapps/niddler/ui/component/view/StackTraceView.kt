@@ -87,11 +87,12 @@ class StackTraceView(project: Project) : JPanel() {
 
     fun setStackTrace(stackTrace: Collection<String>?) {
         val document = textArea.styledDocument
-        textArea.text
         document.remove(0, document.length)
         if (stackTrace == null || stackTrace.isEmpty()) {
+            textArea.isVisible = false
             return
         }
+        textArea.isVisible = true
         when {
             exceptionFilter?.anyMatch(stackTrace) == true -> {
                 exceptionFilter.update(stackTrace, document)
