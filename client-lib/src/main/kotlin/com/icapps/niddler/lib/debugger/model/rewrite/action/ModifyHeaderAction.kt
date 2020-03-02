@@ -7,7 +7,7 @@ import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 
 //TODO test
-class ModifyHeaderAction(rule: RewriteRule) : BaseModifyMapAction(rule) {
+class ModifyHeaderAction(rule: RewriteRule) : BaseModifyMapAction(rule), BaseModifyParameterAction {
 
     init {
         if (rule.ruleType != RewriteType.MODIFY_HEADER) throw IllegalArgumentException("Not modify header type")
@@ -25,40 +25,10 @@ class ModifyHeaderAction(rule: RewriteRule) : BaseModifyMapAction(rule) {
         return DebugResponse(debugResponse.code, debugResponse.message, apply(debugResponse.headers), debugResponse.encodedBody, debugResponse.bodyMimeType)
     }
 
-    //TODO regex
-
     private fun apply(originalHeaders: Map<String, List<String>>?): Map<String, List<String>>? {
         val match = matches(originalHeaders)
         if (!match.matches) return originalHeaders
 
-        var newHeader = rule.newHeader?.toLowerCase()
-
-        val matchedHeader = match.matchedHeader ?: newHeader ?: return originalHeaders
-        if (newHeader == null) newHeader = matchedHeader
-
-        val matchedValue = match.matchedValue ?: rule.newValue ?: return originalHeaders
-        if (originalHeaders == null) {
-            return mapOf(matchedHeader to listOf(matchedValue))
-        }
-
-        val mutableHeaders = originalHeaders.toMutableMap()
-        if (matchedHeader != newHeader) {
-            mutableHeaders[newHeader] = mutableHeaders.remove(matchedHeader) ?: return originalHeaders
-        }
-
-        val originalValues = mutableHeaders[newHeader]?.toMutableList() ?: mutableListOf()
-
-        if (rule.replaceType == ReplaceType.REPLACE_ALL) {
-            if (rule.newValue != null) {
-                originalValues.clear()
-                originalValues.add(rule.newValue)
-            }
-        } else if (rule.newValue != null) {
-            originalValues.remove(matchedValue)
-            originalValues.add(rule.newValue)
-        }
-        mutableHeaders[newHeader] = originalValues
-
-        return mutableHeaders
+        return modifyMap(rule, match, originalHeaders)
     }
 }
