@@ -18,6 +18,8 @@ interface NiddlerMessageStorage<T : NiddlerMessage> {
 
     fun findRequest(message: T): T?
 
+    fun findRequest(requestId: String): T?
+
     fun clear()
 
     fun isEmpty(): Boolean
@@ -63,7 +65,11 @@ class InMemoryNiddlerMessageStorage<T : NiddlerMessage> : NiddlerMessageStorage<
     }
 
     override fun findRequest(message: T): T? {
-        return getMessagesWithRequestId(message.requestId).findLast(NiddlerMessage::isRequest)
+        return findRequest(message.requestId)
+    }
+
+    override fun findRequest(requestId: String): T? {
+        return getMessagesWithRequestId(requestId).findLast(NiddlerMessage::isRequest)
     }
 
     override fun isEmpty(): Boolean {
