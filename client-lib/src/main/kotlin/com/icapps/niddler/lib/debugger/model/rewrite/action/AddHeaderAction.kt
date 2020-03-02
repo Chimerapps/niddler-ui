@@ -2,11 +2,10 @@ package com.icapps.niddler.lib.debugger.model.rewrite.action
 
 import com.icapps.niddler.lib.debugger.model.DebugRequest
 import com.icapps.niddler.lib.debugger.model.DebugResponse
-import com.icapps.niddler.lib.debugger.model.rewrite.ReplaceType
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 
-class AddHeaderAction(rule: RewriteRule) : BaseModifyMapAction(rule) {
+class AddHeaderAction(rule: RewriteRule) : BaseModifyMapAction(rule), BaseAddParameterAction {
 
     init {
         if (rule.ruleType != RewriteType.ADD_HEADER) throw IllegalArgumentException("Not add header type")
@@ -33,14 +32,7 @@ class AddHeaderAction(rule: RewriteRule) : BaseModifyMapAction(rule) {
             return originalHeaders
 
         val match = matches(originalHeaders)
-        if (!match.matches) return originalHeaders
 
-        val mutableHeaders = originalHeaders?.toMutableMap() ?: mutableMapOf()
-
-        mutableHeaders[newHeader] = if (rule.replaceType == ReplaceType.REPLACE_ALL)
-            listOf(newValue)
-        else
-            (mutableHeaders[newHeader]?.toMutableList() ?: mutableListOf()).also { it.add(newValue) }
-        return mutableHeaders
+        return modifyMap(rule, newHeader, newValue, match, originalHeaders)
     }
 }

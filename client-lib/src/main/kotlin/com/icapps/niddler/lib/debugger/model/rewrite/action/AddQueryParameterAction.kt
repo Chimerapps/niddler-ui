@@ -1,12 +1,11 @@
 package com.icapps.niddler.lib.debugger.model.rewrite.action
 
 import com.icapps.niddler.lib.debugger.model.DebugRequest
-import com.icapps.niddler.lib.debugger.model.rewrite.ReplaceType
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 import com.icapps.niddler.lib.utils.UrlUtil
 
-class AddQueryParameterAction(rule: RewriteRule) : BaseModifyQueryParameterAction(rule) {
+class AddQueryParameterAction(rule: RewriteRule) : BaseModifyQueryParameterAction(rule), BaseAddParameterAction {
 
     init {
         if (rule.ruleType != RewriteType.ADD_QUERY_PARAM) throw IllegalArgumentException("Not add query parameter type")
@@ -22,16 +21,7 @@ class AddQueryParameterAction(rule: RewriteRule) : BaseModifyQueryParameterActio
 
         val queryValues = UrlUtil(debugRequest.url).query
 
-        val match = matches(queryValues)
-        if (!match.matches) return debugRequest
-
-        val mutableQueries = queryValues.toMutableMap()
-        mutableQueries[newHeader] = if (rule.replaceType == ReplaceType.REPLACE_ALL)
-            listOf(newValue)
-        else
-            (mutableQueries[newHeader]?.toMutableList() ?: mutableListOf()).also { it.add(newValue) }
-
-        val newUrl = updateUrl(debugRequest.url, mutableQueries)
+        val newUrl = updateUrl(debugRequest.url, modifyMap(rule, newHeader, newValue, matches(queryValues), queryValues))
 
         return DebugRequest(newUrl, debugRequest.method, debugRequest.headers, debugRequest.encodedBody, debugRequest.bodyMimeType)
     }
