@@ -63,4 +63,15 @@ class UrlUtilTest {
         assertEquals("https://www.google.com?q=3&g=3133&s=%20w#2", string)
     }
 
+    @Test
+    fun buildQueryMultiple() {
+        val string = URI("https://www.google.com").newBuilder()
+                .also {
+                    it.query = makeQueryString(mapOf("q" to listOf("3", "abc"), "g" to listOf("3133"), "s" to listOf(" w")))
+                    it.fragment = "2"
+                }.build().toString()
+
+        assertEquals("https://www.google.com?q=3&q=abc&g=3133&s=%20w#2", string)
+    }
+
 }
