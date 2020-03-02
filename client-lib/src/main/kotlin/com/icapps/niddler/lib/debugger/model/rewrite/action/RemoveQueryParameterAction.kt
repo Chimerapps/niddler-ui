@@ -4,9 +4,9 @@ import com.icapps.niddler.lib.debugger.model.DebugRequest
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import com.icapps.niddler.lib.utils.UrlUtil
 
-class RemoveQueryParameterAction(rule: RewriteRule) : BaseModifyQueryParameterAction(rule) {
+class RemoveQueryParameterAction(rule: RewriteRule) : BaseModifyQueryParameterAction(rule), RequestAction {
 
-    fun apply(debugRequest: DebugRequest): DebugRequest {
+    override fun apply(debugRequest: DebugRequest): DebugRequest {
         if (!rule.matchRequest) return debugRequest
 
         val queryValues = UrlUtil(debugRequest.url).query

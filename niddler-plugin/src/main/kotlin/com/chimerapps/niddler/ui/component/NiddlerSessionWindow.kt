@@ -270,7 +270,7 @@ class NiddlerSessionWindow(private val project: Project,
     private fun connectOnConnection(connection: PreparedDeviceConnection) {
         messageContainer.storage.clear()
 
-        niddlerClient = NiddlerClient(connection.uri, withDebugger = true).also {
+        niddlerClient = NiddlerClient(connection.uri, withDebugger = true, messageStorage = messageContainer.storage).also {
             it.debugListener = debugListener
             messageContainer.attach(it)
             it.registerMessageListener(statusBar)

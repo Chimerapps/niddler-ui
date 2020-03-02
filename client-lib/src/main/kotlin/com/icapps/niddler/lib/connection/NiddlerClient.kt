@@ -15,6 +15,7 @@ import com.icapps.niddler.lib.connection.protocol.NiddlerV4ProtocolHandler
 import com.icapps.niddler.lib.debugger.NiddlerDebuggerConnection
 import com.icapps.niddler.lib.debugger.model.DebugRequest
 import com.icapps.niddler.lib.debugger.model.DebugResponse
+import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.drafts.Draft_6455
 import org.java_websocket.handshake.ServerHandshake
@@ -25,7 +26,7 @@ import java.util.HashSet
 /**
  * @author Nicola Verbeeck
  */
-class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : Closeable,
+class NiddlerClient(serverURI: URI, val withDebugger: Boolean, private val messageStorage: NiddlerMessageStorage<out NiddlerMessage>?) : Closeable,
         NiddlerMessageListener, NiddlerDebugListener, NiddlerDebuggerConnection {
 
     companion object {
@@ -67,7 +68,7 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : Closeable,
             1 -> NiddlerV1ProtocolHandler(this)
             2, 3 -> NiddlerV2ProtocolHandler(this, protocolVersion)
             else -> NiddlerV4ProtocolHandler(messageListener = this, debugListener = this,
-                    protocolVersion = protocolVersion)
+                    protocolVersion = protocolVersion, messageStorage = messageStorage)
         }
     }
 
@@ -132,8 +133,8 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean) : Closeable,
         return debugListener?.onRequestAction(requestId)
     }
 
-    override fun onResponseAction(requestId: String, response: NiddlerMessage): DebugResponse? {
-        return debugListener?.onResponseAction(requestId, response)
+    override fun onResponseAction(requestId: String, response: NiddlerMessage, request: NiddlerMessage?): DebugResponse? {
+        return debugListener?.onResponseAction(requestId, response, request)
     }
 
     override fun sendMessage(message: String) {

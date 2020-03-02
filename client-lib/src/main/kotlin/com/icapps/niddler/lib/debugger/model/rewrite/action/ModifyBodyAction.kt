@@ -6,19 +6,19 @@ import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 import java.util.Base64
 
-class ModifyBodyAction(rule: RewriteRule) : BaseValueMatcher(rule) {
+class ModifyBodyAction(rule: RewriteRule) : BaseValueMatcher(rule), RequestAction, ResponseAction {
     init {
         if (rule.ruleType != RewriteType.BODY) throw IllegalArgumentException("Rule is not a modify body rule")
     }
 
-    fun apply(debugRequest: DebugRequest): DebugRequest {
+    override fun apply(debugRequest: DebugRequest): DebugRequest {
         if (!rule.matchRequest) return debugRequest
 
         val newBody = createReplacement(decodeBodyString(debugRequest.bodyMimeType, debugRequest.encodedBody))
         return debugRequest.copy(encodedBody = Base64.getUrlEncoder().withoutPadding().encodeToString(newBody.toByteArray(Charsets.UTF_8)))
     }
 
-    fun apply(debugResponse: DebugResponse): DebugResponse {
+    override fun apply(debugResponse: DebugResponse): DebugResponse {
         if (!rule.matchResponse) return debugResponse
 
         val newBody = createReplacement(decodeBodyString(debugResponse.bodyMimeType, debugResponse.encodedBody))

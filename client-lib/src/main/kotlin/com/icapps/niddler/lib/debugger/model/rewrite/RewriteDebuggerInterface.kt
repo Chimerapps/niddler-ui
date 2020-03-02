@@ -5,6 +5,18 @@ import com.icapps.niddler.lib.connection.protocol.NiddlerDebugListener
 import com.icapps.niddler.lib.debugger.model.DebugRequest
 import com.icapps.niddler.lib.debugger.model.DebugResponse
 import com.icapps.niddler.lib.debugger.model.DebuggerService
+import com.icapps.niddler.lib.debugger.model.rewrite.action.AddHeaderAction
+import com.icapps.niddler.lib.debugger.model.rewrite.action.AddQueryParameterAction
+import com.icapps.niddler.lib.debugger.model.rewrite.action.ModifyBodyAction
+import com.icapps.niddler.lib.debugger.model.rewrite.action.ModifyHeaderAction
+import com.icapps.niddler.lib.debugger.model.rewrite.action.ModifyHostAction
+import com.icapps.niddler.lib.debugger.model.rewrite.action.ModifyPathAction
+import com.icapps.niddler.lib.debugger.model.rewrite.action.ModifyQueryParameterAction
+import com.icapps.niddler.lib.debugger.model.rewrite.action.ModifyUrlAction
+import com.icapps.niddler.lib.debugger.model.rewrite.action.RemoveHeaderAction
+import com.icapps.niddler.lib.debugger.model.rewrite.action.RemoveQueryParameterAction
+import com.icapps.niddler.lib.debugger.model.rewrite.action.RequestAction
+import com.icapps.niddler.lib.debugger.model.rewrite.action.ResponseAction
 import org.apache.http.entity.ContentType
 import java.util.UUID
 
@@ -56,9 +68,9 @@ class RewriteDebugListener : NiddlerDebugListener {
         rulesSets.forEach { ruleSet ->
             if (!ruleSet.active) return@forEach
             if (ruleSet.matchesUrl(url)) {
-                val activeRules = ruleSet.rules.filter { it.active && it.matchRequest }
-                activeRules.forEach { rule ->
-                    newRequest = applyRequestRule(rule, newRequest
+                val activeActions = ruleSet.rules.mapNotNull { if (it.active && it.matchRequest) makeRequestAction(it) else null }
+                activeActions.forEach { action ->
+                    newRequest = action.apply(newRequest
                             ?: DebugRequest(url, method = method, headers = message.headers, encodedBody = message.body,
                                     bodyMimeType = message.headers?.get("content-type")?.firstOrNull()?.let { ContentType.parse(it).mimeType }))
                 }
@@ -71,39 +83,53 @@ class RewriteDebugListener : NiddlerDebugListener {
         return null
     }
 
-    override fun onResponseAction(requestId: String, response: NiddlerMessage): DebugResponse? {
-        return null
+    override fun onResponseAction(requestId: String, response: NiddlerMessage, request: NiddlerMessage?): DebugResponse? {
+        val url = request?.url ?: return null
+
+        var newResponse: DebugResponse? = null
+        rulesSets.forEach { ruleSet ->
+            if (!ruleSet.active) return@forEach
+            if (ruleSet.matchesUrl(url)) {
+                val activeActions = ruleSet.rules.mapNotNull { if (it.active && it.matchResponse) makeResponseAction(it) else null }
+                activeActions.forEach { action ->
+                    newResponse = action.apply(newResponse
+                            ?: DebugResponse(response.statusCode ?: 200, response.statusLine ?: "OK", headers = response.headers, encodedBody = response.body,
+                                    bodyMimeType = response.headers?.get("content-type")?.firstOrNull()?.let { ContentType.parse(it).mimeType }))
+                }
+            }
+        }
+        return newResponse
     }
 
-    private fun applyRequestRule(rule: RewriteRule, modifyRequest: DebugRequest): DebugRequest {
-        when (rule.ruleType) {
-            RewriteType.ADD_HEADER -> {
-                val newHeaderKey = rule.newHeader?.toLowerCase()
-                val newHeaderValue = rule.newValue
-                if (newHeaderKey.isNullOrBlank() || newHeaderValue.isNullOrBlank()) return modifyRequest
-                val headers = modifyRequest.headers?.toMutableMap()?: mutableMapOf()
-                if (!rule.matchHeader.isNullOrBlank()) {
-                    val headerToMatch = (if (!rule.matchHeaderRegex)
-                        headers[rule.matchHeader.toLowerCase()]
-                    else
-                        headers.entries.find { it.key.matches(Regex(rule.matchHeader)) }?.value)
-                            ?: return modifyRequest
+    private fun makeRequestAction(rule: RewriteRule): RequestAction? {
+        return when (rule.ruleType) {
+            RewriteType.ADD_HEADER -> AddHeaderAction(rule)
+            RewriteType.MODIFY_HEADER -> ModifyHeaderAction(rule)
+            RewriteType.REMOVE_HEADER -> RemoveHeaderAction(rule)
+            RewriteType.HOST -> ModifyHostAction(rule)
+            RewriteType.PATH -> ModifyPathAction(rule)
+            RewriteType.URL -> ModifyUrlAction(rule)
+            RewriteType.ADD_QUERY_PARAM -> AddQueryParameterAction(rule)
+            RewriteType.MODIFY_QUERY_PARAM -> ModifyQueryParameterAction(rule)
+            RewriteType.REMOVE_QUERY_PARAM -> RemoveQueryParameterAction(rule)
+            RewriteType.BODY -> ModifyBodyAction(rule)
+            RewriteType.RESPONSE_STATUS -> null
+        }
+    }
 
-                    //TODO value matching
-                }
-                headers[newHeaderKey] = (headers[newHeaderKey]?.toMutableList() ?: mutableListOf()).also { it.add(newHeaderValue) }
-                return DebugRequest(modifyRequest.url, modifyRequest.method, headers, modifyRequest.encodedBody, modifyRequest.bodyMimeType)
-            }
-            RewriteType.MODIFY_HEADER -> TODO()
-            RewriteType.REMOVE_HEADER -> TODO()
-            RewriteType.HOST -> TODO()
-            RewriteType.PATH -> TODO()
-            RewriteType.URL -> TODO()
-            RewriteType.ADD_QUERY_PARAM -> TODO()
-            RewriteType.MODIFY_QUERY_PARAM -> TODO()
-            RewriteType.REMOVE_QUERY_PARAM -> TODO()
-            RewriteType.RESPONSE_STATUS -> TODO()
-            RewriteType.BODY -> TODO()
+    private fun makeResponseAction(rule: RewriteRule): ResponseAction? {
+        return when (rule.ruleType) {
+            RewriteType.ADD_HEADER -> AddHeaderAction(rule)
+            RewriteType.MODIFY_HEADER -> ModifyHeaderAction(rule)
+            RewriteType.REMOVE_HEADER -> RemoveHeaderAction(rule)
+            RewriteType.BODY -> ModifyBodyAction(rule)
+            RewriteType.HOST,
+            RewriteType.PATH,
+            RewriteType.URL,
+            RewriteType.ADD_QUERY_PARAM,
+            RewriteType.MODIFY_QUERY_PARAM,
+            RewriteType.REMOVE_QUERY_PARAM,
+            RewriteType.RESPONSE_STATUS -> null
         }
     }
 

@@ -5,16 +5,16 @@ import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 import com.icapps.niddler.lib.utils.UrlUtil
 
-class AddQueryParameterAction(rule: RewriteRule) : BaseModifyQueryParameterAction(rule), BaseAddParameterAction {
+class AddQueryParameterAction(rule: RewriteRule) : BaseModifyQueryParameterAction(rule), BaseAddParameterAction, RequestAction {
 
     init {
         if (rule.ruleType != RewriteType.ADD_QUERY_PARAM) throw IllegalArgumentException("Not add query parameter type")
     }
 
-    fun apply(debugRequest: DebugRequest): DebugRequest {
+    override fun apply(debugRequest: DebugRequest): DebugRequest {
         if (!rule.matchRequest) return debugRequest
 
-        val newHeader = rule.newHeader?.toLowerCase()
+        val newHeader = rule.newHeader
         val newValue = rule.newValue
         if (newHeader.isNullOrBlank() || newValue.isNullOrBlank())
             return debugRequest

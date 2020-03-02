@@ -6,14 +6,14 @@ import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 import com.icapps.niddler.lib.utils.newBuilder
 import java.net.URI
 
-class ModifyPathAction(rule: RewriteRule) : BaseValueMatcher(rule) {
+class ModifyPathAction(rule: RewriteRule) : BaseValueMatcher(rule), RequestAction {
 
     init {
         if (rule.ruleType != RewriteType.PATH) throw IllegalArgumentException("Rule is not a modify path rule")
     }
 
     @Suppress("DuplicatedCode")
-    fun apply(debugRequest: DebugRequest): DebugRequest {
+    override fun apply(debugRequest: DebugRequest): DebugRequest {
         if (!rule.matchRequest) return debugRequest
 
         val url = try {

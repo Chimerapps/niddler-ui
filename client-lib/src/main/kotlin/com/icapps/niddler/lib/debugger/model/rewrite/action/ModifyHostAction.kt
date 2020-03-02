@@ -6,13 +6,13 @@ import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 import com.icapps.niddler.lib.utils.newBuilder
 import java.net.URI
 
-class ModifyHostAction(rule: RewriteRule) : BaseValueMatcher(rule) {
+class ModifyHostAction(rule: RewriteRule) : BaseValueMatcher(rule), RequestAction {
     init {
         if (rule.ruleType != RewriteType.HOST) throw IllegalArgumentException("Rule is not a modify host rule")
     }
 
     @Suppress("DuplicatedCode")
-    fun apply(debugRequest: DebugRequest): DebugRequest {
+    override fun apply(debugRequest: DebugRequest): DebugRequest {
         if (!rule.matchRequest) return debugRequest
 
         val url = try {
