@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.component.view
 
+import com.chimerapps.niddler.ui.util.ext.headerCase
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
 import com.chimerapps.niddler.ui.util.ui.Popup
 import com.chimerapps.niddler.ui.util.ui.PopupAction
@@ -151,8 +152,9 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         val messageHeaders = message.headers
         messageHeaders?.forEach {
             val values = it.value.joinToString(", ")
-            headersPanel.add(buildLabel(it.key, value = values, withPopupMenu = true), constraints.xy(1, row))
-            headersPanel.add(buildValue(values, key = it.key), constraints.xy(3, row))
+            val casedKey = it.key.headerCase()
+            headersPanel.add(buildLabel(casedKey, value = values, withPopupMenu = true), constraints.xy(1, row))
+            headersPanel.add(buildValue(values, key = casedKey), constraints.xy(3, row))
 
             ++row
         }
@@ -169,8 +171,9 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
             }
             extra.forEach {
                 val values = it.value.joinToString(", ")
-                headersPanel.add(buildLabel("* ${it.key}", value = values, withPopupMenu = true, rawText = it.key), constraints.xy(1, row))
-                headersPanel.add(buildValue(values, key = it.key), constraints.xy(3, row))
+                val casedKey = it.key.headerCase()
+                headersPanel.add(buildLabel("* $casedKey", value = values, withPopupMenu = true, rawText = casedKey), constraints.xy(1, row))
+                headersPanel.add(buildValue(values, key = casedKey), constraints.xy(3, row))
 
                 ++row
             }
