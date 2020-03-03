@@ -163,10 +163,6 @@ class NiddlerSessionWindow(private val project: Project,
             showConnectDialog(withDebugger = false)
         })
         actionGroup.add(ConnectDebuggerAction(this) {
-            RewriteDialog.show(SwingUtilities.getWindowAncestor(this), project)?.let {
-                ProjectConfig.save(project, ProjectConfig.CONFIG_REWRITE, it)
-            }
-
             showConnectDialog(withDebugger = true)
         })
         actionGroup.add(DisconnectAction(this) {
