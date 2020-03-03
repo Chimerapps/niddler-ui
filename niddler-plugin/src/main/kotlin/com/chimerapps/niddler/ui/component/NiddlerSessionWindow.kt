@@ -10,6 +10,7 @@ import com.chimerapps.discovery.ui.ManualConnection
 import com.chimerapps.discovery.utils.freePort
 import com.chimerapps.niddler.ui.NiddlerToolWindow
 import com.chimerapps.niddler.ui.actions.ConnectAction
+import com.chimerapps.niddler.ui.actions.ConnectDebuggerAction
 import com.chimerapps.niddler.ui.actions.DisconnectAction
 import com.chimerapps.niddler.ui.actions.ExportAction
 import com.chimerapps.niddler.ui.actions.LinkedAction
@@ -159,20 +160,14 @@ class NiddlerSessionWindow(private val project: Project,
         val actionGroup = DefaultActionGroup()
 
         actionGroup.add(ConnectAction(this) {
+            showConnectDialog(withDebugger = false)
+        })
+        actionGroup.add(ConnectDebuggerAction(this) {
             RewriteDialog.show(SwingUtilities.getWindowAncestor(this), project)?.let {
                 ProjectConfig.save(project, ProjectConfig.CONFIG_REWRITE, it)
             }
 
-            val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
-                    niddlerToolWindow.adbInterface ?: return@ConnectAction,
-                    IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin")), Device.NIDDLER_ANNOUNCEMENT_PORT) ?: return@ConnectAction
-
-            result.discovered?.let {
-                tryConnectSession(it)
-            }
-            result.direct?.let {
-                tryConnectDirect(it)
-            }
+            showConnectDialog(withDebugger = true)
         })
         actionGroup.add(DisconnectAction(this) {
             niddlerClient?.close()
@@ -203,6 +198,19 @@ class NiddlerSessionWindow(private val project: Project,
 
         rootContent.add(toolbarContainer, BorderLayout.NORTH)
         return toolbar
+    }
+
+    private fun showConnectDialog(withDebugger: Boolean) {
+        val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
+                niddlerToolWindow.adbInterface ?: return,
+                IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin")), Device.NIDDLER_ANNOUNCEMENT_PORT) ?: return
+
+        result.discovered?.let {
+            tryConnectSession(it, withDebugger)
+        }
+        result.direct?.let {
+            tryConnectDirect(it, withDebugger)
+        }
     }
 
     private fun setupViewToolbar(): ActionToolbar {
@@ -248,30 +256,32 @@ class NiddlerSessionWindow(private val project: Project,
         currentMessagesView = messagesView
     }
 
-    private fun tryConnectDirect(directConnection: ManualConnection) {
+    private fun tryConnectDirect(directConnection: ManualConnection, withDebugger: Boolean) {
         niddlerClient?.close()
         niddlerClient = null
         lastConnection?.tearDown()
         lastConnection = null
 
-        connectOnConnection(DirectPreparedConnection(directConnection.ip, directConnection.port))
+        connectOnConnection(DirectPreparedConnection(directConnection.ip, directConnection.port), withDebugger)
     }
 
-    private fun tryConnectSession(discovered: DiscoveredDeviceConnection) {
+    private fun tryConnectSession(discovered: DiscoveredDeviceConnection, withDebugger: Boolean) {
         niddlerClient?.close()
         niddlerClient = null
         lastConnection?.tearDown()
         lastConnection = null
 
         val connection = discovered.device.prepareConnection(freePort(), discovered.session.port)
-        connectOnConnection(connection)
+        connectOnConnection(connection, withDebugger)
     }
 
-    private fun connectOnConnection(connection: PreparedDeviceConnection) {
+    private fun connectOnConnection(connection: PreparedDeviceConnection, withDebugger: Boolean) {
         messageContainer.storage.clear()
 
-        niddlerClient = NiddlerClient(connection.uri, withDebugger = true, messageStorage = messageContainer.storage).also {
-            it.debugListener = debugListener
+        niddlerClient = NiddlerClient(connection.uri, withDebugger = withDebugger, messageStorage = messageContainer.storage).also {
+            if (withDebugger) {
+                it.debugListener = debugListener
+            }
             messageContainer.attach(it)
             it.registerMessageListener(statusBar)
             it.registerMessageListener(object : NiddlerMessageListener {
