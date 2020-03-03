@@ -5,3 +5,7 @@ fun String.trimToNull(): String? {
     if (trimmed.isEmpty()) return null
     return trimmed
 }
+
+fun String.headerCase(): String {
+    return split('-').map { it.capitalize() }.joinToString("-")
+}
