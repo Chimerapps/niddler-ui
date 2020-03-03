@@ -2,8 +2,11 @@ package com.chimerapps.niddler.ui
 
 import com.chimerapps.discovery.device.adb.ADBBootstrap
 import com.chimerapps.discovery.device.adb.ADBInterface
+import com.chimerapps.niddler.ui.actions.ConfigureRewriteAction
 import com.chimerapps.niddler.ui.actions.NewSessionAction
 import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
+import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
+import com.chimerapps.niddler.ui.model.ProjectConfig
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.adb.ADBUtils
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
@@ -25,6 +28,7 @@ import java.awt.GridBagLayout
 import java.io.File
 import javax.swing.BorderFactory
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 
 class NiddlerToolWindow(private val project: Project, private val disposable: Disposable) : SimpleToolWindowPanel(/* vertical */ false, /* borderless */ true) {
 
@@ -118,7 +122,13 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
         val newSessionAction = NewSessionAction(this) {
             newSessionWindow()
         }
+        val configureDebuggerAction = ConfigureRewriteAction(this) {
+            RewriteDialog.show(SwingUtilities.getWindowAncestor(this), project)?.let {
+                ProjectConfig.save(project, ProjectConfig.CONFIG_REWRITE, it)
+            }
+        }
         actionGroup.add(newSessionAction)
+        actionGroup.add(configureDebuggerAction)
 
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, false)
         setToolbar(toolbar.component)

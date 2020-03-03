@@ -60,7 +60,7 @@ internal class DebuggerServiceTest {
     @Test
     fun respondTo() {
         service.respondTo("299-2991-1-331", DebugResponse(200, "OK", null, null, null))
-        verify { mockingedConnection.sendMessage("{\"controlType\":\"debugReply\",\"payload\":{\"messageId\":\"299-2991-1-331\",\"code\":200,\"message\":\"OK\"},\"type\":\"controlDebug\"}") }
+        verify { mockingedConnection.sendMessage("{\"controlType\":\"debugReply\",\"payload\":{\"code\":200,\"message\":\"OK\"},\"messageId\":\"299-2991-1-331\",\"type\":\"controlDebug\"}") }
     }
 
     @Test

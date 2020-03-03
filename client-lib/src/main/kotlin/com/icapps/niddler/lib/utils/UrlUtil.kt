@@ -1,7 +1,9 @@
 package com.icapps.niddler.lib.utils
 
+import java.net.URI
 import java.net.URL
 import java.net.URLDecoder
+import java.net.URLEncoder
 
 /**
  * @author Nicola Verbeeck
@@ -36,4 +38,35 @@ class UrlUtil(private val fullUrl: String?) {
             return params
         }
 
+}
+
+internal fun makeQueryString(queryData: Map<String, List<String>>): String {
+    return buildString {
+        queryData.forEach { (key, values) ->
+            values.forEach { value ->
+                if (length > 0) append('&')
+                append(key).append('=').append(value)
+            }
+        }
+    }
+}
+
+internal class UriBuilder(url: URI) {
+
+    var scheme: String? = url.scheme
+    var host: String? = url.host
+    var port: Int = url.port
+    var path: String? = url.path
+    var query: String? = url.query
+    var fragment: String? = url.fragment
+    var userInfo: String? = url.userInfo
+
+    fun build(): URI {
+        return URI(scheme, userInfo, host, port, path, query, fragment)
+    }
+
+}
+
+internal fun URI.newBuilder(): UriBuilder {
+    return UriBuilder(this)
 }

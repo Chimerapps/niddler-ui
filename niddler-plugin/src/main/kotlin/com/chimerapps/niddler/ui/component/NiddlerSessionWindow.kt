@@ -10,6 +10,7 @@ import com.chimerapps.discovery.ui.ManualConnection
 import com.chimerapps.discovery.utils.freePort
 import com.chimerapps.niddler.ui.NiddlerToolWindow
 import com.chimerapps.niddler.ui.actions.ConnectAction
+import com.chimerapps.niddler.ui.actions.ConnectDebuggerAction
 import com.chimerapps.niddler.ui.actions.DisconnectAction
 import com.chimerapps.niddler.ui.actions.ExportAction
 import com.chimerapps.niddler.ui.actions.LinkedAction
@@ -22,7 +23,10 @@ import com.chimerapps.niddler.ui.component.view.MessageDetailView
 import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
+import com.chimerapps.niddler.ui.debugging.rewrite.RewriteConfig
+import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.AppPreferences
+import com.chimerapps.niddler.ui.model.ProjectConfig
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
@@ -31,6 +35,9 @@ import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.chimerapps.niddler.ui.util.ui.ensureMain
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
+import com.icapps.niddler.lib.debugger.model.DebuggerService
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebugListener
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebuggerInterface
 import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
@@ -76,6 +83,8 @@ class NiddlerSessionWindow(private val project: Project,
     private val splitter = JBSplitter(APP_PREFERENCE_SPLITTER_STATE, 0.6f)
     private var baseUrlHider: BaseUrlHider? = null
     private var currentFilter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>? = null
+    private val debugListener = RewriteDebugListener()
+    private var debuggerService: DebuggerService? = null//TODO disconnect
 
     var currentViewMode: ViewMode = ViewMode.VIEW_MODE_TIMELINE
         set(value) {
@@ -151,16 +160,10 @@ class NiddlerSessionWindow(private val project: Project,
         val actionGroup = DefaultActionGroup()
 
         actionGroup.add(ConnectAction(this) {
-            val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
-                    niddlerToolWindow.adbInterface ?: return@ConnectAction,
-                    IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin")), Device.NIDDLER_ANNOUNCEMENT_PORT) ?: return@ConnectAction
-
-            result.discovered?.let {
-                tryConnectSession(it)
-            }
-            result.direct?.let {
-                tryConnectDirect(it)
-            }
+            showConnectDialog(withDebugger = false)
+        })
+        actionGroup.add(ConnectDebuggerAction(this) {
+            showConnectDialog(withDebugger = true)
         })
         actionGroup.add(DisconnectAction(this) {
             niddlerClient?.close()
@@ -191,6 +194,19 @@ class NiddlerSessionWindow(private val project: Project,
 
         rootContent.add(toolbarContainer, BorderLayout.NORTH)
         return toolbar
+    }
+
+    private fun showConnectDialog(withDebugger: Boolean) {
+        val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
+                niddlerToolWindow.adbInterface ?: return,
+                IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin")), Device.NIDDLER_ANNOUNCEMENT_PORT) ?: return
+
+        result.discovered?.let {
+            tryConnectSession(it, withDebugger)
+        }
+        result.direct?.let {
+            tryConnectDirect(it, withDebugger)
+        }
     }
 
     private fun setupViewToolbar(): ActionToolbar {
@@ -236,29 +252,32 @@ class NiddlerSessionWindow(private val project: Project,
         currentMessagesView = messagesView
     }
 
-    private fun tryConnectDirect(directConnection: ManualConnection) {
+    private fun tryConnectDirect(directConnection: ManualConnection, withDebugger: Boolean) {
         niddlerClient?.close()
         niddlerClient = null
         lastConnection?.tearDown()
         lastConnection = null
 
-        connectOnConnection(DirectPreparedConnection(directConnection.ip, directConnection.port))
+        connectOnConnection(DirectPreparedConnection(directConnection.ip, directConnection.port), withDebugger)
     }
 
-    private fun tryConnectSession(discovered: DiscoveredDeviceConnection) {
+    private fun tryConnectSession(discovered: DiscoveredDeviceConnection, withDebugger: Boolean) {
         niddlerClient?.close()
         niddlerClient = null
         lastConnection?.tearDown()
         lastConnection = null
 
         val connection = discovered.device.prepareConnection(freePort(), discovered.session.port)
-        connectOnConnection(connection)
+        connectOnConnection(connection, withDebugger)
     }
 
-    private fun connectOnConnection(connection: PreparedDeviceConnection) {
+    private fun connectOnConnection(connection: PreparedDeviceConnection, withDebugger: Boolean) {
         messageContainer.storage.clear()
 
-        niddlerClient = NiddlerClient(connection.uri, withDebugger = false).also {
+        niddlerClient = NiddlerClient(connection.uri, withDebugger = withDebugger, messageStorage = messageContainer.storage).also {
+            if (withDebugger) {
+                it.debugListener = debugListener
+            }
             messageContainer.attach(it)
             it.registerMessageListener(statusBar)
             it.registerMessageListener(object : NiddlerMessageListener {
@@ -267,11 +286,31 @@ class NiddlerSessionWindow(private val project: Project,
                 }
             })
             it.registerMessageListener(detailView)
+
+            it.registerMessageListener(object : NiddlerMessageListener {
+                override fun onReady() {
+                    val client = niddlerClient
+                    if (client?.withDebugger == true) {
+                        val rewriteConfig = ProjectConfig.load<RewriteConfig>(project, ProjectConfig.CONFIG_REWRITE) ?: return
+                        if (rewriteConfig.allEnabled) {
+                            debuggerService = DebuggerService(client).also { service ->
+                                service.connect()
+                                RewriteDebuggerInterface(service).also { rewriteDebuggerInterface ->
+                                    debugListener.updateRuleSets(rewriteConfig.sets)
+                                    rewriteConfig.sets.forEach { set -> rewriteDebuggerInterface.addRuleSet(set) }
+                                }
+                                service.setActive(true)
+                            }
+                        }
+                    }
+                }
+            })
         }
         niddlerClient?.connect()
         lastConnection = connection
         connectionMode = ConnectionMode.MODE_CONNECTED
     }
+
 
     override fun onMessage(message: ParsedNiddlerMessage) {
         currentMessagesView?.onMessagesUpdated()

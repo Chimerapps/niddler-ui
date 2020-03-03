@@ -22,6 +22,7 @@ internal const val MESSAGE_ADD_BLACKLIST = "addBlacklist"
 internal const val MESSAGE_REMOVE_BLACKLIST = "removeBlacklist"
 internal const val MESSAGE_ADD_DEFAULT_RESPONSE = "addDefaultResponse"
 internal const val MESSAGE_DEBUG_REPLY = "debugReply"
+internal const val MESSAGE_DEBUG_REQUEST = "debugRequest"
 internal const val MESSAGE_ADD_REQUEST = "addRequest"
 internal const val MESSAGE_REMOVE_REQUEST = "removeRequest"
 internal const val MESSAGE_ADD_RESPONSE = "addResponse"
@@ -34,7 +35,8 @@ internal const val MESSAGE_ADD_REQUEST_OVERRIDE = "addRequestOverride"
 internal const val MESSAGE_REMOVE_REQUEST_OVERRIDE = "removeRequestOverride"
 
 open class NiddlerDebugControlMessage(val controlType: String,
-                                      val payload: Any?)
+                                      val payload: Any?,
+                                      val messageId: String? = null)
     : NiddlerClientMessage(CONTROL_DEBUG)
 
 class NiddlerRootMessage(val type: String)
@@ -79,8 +81,6 @@ class RemoveResponseActionMessage(id: String)
 class RemoveRequestOverrideActionMessage(id: String)
     : NiddlerDebugControlMessage(MESSAGE_REMOVE_REQUEST_OVERRIDE, ActionPayload(id))
 
-data class DebugReplyPayload(val messageId: String)
-
 abstract class DebugMessage(
         @Expose var headers: Map<String, List<String>>?,
         @Expose var encodedBody: String?,
@@ -90,13 +90,25 @@ class DebugResponse(@Expose val code: Int,
                     @Expose val message: String,
                     headers: Map<String, List<String>>?,
                     encodedBody: String?,
-                    bodyMimeType: String?) : DebugMessage(headers, encodedBody, bodyMimeType)
+                    bodyMimeType: String?) : DebugMessage(headers, encodedBody, bodyMimeType) {
+
+    fun copy(code: Int = this.code, message: String = this.message, headers: Map<String, List<String>>? = this.headers,
+             encodedBody: String? = this.encodedBody, bodyMimeType: String? = this.bodyMimeType): DebugResponse {
+        return DebugResponse(code, message, headers, encodedBody, bodyMimeType)
+    }
+}
 
 class DebugRequest(@Expose var url: String = "",
                    @Expose var method: String = "",
                    headers: Map<String, List<String>>? = null,
                    encodedBody: String? = null,
                    bodyMimeType: String? = null) : DebugMessage(headers, encodedBody, bodyMimeType) {
+
+    fun copy(url: String = this.url, method: String = this.method, headers: Map<String, List<String>>? = this.headers,
+             encodedBody: String? = this.encodedBody, bodyMimeType: String? = this.bodyMimeType): DebugRequest {
+        return DebugRequest(url, method, headers, encodedBody, bodyMimeType)
+    }
+
     override fun toString(): String {
         return url
     }

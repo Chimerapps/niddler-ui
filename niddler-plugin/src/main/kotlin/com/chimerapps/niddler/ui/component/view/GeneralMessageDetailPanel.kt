@@ -82,12 +82,8 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         fillHeaders(message)
 
         val trace = message.trace
-        if (!trace.isNullOrEmpty()) {
-            tracePanel.setStackTrace(trace)
-            tracePanel.parent.isVisible = true
-        } else {
-            tracePanel.parent.isVisible = false
-        }
+        tracePanel.setStackTrace(trace)
+
         contextPanel.parent.isVisible = false
 
         needsResponse = (message.isRequest && other == null)
