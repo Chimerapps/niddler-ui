@@ -251,6 +251,13 @@ class RewriteDetailPanel(private val parentWindow: Window,
     }
     private val rulesRemoveButton = JButton("Remove").also {
         rulesActionsPanel.add(it)
+        it.addActionListener {
+            val rows = rulesTable.selectedRows.reversed()
+            rows.forEach { row ->
+                (rulesTable.model as DefaultTableModel).removeRow(row)
+            }
+            rulesTable.clearSelection()
+        }
     }
     private val rulesUpButton = JButton("Up").also {
         rulesActionsPanel.add(it)

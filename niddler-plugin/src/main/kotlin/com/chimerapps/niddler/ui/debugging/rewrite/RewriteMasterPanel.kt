@@ -56,7 +56,7 @@ class RewriteMasterPanel(private val project: Project?,
         add(it, constraints)
     }
 
-    val rulesList = CheckBoxList<RewriteSet>().also {
+    private val rulesList = CheckBoxList<RewriteSet>().also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 1
@@ -89,7 +89,7 @@ class RewriteMasterPanel(private val project: Project?,
         add(JBScrollPane(it).also { scroller -> scroller.border = BorderFactory.createLineBorder(Color.GRAY) }, constraints)
     }
 
-    val addButton = JButton("Add").also {
+    private val addButton = JButton("Add").also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 2
@@ -100,9 +100,15 @@ class RewriteMasterPanel(private val project: Project?,
             weightx = 50.0
         }
         add(it, constraints)
+        it.addActionListener {
+            val ruleSet = RewriteSet(true, "Unnamed", emptyList(), emptyList())
+            onRewriteSetAdded(ruleSet)
+            rulesList.addItem(ruleSet, ruleSet.name, ruleSet.active)
+            rulesList.selectedIndex = rulesList.itemsCount - 1
+        }
     }
 
-    val removeButton: JButton = JButton("Remove").also {
+    private val removeButton: JButton = JButton("Remove").also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 2
@@ -117,11 +123,12 @@ class RewriteMasterPanel(private val project: Project?,
             rulesList.selectedIndices.reversed().forEach { index ->
                 onRewriteSetRemoved(index)
                 (rulesList.model as DefaultListModel).remove(index)
+                print("Items left: ${rulesList.model.size}")
             }
         }
     }
 
-    val importButton = JButton("Import").also {
+    private val importButton = JButton("Import").also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 3
@@ -137,7 +144,7 @@ class RewriteMasterPanel(private val project: Project?,
         }
     }
 
-    val exportButton = JButton("Export").also {
+    private val exportButton = JButton("Export").also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 3

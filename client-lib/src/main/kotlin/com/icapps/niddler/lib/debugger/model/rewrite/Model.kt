@@ -1,5 +1,6 @@
 package com.icapps.niddler.lib.debugger.model.rewrite
 
+import java.util.UUID
 import java.util.regex.Pattern
 
 enum class RewriteType(val charlesCode: Int) {
@@ -36,7 +37,8 @@ enum class ReplaceType(val charlesCode: Int) {
 data class RewriteSet(val active: Boolean,
                       val name: String,
                       val locations: List<RewriteLocationMatch>,
-                      val rules: List<RewriteRule>) {
+                      val rules: List<RewriteRule>,
+                      @Transient val internalUniqueId: String = UUID.randomUUID().toString()) {
     fun matchesUrl(url: String): Boolean {
         return locations.any { Regex(it.location.asRegex()).matches(url) }
     }
