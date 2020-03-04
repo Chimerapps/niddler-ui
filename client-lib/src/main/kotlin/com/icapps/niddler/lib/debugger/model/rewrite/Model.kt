@@ -82,11 +82,11 @@ data class RewriteRule(val active: Boolean,
 data class RewriteLocationMatch(val location: RewriteLocation,
                                 val enabled: Boolean)
 
-data class RewriteLocation(val protocol: String?,
-                           val host: String?,
-                           val port: String?,
-                           val path: String?,
-                           val query: String?) {
+data class RewriteLocation(val protocol: String? = null,
+                           val host: String? = null,
+                           val port: String? = null,
+                           val path: String? = null,
+                           val query: String? = null) {
 
     fun asString(): String {
         var previousWasStar = false

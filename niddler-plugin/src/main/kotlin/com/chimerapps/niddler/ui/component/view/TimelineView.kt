@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.component.view
 
+import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
@@ -11,6 +12,8 @@ import com.chimerapps.niddler.ui.util.ui.setColumnPreferredWidth
 import com.icapps.niddler.lib.codegen.CurlCodeGenerator
 import com.icapps.niddler.lib.connection.model.NetworkNiddlerMessage
 import com.icapps.niddler.lib.connection.model.isCachedResponse
+import com.icapps.niddler.lib.connection.model.isResponse
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.BodyFormat
 import com.icapps.niddler.lib.model.BodyFormatType
@@ -18,6 +21,7 @@ import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.utils.ObservableMutableList
 import com.icapps.niddler.lib.utils.getStatusCodeString
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import java.awt.BorderLayout
@@ -37,9 +41,11 @@ import javax.swing.JPanel
 import javax.swing.JPopupMenu
 import javax.swing.JTable
 import javax.swing.ListSelectionModel
+import javax.swing.SwingUtilities
 import javax.swing.table.AbstractTableModel
 
-class TimelineView(private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>,
+class TimelineView(private val project: Project,
+                   private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>,
                    private val selectionListener: MessageSelectionListener,
                    private val baseUrlHideListener: BaseUrlHideListener) : JPanel(BorderLayout()), MessagesView {
 
@@ -83,6 +89,12 @@ class TimelineView(private val messageContainer: NiddlerMessageStorage<ParsedNid
 
             if (urlContainer != null)
                 actions += "Export cUrl request" action { ClipboardUtil.copyToClipboard(StringSelection(CurlCodeGenerator().generateRequestCode(urlContainer))) }
+
+            if (urlContainer != null) {
+                actions += "Add request rewrite rule" action {
+                    RewriteDialog.showAdd(SwingUtilities.getWindowAncestor(this), project, urlContainer)
+                }
+            }
 
             if (url != null) {
                 val hider = urlHider

@@ -1,13 +1,17 @@
 package com.chimerapps.niddler.ui.debugging.rewrite
 
 import com.chimerapps.niddler.ui.model.ProjectConfig
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocation
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocationMatch
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteSet
+import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.openapi.project.Project
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Toolkit
 import java.awt.Window
+import java.net.URI
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -15,7 +19,7 @@ import javax.swing.JButton
 import javax.swing.JDialog
 import javax.swing.JPanel
 
-class RewriteDialog(parent: Window?, private val project: Project) : JDialog(parent, "Rewrite settings", ModalityType.APPLICATION_MODAL) {
+class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrite settings", ModalityType.APPLICATION_MODAL) {
 
     companion object {
         fun show(parent: Window?, project: Project): RewriteConfig? {
@@ -25,6 +29,16 @@ class RewriteDialog(parent: Window?, private val project: Project) : JDialog(par
 
             dialog.isVisible = true
             return dialog.response
+        }
+
+        fun showAdd(parent: Window?, project: Project, message: ParsedNiddlerMessage) {
+            val dialog = RewriteDialog(parent, project)
+            if (dialog.parent != null)
+                dialog.setLocationRelativeTo(parent)
+
+            dialog.addNewRuleFor(message)
+
+            dialog.isVisible = true
         }
     }
 
@@ -100,7 +114,7 @@ class RewriteDialog(parent: Window?, private val project: Project) : JDialog(par
 
         ProjectConfig.load<RewriteConfig>(project, ProjectConfig.CONFIG_REWRITE)?.let {
             masterPanel.allEnabled = it.allEnabled
-            masterPanel.addRewriteSets(it.sets)
+            masterPanel.addRewriteSets(it.sets, selectLast = false)
         }
     }
 
@@ -121,6 +135,25 @@ class RewriteDialog(parent: Window?, private val project: Project) : JDialog(par
         rules[oldIndex] = new
         masterPanel.rewriteSetUpdated(oldIndex, new)
     }
+
+    private fun addNewRuleFor(message: ParsedNiddlerMessage) {
+        val set = RewriteSet(active = true,
+                name = "No name",
+                locations = listOf(RewriteLocationMatch(enabled = true, location = createRewriteLocationFor(message))),
+                rules = listOf());
+
+        masterPanel.addRewriteSets(listOf(set), selectLast = true)
+    }
 }
 
 data class RewriteConfig(val allEnabled: Boolean, val sets: List<RewriteSet>)
+
+private fun createRewriteLocationFor(message: ParsedNiddlerMessage): RewriteLocation {
+    val uri = message.url?.let { URI.create(it) } ?: return RewriteLocation()
+
+    return RewriteLocation(protocol = uri.scheme,
+            port = uri.port.let { if (it == -1) null else it }?.toString(),
+            query = uri.query,
+            path = uri.path,
+            host = uri.host)
+}

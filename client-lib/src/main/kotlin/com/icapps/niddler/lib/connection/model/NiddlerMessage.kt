@@ -51,6 +51,9 @@ interface NiddlerMessage {
 
 }
 
+inline val NiddlerMessage.isResponse : Boolean
+    get() = !isRequest
+
 val NiddlerMessage.isCachedResponse: Boolean
     get() = !isRequest && (networkReply?.statusCode == 304)
 

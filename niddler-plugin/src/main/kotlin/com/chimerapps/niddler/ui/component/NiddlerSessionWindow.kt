@@ -236,7 +236,7 @@ class NiddlerSessionWindow(private val project: Project,
     private fun updateView() {
         ensureMain {
             when (currentViewMode) {
-                ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(messageContainer.storage, detailView, baseUrlHideListener = this))
+                ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(project, messageContainer.storage, detailView, baseUrlHideListener = this))
                 ViewMode.VIEW_MODE_LINKED -> replaceMessagesView(LinkedView(messageContainer.storage, detailView, baseUrlHideListener = this))
             }
         }

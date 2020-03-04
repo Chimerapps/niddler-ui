@@ -196,11 +196,13 @@ class RewriteMasterPanel(private val project: Project?,
         rulesList.updateItem(rulesList.getItemAt(index)!!, new, new.name)
     }
 
-    fun addRewriteSets(sets: List<RewriteSet>) {
+    fun addRewriteSets(sets: List<RewriteSet>, selectLast: Boolean) {
         sets.forEach { ruleSet ->
             onRewriteSetAdded(ruleSet)
             rulesList.addItem(ruleSet, ruleSet.name, ruleSet.active)
         }
+        if (selectLast)
+            rulesList.selectedIndex = rulesList.itemsCount - 1
     }
 
 }

@@ -8,6 +8,12 @@
 
     <change-notes><![CDATA[
     <p>
+        <b>2.6.1</b>
+        <ul>
+            <li>Headers are now displayed with the first letters capitalized</li>
+        </ul>
+    </p>
+    <p>
         <b>2.6.0</b>
         <ul>
             <li>Start bringing back debugging - rewrite only</li>
