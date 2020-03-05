@@ -28,6 +28,8 @@ object IncludedIcons {
         val incoming_cached = loadIcon("/ic_down_cache$hasSvgExtension")
         val outgoing = loadIcon("/ic_up$hasSvgExtension")
         val logo = loadIcon("/niddler_logo.png")
+        val incoming_debugged = loadIcon("/ic_down_debug$hasSvgExtension")
+        val outgoing_debugged = loadIcon("/ic_up_debug$hasSvgExtension")
     }
 
     object Action {

@@ -9,7 +9,6 @@ import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.util.containers.isNullOrEmpty
 import com.intellij.util.ui.JBFont
 import com.jgoodies.forms.layout.CellConstraints
 import com.jgoodies.forms.layout.FormLayout
@@ -151,6 +150,8 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         var row = 1
         val messageHeaders = message.headers
         messageHeaders?.forEach {
+            if (it.key.toLowerCase() == "x-niddler-debug") return@forEach
+
             val values = it.value.joinToString(", ")
             val casedKey = it.key.headerCase()
             headersPanel.add(buildLabel(casedKey, value = values, withPopupMenu = true), constraints.xy(1, row))

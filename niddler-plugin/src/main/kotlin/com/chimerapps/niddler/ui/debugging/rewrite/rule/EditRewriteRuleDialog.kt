@@ -65,6 +65,8 @@ class EditRewriteRuleDialog(parent: Window?,
             matchValueText.text = source.matchValue ?: ""
             matchNameRegex.isSelected = source.matchHeaderRegex
             matchValueRegex.isSelected = source.matchValueRegex
+            matchEntire.isSelected = source.matchWholeValue
+            caseSensitive.isSelected = source.caseSensitive
 
             replaceNameText.text = source.newHeader ?: ""
             replaceValueText.text = source.newValue ?: ""

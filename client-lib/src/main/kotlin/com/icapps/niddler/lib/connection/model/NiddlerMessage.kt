@@ -51,11 +51,14 @@ interface NiddlerMessage {
 
 }
 
-inline val NiddlerMessage.isResponse : Boolean
+inline val NiddlerMessage.isResponse: Boolean
     get() = !isRequest
 
 val NiddlerMessage.isCachedResponse: Boolean
     get() = !isRequest && (networkReply?.statusCode == 304)
+
+val NiddlerMessage.isDebugOverride: Boolean
+    get() = headers?.any { "x-niddler-debug".equals(it.key, ignoreCase = true) } == true
 
 class NetworkNiddlerMessage(
         override val requestId: String,
