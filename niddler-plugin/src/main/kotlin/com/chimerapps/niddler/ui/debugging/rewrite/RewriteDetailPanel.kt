@@ -78,7 +78,7 @@ class RewriteDetailPanel(private val parentWindow: Window,
             val item = currentItem ?: return@addChangeListener
             val newName = it.text.trim()
             if (item.name != newName) {
-                val copy = item.copy(name = newName)
+                val copy = item.copy(name = newName, id = item.id)
                 _currentItemInternal = copy
                 onItemUpdated(item, copy)
             }

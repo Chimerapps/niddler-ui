@@ -14,6 +14,7 @@ import java.awt.Color
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.io.File
+import java.util.UUID
 import javax.swing.BorderFactory
 import javax.swing.DefaultListModel
 import javax.swing.JButton
@@ -101,7 +102,7 @@ class RewriteMasterPanel(private val project: Project?,
         }
         add(it, constraints)
         it.addActionListener {
-            val ruleSet = RewriteSet(true, "Unnamed", emptyList(), emptyList())
+            val ruleSet = RewriteSet(true, "Unnamed", emptyList(), emptyList(), UUID.randomUUID().toString())
             onRewriteSetAdded(ruleSet)
             rulesList.addItem(ruleSet, ruleSet.name, ruleSet.active)
             rulesList.selectedIndex = rulesList.itemsCount - 1

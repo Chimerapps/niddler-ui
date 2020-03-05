@@ -12,6 +12,7 @@ import java.awt.GridBagLayout
 import java.awt.Toolkit
 import java.awt.Window
 import java.net.URI
+import java.util.UUID
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -113,8 +114,9 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
         size = minSize
 
         ProjectConfig.load<RewriteConfig>(project, ProjectConfig.CONFIG_REWRITE)?.let {
-            masterPanel.allEnabled = it.allEnabled
-            masterPanel.addRewriteSets(it.sets, selectLast = false)
+            val config = it.copy(sets = it.sets.createIds())
+            masterPanel.allEnabled = config.allEnabled
+            masterPanel.addRewriteSets(config.sets, selectLast = false)
         }
     }
 
@@ -140,10 +142,15 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
         val set = RewriteSet(active = true,
                 name = "No name",
                 locations = listOf(RewriteLocationMatch(enabled = true, location = createRewriteLocationFor(message))),
-                rules = listOf());
+                rules = listOf(),
+                id = UUID.randomUUID().toString())
 
         masterPanel.addRewriteSets(listOf(set), selectLast = true)
     }
+}
+
+private fun List<RewriteSet>.createIds(): List<RewriteSet> {
+    return map { it.copy(id = UUID.randomUUID().toString()) }
 }
 
 data class RewriteConfig(val allEnabled: Boolean, val sets: List<RewriteSet>)

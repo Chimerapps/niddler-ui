@@ -7,6 +7,7 @@ import org.w3c.dom.NodeList
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.UUID
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
@@ -132,7 +133,8 @@ class RewriteImporter {
         return RewriteSet(active = active,
                 name = name,
                 rules = rewriteRules.orEmpty(),
-                locations = locations.orEmpty()
+                locations = locations.orEmpty(),
+                id = UUID.randomUUID().toString()
         )
     }
 
