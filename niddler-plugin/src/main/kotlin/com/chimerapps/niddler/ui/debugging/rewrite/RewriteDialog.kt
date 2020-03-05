@@ -32,7 +32,7 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
             return dialog.response
         }
 
-        fun showAdd(parent: Window?, project: Project, message: ParsedNiddlerMessage) {
+        fun showAdd(parent: Window?, project: Project, message: ParsedNiddlerMessage): RewriteConfig? {
             val dialog = RewriteDialog(parent, project)
             if (dialog.parent != null)
                 dialog.setLocationRelativeTo(parent)
@@ -40,6 +40,7 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
             dialog.addNewRuleFor(message)
 
             dialog.isVisible = true
+            return dialog.response
         }
     }
 

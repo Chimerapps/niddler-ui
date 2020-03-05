@@ -2,6 +2,7 @@ package com.chimerapps.niddler.ui.component.view
 
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.AppPreferences
+import com.chimerapps.niddler.ui.model.ProjectConfig
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.Popup
@@ -91,7 +92,9 @@ class TimelineView(private val project: Project,
 
             if (urlContainer != null) {
                 actions += "Add request rewrite rule" action {
-                    RewriteDialog.showAdd(SwingUtilities.getWindowAncestor(this), project, urlContainer)
+                    RewriteDialog.showAdd(SwingUtilities.getWindowAncestor(this), project, urlContainer)?.let {
+                        ProjectConfig.save(project, ProjectConfig.CONFIG_REWRITE, it)
+                    }
                 }
             }
 

@@ -24,7 +24,6 @@ import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteConfig
-import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.model.ProjectConfig
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
@@ -292,15 +291,15 @@ class NiddlerSessionWindow(private val project: Project,
                     val client = niddlerClient
                     if (client?.withDebugger == true) {
                         val rewriteConfig = ProjectConfig.load<RewriteConfig>(project, ProjectConfig.CONFIG_REWRITE) ?: return
-                        if (rewriteConfig.allEnabled) {
-                            debuggerService = DebuggerService(client).also { service ->
-                                service.connect()
+                        debuggerService = DebuggerService(client).also { service ->
+                            service.connect()
+                            if (rewriteConfig.allEnabled) {
                                 RewriteDebuggerInterface(service).also { rewriteDebuggerInterface ->
                                     debugListener.updateRuleSets(rewriteConfig.sets)
                                     rewriteConfig.sets.forEach { set -> rewriteDebuggerInterface.addRuleSet(set) }
                                 }
-                                service.setActive(true)
                             }
+                            service.setActive(true)
                         }
                     }
                 }
