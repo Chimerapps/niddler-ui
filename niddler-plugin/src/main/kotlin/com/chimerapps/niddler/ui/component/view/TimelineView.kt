@@ -58,7 +58,7 @@ class TimelineView(private val project: Project,
         private const val PREFERENCE_KEY_INDEX_FORMAT_WIDTH = "timeline.format.width"
 
         private const val DEFAULT_TIMESTAMP_WIDTH = 90
-        private const val DEFAULT_DIRECTION_WIDTH = 36
+        private const val DEFAULT_DIRECTION_WIDTH = 48
         private const val DEFAULT_METHOD_WIDTH = 70
         private const val DEFAULT_URL_WIDTH = 400
         private const val DEFAULT_STATUS_WIDTH = -1
