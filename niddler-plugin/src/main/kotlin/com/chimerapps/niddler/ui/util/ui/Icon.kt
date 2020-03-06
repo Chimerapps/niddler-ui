@@ -24,12 +24,13 @@ object IncludedIcons {
     object Status {
         val connected = loadIcon("/ic_connected$hasSvgExtension")
         val disconnected = loadIcon("/ic_disconnected$hasSvgExtension")
-        val incoming = loadIcon("/ic_down$hasSvgExtension")
-        val incoming_cached = loadIcon("/ic_down_cache$hasSvgExtension")
-        val outgoing = loadIcon("/ic_up$hasSvgExtension")
+
+        val incoming = loadIcon("/ic_down_wide$hasSvgExtension")
+        val incoming_cached = loadIcon("/ic_down_wide_cache$hasSvgExtension")
+        val outgoing = loadIcon("/ic_up_wide$hasSvgExtension")
         val logo = loadIcon("/niddler_logo.png")
-        val incoming_debugged = loadIcon("/ic_down_debug$hasSvgExtension")
-        val outgoing_debugged = loadIcon("/ic_up_debug$hasSvgExtension")
+        val incoming_debugged = loadIcon("/ic_down_wide_debug$hasSvgExtension")
+        val outgoing_debugged = loadIcon("/ic_up_wide_debug$hasSvgExtension")
     }
 
     object Action {
