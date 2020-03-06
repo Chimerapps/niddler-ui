@@ -4,6 +4,7 @@ import com.chimerapps.niddler.ui.component.view.LinkedResponseNode
 import com.chimerapps.niddler.ui.component.view.LinkedRootNode
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.icapps.niddler.lib.connection.model.isCachedResponse
+import com.icapps.niddler.lib.connection.model.isDebugOverride
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.utils.getStatusCodeString
 import com.intellij.ui.JBDefaultTreeCellRenderer
@@ -28,6 +29,8 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
     private val directionUp = IncludedIcons.Status.outgoing
     private val directionDown = IncludedIcons.Status.incoming
     private val directionDownCached = IncludedIcons.Status.incoming_cached
+    private val directionUpDebug = IncludedIcons.Status.outgoing_debugged
+    private val directionDownDebug = IncludedIcons.Status.incoming_debugged
     private val timeCache = Date()
 
     private var myFocusedCalculated = false
@@ -108,6 +111,7 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
             requestTimeLabel.text = formatTime(request.timestamp)
             methodLabel.text = request.method
             urlLabel.text = request.url
+            requestDirectionLabel.icon = if (request.isDebugOverride) directionUpDebug else directionUp
 
             updateForeground(requestTimeLabel)
             updateForeground(methodLabel)
@@ -130,7 +134,7 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
         responseStatusLabel.text = formatStatusCode(response.statusCode)
         responseTypeLabel.text = response.bodyFormat.toString()
 
-        responseDirectionLabel.icon = if (response.isCachedResponse) directionDownCached else directionDown
+        responseDirectionLabel.icon = if (response.isDebugOverride) directionDownDebug else if (response.isCachedResponse) directionDownCached else directionDown
 
         updateForeground(responseTimeLabel)
         updateForeground(responseStatusLabel)
