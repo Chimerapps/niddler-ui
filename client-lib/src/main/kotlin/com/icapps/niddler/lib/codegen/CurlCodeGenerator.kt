@@ -65,6 +65,7 @@ class CurlCodeGenerator : CodeGenerator {
         addHeaders(builder, request)
         builder.append("-X \"").append(method.toUpperCase()).append("\" \"")
         builder.append(request.url!!).append('"')
+        addDecompress(builder, request)
         return builder.toString()
     }
 
@@ -82,11 +83,23 @@ class CurlCodeGenerator : CodeGenerator {
         }
 
         builder.append('"').append(request.url!!).append('"')
+        addDecompress(builder, request)
         return builder.toString()
     }
 
     private fun escape(data: String): String {
         return data.replace("\"", "\\\"")
+    }
+
+    private fun addDecompress(builder: StringBuilder, message: NiddlerMessage) {
+        val headers = message.headers ?: return
+        val encodingHeaders = headers.entries.find { "accept-encoding".equals(it.key, ignoreCase = true) }?.value ?: return
+        val isCompressing = encodingHeaders.any { headerValue ->
+            headerValue.contains("gzip") || headerValue.contains("br") || headerValue.contains("deflate")
+        }
+        if (!isCompressing) return;
+
+        builder.append(" --compressed")
     }
 
 }
