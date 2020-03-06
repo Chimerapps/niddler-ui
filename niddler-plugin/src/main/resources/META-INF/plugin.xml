@@ -1,12 +1,21 @@
 <idea-plugin>
     <id>com.icapps.niddler</id>
     <name>Niddler</name>
-    <version>2.6.3</version>
+    <version>2.6.4</version>
     <vendor email="support@chimerapps.com" url="https://www.icapps.com">Chimerapps &amp; icapps</vendor>
 
     <description>This plugin enables the niddler ui inside the IDE</description>
 
     <change-notes><![CDATA[
+    <p>
+        <b>2.6.4</b>
+        <ul>
+            <li>Enhanced icons to account for people with color-blindness</li>
+            <li>Fixed network headers not always showing up in detail panel</li>
+            <li>Curl export will now export network request when possible, containing cookies, ...</li>
+            <li>Curl export will add a flag to decompress the output when appropriate</li>
+        </ul>
+    </p>
     <p>
         <b>2.6.3</b>
         <ul>
