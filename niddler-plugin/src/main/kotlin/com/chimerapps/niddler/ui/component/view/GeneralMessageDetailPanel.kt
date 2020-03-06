@@ -79,7 +79,7 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
 
     fun init(message: ParsedNiddlerMessage, other: ParsedNiddlerMessage?) {
         fillGeneral(message, other)
-        fillHeaders(message)
+        fillHeaders(message, other)
 
         val trace = message.trace
         tracePanel.setStackTrace(trace)
@@ -134,7 +134,7 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         generalPanel.add(execTimeValue, constraints.xy(3, row))
     }
 
-    private fun fillHeaders(message: ParsedNiddlerMessage) {
+    private fun fillHeaders(message: ParsedNiddlerMessage, other: ParsedNiddlerMessage?) {
         headersPanel.removeAll()
 
         val layout = headersPanel.layout as FormLayout
@@ -160,7 +160,7 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
             ++row
         }
         val otherHeaders = if (message.isRequest) {
-            message.parsedNetworkRequest?.headers
+            other?.parsedNetworkRequest?.headers
         } else {
             message.parsedNetworkReply?.headers
         }

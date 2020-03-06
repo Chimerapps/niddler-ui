@@ -87,8 +87,14 @@ class TimelineView(private val project: Project,
             if (message.bodyFormat.type != BodyFormatType.FORMAT_EMPTY && !message.body.isNullOrEmpty())
                 actions += "Copy body" action { ClipboardUtil.copyToClipboard(message) }
 
-            if (urlContainer != null)
-                actions += "Export cUrl request" action { ClipboardUtil.copyToClipboard(StringSelection(CurlCodeGenerator().generateRequestCode(urlContainer))) }
+            if (urlContainer != null) {
+                val bestNetworkMatch = if (message.isRequest) {
+                    messageContainer.findResponse(message)?.parsedNetworkRequest
+                } else {
+                    message.parsedNetworkRequest
+                } ?: urlContainer
+                actions += "Export cUrl request" action { ClipboardUtil.copyToClipboard(StringSelection(CurlCodeGenerator().generateRequestCode(bestNetworkMatch))) }
+            }
 
             if (urlContainer != null) {
                 actions += "Add request rewrite rule" action {
