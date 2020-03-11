@@ -15,18 +15,18 @@ internal interface JsonNode<T> {
     var type: Type
     var value: String?
 
-    fun createElement(value: JsonElement, key: String?): T
+    fun createElement(value: JsonElement, key: String?, index: Int?): T
 
     fun populateFromArray(jsonArray: JsonArray) {
-        jsonArray.forEach {
-            children.add(createElement(it, null))
+        jsonArray.forEachIndexed { index, element ->
+            children.add(createElement(element, null, index))
         }
         type = Type.ARRAY
     }
 
     fun populateFromObject(jsonObject: JsonObject) {
         jsonObject.entrySet().forEach {
-            children.add(createElement(it.value, it.key))
+            children.add(createElement(it.value, it.key, index = null))
         }
         type = Type.OBJECT
     }

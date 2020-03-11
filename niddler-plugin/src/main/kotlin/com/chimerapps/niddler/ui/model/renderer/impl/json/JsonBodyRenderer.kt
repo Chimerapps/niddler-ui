@@ -70,7 +70,7 @@ private class NiddlerJsonTree(json: JsonElement) : Tree() {
     }
 
     fun resetModel(json: JsonElement) {
-        model = DefaultTreeModel(JsonTreeNode(json, null, null), false)
+        model = DefaultTreeModel(JsonTreeNode(json, parent = null, name = null, index = null), false)
     }
 
     override fun getPopupLocation(event: MouseEvent): Point? {
@@ -96,7 +96,8 @@ private class NiddlerJsonTree(json: JsonElement) : Tree() {
 }
 
 
-private class JsonTreeNode(override val jsonElement: JsonElement, private val parent: TreeNode?, override val name: String?) : TreeNode, JsonNode<JsonTreeNode> {
+private class JsonTreeNode(override val jsonElement: JsonElement, private val parent: TreeNode?,
+                           override val name: String?, private val index: Int?) : TreeNode, JsonNode<JsonTreeNode> {
 
     override val children: MutableList<JsonTreeNode> = arrayListOf()
     override var value: String? = null
@@ -112,8 +113,8 @@ private class JsonTreeNode(override val jsonElement: JsonElement, private val pa
         }
     }
 
-    override fun createElement(value: JsonElement, key: String?): JsonTreeNode {
-        return JsonTreeNode(value, this, key)
+    override fun createElement(value: JsonElement, key: String?, index: Int?): JsonTreeNode {
+        return JsonTreeNode(value, this, key, index)
     }
 
     override fun children(): Enumeration<*> = object : Enumeration<JsonTreeNode> {
@@ -139,10 +140,12 @@ private class JsonTreeNode(override val jsonElement: JsonElement, private val pa
     override fun getAllowsChildren(): Boolean = true //No idea?
 
     override fun toString(): String {
+        val infix = if (index != null) "[$index] " else ""
+
         return when (type) {
-            JsonNode.Type.ARRAY -> if (name != null) "$name[$childCount]" else "array[$childCount]"
-            JsonNode.Type.OBJECT -> name ?: "object"
-            JsonNode.Type.PRIMITIVE -> if (name != null) "$name : $value" else "$value"
+            JsonNode.Type.ARRAY -> if (name != null) "$name$infix[$childCount]" else "array$infix[$childCount]"
+            JsonNode.Type.OBJECT -> "${name ?: "object"}$infix"
+            JsonNode.Type.PRIMITIVE -> if (name != null) "$infix$name : $value" else "$infix$value"
         }
     }
 }

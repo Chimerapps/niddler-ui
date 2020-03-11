@@ -2,6 +2,7 @@ package com.icapps.niddler.lib.model.classifier
 
 import com.icapps.niddler.lib.model.BodyFormat
 import com.icapps.niddler.lib.model.BodyFormatType
+import com.icapps.niddler.lib.model.bodyparser.ImageBodyParser
 import com.icapps.niddler.lib.model.bodyparser.JsonBodyParser
 import com.icapps.niddler.lib.model.bodyparser.XmlBodyParser
 
@@ -16,6 +17,12 @@ class GuessingBodyParser(private val initialBodyFormat: BodyClassifierResult, pr
         private const val CR = 13.toByte()
         private const val TAB = 9.toByte()
         private const val MAX_ASCII_CHECK_LENGTH = 256
+
+        private val MAGIC_NUMBER_BMP = byteArrayOf(0x42.toByte(), 0x4D.toByte())
+        private val MAGIC_NUMBER_PNG = byteArrayOf(0x89.toByte(), 0x50.toByte(), 0x4E.toByte(), 0x47.toByte())
+        private val MAGIC_NUMBER_GIF = byteArrayOf(0x47.toByte(), 0x49.toByte(), 0x46.toByte(), 0x38.toByte())
+        private val MAGIC_NUMBER_JPG = byteArrayOf(0xFF.toByte(), 0xD8.toByte())
+        private val MAGIC_NUMBER_WEBP = byteArrayOf(0x52.toByte(), 0x49.toByte())
     }
 
     fun determineBodyType(): ConcreteBody? {
@@ -63,6 +70,11 @@ class GuessingBodyParser(private val initialBodyFormat: BodyClassifierResult, pr
                 }
             }
         }
+        if (checkMagic(MAGIC_NUMBER_BMP, content)) return checkImage(content, "image/bmp")
+        if (checkMagic(MAGIC_NUMBER_PNG, content)) return checkImage(content, "image/png")
+        if (checkMagic(MAGIC_NUMBER_JPG, content)) return checkImage(content, "image/jpeg")
+        if (checkMagic(MAGIC_NUMBER_GIF, content)) return checkImage(content, "image/gif")
+        if (checkMagic(MAGIC_NUMBER_WEBP, content)) return checkImage(content, "image/webp")
         return null
     }
 
@@ -75,6 +87,23 @@ class GuessingBodyParser(private val initialBodyFormat: BodyClassifierResult, pr
         return String(bytes, 0, bytes.size.coerceAtMost(32)).contains("html", ignoreCase = true)
     }
 
+    private fun checkMagic(toCheck: ByteArray, content: ByteArray): Boolean {
+        if (content.size < toCheck.size) return false
+        for (i in toCheck.indices) {
+            if (toCheck[i] != content[i]) return false
+        }
+        return true
+    }
+
+    private fun checkImage(content: ByteArray, mime: String): ConcreteBody? {
+        try {
+            ImageBodyParser().parse(BodyFormat(BodyFormatType.FORMAT_IMAGE, mime, null), content)?.let {
+                return ConcreteBody(BodyFormatType.FORMAT_IMAGE, mime, it)
+            }
+        } catch (e: Throwable) {
+        }
+        return null
+    }
 }
 
 data class ConcreteBody(
