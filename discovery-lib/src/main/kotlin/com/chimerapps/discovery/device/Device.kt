@@ -10,6 +10,7 @@ import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.URI
+import java.util.Base64
 import java.util.Objects
 
 /**
@@ -39,7 +40,11 @@ data class DiscoveredSession(val device: Device,
                              val packageName: String,
                              val port: Int,
                              val pid: Int,
-                             val protocolVersion: Int) {
+                             val protocolVersion: Int,
+                             val extensions: List<AnnouncementExtension>?) {
+
+    val sessionIcon: String? = extensions?.find { it.name == AnnouncementExtension.EXTENSION_NAME_ICON }?.decodeAsString
+
     override fun equals(other: Any?): Boolean {
         if (other !is DiscoveredSession)
             return false
@@ -60,8 +65,19 @@ private data class DiscoveryAnnouncementMessage(
         val packageName: String,
         val port: Int,
         val pid: Int,
-        val protocol: Int
+        val protocol: Int,
+        val extensions: List<AnnouncementExtension>?
 )
+
+data class AnnouncementExtension(val name: String, val data: String) {
+    companion object {
+        const val EXTENSION_NAME_ICON = "icon"
+        const val EXTENSION_NAME_TAG = "tag"
+    }
+
+    val decodeAsString: String
+        get() = String(Base64.getDecoder().decode(data))
+}
 
 open class DirectPreparedConnection(ip: String, port: Int) : PreparedDeviceConnection {
 
@@ -106,7 +122,7 @@ abstract class BaseDevice : Device {
                 val line = socket.getInputStream().bufferedReader().readLine()
                 line?.let {
                     val fromJson = gson.fromJson<List<DiscoveryAnnouncementMessage>>(line, createGsonListType<DiscoveryAnnouncementMessage>())
-                    fromJson.map { DiscoveredSession(this, it.packageName, it.port, it.pid, it.protocol) }
+                    fromJson.map { DiscoveredSession(this, it.packageName, it.port, it.pid, it.protocol, it.extensions) }
                 } ?: emptyList()
             } catch (e: IOException) {
                 log.debug("Failed to read announcement line", e)

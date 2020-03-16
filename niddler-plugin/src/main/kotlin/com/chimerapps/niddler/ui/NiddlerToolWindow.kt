@@ -107,13 +107,15 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
         }, "ADB startup").start()
     }
 
-    private fun newSessionWindow() {
+    private fun newSessionWindow() : NiddlerSessionWindow {
         val sessionWindow = NiddlerSessionWindow(project, disposable, this)
         val content = tabsContainer.createContent("${c++}-contentId", sessionWindow, "Session $c", null, null)
         content.setPreferredFocusedComponent { sessionWindow }
 
         content.isCloseable = true
         tabsContainer.addContent(content, -1, PlaceInGrid.center, false)
+        tabsContainer.selectAndFocus(content, true, true)
+        return sessionWindow
     }
 
     private fun setupViewActions(): ActionToolbar {
@@ -133,6 +135,10 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, false)
         setToolbar(toolbar.component)
         return toolbar
+    }
+
+    fun newSessionForTag(tag: String) {
+        newSessionWindow().connectToTag(tag)
     }
 
 }

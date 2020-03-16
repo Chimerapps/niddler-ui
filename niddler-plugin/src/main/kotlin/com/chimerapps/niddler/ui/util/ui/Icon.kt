@@ -10,7 +10,7 @@ private fun Any.loadIcon(path: String): Icon {
 
 object IncludedIcons {
 
-    private val supportsSvg = ApplicationInfo.getInstance().build.baselineVersion >= 182 //2018.2
+    val supportsSvg = ApplicationInfo.getInstance().build.baselineVersion >= 182 //2018.2
     private val isFlat = supportsSvg //also 2018.2
     private val hasSvgExtension = if (supportsSvg) ".svg" else ".png"
 

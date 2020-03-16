@@ -51,13 +51,15 @@ data class DiscoveredDeviceConnection(val device: Device, val session: Discovere
 data class ConnectDialogResult(val direct: ManualConnection?, val discovered: DiscoveredDeviceConnection?)
 
 class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInterface,
-                    iDeviceBootstrap: IDeviceBootstrap) : ConnectDialogUI(parent, "Select a device to connect to") {
+                    iDeviceBootstrap: IDeviceBootstrap, sessionIconProvider: SessionIconProvider)
+    : ConnectDialogUI(parent, "Select a device to connect to", sessionIconProvider) {
 
     companion object {
         private const val PORT_MAX = 65535
 
-        fun show(parent: Window?, adbInterface: ADBInterface, iDeviceBootstrap: IDeviceBootstrap, announcementPort: Int): ConnectDialogResult? {
-            val dialog = ConnectDialog(parent, announcementPort, adbInterface, iDeviceBootstrap)
+        fun show(parent: Window?, adbInterface: ADBInterface, iDeviceBootstrap: IDeviceBootstrap, announcementPort: Int,
+                 sessionIconProvider: SessionIconProvider = DefaultSessionIconProvider()): ConnectDialogResult? {
+            val dialog = ConnectDialog(parent, announcementPort, adbInterface, iDeviceBootstrap, sessionIconProvider)
             dialog.pack()
             dialog.setSize(500, 350)
             if (dialog.parent != null)
@@ -156,7 +158,7 @@ class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInt
 
 }
 
-abstract class ConnectDialogUI(parent: Window?, title: String) : JDialog(parent, title, ModalityType.APPLICATION_MODAL) {
+abstract class ConnectDialogUI(parent: Window?, title: String, sessionIconProvider: SessionIconProvider) : JDialog(parent, title, ModalityType.APPLICATION_MODAL) {
 
     protected val deviceModel = ConnectDialogModel()
     protected val devicesTree = Tree(deviceModel).also {
@@ -164,7 +166,7 @@ abstract class ConnectDialogUI(parent: Window?, title: String) : JDialog(parent,
         it.showsRootHandles = true
         it.isRootVisible = false
         it.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
-        it.cellRenderer = ConnectDialogTreeCellRenderer()
+        it.cellRenderer = ConnectDialogTreeCellRenderer(sessionIconProvider)
         it.selectionModel.addTreeSelectionListener { onDeviceSelectionChanged() }
 
         it.addMouseListener(object : MouseAdapter() {

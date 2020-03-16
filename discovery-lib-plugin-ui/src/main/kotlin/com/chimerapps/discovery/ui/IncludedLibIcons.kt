@@ -19,4 +19,11 @@ object IncludedLibIcons {
         val real = loadIcon("/ic_device_real$hasSvgExtension")
         val realApple = loadIcon("/ic_device_real_apple$hasSvgExtension")
     }
+
+    object Icons {
+        val android = loadIcon("/ic_icon_android$hasSvgExtension")
+        val apple = loadIcon("/ic_icon_apple$hasSvgExtension")
+        val dart = loadIcon("/ic_icon_dart$hasSvgExtension")
+        val flutter = loadIcon("/ic_icon_flutter$hasSvgExtension")
+    }
 }
