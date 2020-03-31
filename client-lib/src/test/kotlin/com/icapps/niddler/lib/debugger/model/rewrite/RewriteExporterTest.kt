@@ -1,7 +1,7 @@
 package com.icapps.niddler.lib.debugger.model.rewrite
 
-import junit.framework.Assert.assertTrue
 import org.custommonkey.xmlunit.XMLUnit
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayOutputStream

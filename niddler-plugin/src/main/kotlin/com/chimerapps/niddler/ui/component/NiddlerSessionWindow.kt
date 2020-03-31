@@ -36,6 +36,7 @@ import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.chimerapps.niddler.ui.util.ui.ensureMain
 import com.icapps.niddler.lib.connection.NiddlerClient
+import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
 import com.icapps.niddler.lib.debugger.model.DebuggerService
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebugListener
@@ -59,6 +60,8 @@ import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.ui.FilterComponent
 import com.intellij.ui.JBSplitter
+import com.intellij.ui.content.Content
+import com.intellij.util.IconUtil
 import java.awt.BorderLayout
 import java.io.File
 import java.io.FileOutputStream
@@ -77,6 +80,8 @@ class NiddlerSessionWindow(private val project: Project,
         private const val APP_PREFERENCE_SCROLL_TO_END = "scrollToEnd"
         private const val APP_PREFERENCE_SPLITTER_STATE = "${AppPreferences.NIDDLER_PREFIX}detailSplitter"
     }
+
+    lateinit var content: Content
 
     private val rootContent = JPanel(BorderLayout())
     private val connectToolbar = setupConnectToolbar()
@@ -204,7 +209,7 @@ class NiddlerSessionWindow(private val project: Project,
                 niddlerToolWindow.adbInterface ?: return,
                 IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin")),
                 Device.NIDDLER_ANNOUNCEMENT_PORT,
-                sessionIconProvider = ProjectSessionIconProvider(project)) ?: return
+                sessionIconProvider = ProjectSessionIconProvider.instance(project)) ?: return
 
         result.discovered?.let {
             tryConnectSession(it, withDebugger)
@@ -288,6 +293,16 @@ class NiddlerSessionWindow(private val project: Project,
             it.registerMessageListener(object : NiddlerMessageListener {
                 override fun onClosed() {
                     connectionMode = ConnectionMode.MODE_DISCONNECTED
+                }
+            })
+            it.registerMessageListener(object: NiddlerMessageListener{
+                override fun onServerInfo(serverInfo: NiddlerServerInfo) {
+                    ensureMain {
+                        val newIcon = serverInfo.icon?.let { iconString ->
+                            ProjectSessionIconProvider.instance(project).iconForString(iconString)
+                        }
+                        content.icon = newIcon
+                    }
                 }
             })
             it.registerMessageListener(detailView)

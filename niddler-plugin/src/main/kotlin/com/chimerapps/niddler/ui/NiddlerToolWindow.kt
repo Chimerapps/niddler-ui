@@ -111,6 +111,7 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
         val sessionWindow = NiddlerSessionWindow(project, disposable, this)
         val content = tabsContainer.createContent("${c++}-contentId", sessionWindow, "Session $c", null, null)
         content.setPreferredFocusedComponent { sessionWindow }
+        sessionWindow.content = content
 
         content.isCloseable = true
         tabsContainer.addContent(content, -1, PlaceInGrid.center, false)

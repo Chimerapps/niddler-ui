@@ -43,7 +43,7 @@ class WrappingDebuggerConfiguration : DebuggerConfiguration {
 
     constructor(stream: Reader) {
         configurationTree = try {
-            JsonParser().parse(stream).asJsonObject
+            JsonParser.parseReader(stream).asJsonObject
         } catch (e: Throwable) {
             JsonObject()
         }

@@ -20,7 +20,7 @@ class JsonBodyParser : BodyParser<JsonElement> {
         if (bytes.isEmpty())
             return null
         return try {
-            JsonParser().parse(InputStreamReader(ByteArrayInputStream(bytes), BodyParser.makeCharset(bodyFormat)))
+            JsonParser.parseReader(InputStreamReader(ByteArrayInputStream(bytes), BodyParser.makeCharset(bodyFormat)))
         } catch (e: Exception) {
             logger<JsonBodyParser>().debug("Failed to parse json: ", e)
             null

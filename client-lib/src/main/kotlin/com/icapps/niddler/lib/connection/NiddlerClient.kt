@@ -207,7 +207,7 @@ private class WebSocketNiddlerClient(serverURI: URI, private val parent: Niddler
 
     override fun onMessage(message: String) {
         log.debug("Got message: $message")
-        val json = JsonParser().parse(message).asJsonObject
+        val json = JsonParser.parseString(message).asJsonObject
         val messageType = json.get("type").asString
 
         if (messageType == NiddlerClient.MESSAGE_TYPE_PROTOCOL) {

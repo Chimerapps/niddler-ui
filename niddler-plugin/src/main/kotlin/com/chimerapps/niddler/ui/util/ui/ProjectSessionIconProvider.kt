@@ -9,8 +9,16 @@ import java.lang.Float.min
 import javax.swing.Icon
 import javax.swing.ImageIcon
 
-class ProjectSessionIconProvider(private val project: Project,
-                                 private val delegate: SessionIconProvider = DefaultSessionIconProvider()) : SessionIconProvider {
+class ProjectSessionIconProvider private constructor(private val project: Project,
+                                                     private val delegate: SessionIconProvider) : SessionIconProvider {
+
+    companion object {
+        private val projectInstances = mutableMapOf<Project, ProjectSessionIconProvider>()
+
+        fun instance(project: Project, delegate: SessionIconProvider = DefaultSessionIconProvider()): ProjectSessionIconProvider {
+            return projectInstances.getOrPut(project) { ProjectSessionIconProvider(project, delegate) }
+        }
+    }
 
     private val cache = mutableMapOf<String, Icon?>()
 
