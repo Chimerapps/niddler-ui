@@ -164,23 +164,16 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
 
         panel.foreground = tree.foreground
 
-        when {
-            UIUtil.isUnderGTKLookAndFeel() -> {
-                panel.isOpaque = false  // avoid nasty background
-            }
-            WideSelectionTreeUI.isWideSelection(tree) -> {
-                panel.isOpaque = false  // avoid erasing Nimbus focus frame
-            }
-            else -> {
-                panel.isOpaque = selected && hasFocus || selected && isFocused() // draw selection background even for non-opaque tree
-            }
+        if (WideSelectionTreeUI.isWideSelection(tree)) {
+            panel.isOpaque = false  // avoid nasty background
+        }else {
+            panel.isOpaque = selected && hasFocus || selected && isFocused() // draw selection background even for non-opaque tree
         }
     }
 
     private fun updateForeground(label: JBLabel) {
         if (mySelected && isFocused()) {
-            @Suppress("DEPRECATION")
-            label.foreground = UIUtil.getTreeSelectionForeground()
+            label.foreground = UIUtil.getTreeForeground(true, true)
         } else if (mySelected && UIUtil.isUnderAquaBasedLookAndFeel()) {
             label.foreground = UIUtil.getTreeForeground()
         } else {
