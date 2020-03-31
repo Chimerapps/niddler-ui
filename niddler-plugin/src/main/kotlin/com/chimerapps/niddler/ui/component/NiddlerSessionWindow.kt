@@ -292,7 +292,12 @@ class NiddlerSessionWindow(private val project: Project,
             it.registerMessageListener(statusBar)
             it.registerMessageListener(object : NiddlerMessageListener {
                 override fun onClosed() {
-                    connectionMode = ConnectionMode.MODE_DISCONNECTED
+                    ensureMain {
+                        connectionMode = ConnectionMode.MODE_DISCONNECTED
+                        content.icon?.let { icon ->
+                            content.icon = IconUtil.desaturate(icon)
+                        }
+                    }
                 }
             })
             it.registerMessageListener(object: NiddlerMessageListener{
