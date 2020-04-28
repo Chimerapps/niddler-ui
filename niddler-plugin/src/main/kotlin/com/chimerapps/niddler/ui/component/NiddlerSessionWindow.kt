@@ -5,7 +5,6 @@ import com.chimerapps.discovery.device.DirectPreparedConnection
 import com.chimerapps.discovery.device.PreparedDeviceConnection
 import com.chimerapps.discovery.device.idevice.IDeviceBootstrap
 import com.chimerapps.discovery.ui.ConnectDialog
-import com.chimerapps.discovery.ui.DefaultSessionIconProvider
 import com.chimerapps.discovery.ui.DiscoveredDeviceConnection
 import com.chimerapps.discovery.ui.ManualConnection
 import com.chimerapps.discovery.utils.freePort
@@ -300,7 +299,7 @@ class NiddlerSessionWindow(private val project: Project,
                     }
                 }
             })
-            it.registerMessageListener(object: NiddlerMessageListener{
+            it.registerMessageListener(object : NiddlerMessageListener {
                 override fun onServerInfo(serverInfo: NiddlerServerInfo) {
                     ensureMain {
                         val newIcon = serverInfo.icon?.let { iconString ->
@@ -405,6 +404,16 @@ class NiddlerSessionWindow(private val project: Project,
                 tryConnectSession(session, withDebugger = false) //TODO Debugger?
             }
         }.execute()
+    }
+
+    fun connectToDevice(device: Device, port: Int, withDebugger: Boolean) {
+        niddlerClient?.close()
+        niddlerClient = null
+        lastConnection?.tearDown()
+        lastConnection = null
+
+        val connection = device.prepareConnection(freePort(), port)
+        connectOnConnection(connection, withDebugger)
     }
 }
 

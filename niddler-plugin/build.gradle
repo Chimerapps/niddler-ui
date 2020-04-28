@@ -5,6 +5,10 @@ apply plugin: 'kotlin'
 
 def actualPluginVersion = hasProperty("internalBuildNumber") ? "$pluginVersion-$internalBuildNumber" : "$pluginVersion"
 
+def localProperties = new Properties()
+localProperties.load(project.rootProject.file('local.properties').newDataInputStream())
+def StudioCompilePath = localProperties.getProperty('StudioCompilePath')
+
 group 'com.icapps'
 version actualPluginVersion
 sourceCompatibility = 1.8
@@ -36,6 +40,9 @@ dependencies {
             dependencies "oro:oro:2.0.8:jar"
         }
     }
+    compileOnly fileTree(dir: "$StudioCompilePath/plugins/android/lib", include: ['*.jar'])
+    compileOnly fileTree(dir: "$StudioCompilePath/lib", include: ['*.jar'])
+
     deps.pluginCompile.each { name, dep ->
         implementation(dep) {
             exclude group: 'org.slf4j', module: 'slf4j-api'

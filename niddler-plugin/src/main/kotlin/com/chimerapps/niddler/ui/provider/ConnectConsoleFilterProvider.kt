@@ -23,7 +23,11 @@ class ConnectConsoleFilterProvider : ConsoleFilterProviderEx {
 
 class NiddlerConnectFilter(private val project: Project) : Filter, DumbAware {
 
-    private val matcher = Pattern.compile(".*Niddler Server running on (\\d+)\\s+\\[(\\S+)\\]\\s*").matcher("")
+    companion object {
+        const val START_REGEX = ".*Niddler Server running on (\\d+)\\s+\\[(\\S+)\\]\\s*"
+    }
+
+    private val matcher = Pattern.compile(START_REGEX).matcher("")
 
     override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
         if (!matcher.reset(line).matches()) return null

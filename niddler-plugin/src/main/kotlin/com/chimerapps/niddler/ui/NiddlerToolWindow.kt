@@ -1,9 +1,11 @@
 package com.chimerapps.niddler.ui
 
+import com.chimerapps.discovery.device.Device
 import com.chimerapps.discovery.device.adb.ADBBootstrap
 import com.chimerapps.discovery.device.adb.ADBInterface
 import com.chimerapps.niddler.ui.actions.ConfigureRewriteAction
 import com.chimerapps.niddler.ui.actions.NewSessionAction
+import com.chimerapps.niddler.ui.component.ConnectionMode
 import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.ProjectConfig
@@ -39,6 +41,7 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
     val isReady: Boolean
         get() = adbInterface != null
 
+    //TODO move bootstrapping to full plugin start to ensure we have a connection beforehand
     private var adbBootstrap: ADBBootstrap
     var adbInterface: ADBInterface? = null
         get() = synchronized(this@NiddlerToolWindow) {
@@ -101,13 +104,14 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
                 remove(loadingContent)
                 setContent(tabsContainer.component)
 
-                newSessionWindow() //Create first session window
+                if (tabsContainer.contents.isEmpty())
+                    newSessionWindow() //Create first session window
                 actionToolbar.updateActionsImmediately()
             }
         }, "ADB startup").start()
     }
 
-    private fun newSessionWindow() : NiddlerSessionWindow {
+    private fun newSessionWindow(): NiddlerSessionWindow {
         val sessionWindow = NiddlerSessionWindow(project, disposable, this)
         val content = tabsContainer.createContent("${c++}-contentId", sessionWindow, "Session $c", null, null)
         content.setPreferredFocusedComponent { sessionWindow }
@@ -117,6 +121,12 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
         tabsContainer.addContent(content, -1, PlaceInGrid.center, false)
         tabsContainer.selectAndFocus(content, true, true)
         return sessionWindow
+    }
+
+    private fun unusedOrNewSessionWindow(): NiddlerSessionWindow {
+        return tabsContainer.contents.find { content ->
+            (content.component as? NiddlerSessionWindow)?.connectionMode == ConnectionMode.MODE_DISCONNECTED
+        }?.let { it.component as NiddlerSessionWindow } ?: newSessionWindow()
     }
 
     private fun setupViewActions(): ActionToolbar {
@@ -142,4 +152,20 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
         newSessionWindow().connectToTag(tag)
     }
 
+    fun newSessionFor(info: QuickConnectionInfo, reuse: Boolean) {
+        val window = if (reuse) unusedOrNewSessionWindow() else newSessionWindow()
+        info.device?.let {
+            window.connectToDevice(it, info.port, withDebugger = false)
+            return
+        }
+
+        window.connectToTag(info.tag)
+    }
+
 }
+
+data class QuickConnectionInfo(
+        val port: Int,
+        val tag: String,
+        val device: Device? = null
+)

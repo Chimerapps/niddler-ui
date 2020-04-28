@@ -4,7 +4,7 @@ import com.chimerapps.niddler.ui.settings.ui.SettingsFormWrapper
 import com.intellij.openapi.options.Configurable
 import javax.swing.JComponent
 
-class ConfigurationProvider : Configurable {
+class ApplicationConfigurationProvider : Configurable {
 
     private var settingsForm: SettingsFormWrapper? = null
 
