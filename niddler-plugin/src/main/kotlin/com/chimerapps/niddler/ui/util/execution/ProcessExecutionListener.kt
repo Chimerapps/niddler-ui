@@ -43,7 +43,7 @@ class ProcessExecutionListener(val project: Project) {
                                          handler: ProcessHandler,
                                          private val reuseSession: Boolean) : ProcessListener {
 
-        private val androidHelper = AndroidQuickConnectHelper(executionEnvironment, handler)
+        private val androidHelper = AndroidQuickConnectHelper(executionEnvironment, handler, project)
 
         private val matcher = Pattern.compile(NiddlerConnectFilter.START_REGEX).matcher("")
 
@@ -83,7 +83,9 @@ class ProcessExecutionListener(val project: Project) {
         }
 
         private fun getQuickConnectionInfo(port: Int, tag: String): QuickConnectionInfo {
-            androidHelper.getQuickConnectionInfo(port, tag)?.let { return it }
+            androidHelper.getQuickConnectionInfo(port, tag)?.let {
+                return it
+            }
 
             return QuickConnectionInfo(port, tag)
         }

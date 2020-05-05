@@ -15,6 +15,7 @@ import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.MouseMotionAdapter
+import java.lang.reflect.Constructor
 import javax.swing.BoxLayout
 import javax.swing.JPanel
 import javax.swing.JTextPane
@@ -34,8 +35,18 @@ class StackTraceView(project: Project) : JPanel() {
             false
         }
 
+        val dartConsoleFilterConstructor: Constructor<*>? by lazy {
+            try {
+                Class.forName("com.jetbrains.lang.dart.ide.runner.DartConsoleFilter").declaredConstructors.find {
+                    it.parameterCount == 1 && it.parameterTypes[0].isAssignableFrom(Project::class.java)
+                }
+            } catch (e: Throwable) {
+                null
+            }
+        }
+
         fun isDartSupported(project: Project): Boolean = try {
-            Class.forName("com.jetbrains.lang.dart.ide.runner.DartConsoleFilter").declaredConstructors[0].newInstance(project) is Filter
+            dartConsoleFilterConstructor?.newInstance(project) is Filter
         } catch (e: Throwable) {
             false
         }
@@ -117,7 +128,7 @@ private class ExceptionHelper(project: Project, textArea: JTextPane) : BaseExcep
 private class DartExceptionHelper(project: Project,
                                   textArea: JTextPane)
     : BaseExceptionHelper(project,
-        Class.forName("com.jetbrains.lang.dart.ide.runner.DartConsoleFilter").declaredConstructors[0].newInstance(project) as Filter,
+        StackTraceView.dartConsoleFilterConstructor!!.newInstance(project) as Filter,
         textArea)
 
 internal open class BaseExceptionHelper(private val project: Project, private val filter: Filter, private val textArea: JTextPane) {

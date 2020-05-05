@@ -10,10 +10,12 @@ import com.chimerapps.discovery.device.PreparedDeviceConnection
 import com.chimerapps.niddler.ui.QuickConnectionInfo
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.project.Project
 import java.lang.reflect.Method
 
 class AndroidQuickConnectHelper(private val executionEnvironment: ExecutionEnvironment,
-                                private val handler: ProcessHandler) {
+                                private val handler: ProcessHandler,
+                                private val project: Project) {
 
     companion object {
 
@@ -35,7 +37,9 @@ class AndroidQuickConnectHelper(private val executionEnvironment: ExecutionEnvir
     }
 
     fun getQuickConnectionInfo(port: Int, tag: String): QuickConnectionInfo? {
-        if (!isAndroidSupported) return null
+        if (!isAndroidSupported) {
+            return null
+        }
 
         try {
             if (handler !is AndroidProcessHandler) {
