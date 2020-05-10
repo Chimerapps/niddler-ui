@@ -12,13 +12,15 @@ import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.chimerapps.niddler.ui.util.ui.setColumnPreferredWidth
 import com.icapps.niddler.lib.codegen.CurlCodeGenerator
 import com.icapps.niddler.lib.connection.model.NetworkNiddlerMessage
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.model.isCachedResponse
 import com.icapps.niddler.lib.connection.model.isDebugOverride
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.BodyFormat
 import com.icapps.niddler.lib.model.BodyFormatType
-import com.icapps.niddler.lib.model.NiddlerMessageStorage
+import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
 import com.icapps.niddler.lib.utils.ObservableMutableList
 import com.icapps.niddler.lib.utils.getStatusCodeString
 import com.intellij.openapi.project.Project
@@ -45,8 +47,9 @@ import javax.swing.SwingUtilities
 import javax.swing.table.AbstractTableModel
 
 class TimelineView(private val project: Project,
-                   private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>,
+                   private val messageContainer: NiddlerMessageStorage,
                    private val selectionListener: MessageSelectionListener,
+                   private val parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider,
                    private val baseUrlHideListener: BaseUrlHideListener) : JPanel(BorderLayout()), MessagesView {
 
     private companion object {
@@ -84,14 +87,14 @@ class TimelineView(private val project: Project,
             if (url != null) {
                 actions += "Copy URL" action { ClipboardUtil.copyToClipboard(StringSelection(url)) }
             }
-            if (message.bodyFormat.type != BodyFormatType.FORMAT_EMPTY && !message.body.isNullOrEmpty())
-                actions += "Copy body" action { ClipboardUtil.copyToClipboard(message) }
+            if (!message.body.isNullOrEmpty())
+                actions += "Copy body" action { ClipboardUtil.copyToClipboard(parsedNiddlerMessageProvider.provideParsedMessage(message).get()) }
 
             if (urlContainer != null) {
                 val bestNetworkMatch = if (message.isRequest) {
-                    messageContainer.findResponse(message)?.parsedNetworkRequest
+                    messageContainer.findResponse(message)?.networkRequest
                 } else {
-                    message.parsedNetworkRequest
+                    message.networkRequest
                 } ?: urlContainer
                 actions += "Export cUrl request" action { ClipboardUtil.copyToClipboard(StringSelection(CurlCodeGenerator().generateRequestCode(bestNetworkMatch))) }
             }
@@ -204,7 +207,7 @@ class TimelineView(private val project: Project,
             model.urlHider = value
         }
 
-    override var filter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>?
+    override var filter: NiddlerMessageStorage.Filter?
         get() = model.filter
         set(value) {
             model.filter = value
@@ -221,7 +224,7 @@ class TimelineView(private val project: Project,
 
 }
 
-class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>) : AbstractTableModel(), ObservableMutableList.Observer {
+class TimelineTableModel(private val messageContainer: NiddlerMessageStorage) : AbstractTableModel(), ObservableMutableList.Observer {
 
     companion object {
         const val INDEX_TIMESTAMP = 0
@@ -250,7 +253,7 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<Par
             field = value
             fireTableRowsUpdated(0, rowCount)
         }
-    var filter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>? = null
+    var filter: NiddlerMessageStorage.Filter? = null
         set(value) {
             if (field == value)
                 return
@@ -266,7 +269,7 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<Par
     private val downDebugIcon = IncludedIcons.Status.incoming_debugged
     private var messages = messageContainer.messagesChronological.newView(filter = filter, messageListener = this)
 
-    fun getMessageAtRow(rowIndex: Int): ParsedNiddlerMessage? {
+    fun getMessageAtRow(rowIndex: Int): NiddlerMessage? {
         return messages[rowIndex]
     }
 
@@ -284,21 +287,21 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<Par
             INDEX_METHOD -> message.method ?: other?.method
             INDEX_URL -> hideBaseUrl(message.url ?: other?.url)
             INDEX_STATUS_CODE -> {
-                if (!message.message.statusLine.isNullOrBlank())
-                    "${message.statusCode} - ${message.message.statusLine}"
-                else if (!other?.message?.statusLine.isNullOrBlank())
-                    "${other?.message?.statusCode} - ${other?.message?.statusLine}"
+                if (!message.statusLine.isNullOrBlank())
+                    "${message.statusCode} - ${message.statusLine}"
+                else if (!other?.statusLine.isNullOrBlank())
+                    "${other?.statusCode} - ${other?.statusLine}"
                 else if (message.statusCode != null)
                     formatStatusCode(message.statusCode)
                 else
                     formatStatusCode(other?.statusCode)
             }
-            INDEX_FORMAT -> message.bodyFormat
+            INDEX_FORMAT -> message.headers?.get("content-type")?.firstOrNull()
             else -> "<NO COLUMN DEF>"
         }
     }
 
-    private fun getIcon(message: ParsedNiddlerMessage): Icon {
+    private fun getIcon(message: NiddlerMessage): Icon {
         return if (message.isRequest) {
             if (message.isDebugOverride) {
                 upDebugIcon
@@ -363,7 +366,7 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageStorage<Par
         return "\u2026" + url.substring(baseToStrip.length)
     }
 
-    fun findMessageIndex(message: ParsedNiddlerMessage): Int {
+    fun findMessageIndex(message: NiddlerMessage): Int {
         return messages.indexOf(message)
     }
 }

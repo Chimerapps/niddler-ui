@@ -9,7 +9,7 @@ import com.icapps.niddler.lib.debugger.model.MESSAGE_DEBUG_REPLY
 import com.icapps.niddler.lib.debugger.model.MESSAGE_DEBUG_REQUEST
 import com.icapps.niddler.lib.debugger.model.NiddlerDebugControlMessage
 import com.icapps.niddler.lib.debugger.model.mergeToJson
-import com.icapps.niddler.lib.model.NiddlerMessageStorage
+import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import org.java_websocket.client.WebSocketClient
 
 /**
@@ -18,7 +18,7 @@ import org.java_websocket.client.WebSocketClient
 open class NiddlerV4ProtocolHandler(messageListener: NiddlerMessageListener,
                                     protected val debugListener: NiddlerDebugListener,
                                     protocolVersion: Int,
-                                    private val messageStorage: NiddlerMessageStorage<out NiddlerMessage>?) : NiddlerV2ProtocolHandler(messageListener, protocolVersion) {
+                                    private val messageStorage: NiddlerMessageStorage?) : NiddlerV2ProtocolHandler(messageListener, protocolVersion) {
 
     companion object {
         private val log = logger<NiddlerV4ProtocolHandler>()

@@ -5,7 +5,10 @@ import com.chimerapps.niddler.ui.model.renderer.bodyRendererForFormat
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
+import com.icapps.niddler.lib.model.ObservingToken
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
@@ -19,7 +22,8 @@ import javax.swing.JPanel
 import javax.swing.JToggleButton
 import javax.swing.JToolBar
 
-class BodyMessageDetailPanel(private val project: Project) : JPanel(BorderLayout()) {
+class BodyMessageDetailPanel(private val project: Project,
+                             private val parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider) : JPanel(BorderLayout()) {
 
     private val structuredButton = JToggleButton("Structured", AllIcons.Hierarchy.Subtypes)
     private val prettyButton = JToggleButton("Pretty", IncludedIcons.Action.pretty)
@@ -36,6 +40,7 @@ class BodyMessageDetailPanel(private val project: Project) : JPanel(BorderLayout
     private var currentMessageRenderer: BodyRenderer<ParsedNiddlerMessage>? = null
     private var currentMessage: ParsedNiddlerMessage? = null
     private var currentView = CurrentView.STRUCTURED
+    private var observingToken: ObservingToken? = null
 
     init {
         JToolBar().also {
@@ -60,7 +65,16 @@ class BodyMessageDetailPanel(private val project: Project) : JPanel(BorderLayout
         saveButton.addActionListener { saveBody() }
     }
 
-    fun init(message: ParsedNiddlerMessage) {
+    fun init(message: NiddlerMessage) {
+        observingToken?.stopObserving()
+
+        //TODO loading indicator/clear
+        observingToken = parsedNiddlerMessageProvider.provideParsedMessage(message).observe {
+            initParsed(it)
+        }
+    }
+
+    private fun initParsed(message: ParsedNiddlerMessage) {
         val renderer = bodyRendererForFormat(message.bodyFormat)
         currentMessageRenderer = renderer
         currentMessage = message
@@ -69,7 +83,7 @@ class BodyMessageDetailPanel(private val project: Project) : JPanel(BorderLayout
         prettyButton.isVisible = renderer?.supportsPretty ?: false
         rawButton.isVisible = renderer?.supportsRaw ?: false
 
-        saveButton.isVisible = (structuredButton.isVisible || prettyButton.isVisible || rawButton.isVisible) && (message.body != null)
+        saveButton.isVisible = (structuredButton.isVisible || prettyButton.isVisible || rawButton.isVisible) && (message.message.body != null)
 
         currentAddedComponent?.let(::remove)
         currentAddedComponent = null
@@ -156,7 +170,7 @@ class BodyMessageDetailPanel(private val project: Project) : JPanel(BorderLayout
 
     private fun saveBody() {
         val message = currentMessage ?: return
-        message.getBodyAsBytes?.let { bytes ->
+        message.message.getBodyAsBytes?.let { bytes ->
             val chosenFile = chooseSaveFile("Save to", "") ?: return
             runWriteAction {
                 FileOutputStream(chosenFile).use { it.write(bytes) }

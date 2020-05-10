@@ -33,7 +33,7 @@ object ImageBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
 
     override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
         val component = reuseOrNew("hexViewer", reuseComponent) { HexViewer().also { it.postInit() } }
-        component.second.setData(message.getBodyAsBytes)
+        component.second.setData(message.message.getBodyAsBytes)
         return component.first
     }
 }

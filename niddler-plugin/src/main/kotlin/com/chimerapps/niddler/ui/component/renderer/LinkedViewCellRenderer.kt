@@ -3,9 +3,11 @@ package com.chimerapps.niddler.ui.component.renderer
 import com.chimerapps.niddler.ui.component.view.LinkedResponseNode
 import com.chimerapps.niddler.ui.component.view.LinkedRootNode
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.model.isCachedResponse
 import com.icapps.niddler.lib.connection.model.isDebugOverride
-import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.ObservingToken
+import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
 import com.icapps.niddler.lib.utils.getStatusCodeString
 import com.intellij.ui.JBDefaultTreeCellRenderer
 import com.intellij.ui.components.JBLabel
@@ -23,7 +25,7 @@ import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.SwingConstants
 
-class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
+class LinkedViewCellRenderer(private val parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider) : JBDefaultTreeCellRenderer() {
 
     private val timeFormatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
     private val directionUp = IncludedIcons.Status.outgoing
@@ -85,6 +87,7 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
         responseDirectionLabel.setFixedWidth(36)
         responseStatusLabel.setFixedWidth(70)
     }
+    private var messageProviderToken: ObservingToken? = null
 
     override fun getTreeCellRendererComponent(tree: JTree, value: Any?, selected: Boolean,
                                               expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean): Component {
@@ -99,7 +102,7 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
         return this
     }
 
-    private fun getRequestComponent(request: ParsedNiddlerMessage?): Component {
+    private fun getRequestComponent(request: NiddlerMessage?): Component {
         updatePanel(requestPanel, myTree)
 
         if (request == null) {
@@ -132,7 +135,12 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
         val response = value.response
         responseTimeLabel.text = formatTime(response.timestamp)
         responseStatusLabel.text = formatStatusCode(response.statusCode)
-        responseTypeLabel.text = response.bodyFormat.toString()
+
+        messageProviderToken?.stopObserving()
+        responseTypeLabel.text = ""
+        messageProviderToken = parsedNiddlerMessageProvider.provideParsedMessage(response).observe {
+            responseTypeLabel.text = it.bodyFormat.toString()
+        }
 
         responseDirectionLabel.icon = if (response.isDebugOverride) directionDownDebug else if (response.isCachedResponse) directionDownCached else directionDown
 
@@ -166,7 +174,7 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
 
         if (WideSelectionTreeUI.isWideSelection(tree)) {
             panel.isOpaque = false  // avoid nasty background
-        }else {
+        } else {
             panel.isOpaque = selected && hasFocus || selected && isFocused() // draw selection background even for non-opaque tree
         }
     }

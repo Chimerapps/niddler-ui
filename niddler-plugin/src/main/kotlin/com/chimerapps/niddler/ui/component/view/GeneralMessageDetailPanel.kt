@@ -5,7 +5,7 @@ import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
 import com.chimerapps.niddler.ui.util.ui.Popup
 import com.chimerapps.niddler.ui.util.ui.PopupAction
 import com.chimerapps.niddler.ui.util.ui.action
-import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
@@ -70,14 +70,14 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
 
     var needsResponse: Boolean = false
         private set
-    var currentMessage: ParsedNiddlerMessage? = null
+    var currentMessage: NiddlerMessage? = null
         private set
 
     init {
         add(contentScroller, BorderLayout.CENTER)
     }
 
-    fun init(message: ParsedNiddlerMessage, other: ParsedNiddlerMessage?) {
+    fun init(message: NiddlerMessage, other: NiddlerMessage?) {
         fillGeneral(message, other)
         fillHeaders(message, other)
 
@@ -93,7 +93,7 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         repaint()
     }
 
-    private fun fillGeneral(message: ParsedNiddlerMessage, other: ParsedNiddlerMessage?) {
+    private fun fillGeneral(message: NiddlerMessage, other: NiddlerMessage?) {
         generalPanel.removeAll() //TODO do not aggressively clear all children
 
         val constraints = CellConstraints()
@@ -134,7 +134,7 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         generalPanel.add(execTimeValue, constraints.xy(3, row))
     }
 
-    private fun fillHeaders(message: ParsedNiddlerMessage, other: ParsedNiddlerMessage?) {
+    private fun fillHeaders(message: NiddlerMessage, other: NiddlerMessage?) {
         headersPanel.removeAll()
 
         val layout = headersPanel.layout as FormLayout
@@ -160,9 +160,9 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
             ++row
         }
         val otherHeaders = if (message.isRequest) {
-            other?.parsedNetworkRequest?.headers
+            other?.networkRequest?.headers
         } else {
-            message.parsedNetworkReply?.headers
+            message.networkReply?.headers
         }
 
         if (!otherHeaders.isNullOrEmpty() && messageHeaders != null) {
@@ -198,7 +198,7 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         }
     }
 
-    private fun makeExecutionTimeLabel(firstMessage: ParsedNiddlerMessage?, secondMessage: ParsedNiddlerMessage?, key: String): JBLabel {
+    private fun makeExecutionTimeLabel(firstMessage: NiddlerMessage?, secondMessage: NiddlerMessage?, key: String): JBLabel {
         if (firstMessage == null || secondMessage == null) {
             return JBLabel("Unknown").also { it.font = italicFont }
         }

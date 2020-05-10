@@ -3,22 +3,21 @@ package com.icapps.niddler.lib.model
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
+import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 
 /**
  * @author Nicola Verbeeck
  */
-class NiddlerMessageContainer<T : NiddlerMessage>(val converter: (NiddlerMessage) -> T,
-                                                  val storage: NiddlerMessageStorage<T>) {
+class NiddlerMessageContainer(val storage: NiddlerMessageStorage,
+                              val secondaryStorage: NiddlerMessageStorage) {
 
-    private val listeners: MutableSet<ParsedNiddlerMessageListener<T>> = hashSetOf()
+    private val listeners: MutableSet<NiddlerMessageListener> = hashSetOf()
 
     private val messageAdapter = object : NiddlerMessageListener {
         override fun onServiceMessage(niddlerMessage: NiddlerMessage) {
-            val parsedMessage = converter(niddlerMessage)
-            storage.addMessage(parsedMessage)
-            synchronized(listeners) {
-                listeners.forEach { it.onMessage(parsedMessage) }
-            }
+            storage.addMessage(niddlerMessage)
+            secondaryStorage.addMessage(niddlerMessage)
+            listeners.forEach { it.onServiceMessage(niddlerMessage) }
         }
     }
 
@@ -30,21 +29,15 @@ class NiddlerMessageContainer<T : NiddlerMessage>(val converter: (NiddlerMessage
         client.unregisterMessageListener(messageAdapter)
     }
 
-    fun registerListener(listener: ParsedNiddlerMessageListener<T>) {
+    fun registerListener(listener: NiddlerMessageListener) {
         synchronized(listeners) {
             listeners.add(listener)
         }
     }
 
-    fun unregisterListener(listener: ParsedNiddlerMessageListener<T>) {
+    fun unregisterListener(listener: NiddlerMessageListener) {
         synchronized(listeners) {
             listeners.remove(listener)
         }
     }
-}
-
-interface ParsedNiddlerMessageListener<in T : NiddlerMessage> {
-
-    fun onMessage(message: T)
-
 }

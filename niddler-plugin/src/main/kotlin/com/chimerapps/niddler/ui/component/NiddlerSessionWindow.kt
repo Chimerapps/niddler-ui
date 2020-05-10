@@ -35,6 +35,7 @@ import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.chimerapps.niddler.ui.util.ui.ensureMain
 import com.icapps.niddler.lib.connection.NiddlerClient
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
 import com.icapps.niddler.lib.debugger.model.DebuggerService
@@ -42,14 +43,14 @@ import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebugListener
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebuggerInterface
 import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.BaseUrlHider
-import com.icapps.niddler.lib.model.InMemoryNiddlerMessageStorage
 import com.icapps.niddler.lib.model.NiddlerMessageBodyParser
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
-import com.icapps.niddler.lib.model.NiddlerMessageStorage
-import com.icapps.niddler.lib.model.ParsedNiddlerMessage
-import com.icapps.niddler.lib.model.ParsedNiddlerMessageListener
+import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
 import com.icapps.niddler.lib.model.SimpleUrlMatchFilter
 import com.icapps.niddler.lib.model.classifier.HeaderBodyClassifier
+import com.icapps.niddler.lib.model.storage.InMemoryNiddlerMessageStorage
+import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
+import com.icapps.niddler.lib.model.storage.SqliteMessageStorage
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
@@ -62,6 +63,7 @@ import com.intellij.ui.JBSplitter
 import com.intellij.ui.content.Content
 import com.intellij.util.IconUtil
 import java.awt.BorderLayout
+import java.io.Closeable
 import java.io.File
 import java.io.FileOutputStream
 import javax.swing.BorderFactory
@@ -73,7 +75,7 @@ import javax.swing.SwingWorker
 
 class NiddlerSessionWindow(private val project: Project,
                            disposable: Disposable,
-                           private val niddlerToolWindow: NiddlerToolWindow) : JPanel(BorderLayout()), ParsedNiddlerMessageListener<ParsedNiddlerMessage>, BaseUrlHideListener {
+                           private val niddlerToolWindow: NiddlerToolWindow) : JPanel(BorderLayout()), NiddlerMessageListener, BaseUrlHideListener {
 
     private companion object {
         private const val APP_PREFERENCE_SCROLL_TO_END = "scrollToEnd"
@@ -89,7 +91,7 @@ class NiddlerSessionWindow(private val project: Project,
     private val statusBar = NiddlerStatusBar()
     private val splitter = JBSplitter(APP_PREFERENCE_SPLITTER_STATE, 0.6f)
     private var baseUrlHider: BaseUrlHider? = null
-    private var currentFilter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>? = null
+    private var currentFilter: NiddlerMessageStorage.Filter? = null
     private val debugListener = RewriteDebugListener()
     private var debuggerService: DebuggerService? = null//TODO disconnect
 
@@ -126,10 +128,12 @@ class NiddlerSessionWindow(private val project: Project,
 
     private var currentMessagesView: MessagesView? = null
     private val bodyParser = NiddlerMessageBodyParser(HeaderBodyClassifier(emptyList())) //TODO extensions!
-    private val messageContainer = NiddlerMessageContainer(bodyParser::parseBody, InMemoryNiddlerMessageStorage())
+    private val parsedNiddlerMessageProvider = ParsedNiddlerMessageProvider({ dispatchMain(it) }, bodyParser)
+
+    private val messageContainer = NiddlerMessageContainer(InMemoryNiddlerMessageStorage(), SqliteMessageStorage(File("/Users/nicolaverbeeck/testniddler.db")))
     private var niddlerClient: NiddlerClient? = null
     private var lastConnection: PreparedDeviceConnection? = null
-    private val detailView = MessageDetailView(project, disposable, messageContainer.storage)
+    private val detailView = MessageDetailView(project, disposable, parsedNiddlerMessageProvider, messageContainer.storage)
 
     init {
         add(rootContent, BorderLayout.CENTER)
@@ -152,7 +156,7 @@ class NiddlerSessionWindow(private val project: Project,
         viewToolbar.updateActionsImmediately() //Update ui
     }
 
-    fun onClosed() {
+    fun onWindowClosed() {
         niddlerClient?.let { messageContainer.detach(it) }
         niddlerClient?.close()
         niddlerClient = null
@@ -160,6 +164,8 @@ class NiddlerSessionWindow(private val project: Project,
         lastConnection = null
 
         messageContainer.storage.clear()
+        (messageContainer.secondaryStorage as? Closeable)?.close()
+
         messageContainer.unregisterListener(this)
     }
 
@@ -188,7 +194,7 @@ class NiddlerSessionWindow(private val project: Project,
         val filter = object : FilterComponent("niddler-filter", 10, true) {
             override fun filter() {
                 val filter = filter.trim()
-                val currentFilter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>? = if (filter.isNotEmpty())
+                val currentFilter: NiddlerMessageStorage.Filter? = if (filter.isNotEmpty())
                     SimpleUrlMatchFilter(filter)
                 else
                     null
@@ -245,8 +251,9 @@ class NiddlerSessionWindow(private val project: Project,
     private fun updateView() {
         ensureMain {
             when (currentViewMode) {
-                ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(project, messageContainer.storage, detailView, baseUrlHideListener = this))
-                ViewMode.VIEW_MODE_LINKED -> replaceMessagesView(LinkedView(messageContainer.storage, detailView, baseUrlHideListener = this))
+                ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(project, messageContainer.storage, detailView,
+                        parsedNiddlerMessageProvider, baseUrlHideListener = this))
+                ViewMode.VIEW_MODE_LINKED -> replaceMessagesView(LinkedView(messageContainer.storage, detailView, parsedNiddlerMessageProvider, baseUrlHideListener = this))
             }
         }
     }
@@ -336,7 +343,7 @@ class NiddlerSessionWindow(private val project: Project,
     }
 
 
-    override fun onMessage(message: ParsedNiddlerMessage) {
+    override fun onServiceMessage(niddlerMessage: NiddlerMessage) {
         currentMessagesView?.onMessagesUpdated()
 
         val canExport = !messageContainer.storage.isEmpty()
@@ -385,7 +392,7 @@ class NiddlerSessionWindow(private val project: Project,
             } else
                 chosenFile
 
-            HarExport<ParsedNiddlerMessage>().export(FileOutputStream(exportFile), messageContainer.storage, if (applyFilter) filter else null)
+            HarExport(parsedNiddlerMessageProvider).export(FileOutputStream(exportFile), messageContainer.storage, if (applyFilter) filter else null)
             NotificationUtil.info("Save complete", "<html>Export completed to <a href=\"file://${chosenFile.absolutePath}\">${chosenFile.name}</a></html>", project)
         }
     }

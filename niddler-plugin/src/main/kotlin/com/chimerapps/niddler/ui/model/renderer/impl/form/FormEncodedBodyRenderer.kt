@@ -53,7 +53,7 @@ object FormEncodedBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     }
 
     override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
-        return textAreaRenderer(message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent)
+        return textAreaRenderer(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent)
     }
 
     private fun makePopup(@Suppress("UNUSED_PARAMETER") model: FormEncodedTableModel, data: Pair<String, String>?): JPopupMenu? {

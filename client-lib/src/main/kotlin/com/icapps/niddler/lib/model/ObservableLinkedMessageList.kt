@@ -1,13 +1,14 @@
 package com.icapps.niddler.lib.model
 
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
+import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.utils.ObservableMutableList
 import java.lang.ref.WeakReference
 
-class ObservableLinkedMessageList<T : NiddlerMessage>(private val storage: NiddlerMessageStorage<T>) {
+class ObservableLinkedMessageList(private val storage: NiddlerMessageStorage) {
 
     internal companion object {
-        fun <T : NiddlerMessage> addMessage(message: T, list: MutableList<LinkedMessageHolder<T>>) {
+        fun addMessage(message: NiddlerMessage, list: MutableList<LinkedMessageHolder>) {
             val messageRequestId = message.requestId
             val existing = list.lastOrNull { it.requestId == messageRequestId }
             if (existing != null) {
@@ -33,7 +34,7 @@ class ObservableLinkedMessageList<T : NiddlerMessage>(private val storage: Niddl
             }
         }
 
-        fun <T : NiddlerMessage> insert(entry: LinkedMessageHolder<T>, list: MutableList<LinkedMessageHolder<T>>) {
+        fun insert(entry: LinkedMessageHolder, list: MutableList<LinkedMessageHolder>) {
             if (list.isEmpty()) {
                 list += entry
             } else {
@@ -51,10 +52,10 @@ class ObservableLinkedMessageList<T : NiddlerMessage>(private val storage: Niddl
         }
     }
 
-    private val internalList = mutableListOf<LinkedMessageHolder<T>>()
-    private val views = ArrayList<WeakReference<ObservableLinkedMessagesView<T>>>()
+    private val internalList = mutableListOf<LinkedMessageHolder>()
+    private val views = ArrayList<WeakReference<ObservableLinkedMessagesView>>()
 
-    fun addMessage(message: T): Boolean {
+    fun addMessage(message: NiddlerMessage): Boolean {
         synchronized(internalList) {
             addMessage(message, internalList)
 
@@ -76,7 +77,7 @@ class ObservableLinkedMessageList<T : NiddlerMessage>(private val storage: Niddl
         }
     }
 
-    operator fun get(requestId: String): List<T>? {
+    operator fun get(requestId: String): List<NiddlerMessage>? {
         return synchronized(internalList) {
             internalList.find { it.requestId == requestId }?.let {
                 val request = it.request
@@ -88,7 +89,7 @@ class ObservableLinkedMessageList<T : NiddlerMessage>(private val storage: Niddl
         }
     }
 
-    fun newView(filter: NiddlerMessageStorage.Filter<T>?, rootMessageListener: ObservableMutableList.Observer?): ObservableLinkedMessagesView<T> {
+    fun newView(filter: NiddlerMessageStorage.Filter?, rootMessageListener: ObservableMutableList.Observer?): ObservableLinkedMessagesView {
         return ObservableLinkedMessagesView(rootMessageListener, storage, filter).also {
             synchronized(internalList) {
                 it.notifyMessagesChanged(internalList)
@@ -99,7 +100,7 @@ class ObservableLinkedMessageList<T : NiddlerMessage>(private val storage: Niddl
         }
     }
 
-    private fun dispatchToViews(toDispatch: ObservableLinkedMessagesView<T>.() -> Unit) {
+    private fun dispatchToViews(toDispatch: ObservableLinkedMessagesView.() -> Unit) {
         synchronized(views) {
             val it = views.iterator()
             while (it.hasNext()) {
@@ -114,16 +115,16 @@ class ObservableLinkedMessageList<T : NiddlerMessage>(private val storage: Niddl
 
 }
 
-class ObservableLinkedMessagesView<T : NiddlerMessage>(rootMessageListener: ObservableMutableList.Observer?,
-                                                       private val storage: NiddlerMessageStorage<T>,
-                                                       private val filter: NiddlerMessageStorage.Filter<T>?) {
+class ObservableLinkedMessagesView(rootMessageListener: ObservableMutableList.Observer?,
+                                   private val storage: NiddlerMessageStorage,
+                                   private val filter: NiddlerMessageStorage.Filter?) {
 
-    private val filteredMessages = ObservableMutableList<LinkedMessageHolder<T>>(ArrayList()).also { it.observer = rootMessageListener }
+    private val filteredMessages = ObservableMutableList<LinkedMessageHolder>(ArrayList()).also { it.observer = rootMessageListener }
 
     val size: Int
         get() = synchronized(this) { filteredMessages.size }
 
-    fun notifyMessageInsert(message: T) {
+    fun notifyMessageInsert(message: NiddlerMessage) {
         synchronized(this) {
             if (filter?.messageFilter(message, storage) == false)
                 return
@@ -132,7 +133,7 @@ class ObservableLinkedMessagesView<T : NiddlerMessage>(rootMessageListener: Obse
         }
     }
 
-    operator fun get(index: Int): LinkedMessageHolder<T>? {
+    operator fun get(index: Int): LinkedMessageHolder? {
         return synchronized(this) { filteredMessages.getOrNull(index) }
     }
 
@@ -142,13 +143,13 @@ class ObservableLinkedMessagesView<T : NiddlerMessage>(rootMessageListener: Obse
         }
     }
 
-    internal fun snapshot(): List<LinkedMessageHolder<T>> {
+    internal fun snapshot(): List<LinkedMessageHolder> {
         synchronized(this) {
             return ArrayList(filteredMessages)
         }
     }
 
-    internal fun notifyMessagesChanged(newList: List<LinkedMessageHolder<T>>) {
+    internal fun notifyMessagesChanged(newList: List<LinkedMessageHolder>) {
         synchronized(this) {
             filteredMessages.clear()
             val filter = filter
@@ -167,12 +168,12 @@ class ObservableLinkedMessagesView<T : NiddlerMessage>(rootMessageListener: Obse
 
 }
 
-data class LinkedMessageHolder<T : NiddlerMessage>(internal val requestId: String,
-                                                   internal var time: Long,
-                                                   var request: T?,
-                                                   val responses: ObservableMutableList<T> = ObservableMutableList(mutableListOf())) {
+data class LinkedMessageHolder(internal val requestId: String,
+                               internal var time: Long,
+                               var request: NiddlerMessage?,
+                               val responses: ObservableMutableList<NiddlerMessage> = ObservableMutableList(mutableListOf())) {
 
-    internal fun addResponse(message: T) {
+    internal fun addResponse(message: NiddlerMessage) {
         synchronized(this) {
             if (responses.isEmpty()) {
                 responses.add(message)
@@ -191,7 +192,7 @@ data class LinkedMessageHolder<T : NiddlerMessage>(internal val requestId: Strin
         }
     }
 
-    fun indexOf(child: T): Int {
+    fun indexOf(child: NiddlerMessage): Int {
         return synchronized(this) { responses.indexOf(child) }
     }
 

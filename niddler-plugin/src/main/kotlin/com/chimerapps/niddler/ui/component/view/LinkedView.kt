@@ -1,11 +1,12 @@
 package com.chimerapps.niddler.ui.component.view
 
 import com.chimerapps.niddler.ui.component.renderer.LinkedViewCellRenderer
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.LinkedMessageHolder
-import com.icapps.niddler.lib.model.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ObservableLinkedMessagesView
-import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
+import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.utils.ObservableMutableList
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
@@ -18,8 +19,9 @@ import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeSelectionModel
 
-class LinkedView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>,
+class LinkedView(messageContainer: NiddlerMessageStorage,
                  private val selectionListener: MessageSelectionListener,
+                 private val parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider,
                  private val baseUrlHideListener: BaseUrlHideListener) : JPanel(BorderLayout()), MessagesView {
 
     private val model = LinkedTreeModel(messageContainer)
@@ -30,7 +32,7 @@ class LinkedView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>,
         it.dragEnabled = false
 
         it.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
-        it.cellRenderer = LinkedViewCellRenderer()
+        it.cellRenderer = LinkedViewCellRenderer(parsedNiddlerMessageProvider)
         it.rowHeight = 32
         it.selectionModel.addTreeSelectionListener { _ ->
             when (val selection = it.selectionPath?.lastPathComponent) {
@@ -47,7 +49,7 @@ class LinkedView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>,
 
     override var urlHider: BaseUrlHider? = null //TODO
 
-    override var filter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>?
+    override var filter: NiddlerMessageStorage.Filter?
         get() = model.filter
         set(value) {
             model.filter = value
@@ -69,12 +71,12 @@ class LinkedView(messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>,
     }
 }
 
-private class LinkedTreeModel(private val messageContainer: NiddlerMessageStorage<ParsedNiddlerMessage>)
+private class LinkedTreeModel(private val messageContainer: NiddlerMessageStorage)
     : DefaultTreeModel(DefaultMutableTreeNode()), ObservableMutableList.Observer {
 
     internal val treeRoot = root as DefaultMutableTreeNode
 
-    var filter: NiddlerMessageStorage.Filter<ParsedNiddlerMessage>? = null
+    var filter: NiddlerMessageStorage.Filter? = null
         set(value) {
             if (field == value)
                 return
@@ -92,7 +94,7 @@ private class LinkedTreeModel(private val messageContainer: NiddlerMessageStorag
 
     private var viewSet = false
     private val deferredEvents = mutableListOf<DeferredListEvent>()
-    private var view: ObservableLinkedMessagesView<ParsedNiddlerMessage>
+    private var view: ObservableLinkedMessagesView
 
     init {
         synchronized(this) {
@@ -151,9 +153,9 @@ private class LinkedTreeModel(private val messageContainer: NiddlerMessageStorag
     }
 }
 
-internal class LinkedRootNode(val entry: LinkedMessageHolder<ParsedNiddlerMessage>,
+internal class LinkedRootNode(val entry: LinkedMessageHolder,
                               private val treeParent: DefaultTreeModel,
-                              private val view: ObservableLinkedMessagesView<ParsedNiddlerMessage>) : DefaultMutableTreeNode(), ObservableMutableList.Observer {
+                              private val view: ObservableLinkedMessagesView) : DefaultMutableTreeNode(), ObservableMutableList.Observer {
 
     private val responses = entry.responses
 
@@ -161,10 +163,10 @@ internal class LinkedRootNode(val entry: LinkedMessageHolder<ParsedNiddlerMessag
         synchronized(view) {
             responses.observer = this
             responses.forEach {
-                it.parsedNetworkRequest?.let { network ->
+                it.networkRequest?.let { network ->
                     treeParent.insertNodeInto(LinkedResponseNode(network), this, childCount)
                 }
-                it.parsedNetworkReply?.let { network ->
+                it.networkReply?.let { network ->
                     treeParent.insertNodeInto(LinkedResponseNode(network), this, childCount)
                 }
 
@@ -185,10 +187,10 @@ internal class LinkedRootNode(val entry: LinkedMessageHolder<ParsedNiddlerMessag
             for (i in startIndex..endIndex) {
                 val entry = responses.getOrNull(i) ?: return
 
-                entry.parsedNetworkRequest?.let {
+                entry.networkRequest?.let {
                     treeParent.insertNodeInto(LinkedResponseNode(it), this, actualIndex++)
                 }
-                entry.parsedNetworkReply?.let {
+                entry.networkReply?.let {
                     treeParent.insertNodeInto(LinkedResponseNode(it), this, actualIndex++)
                 }
 
@@ -213,7 +215,7 @@ internal class LinkedRootNode(val entry: LinkedMessageHolder<ParsedNiddlerMessag
 
 }
 
-internal class LinkedResponseNode(val response: ParsedNiddlerMessage) : DefaultMutableTreeNode()
+internal class LinkedResponseNode(val response: NiddlerMessage) : DefaultMutableTreeNode()
 
 private fun DefaultMutableTreeNode.forEach(block: (MutableTreeNode) -> Unit) {
     for (i in childCount - 1 downTo 0) {
