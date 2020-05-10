@@ -5,7 +5,7 @@ import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.utils.ObservableMutableList
 import java.lang.ref.WeakReference
 
-class ObservableLinkedMessageList(private val storage: NiddlerMessageStorage) {
+class ObservableLinkedMessageList(private val storage: NiddlerMessageContainer) {
 
     internal companion object {
         fun addMessage(message: NiddlerMessage, list: MutableList<LinkedMessageHolder>) {
@@ -116,7 +116,7 @@ class ObservableLinkedMessageList(private val storage: NiddlerMessageStorage) {
 }
 
 class ObservableLinkedMessagesView(rootMessageListener: ObservableMutableList.Observer?,
-                                   private val storage: NiddlerMessageStorage,
+                                   private val storage: NiddlerMessageContainer,
                                    private val filter: NiddlerMessageStorage.Filter?) {
 
     private val filteredMessages = ObservableMutableList<LinkedMessageHolder>(ArrayList()).also { it.observer = rootMessageListener }

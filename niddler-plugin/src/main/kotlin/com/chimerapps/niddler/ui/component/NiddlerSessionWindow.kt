@@ -63,7 +63,6 @@ import com.intellij.ui.JBSplitter
 import com.intellij.ui.content.Content
 import com.intellij.util.IconUtil
 import java.awt.BorderLayout
-import java.io.Closeable
 import java.io.File
 import java.io.FileOutputStream
 import javax.swing.BorderFactory
@@ -133,7 +132,7 @@ class NiddlerSessionWindow(private val project: Project,
     private val messageContainer = NiddlerMessageContainer(InMemoryNiddlerMessageStorage(), SqliteMessageStorage(File("/Users/nicolaverbeeck/testniddler.db")))
     private var niddlerClient: NiddlerClient? = null
     private var lastConnection: PreparedDeviceConnection? = null
-    private val detailView = MessageDetailView(project, disposable, parsedNiddlerMessageProvider, messageContainer.storage)
+    private val detailView = MessageDetailView(project, disposable, parsedNiddlerMessageProvider, messageContainer)
 
     init {
         add(rootContent, BorderLayout.CENTER)
@@ -163,8 +162,8 @@ class NiddlerSessionWindow(private val project: Project,
         lastConnection?.tearDown()
         lastConnection = null
 
-        messageContainer.storage.clear()
-        (messageContainer.secondaryStorage as? Closeable)?.close()
+        messageContainer.clear()
+        messageContainer.close()
 
         messageContainer.unregisterListener(this)
     }
@@ -235,8 +234,8 @@ class NiddlerSessionWindow(private val project: Project,
         actionGroup.addSeparator()
 
         actionGroup.add(SimpleAction("Clear local", "Remove locally cached messages", icon = AllIcons.Actions.GC) {
-            messageContainer.storage.clear()
-            exportAction.isEnabled = !messageContainer.storage.isEmpty()
+            messageContainer.clear()
+            exportAction.isEnabled = !messageContainer.isEmpty()
             viewToolbar.updateActionsImmediately()
             currentMessagesView?.onMessagesUpdated()
         })
@@ -251,9 +250,9 @@ class NiddlerSessionWindow(private val project: Project,
     private fun updateView() {
         ensureMain {
             when (currentViewMode) {
-                ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(project, messageContainer.storage, detailView,
+                ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(project, messageContainer, detailView,
                         parsedNiddlerMessageProvider, baseUrlHideListener = this))
-                ViewMode.VIEW_MODE_LINKED -> replaceMessagesView(LinkedView(messageContainer.storage, detailView, parsedNiddlerMessageProvider, baseUrlHideListener = this))
+                ViewMode.VIEW_MODE_LINKED -> replaceMessagesView(LinkedView(messageContainer, detailView, parsedNiddlerMessageProvider, baseUrlHideListener = this))
             }
         }
     }
@@ -288,9 +287,9 @@ class NiddlerSessionWindow(private val project: Project,
     }
 
     private fun connectOnConnection(connection: PreparedDeviceConnection, withDebugger: Boolean) {
-        messageContainer.storage.clear()
+        messageContainer.clear()
 
-        niddlerClient = NiddlerClient(connection.uri, withDebugger = withDebugger, messageStorage = messageContainer.storage).also {
+        niddlerClient = NiddlerClient(connection.uri, withDebugger = withDebugger, messageStorage = messageContainer).also {
             if (withDebugger) {
                 it.debugListener = debugListener
             }
@@ -346,7 +345,7 @@ class NiddlerSessionWindow(private val project: Project,
     override fun onServiceMessage(niddlerMessage: NiddlerMessage) {
         currentMessagesView?.onMessagesUpdated()
 
-        val canExport = !messageContainer.storage.isEmpty()
+        val canExport = !messageContainer.isEmpty()
         if (exportAction.isEnabled != canExport) {
             exportAction.isEnabled = canExport
             dispatchMain(viewToolbar::updateActionsImmediately)
@@ -392,7 +391,7 @@ class NiddlerSessionWindow(private val project: Project,
             } else
                 chosenFile
 
-            HarExport(parsedNiddlerMessageProvider).export(FileOutputStream(exportFile), messageContainer.storage, if (applyFilter) filter else null)
+            HarExport(parsedNiddlerMessageProvider).export(FileOutputStream(exportFile), messageContainer, if (applyFilter) filter else null)
             NotificationUtil.info("Save complete", "<html>Export completed to <a href=\"file://${chosenFile.absolutePath}\">${chosenFile.name}</a></html>", project)
         }
     }

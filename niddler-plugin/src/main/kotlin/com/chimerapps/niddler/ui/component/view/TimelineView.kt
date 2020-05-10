@@ -18,6 +18,7 @@ import com.icapps.niddler.lib.connection.model.isDebugOverride
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.BodyFormat
 import com.icapps.niddler.lib.model.BodyFormatType
+import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
@@ -47,7 +48,7 @@ import javax.swing.SwingUtilities
 import javax.swing.table.AbstractTableModel
 
 class TimelineView(private val project: Project,
-                   private val messageContainer: NiddlerMessageStorage,
+                   private val messageContainer: NiddlerMessageContainer,
                    private val selectionListener: MessageSelectionListener,
                    private val parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider,
                    private val baseUrlHideListener: BaseUrlHideListener) : JPanel(BorderLayout()), MessagesView {
@@ -224,7 +225,7 @@ class TimelineView(private val project: Project,
 
 }
 
-class TimelineTableModel(private val messageContainer: NiddlerMessageStorage) : AbstractTableModel(), ObservableMutableList.Observer {
+class TimelineTableModel(private val messageContainer: NiddlerMessageContainer) : AbstractTableModel(), ObservableMutableList.Observer {
 
     companion object {
         const val INDEX_TIMESTAMP = 0

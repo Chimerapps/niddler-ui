@@ -88,6 +88,10 @@ internal class NiddlerSqliteDatabase(file: File) : Closeable {
         return mapRows("SELECT * FROM $NIDDLER_MESSAGE_TABLE WHERE requestId=? AND topLevel!=0", { mapRow(it, true) }, requestId).orEmpty()
     }
 
+    fun getMessages(): List<NiddlerMessage> {
+        return mapRows("SELECT * FROM $NIDDLER_MESSAGE_TABLE WHERE topLevel!=0", { mapRow(it, true) }).orEmpty()
+    }
+
     private fun mapRow(resultSet: ResultSet, nested: Boolean): NiddlerMessage {
         return NetworkNiddlerMessage(
                 requestId = resultSet.getString(1),

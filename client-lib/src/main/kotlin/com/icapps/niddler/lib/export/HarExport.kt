@@ -17,6 +17,7 @@ import com.icapps.niddler.lib.export.har.StreamingHarWriter
 import com.icapps.niddler.lib.export.har.Timings
 import com.icapps.niddler.lib.model.BodyFormatType
 import com.icapps.niddler.lib.model.LinkedMessageHolder
+import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ObservableLinkedMessagesView
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
@@ -30,7 +31,7 @@ import java.util.Date
  */
 class HarExport(private val parsedMessageProvider: ParsedNiddlerMessageProvider) : Exporter {
 
-    override fun export(target: OutputStream, messages: NiddlerMessageStorage, filter: NiddlerMessageStorage.Filter?) {
+    override fun export(target: OutputStream, messages: NiddlerMessageContainer, filter: NiddlerMessageStorage.Filter?) {
         val buffered = target.buffered()
         val writer = StreamingHarWriter(target = buffered,
                 creator = Creator("Niddler", "1.0"))

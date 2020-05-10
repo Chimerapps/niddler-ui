@@ -5,7 +5,7 @@ import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.utils.ObservableMutableList
 import java.lang.ref.WeakReference
 
-class ObservableChronologicalMessageList(private val storage: NiddlerMessageStorage) {
+class ObservableChronologicalMessageList(private val storage: NiddlerMessageContainer) {
 
     companion object {
         internal data class InsertPosition(val index: Int, val isDuplicateTimeStamp: Boolean)
@@ -85,7 +85,7 @@ class ObservableChronologicalMessageList(private val storage: NiddlerMessageStor
 }
 
 class ChronologicalMessagesView(messageListener: ObservableMutableList.Observer,
-                                private val storage: NiddlerMessageStorage,
+                                private val storage: NiddlerMessageContainer,
                                 private val filter: NiddlerMessageStorage.Filter?) {
 
     private val filteredMessages = ObservableMutableList<NiddlerMessage>(ArrayList()).also { it.observer = messageListener }

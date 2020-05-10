@@ -4,6 +4,7 @@ import com.chimerapps.niddler.ui.component.renderer.LinkedViewCellRenderer
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.LinkedMessageHolder
+import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.ObservableLinkedMessagesView
 import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
 import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
@@ -19,7 +20,7 @@ import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeSelectionModel
 
-class LinkedView(messageContainer: NiddlerMessageStorage,
+class LinkedView(messageContainer: NiddlerMessageContainer,
                  private val selectionListener: MessageSelectionListener,
                  private val parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider,
                  private val baseUrlHideListener: BaseUrlHideListener) : JPanel(BorderLayout()), MessagesView {
@@ -71,7 +72,7 @@ class LinkedView(messageContainer: NiddlerMessageStorage,
     }
 }
 
-private class LinkedTreeModel(private val messageContainer: NiddlerMessageStorage)
+private class LinkedTreeModel(private val messageContainer: NiddlerMessageContainer)
     : DefaultTreeModel(DefaultMutableTreeNode()), ObservableMutableList.Observer {
 
     internal val treeRoot = root as DefaultMutableTreeNode

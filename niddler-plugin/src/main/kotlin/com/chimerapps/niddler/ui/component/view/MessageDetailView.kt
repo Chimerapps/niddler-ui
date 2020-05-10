@@ -3,6 +3,7 @@ package com.chimerapps.niddler.ui.component.view
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
+import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
@@ -17,8 +18,8 @@ import javax.swing.SwingConstants
 
 class MessageDetailView(project: Project,
                         disposable: Disposable,
-                        private val parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider,
-                        private val storage: NiddlerMessageStorage) : JPanel(BorderLayout()), MessageSelectionListener, NiddlerMessageListener {
+                        parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider,
+                        private val storage: NiddlerMessageContainer) : JPanel(BorderLayout()), MessageSelectionListener, NiddlerMessageListener {
 
     var currentMessage: NiddlerMessage? = null
         set(value) {

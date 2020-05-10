@@ -6,44 +6,27 @@ import com.icapps.niddler.lib.model.ObservableLinkedMessageList
 
 class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
 
-    override val messagesChronological: ObservableChronologicalMessageList = ObservableChronologicalMessageList(this)
-    override val messagesLinked = ObservableLinkedMessageList(this)
+    private val internalList = arrayListOf<NiddlerMessage>()
 
     override fun clear() {
         synchronized(this) {
-            messagesChronological.clear()
-            messagesLinked.clear()
+            internalList.clear()
         }
     }
 
     override fun addMessage(message: NiddlerMessage) {
         synchronized(this) {
-            if (messagesChronological.addMessage(message))
-                messagesLinked.addMessage(message)
+            internalList += message
         }
     }
 
-    override fun getMessagesWithRequestId(requestId: String): List<NiddlerMessage> {
-        return synchronized(this) {
-            messagesLinked[requestId] ?: emptyList()
+    override fun allMessages(): List<NiddlerMessage> {
+        synchronized(this) {
+            return ArrayList(internalList)
         }
-    }
-
-    override fun findResponse(message: NiddlerMessage): NiddlerMessage? {
-        return getMessagesWithRequestId(message.requestId).find {
-            !it.isRequest
-        }
-    }
-
-    override fun findRequest(message: NiddlerMessage): NiddlerMessage? {
-        return findRequest(message.requestId)
-    }
-
-    override fun findRequest(requestId: String): NiddlerMessage? {
-        return getMessagesWithRequestId(requestId).findLast(NiddlerMessage::isRequest)
     }
 
     override fun isEmpty(): Boolean {
-        return messagesChronological.isEmpty()
+        return internalList.isEmpty()
     }
 }
