@@ -8,6 +8,12 @@
 
     <change-notes><![CDATA[
     <p>
+        <b>2.8.2</b>
+        <ul>
+            <li>Searching and syntax hightlighting is now supported in pretty/raw view!</li>
+        </ul>
+    </p>
+    <p>
         <b>2.8.1</b>
         <ul>
             <li>Fixed issue where dart stacktraces would not highlight</li>
