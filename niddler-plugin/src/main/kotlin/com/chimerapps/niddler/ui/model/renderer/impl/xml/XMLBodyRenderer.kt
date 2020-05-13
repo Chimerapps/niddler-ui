@@ -11,13 +11,12 @@ import com.chimerapps.niddler.ui.util.ui.action
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.icons.AllIcons
 import com.intellij.ide.highlighter.XmlFileType
-import com.intellij.ide.highlighter.XmlLikeFileType
 import com.intellij.openapi.project.Project
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.SimpleTextAttributes
+import com.intellij.ui.TreeSpeedSearch
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBFont
-import com.jetbrains.cidr.execution.debugger.memory.hexdump.lang.HexdumpFileType
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.awt.Font
@@ -39,7 +38,11 @@ object XMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
 
     override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val data = (message.bodyData as? Document)
-        val component = reuseOrNew("xmlTree", reuseComponent) { NiddlerXmlTree() }
+        val component = reuseOrNew("xmlTree", reuseComponent) {
+            NiddlerXmlTree().also {
+                TreeSpeedSearch(it, { path -> path.lastPathComponent.toString() }, true)
+            }
+        }
         component.second.resetModel(data?.documentElement)
         return component.first
     }

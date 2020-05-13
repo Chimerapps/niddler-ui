@@ -10,6 +10,7 @@ import com.chimerapps.niddler.ui.util.ui.action
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
+import com.intellij.ui.TableSpeedSearch
 import java.awt.datatransfer.StringSelection
 import javax.swing.JComponent
 import javax.swing.JPopupMenu
@@ -35,6 +36,8 @@ object FormEncodedBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
                 it.tableHeader = null
 
                 it.componentPopupMenu = JPopupMenu()
+            }.also {
+                TableSpeedSearch(it)
             }
         }
         (component.second.model as FormEncodedTableModel).update(data)

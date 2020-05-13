@@ -13,10 +13,10 @@ import com.google.gson.JsonPrimitive
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.icons.AllIcons
 import com.intellij.json.JsonFileType
-import com.intellij.json.json5.Json5FileType
 import com.intellij.openapi.project.Project
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.SimpleTextAttributes
+import com.intellij.ui.TreeSpeedSearch
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBFont
@@ -43,7 +43,7 @@ object JsonBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
         if (reuseComponent is JBScrollPane && reuseComponent.componentCount != 0 && reuseComponent.getComponent(0) is NiddlerJsonTree) {
             return (reuseComponent.getComponent(0) as NiddlerJsonTree).also { it.resetModel(data) }
         }
-        return JBScrollPane(NiddlerJsonTree(data))
+        return JBScrollPane(NiddlerJsonTree(data).also { TreeSpeedSearch(it, { path -> path.lastPathComponent.toString() }, true) })
     }
 
     override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
