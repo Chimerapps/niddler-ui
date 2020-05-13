@@ -12,6 +12,9 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.icons.AllIcons
+import com.intellij.json.JsonFileType
+import com.intellij.json.json5.Json5FileType
+import com.intellij.openapi.project.Project
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBScrollPane
@@ -35,7 +38,7 @@ object JsonBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     override val supportsPretty: Boolean = true
     override val supportsRaw: Boolean = true
 
-    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val data = (message.bodyData as? JsonElement) ?: JsonPrimitive("")
         if (reuseComponent is JBScrollPane && reuseComponent.componentCount != 0 && reuseComponent.getComponent(0) is NiddlerJsonTree) {
             return (reuseComponent.getComponent(0) as NiddlerJsonTree).also { it.resetModel(data) }
@@ -43,14 +46,14 @@ object JsonBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
         return JBScrollPane(NiddlerJsonTree(data))
     }
 
-    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val stringData = GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(message.bodyData)
-        return textAreaRenderer(stringData, reuseComponent)
+        return textAreaRenderer(stringData, reuseComponent, project, JsonFileType.INSTANCE)
     }
 
-    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val stringData = message.message.getBodyAsString(message.bodyFormat.encoding) ?: ""
-        return textAreaRenderer(stringData, reuseComponent)
+        return textAreaRenderer(stringData, reuseComponent, project, JsonFileType.INSTANCE)
     }
 
 }

@@ -7,14 +7,21 @@ import com.chimerapps.niddler.ui.model.renderer.impl.image.ImageBodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.impl.json.JsonBodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.impl.plain.PlainBodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.impl.xml.XMLBodyRenderer
+import com.chimerapps.niddler.ui.util.ui.runWriteAction
 import com.icapps.niddler.lib.model.BodyFormat
 import com.icapps.niddler.lib.model.BodyFormatType
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.command.UndoConfirmationPolicy
+import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
+import com.intellij.openapi.editor.impl.EditorImpl
+import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.fileTypes.UnknownFileType
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.util.ui.JBFont
-import java.awt.Font
 import javax.swing.JComponent
-import javax.swing.JTextArea
+
 
 interface BodyRenderer<T : ParsedNiddlerMessage> {
 
@@ -22,9 +29,9 @@ interface BodyRenderer<T : ParsedNiddlerMessage> {
     val supportsPretty: Boolean
     val supportsRaw: Boolean
 
-    fun structured(message: T, reuseComponent: JComponent?): JComponent
-    fun pretty(message: T, reuseComponent: JComponent?): JComponent
-    fun raw(message: T, reuseComponent: JComponent?): JComponent
+    fun structured(message: T, reuseComponent: JComponent?, project: Project): JComponent
+    fun pretty(message: T, reuseComponent: JComponent?, project: Project): JComponent
+    fun raw(message: T, reuseComponent: JComponent?, project: Project): JComponent
 
 }
 
@@ -45,18 +52,20 @@ fun bodyRendererForFormat(format: BodyFormat): BodyRenderer<ParsedNiddlerMessage
 private const val REUSE_COMPONENT_KEY = "niddler_reuse_component_key"
 internal const val REUSE_KEY_MONOSPACED_TEXT = "monospaced_text"
 
-internal fun textAreaRenderer(stringData: String, reuseComponent: JComponent?): JComponent {
-    val component = reuseOrNew(REUSE_KEY_MONOSPACED_TEXT, reuseComponent) {
-        JTextArea().also {
-            it.isEditable = false
-            it.font = JBFont.create(Font("Monospaced", 0, 10))
-        }
-    }
+internal fun textAreaRenderer(stringData: String, reuseComponent: JComponent?, project: Project, fileType: FileType?): JComponent {
+    val editor = (reuseComponent?.getClientProperty(REUSE_KEY_MONOSPACED_TEXT) as? EditorImpl)
+            ?: EditorFactory.getInstance().createViewer(EditorFactory.getInstance().createDocument(stringData), project) as EditorImpl
 
-    val doc = component.second.document
-    doc.remove(0, doc.length)
-    doc.insertString(0, stringData, null)
-    return component.first
+    val document = editor.document
+    runWriteAction {
+        CommandProcessor.getInstance().executeCommand(project, Runnable {
+            document.replaceString(0, document.textLength, stringData)
+            editor.caretModel.moveToOffset(0)
+        }, null, null, UndoConfirmationPolicy.DEFAULT, document)
+    }
+    editor.highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(project, fileType ?: UnknownFileType.INSTANCE)
+
+    return editor.component.also { it.putClientProperty(REUSE_KEY_MONOSPACED_TEXT, editor) }
 }
 
 internal inline fun <reified T : JComponent> reuseOrNew(key: String, reuseComponent: JComponent?, componentCreator: () -> T): Pair<JBScrollPane, T> {
