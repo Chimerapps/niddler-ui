@@ -1,6 +1,7 @@
 package com.chimerapps.niddler.ui.model.renderer.impl.json
 
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
+import com.chimerapps.niddler.ui.model.renderer.reuseOrNew
 import com.chimerapps.niddler.ui.model.renderer.textAreaRenderer
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons

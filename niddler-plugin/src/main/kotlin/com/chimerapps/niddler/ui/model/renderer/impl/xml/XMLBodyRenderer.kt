@@ -38,7 +38,7 @@ object XMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
 
     override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val data = (message.bodyData as? Document)
-        val component = reuseOrNew("xmlTree", reuseComponent) {
+        val component = reuseOrNew(project, "xmlTree", reuseComponent) {
             NiddlerXmlTree().also {
                 TreeSpeedSearch(it, { path -> path.lastPathComponent.toString() }, true)
             }

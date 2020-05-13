@@ -11,15 +11,34 @@ import com.chimerapps.niddler.ui.util.ui.runWriteAction
 import com.icapps.niddler.lib.model.BodyFormat
 import com.icapps.niddler.lib.model.BodyFormatType
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.intellij.ide.highlighter.XmlFileType
+import com.intellij.json.JsonFileType
+import com.intellij.json.JsonLanguage
+import com.intellij.json.JsonParser
+import com.intellij.json.editor.folding.JsonFoldingBuilder
+import com.intellij.lang.PsiBuilder
+import com.intellij.lang.folding.LanguageFolding
+import com.intellij.lang.xml.XMLLanguage
+import com.intellij.lang.xml.XmlFoldingBuilder
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.FoldingModel
+import com.intellij.openapi.editor.ex.DocumentEx
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
 import com.intellij.openapi.editor.impl.EditorImpl
 import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.fileTypes.UnknownFileType
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
+import com.intellij.psi.PsiFileFactory
+import com.intellij.psi.tree.ILazyParseableElementType
 import com.intellij.ui.components.JBScrollPane
+import com.jetbrains.rd.util.getOrCreate
+import java.util.IdentityHashMap
 import javax.swing.JComponent
 
 
@@ -52,23 +71,76 @@ fun bodyRendererForFormat(format: BodyFormat): BodyRenderer<ParsedNiddlerMessage
 private const val REUSE_COMPONENT_KEY = "niddler_reuse_component_key"
 internal const val REUSE_KEY_MONOSPACED_TEXT = "monospaced_text"
 
+private val activeEditors = IdentityHashMap<Project, MutableList<Editor>>()
+
 internal fun textAreaRenderer(stringData: String, reuseComponent: JComponent?, project: Project, fileType: FileType?): JComponent {
     val editor = (reuseComponent?.getClientProperty(REUSE_KEY_MONOSPACED_TEXT) as? EditorImpl)
-            ?: EditorFactory.getInstance().createViewer(EditorFactory.getInstance().createDocument(stringData), project) as EditorImpl
+            ?: (EditorFactory.getInstance().createViewer(EditorFactory.getInstance().createDocument(stringData), project) as EditorImpl).also {
+                activeEditors.getOrCreate(project) {
+                    Disposer.register(project, Disposable {
+                        activeEditors.remove(project)?.forEach { editor -> EditorFactory.getInstance().releaseEditor(editor) }
+                    })
+                    mutableListOf()
+                } += it
+            }
+
+    activeEditors[project]?.removeIf {
+        if (it !== editor) {
+            EditorFactory.getInstance().releaseEditor(it)
+            true
+        } else {
+            false
+        }
+    }
 
     val document = editor.document
     runWriteAction {
         CommandProcessor.getInstance().executeCommand(project, Runnable {
             document.replaceString(0, document.textLength, stringData)
             editor.caretModel.moveToOffset(0)
+
+            editor.foldingModel.runBatchFoldingOperation { editor.foldingModel.clearFoldRegions() }
+            if (fileType != null) {
+                buildCodeFolding(fileType, project, stringData, document, editor.foldingModel)
+            }
         }, null, null, UndoConfirmationPolicy.DEFAULT, document)
     }
+
     editor.highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(project, fileType ?: UnknownFileType.INSTANCE)
 
     return editor.component.also { it.putClientProperty(REUSE_KEY_MONOSPACED_TEXT, editor) }
 }
 
-internal inline fun <reified T : JComponent> reuseOrNew(key: String, reuseComponent: JComponent?, componentCreator: () -> T): Pair<JBScrollPane, T> {
+fun buildCodeFolding(fileType: FileType, project: Project, stringData: String, document: DocumentEx, foldingModel: FoldingModel) {
+    when (fileType) {
+        is JsonFileType -> {
+            val psiFile = PsiFileFactory.getInstance(project).createFileFromText(JsonLanguage.INSTANCE, stringData)
+            val regions = JsonFoldingBuilder().buildFoldRegions(psiFile.node, document)
+            foldingModel.runBatchFoldingOperationDoNotCollapseCaret {
+                regions.forEach { region ->
+                    foldingModel.addFoldRegion(region.range.startOffset, region.range.endOffset, region.placeholderText?:"")
+                }
+            }
+        }
+        is XmlFileType -> {
+            val psiFile = PsiFileFactory.getInstance(project).createFileFromText(XMLLanguage.INSTANCE, stringData)
+            val regions = XmlFoldingBuilder().buildFoldRegions(psiFile, document, true)
+            foldingModel.runBatchFoldingOperationDoNotCollapseCaret {
+                regions.forEach { region ->
+                    foldingModel.addFoldRegion(region.range.startOffset, region.range.endOffset, region.placeholderText?:"")
+                }
+            }
+        }
+
+    }
+}
+
+internal inline fun <reified T : JComponent> reuseOrNew(project: Project, key: String, reuseComponent: JComponent?, componentCreator: () -> T): Pair<JBScrollPane, T> {
+    activeEditors[project]?.also { list ->
+        list.forEach { EditorFactory.getInstance().releaseEditor(it) }
+        list.clear()
+    }
+
     return if (reuseComponent is JBScrollPane && reuseComponent.componentCount != 0
             && reuseComponent.getComponent(0) is T && reuseComponent.getClientProperty(REUSE_COMPONENT_KEY) == key) {
         reuseComponent to reuseComponent.getComponent(0) as T
