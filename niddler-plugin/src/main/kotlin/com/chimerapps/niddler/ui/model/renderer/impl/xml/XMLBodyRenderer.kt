@@ -10,10 +10,14 @@ import com.chimerapps.niddler.ui.util.ui.PopupAction
 import com.chimerapps.niddler.ui.util.ui.action
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.icons.AllIcons
+import com.intellij.ide.highlighter.XmlFileType
+import com.intellij.ide.highlighter.XmlLikeFileType
+import com.intellij.openapi.project.Project
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBFont
+import com.jetbrains.cidr.execution.debugger.memory.hexdump.lang.HexdumpFileType
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.awt.Font
@@ -33,23 +37,23 @@ object XMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     override val supportsPretty: Boolean = true
     override val supportsRaw: Boolean = true
 
-    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val data = (message.bodyData as? Document)
         val component = reuseOrNew("xmlTree", reuseComponent) { NiddlerXmlTree() }
         component.second.resetModel(data?.documentElement)
         return component.first
     }
 
-    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val data = (message.bodyData as? Document)
         val text = data?.let { XmlTreeTransferHandler.formatXML(it) } ?: ""
 
-        return textAreaRenderer(text, reuseComponent)
+        return textAreaRenderer(text, reuseComponent, project, XmlFileType.INSTANCE)
     }
 
-    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val stringData = message.message.getBodyAsString(message.bodyFormat.encoding) ?: ""
-        return textAreaRenderer(stringData, reuseComponent)
+        return textAreaRenderer(stringData, reuseComponent, project, XmlFileType.INSTANCE)
     }
 
 }

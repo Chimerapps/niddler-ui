@@ -4,6 +4,7 @@ import com.chimerapps.niddler.ui.component.view.HexViewer
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.reuseOrNew
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.intellij.openapi.project.Project
 import java.awt.image.BufferedImage
 import javax.swing.ImageIcon
 import javax.swing.JComponent
@@ -15,11 +16,11 @@ object ImageBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     override val supportsPretty: Boolean = true
     override val supportsRaw: Boolean = true
 
-    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         throw IllegalStateException("Structured not supported")
     }
 
-    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val component = reuseOrNew("image", reuseComponent) { JLabel() }
 
         val label = component.second
@@ -31,7 +32,7 @@ object ImageBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
         return component.first
     }
 
-    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val component = reuseOrNew("hexViewer", reuseComponent) { HexViewer().also { it.postInit() } }
         component.second.setData(message.getBodyAsBytes)
         return component.first
