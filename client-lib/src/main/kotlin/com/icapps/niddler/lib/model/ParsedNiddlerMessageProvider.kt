@@ -1,13 +1,16 @@
 package com.icapps.niddler.lib.model
 
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
+import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.utils.ScalingThreadPoolExecutor
 import java.util.LinkedHashMap
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-class ParsedNiddlerMessageProvider(private val mainDispatcher: (() -> Unit) -> Unit, private val bodyParser: NiddlerMessageBodyParser) {
+class ParsedNiddlerMessageProvider(private val mainDispatcher: (() -> Unit) -> Unit,
+                                   private val bodyParser: NiddlerMessageBodyParser,
+                                   private val niddlerMessageContainer: NiddlerMessageContainer) {
 
     private companion object {
         private const val MAX_LRU_SIZE = 200
@@ -22,6 +25,14 @@ class ParsedNiddlerMessageProvider(private val mainDispatcher: (() -> Unit) -> U
     fun clean() {
         synchronized(lruCache) {
             lruCache.clear()
+        }
+    }
+
+    fun provideParsedMessage(messageInfo: NiddlerMessageInfo): ObservableFuture<ParsedNiddlerMessage> {
+        val message = niddlerMessageContainer.load(messageInfo) ?: return CompletableObservableFuture(mainDispatcher)
+
+        synchronized(lruCache) {
+            return lruCache.getOrPut(message.messageId) { AsyncMemoizer(mainDispatcher) { bodyParser.parseBody(message) } }.future
         }
     }
 

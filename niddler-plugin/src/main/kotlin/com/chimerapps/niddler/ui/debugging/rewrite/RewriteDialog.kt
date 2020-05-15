@@ -5,6 +5,7 @@ import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocation
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocationMatch
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteSet
+import com.icapps.niddler.lib.model.NiddlerMessageInfo
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.openapi.project.Project
 import java.awt.Dimension
@@ -33,7 +34,7 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
             return dialog.response
         }
 
-        fun showAdd(parent: Window?, project: Project, message: NiddlerMessage): RewriteConfig? {
+        fun showAdd(parent: Window?, project: Project, message: NiddlerMessageInfo): RewriteConfig? {
             val dialog = RewriteDialog(parent, project)
             if (dialog.parent != null)
                 dialog.setLocationRelativeTo(parent)
@@ -140,7 +141,7 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
         masterPanel.rewriteSetUpdated(oldIndex, new)
     }
 
-    private fun addNewRuleFor(message: NiddlerMessage) {
+    private fun addNewRuleFor(message: NiddlerMessageInfo) {
         val set = RewriteSet(active = true,
                 name = "No name",
                 locations = listOf(RewriteLocationMatch(enabled = true, location = createRewriteLocationFor(message))),
@@ -157,7 +158,7 @@ private fun List<RewriteSet>.createIds(): List<RewriteSet> {
 
 data class RewriteConfig(val allEnabled: Boolean, val sets: List<RewriteSet>)
 
-private fun createRewriteLocationFor(message: NiddlerMessage): RewriteLocation {
+private fun createRewriteLocationFor(message: NiddlerMessageInfo): RewriteLocation {
     val uri = message.url?.let { URI.create(it) } ?: return RewriteLocation()
 
     return RewriteLocation(protocol = uri.scheme,

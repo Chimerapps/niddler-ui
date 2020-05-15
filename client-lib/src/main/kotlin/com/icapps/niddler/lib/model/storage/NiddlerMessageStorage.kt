@@ -2,6 +2,7 @@ package com.icapps.niddler.lib.model.storage
 
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
+import com.icapps.niddler.lib.model.NiddlerMessageInfo
 
 /**
  * @author Nicola Verbeeck
@@ -18,9 +19,9 @@ interface NiddlerMessageStorage {
 
     interface Filter {
 
-        fun messageFilter(message: NiddlerMessage, storage: NiddlerMessageContainer): Boolean
+        fun messageFilter(message: NiddlerMessageInfo, storage: NiddlerMessageContainer): Boolean
 
-        fun messageFilter(relatedMessages: List<NiddlerMessage>): List<NiddlerMessage>
+        fun messageFilter(relatedMessages: List<NiddlerMessageInfo>): List<NiddlerMessageInfo>
     }
 
 }

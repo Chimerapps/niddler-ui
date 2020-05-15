@@ -6,6 +6,7 @@ import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
+import com.icapps.niddler.lib.model.NiddlerMessageInfo
 import com.icapps.niddler.lib.model.ObservingToken
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
@@ -65,7 +66,7 @@ class BodyMessageDetailPanel(private val project: Project,
         saveButton.addActionListener { saveBody() }
     }
 
-    fun init(message: NiddlerMessage) {
+    fun init(message: NiddlerMessageInfo) {
         observingToken?.stopObserving()
 
         //TODO loading indicator/clear

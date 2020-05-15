@@ -10,7 +10,7 @@ class ObservableChronologicalMessageList(private val storage: NiddlerMessageCont
     companion object {
         internal data class InsertPosition(val index: Int, val isDuplicateTimeStamp: Boolean)
 
-        internal fun calculateInsertPosition(message: NiddlerMessage, list: List<NiddlerMessage>): InsertPosition {
+        internal fun calculateInsertPosition(message: NiddlerMessageInfo, list: List<NiddlerMessageInfo>): InsertPosition {
             val size = list.size
             var insertIndex = 0
             var duplicateTimestamps = false
@@ -29,10 +29,10 @@ class ObservableChronologicalMessageList(private val storage: NiddlerMessageCont
         }
     }
 
-    private val internalList = ArrayList<NiddlerMessage>()
+    private val internalList = ArrayList<NiddlerMessageInfo>()
     private val views = ArrayList<WeakReference<ChronologicalMessagesView>>()
 
-    fun addMessage(message: NiddlerMessage): Boolean {
+    fun addMessage(message: NiddlerMessageInfo): Boolean {
         synchronized(internalList) {
             val insertPos = calculateInsertPosition(message, internalList)
             //Damn, we found a duplicate timestamp. Check if we have a duplicate message
@@ -88,14 +88,14 @@ class ChronologicalMessagesView(messageListener: ObservableMutableList.Observer,
                                 private val storage: NiddlerMessageContainer,
                                 private val filter: NiddlerMessageStorage.Filter?) {
 
-    private val filteredMessages = ObservableMutableList<NiddlerMessage>(ArrayList()).also { it.observer = messageListener }
+    private val filteredMessages = ObservableMutableList<NiddlerMessageInfo>(ArrayList()).also { it.observer = messageListener }
 
     val size: Int
         get() = synchronized(this) { filteredMessages.size }
 
-    operator fun get(index: Int): NiddlerMessage? = synchronized(this) { filteredMessages.getOrNull(index) }
+    operator fun get(index: Int): NiddlerMessageInfo? = synchronized(this) { filteredMessages.getOrNull(index) }
 
-    fun notifyMessageInsert(message: NiddlerMessage) {
+    fun notifyMessageInsert(message: NiddlerMessageInfo) {
         synchronized(this) {
             if (filter?.messageFilter(message, storage) == false)
                 return
@@ -112,7 +112,7 @@ class ChronologicalMessagesView(messageListener: ObservableMutableList.Observer,
         }
     }
 
-    fun notifyMessagesChanged(newList: List<NiddlerMessage>) {
+    fun notifyMessagesChanged(newList: List<NiddlerMessageInfo>) {
         synchronized(this) {
             filteredMessages.clear()
             val filter = filter
@@ -123,7 +123,7 @@ class ChronologicalMessagesView(messageListener: ObservableMutableList.Observer,
         }
     }
 
-    fun indexOf(message: NiddlerMessage): Int {
+    fun indexOf(message: NiddlerMessageInfo): Int {
         return synchronized(this) { filteredMessages.indexOf(message) }
     }
 

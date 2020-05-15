@@ -77,7 +77,8 @@ open class NiddlerV4ProtocolHandler(messageListener: NiddlerMessageListener,
     }
 
     private fun onDebugResponseAction(socket: WebSocketClient, requestId: String, message: NiddlerMessage) {
-        val response = debugListener.onResponseAction(requestId, message, request = messageStorage?.findRequest(message.requestId))
+        val storage = messageStorage
+        val response = debugListener.onResponseAction(requestId, message, request = storage?.let { storage.findRequest(message.requestId)?.let(storage::load) })
 
         val controlMessage = NiddlerDebugControlMessage(MESSAGE_DEBUG_REPLY, messageId = requestId, payload = response)
 

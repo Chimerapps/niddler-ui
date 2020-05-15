@@ -12,16 +12,14 @@ import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.chimerapps.niddler.ui.util.ui.setColumnPreferredWidth
 import com.icapps.niddler.lib.codegen.CurlCodeGenerator
 import com.icapps.niddler.lib.connection.model.NetworkNiddlerMessage
-import com.icapps.niddler.lib.connection.model.NiddlerMessage
-import com.icapps.niddler.lib.connection.model.isCachedResponse
-import com.icapps.niddler.lib.connection.model.isDebugOverride
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.BodyFormat
-import com.icapps.niddler.lib.model.BodyFormatType
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
-import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
+import com.icapps.niddler.lib.model.NiddlerMessageInfo
+import com.icapps.niddler.lib.model.NiddlerMessageType
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
+import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.utils.ObservableMutableList
 import com.icapps.niddler.lib.utils.getStatusCodeString
 import com.intellij.openapi.project.Project
@@ -88,16 +86,25 @@ class TimelineView(private val project: Project,
             if (url != null) {
                 actions += "Copy URL" action { ClipboardUtil.copyToClipboard(StringSelection(url)) }
             }
-            if (!message.body.isNullOrEmpty())
+            if (!message.hasBody)
                 actions += "Copy body" action { ClipboardUtil.copyToClipboard(parsedNiddlerMessageProvider.provideParsedMessage(message).get()) }
 
             if (urlContainer != null) {
-                val bestNetworkMatch = if (message.isRequest) {
-                    messageContainer.findResponse(message)?.networkRequest
-                } else {
-                    message.networkRequest
-                } ?: urlContainer
-                actions += "Export cUrl request" action { ClipboardUtil.copyToClipboard(StringSelection(CurlCodeGenerator().generateRequestCode(bestNetworkMatch))) }
+                actions += "Export cUrl request" action {
+                    val bestNetworkMatchInfo = if (message.isRequest) {
+                        messageContainer.findResponse(message)?.networkRequest
+                    } else {
+                        message.networkRequest
+                    } ?: urlContainer
+
+                    val bestNetworkMatch = messageContainer.load(bestNetworkMatchInfo)
+
+                    if (bestNetworkMatch != null) {
+                        ClipboardUtil.copyToClipboard(StringSelection(CurlCodeGenerator().generateRequestCode(bestNetworkMatch)))
+                    } else {
+                        //TODO message
+                    }
+                }
             }
 
             if (urlContainer != null) {
@@ -242,9 +249,7 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageContainer) 
                         timestamp = 0
                 ),
                 BodyFormat.NONE,
-                bodyData = null,
-                parsedNetworkReply = null,
-                parsedNetworkRequest = null
+                bodyData = null
         )
     }
 
@@ -270,7 +275,7 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageContainer) 
     private val downDebugIcon = IncludedIcons.Status.incoming_debugged
     private var messages = messageContainer.messagesChronological.newView(filter = filter, messageListener = this)
 
-    fun getMessageAtRow(rowIndex: Int): NiddlerMessage? {
+    fun getMessageAtRow(rowIndex: Int): NiddlerMessageInfo? {
         return messages[rowIndex]
     }
 
@@ -297,24 +302,19 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageContainer) 
                 else
                     formatStatusCode(other?.statusCode)
             }
-            INDEX_FORMAT -> message.headers?.get("content-type")?.firstOrNull()
+            INDEX_FORMAT -> message.format
             else -> "<NO COLUMN DEF>"
         }
     }
 
-    private fun getIcon(message: NiddlerMessage): Icon {
-        return if (message.isRequest) {
-            if (message.isDebugOverride) {
-                upDebugIcon
-            } else {
-                upIcon
-            }
-        } else if (message.isDebugOverride) {
-            downDebugIcon
-        } else if (message.isCachedResponse) {
-            downCacheIcon
-        } else {
-            downIcon
+    private fun getIcon(message: NiddlerMessageInfo): Icon {
+        return when (message.type) {
+            NiddlerMessageType.UP -> upIcon
+            NiddlerMessageType.DOWN -> downIcon
+            NiddlerMessageType.UP_DEBUG -> upDebugIcon
+            NiddlerMessageType.DOWN_DEBUG -> downDebugIcon
+            NiddlerMessageType.DOWN_CACHED -> downCacheIcon
+            null -> downIcon
         }
     }
 
@@ -367,7 +367,7 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageContainer) 
         return "\u2026" + url.substring(baseToStrip.length)
     }
 
-    fun findMessageIndex(message: NiddlerMessage): Int {
+    fun findMessageIndex(message: NiddlerMessageInfo): Int {
         return messages.indexOf(message)
     }
 }

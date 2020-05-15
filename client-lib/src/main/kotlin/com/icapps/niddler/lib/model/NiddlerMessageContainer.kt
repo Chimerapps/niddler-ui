@@ -3,7 +3,6 @@ package com.icapps.niddler.lib.model
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
-import com.icapps.niddler.lib.model.storage.InMemoryNiddlerMessageStorage
 import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import java.io.Closeable
 
@@ -21,8 +20,9 @@ class NiddlerMessageContainer(vararg storages: NiddlerMessageStorage) {
 
     private val messageAdapter = object : NiddlerMessageListener {
         override fun onServiceMessage(niddlerMessage: NiddlerMessage) {
-            if (messagesChronological.addMessage(niddlerMessage)) {
-                messagesLinked.addMessage(niddlerMessage)
+            val info = NiddlerMessageInfo.fromMessage(niddlerMessage)
+            if (messagesChronological.addMessage(info)) {
+                messagesLinked.addMessage(info)
 
                 storages.forEach { it.addMessage(niddlerMessage) }
                 listeners.forEach { it.onServiceMessage(niddlerMessage) }
@@ -37,11 +37,11 @@ class NiddlerMessageContainer(vararg storages: NiddlerMessageStorage) {
             nonEmpty.size == 1 -> {
                 nonEmpty.first().allMessages().forEach {
                     empty.forEach { emptyStorage -> emptyStorage.addMessage(it) }
-                    addMessage(it)
+                    addMessageFromStorage(it)
                 }
             }
             else -> {
-                nonEmpty.first().allMessages().forEach(::addMessage)
+                nonEmpty.first().allMessages().forEach(::addMessageFromStorage)
             }
         }
     }
@@ -50,30 +50,31 @@ class NiddlerMessageContainer(vararg storages: NiddlerMessageStorage) {
         internalStorages.forEach(NiddlerMessageStorage::clear)
     }
 
-    private fun addMessage(niddlerMessage: NiddlerMessage) {
-        if (messagesChronological.addMessage(niddlerMessage)) {
-            messagesLinked.addMessage(niddlerMessage)
+    private fun addMessageFromStorage(niddlerMessage: NiddlerMessage) {
+        val info = NiddlerMessageInfo.fromMessage(niddlerMessage)
+        if (messagesChronological.addMessage(info)) {
+            messagesLinked.addMessage(info)
         }
     }
 
-    private fun getMessagesWithRequestId(requestId: String): List<NiddlerMessage> {
+    private fun getMessagesWithRequestId(requestId: String): List<NiddlerMessageInfo> {
         return synchronized(this) {
             messagesLinked[requestId] ?: emptyList()
         }
     }
 
-    fun findResponse(message: NiddlerMessage): NiddlerMessage? {
+    fun findResponse(message: NiddlerMessageInfo): NiddlerMessageInfo? {
         return getMessagesWithRequestId(message.requestId).find {
             !it.isRequest
         }
     }
 
-    fun findRequest(message: NiddlerMessage): NiddlerMessage? {
+    fun findRequest(message: NiddlerMessageInfo): NiddlerMessageInfo? {
         return findRequest(message.requestId)
     }
 
-    fun findRequest(requestId: String): NiddlerMessage? {
-        return getMessagesWithRequestId(requestId).findLast(NiddlerMessage::isRequest)
+    fun findRequest(requestId: String): NiddlerMessageInfo? {
+        return getMessagesWithRequestId(requestId).findLast(NiddlerMessageInfo::isRequest)
     }
 
     fun attach(client: NiddlerClient) {
@@ -103,4 +104,9 @@ class NiddlerMessageContainer(vararg storages: NiddlerMessageStorage) {
     fun isEmpty(): Boolean {
         return messagesChronological.isEmpty()
     }
+
+    fun load(message: NiddlerMessageInfo): NiddlerMessage? {
+        TODO("Not yet implemented")
+    }
+
 }

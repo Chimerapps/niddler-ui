@@ -3,10 +3,8 @@ package com.chimerapps.niddler.ui.component.renderer
 import com.chimerapps.niddler.ui.component.view.LinkedResponseNode
 import com.chimerapps.niddler.ui.component.view.LinkedRootNode
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
-import com.icapps.niddler.lib.connection.model.NiddlerMessage
-import com.icapps.niddler.lib.connection.model.isCachedResponse
-import com.icapps.niddler.lib.connection.model.isDebugOverride
-import com.icapps.niddler.lib.model.ObservingToken
+import com.icapps.niddler.lib.model.NiddlerMessageInfo
+import com.icapps.niddler.lib.model.NiddlerMessageType
 import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
 import com.icapps.niddler.lib.utils.getStatusCodeString
 import com.intellij.ui.JBDefaultTreeCellRenderer
@@ -20,6 +18,7 @@ import java.util.Date
 import java.util.Locale
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
+import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTree
@@ -87,7 +86,6 @@ class LinkedViewCellRenderer(private val parsedNiddlerMessageProvider: ParsedNid
         responseDirectionLabel.setFixedWidth(36)
         responseStatusLabel.setFixedWidth(70)
     }
-    private var messageProviderToken: ObservingToken? = null
 
     override fun getTreeCellRendererComponent(tree: JTree, value: Any?, selected: Boolean,
                                               expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean): Component {
@@ -102,7 +100,7 @@ class LinkedViewCellRenderer(private val parsedNiddlerMessageProvider: ParsedNid
         return this
     }
 
-    private fun getRequestComponent(request: NiddlerMessage?): Component {
+    private fun getRequestComponent(request: NiddlerMessageInfo?): Component {
         updatePanel(requestPanel, myTree)
 
         if (request == null) {
@@ -114,7 +112,7 @@ class LinkedViewCellRenderer(private val parsedNiddlerMessageProvider: ParsedNid
             requestTimeLabel.text = formatTime(request.timestamp)
             methodLabel.text = request.method
             urlLabel.text = request.url
-            requestDirectionLabel.icon = if (request.isDebugOverride) directionUpDebug else directionUp
+            requestDirectionLabel.icon = getIcon(request)
 
             updateForeground(requestTimeLabel)
             updateForeground(methodLabel)
@@ -136,13 +134,9 @@ class LinkedViewCellRenderer(private val parsedNiddlerMessageProvider: ParsedNid
         responseTimeLabel.text = formatTime(response.timestamp)
         responseStatusLabel.text = formatStatusCode(response.statusCode)
 
-        messageProviderToken?.stopObserving()
-        responseTypeLabel.text = ""
-        messageProviderToken = parsedNiddlerMessageProvider.provideParsedMessage(response).observe {
-            responseTypeLabel.text = it.bodyFormat.toString()
-        }
+        responseTypeLabel.text = response.format ?: ""
 
-        responseDirectionLabel.icon = if (response.isDebugOverride) directionDownDebug else if (response.isCachedResponse) directionDownCached else directionDown
+        responseDirectionLabel.icon = getIcon(response)
 
         updateForeground(responseTimeLabel)
         updateForeground(responseStatusLabel)
@@ -151,6 +145,16 @@ class LinkedViewCellRenderer(private val parsedNiddlerMessageProvider: ParsedNid
         responsePanel.revalidate()
         responsePanel.repaint()
         return responsePanel
+    }
+
+    private fun getIcon(message: NiddlerMessageInfo): Icon {
+        return when (message.type) {
+            NiddlerMessageType.UP -> directionUp
+            NiddlerMessageType.DOWN -> directionDown
+            NiddlerMessageType.UP_DEBUG -> directionUpDebug
+            NiddlerMessageType.DOWN_DEBUG -> directionDownDebug
+            NiddlerMessageType.DOWN_CACHED -> directionDownCached
+        }
     }
 
     private fun updatePanel(panel: JPanel, tree: JTree) {

@@ -127,9 +127,9 @@ class NiddlerSessionWindow(private val project: Project,
 
     private var currentMessagesView: MessagesView? = null
     private val bodyParser = NiddlerMessageBodyParser(HeaderBodyClassifier(emptyList())) //TODO extensions!
-    private val parsedNiddlerMessageProvider = ParsedNiddlerMessageProvider({ dispatchMain(it) }, bodyParser)
 
     private val messageContainer = NiddlerMessageContainer(InMemoryNiddlerMessageStorage(), SqliteMessageStorage(File("/Users/nicolaverbeeck/testniddler.db")))
+    private val parsedNiddlerMessageProvider = ParsedNiddlerMessageProvider({ dispatchMain(it) }, bodyParser, messageContainer)
     private var niddlerClient: NiddlerClient? = null
     private var lastConnection: PreparedDeviceConnection? = null
     private val detailView = MessageDetailView(project, disposable, parsedNiddlerMessageProvider, messageContainer)

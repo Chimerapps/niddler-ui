@@ -18,10 +18,10 @@ import com.icapps.niddler.lib.export.har.Timings
 import com.icapps.niddler.lib.model.BodyFormatType
 import com.icapps.niddler.lib.model.LinkedMessageHolder
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
-import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ObservableLinkedMessagesView
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
+import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.utils.UrlUtil
 import java.io.OutputStream
 import java.util.Date
@@ -36,20 +36,20 @@ class HarExport(private val parsedMessageProvider: ParsedNiddlerMessageProvider)
         val writer = StreamingHarWriter(target = buffered,
                 creator = Creator("Niddler", "1.0"))
 
-        exportTo(messages.messagesLinked.newView(filter, rootMessageListener = null), writer)
+        exportTo(messages.messagesLinked.newView(filter, rootMessageListener = null), messages, writer)
 
         writer.close()
     }
 
-    private fun exportTo(messages: ObservableLinkedMessagesView, writer: StreamingHarWriter) {
+    private fun exportTo(messages: ObservableLinkedMessagesView, messagesContainer: NiddlerMessageContainer, writer: StreamingHarWriter) {
         messages.snapshot().forEach {
-            exportTo(it, writer)
+            exportTo(it, messagesContainer, writer)
         }
     }
 
-    private fun exportTo(niddlerMessages: LinkedMessageHolder, writer: StreamingHarWriter) {
-        val request = niddlerMessages.request ?: return
-        val response = niddlerMessages.responses.firstOrNull() ?: return
+    private fun exportTo(niddlerMessages: LinkedMessageHolder, messagesContainer: NiddlerMessageContainer, writer: StreamingHarWriter) {
+        val request = niddlerMessages.request?.let(messagesContainer::load) ?: return
+        val response = niddlerMessages.responses.firstOrNull()?.let(messagesContainer::load) ?: return
 
         val time = (response.timestamp - request.timestamp).toDouble()
         val harEntry = Entry(
@@ -104,9 +104,11 @@ class HarExport(private val parsedMessageProvider: ParsedNiddlerMessageProvider)
         val builder = PostDataBuilder()
         val format = message.bodyFormat
         when (format.type) {
-            BodyFormatType.FORMAT_JSON -> builder.withMime(format.rawMimeType ?: BodyFormatType.FORMAT_JSON.verbose).withText(message.message.getBodyAsString(format.encoding) ?: "")
+            BodyFormatType.FORMAT_JSON -> builder.withMime(format.rawMimeType ?: BodyFormatType.FORMAT_JSON.verbose).withText(message.message.getBodyAsString(format.encoding)
+                    ?: "")
             BodyFormatType.FORMAT_XML -> builder.withMime(format.rawMimeType ?: BodyFormatType.FORMAT_XML.verbose).withText(message.message.getBodyAsString(format.encoding) ?: "")
-            BodyFormatType.FORMAT_PLAIN -> builder.withMime(format.rawMimeType ?: BodyFormatType.FORMAT_PLAIN.verbose).withText(message.message.getBodyAsString(format.encoding) ?: "")
+            BodyFormatType.FORMAT_PLAIN -> builder.withMime(format.rawMimeType ?: BodyFormatType.FORMAT_PLAIN.verbose).withText(message.message.getBodyAsString(format.encoding)
+                    ?: "")
             BodyFormatType.FORMAT_IMAGE -> builder.withMime(format.rawMimeType ?: "").withText(message.message.bodyAsNormalBase64 ?: "")
             BodyFormatType.FORMAT_BINARY -> builder.withMime(format.rawMimeType ?: "").withText(message.message.bodyAsNormalBase64 ?: "")
             BodyFormatType.FORMAT_HTML -> builder.withMime(format.rawMimeType ?: "").withText(message.message.getBodyAsString(format.encoding ?: "UTF-8") ?: "")

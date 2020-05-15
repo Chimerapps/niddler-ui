@@ -6,6 +6,9 @@ import com.chimerapps.niddler.ui.util.ui.Popup
 import com.chimerapps.niddler.ui.util.ui.PopupAction
 import com.chimerapps.niddler.ui.util.ui.action
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
+import com.icapps.niddler.lib.model.NiddlerMessageContainer
+import com.icapps.niddler.lib.model.NiddlerMessageInfo
+import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
@@ -28,7 +31,7 @@ import javax.swing.border.BevelBorder
 import javax.swing.border.EmptyBorder
 import javax.swing.border.TitledBorder
 
-class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
+class GeneralMessageDetailPanel(project: Project, private val niddlerMessageContainer: NiddlerMessageContainer) : JPanel(BorderLayout()) {
 
     private companion object {
         private fun createOuterContainer(title: String, inner: JComponent): JPanel {
@@ -70,18 +73,20 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
 
     var needsResponse: Boolean = false
         private set
-    var currentMessage: NiddlerMessage? = null
+    var currentMessage: NiddlerMessageInfo? = null
         private set
 
     init {
         add(contentScroller, BorderLayout.CENTER)
     }
 
-    fun init(message: NiddlerMessage, other: NiddlerMessage?) {
-        fillGeneral(message, other)
-        fillHeaders(message, other)
+    fun init(message: NiddlerMessageInfo, other: NiddlerMessageInfo?) {
+        val loaded = niddlerMessageContainer.load(message)
 
-        val trace = message.trace
+        fillGeneral(message, other)
+        fillHeaders(loaded)
+
+        val trace = loaded?.trace
         tracePanel.setStackTrace(trace)
 
         contextPanel.parent.isVisible = false
@@ -93,7 +98,7 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         repaint()
     }
 
-    private fun fillGeneral(message: NiddlerMessage, other: NiddlerMessage?) {
+    private fun fillGeneral(message: NiddlerMessageInfo, other: NiddlerMessageInfo?) {
         generalPanel.removeAll() //TODO do not aggressively clear all children
 
         val constraints = CellConstraints()
@@ -134,8 +139,9 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         generalPanel.add(execTimeValue, constraints.xy(3, row))
     }
 
-    private fun fillHeaders(message: NiddlerMessage, other: NiddlerMessage?) {
+    private fun fillHeaders(message: NiddlerMessage?) {
         headersPanel.removeAll()
+        message ?: return
 
         val layout = headersPanel.layout as FormLayout
         val numRows = layout.rowCount
@@ -160,7 +166,7 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
             ++row
         }
         val otherHeaders = if (message.isRequest) {
-            other?.networkRequest?.headers
+            message.networkRequest?.headers
         } else {
             message.networkReply?.headers
         }
@@ -198,7 +204,7 @@ class GeneralMessageDetailPanel(project: Project) : JPanel(BorderLayout()) {
         }
     }
 
-    private fun makeExecutionTimeLabel(firstMessage: NiddlerMessage?, secondMessage: NiddlerMessage?, key: String): JBLabel {
+    private fun makeExecutionTimeLabel(firstMessage: NiddlerMessageInfo?, secondMessage: NiddlerMessageInfo?, key: String): JBLabel {
         if (firstMessage == null || secondMessage == null) {
             return JBLabel("Unknown").also { it.font = italicFont }
         }

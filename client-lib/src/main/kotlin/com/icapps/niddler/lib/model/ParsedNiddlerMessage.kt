@@ -7,9 +7,7 @@ import com.icapps.niddler.lib.connection.model.NiddlerMessage
  */
 class ParsedNiddlerMessage(val message: NiddlerMessage,
                            val bodyFormat: BodyFormat,
-                           val bodyData: Any?,
-                           val parsedNetworkRequest: ParsedNiddlerMessage?,
-                           val parsedNetworkReply: ParsedNiddlerMessage?) {
+                           val bodyData: Any?) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

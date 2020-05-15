@@ -5,6 +5,7 @@ import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.LinkedMessageHolder
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
+import com.icapps.niddler.lib.model.NiddlerMessageInfo
 import com.icapps.niddler.lib.model.ObservableLinkedMessagesView
 import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
 import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
@@ -216,7 +217,7 @@ internal class LinkedRootNode(val entry: LinkedMessageHolder,
 
 }
 
-internal class LinkedResponseNode(val response: NiddlerMessage) : DefaultMutableTreeNode()
+internal class LinkedResponseNode(val response: NiddlerMessageInfo) : DefaultMutableTreeNode()
 
 private fun DefaultMutableTreeNode.forEach(block: (MutableTreeNode) -> Unit) {
     for (i in childCount - 1 downTo 0) {

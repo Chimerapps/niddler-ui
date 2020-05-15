@@ -10,7 +10,7 @@ class SimpleUrlMatchFilter(toMatch: String) : NiddlerMessageStorage.Filter {
 
     private val toMatch = toMatch.trim()
 
-    override fun messageFilter(message: NiddlerMessage, storage: NiddlerMessageContainer): Boolean {
+    override fun messageFilter(message: NiddlerMessageInfo, storage: NiddlerMessageContainer): Boolean {
         if (toMatch.isEmpty())
             return true
 
@@ -21,7 +21,7 @@ class SimpleUrlMatchFilter(toMatch: String) : NiddlerMessageStorage.Filter {
         return url?.contains(toMatch, ignoreCase = true) == true
     }
 
-    override fun messageFilter(relatedMessages: List<NiddlerMessage>): List<NiddlerMessage> {
+    override fun messageFilter(relatedMessages: List<NiddlerMessageInfo>): List<NiddlerMessageInfo> {
         if (toMatch.isEmpty())
             return ArrayList(relatedMessages)
 
