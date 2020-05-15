@@ -145,19 +145,19 @@ class BodyMessageDetailPanel(private val project: Project,
 
         when (currentView) {
             CurrentView.STRUCTURED -> {
-                previousStructuredComponent = renderer.structured(message, previousStructuredComponent).also {
+                previousStructuredComponent = renderer.structured(message, previousStructuredComponent, project).also {
                     currentAddedComponent = it
                     add(it, BorderLayout.CENTER)
                 }
             }
             CurrentView.PRETTY -> {
-                previousPrettyComponent = renderer.pretty(message, previousPrettyComponent).also {
+                previousPrettyComponent = renderer.pretty(message, previousPrettyComponent, project).also {
                     currentAddedComponent = it
                     add(it, BorderLayout.CENTER)
                 }
             }
             CurrentView.RAW -> {
-                previousRawComponent = renderer.raw(message, previousRawComponent).also {
+                previousRawComponent = renderer.raw(message, previousRawComponent, project).also {
                     currentAddedComponent = it
                     add(it, BorderLayout.CENTER)
                 }

@@ -1,6 +1,7 @@
 package com.chimerapps.niddler.ui.model.renderer.impl.json
 
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
+import com.chimerapps.niddler.ui.model.renderer.reuseOrNew
 import com.chimerapps.niddler.ui.model.renderer.textAreaRenderer
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
@@ -12,8 +13,11 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.icons.AllIcons
+import com.intellij.json.JsonFileType
+import com.intellij.openapi.project.Project
 import com.intellij.ui.ColoredTreeCellRenderer
 import com.intellij.ui.SimpleTextAttributes
+import com.intellij.ui.TreeSpeedSearch
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBFont
@@ -35,22 +39,22 @@ object JsonBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     override val supportsPretty: Boolean = true
     override val supportsRaw: Boolean = true
 
-    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val data = (message.bodyData as? JsonElement) ?: JsonPrimitive("")
         if (reuseComponent is JBScrollPane && reuseComponent.componentCount != 0 && reuseComponent.getComponent(0) is NiddlerJsonTree) {
             return (reuseComponent.getComponent(0) as NiddlerJsonTree).also { it.resetModel(data) }
         }
-        return JBScrollPane(NiddlerJsonTree(data))
+        return JBScrollPane(NiddlerJsonTree(data).also { TreeSpeedSearch(it, { path -> path.lastPathComponent.toString() }, true) })
     }
 
-    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val stringData = GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(message.bodyData)
-        return textAreaRenderer(stringData, reuseComponent)
+        return textAreaRenderer(stringData, reuseComponent, project, JsonFileType.INSTANCE)
     }
 
-    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val stringData = message.message.getBodyAsString(message.bodyFormat.encoding) ?: ""
-        return textAreaRenderer(stringData, reuseComponent)
+        return textAreaRenderer(stringData, reuseComponent, project, JsonFileType.INSTANCE)
     }
 
 }

@@ -8,6 +8,9 @@ import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
 import com.chimerapps.niddler.ui.util.ui.Popup
 import com.chimerapps.niddler.ui.util.ui.action
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.intellij.openapi.fileTypes.PlainTextFileType
+import com.intellij.openapi.project.Project
+import com.intellij.ui.TableSpeedSearch
 import java.awt.datatransfer.StringSelection
 import javax.swing.JComponent
 import javax.swing.JPopupMenu
@@ -21,9 +24,9 @@ object FormEncodedBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     override val supportsRaw: Boolean = true
 
     @Suppress("UNCHECKED_CAST")
-    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val data = message.bodyData as? Map<String, List<String>>
-        val component = reuseOrNew("formEncoded", reuseComponent) {
+        val component = reuseOrNew(project, "formEncoded", reuseComponent) {
             PopupTable(FormEncodedTableModel(emptyMap()), rowAtIndexCb = { model, index -> model.valueAt(index) }, popupMenuForSelectionCb = ::makePopup).also {
                 it.fillsViewportHeight = false
                 it.rowHeight = 24
@@ -33,6 +36,8 @@ object FormEncodedBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
                 it.tableHeader = null
 
                 it.componentPopupMenu = JPopupMenu()
+            }.also {
+                TableSpeedSearch(it)
             }
         }
         (component.second.model as FormEncodedTableModel).update(data)
@@ -40,7 +45,7 @@ object FormEncodedBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
+    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
         val data = message.bodyData as? Map<String, List<String>>
         val asString = buildString {
             data?.forEach { key, values ->
@@ -49,11 +54,11 @@ object FormEncodedBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
                 }
             }
         }
-        return textAreaRenderer(asString, reuseComponent)
+        return textAreaRenderer(asString, reuseComponent, project, PlainTextFileType.INSTANCE)
     }
 
-    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?): JComponent {
-        return textAreaRenderer(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent)
+    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+        return textAreaRenderer(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent, project, PlainTextFileType.INSTANCE)
     }
 
     private fun makePopup(@Suppress("UNUSED_PARAMETER") model: FormEncodedTableModel, data: Pair<String, String>?): JPopupMenu? {
