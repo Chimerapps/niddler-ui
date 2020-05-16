@@ -23,6 +23,6 @@ object HTMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     }
 
     override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
-        return textAreaRenderer(message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent, project, HtmlFileType.INSTANCE)
+        return textAreaRenderer(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent, project, HtmlFileType.INSTANCE)
     }
 }

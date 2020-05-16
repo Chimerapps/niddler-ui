@@ -3,8 +3,11 @@ package com.chimerapps.niddler.ui.component.view
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
-import com.icapps.niddler.lib.model.NiddlerMessageStorage
+import com.icapps.niddler.lib.model.NiddlerMessageContainer
+import com.icapps.niddler.lib.model.NiddlerMessageInfo
+import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
 import com.intellij.execution.ui.RunnerLayoutUi
 import com.intellij.execution.ui.layout.PlaceInGrid
 import com.intellij.openapi.Disposable
@@ -16,9 +19,10 @@ import javax.swing.SwingConstants
 
 class MessageDetailView(project: Project,
                         disposable: Disposable,
-                        private val storage: NiddlerMessageStorage<ParsedNiddlerMessage>) : JPanel(BorderLayout()), MessageSelectionListener, NiddlerMessageListener {
+                        parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider,
+                        private val storage: NiddlerMessageContainer) : JPanel(BorderLayout()), MessageSelectionListener, NiddlerMessageListener {
 
-    var currentMessage: ParsedNiddlerMessage? = null
+    var currentMessage: NiddlerMessageInfo? = null
         set(value) {
             if (field === value)
                 return
@@ -31,8 +35,8 @@ class MessageDetailView(project: Project,
         }
 
     private var currentlyEmpty = false
-    private val generalDetailPanel = GeneralMessageDetailPanel(project)
-    private val bodyDetailPanel = BodyMessageDetailPanel(project)
+    private val generalDetailPanel = GeneralMessageDetailPanel(project, storage)
+    private val bodyDetailPanel = BodyMessageDetailPanel(project, parsedNiddlerMessageProvider)
     private val tabsContainer: RunnerLayoutUi
 
     init {
@@ -50,7 +54,7 @@ class MessageDetailView(project: Project,
         tabsContainer.addContent(bodyContent, -1, PlaceInGrid.center, false)
     }
 
-    override fun onMessageSelectionChanged(message: ParsedNiddlerMessage?) {
+    override fun onMessageSelectionChanged(message: NiddlerMessageInfo?) {
         currentMessage = message
     }
 
@@ -76,7 +80,7 @@ class MessageDetailView(project: Project,
         repaint()
     }
 
-    private fun updateUi(message: ParsedNiddlerMessage) {
+    private fun updateUi(message: NiddlerMessageInfo) {
         setDetailUI()
 
         val other = if (message.isRequest)
@@ -100,7 +104,7 @@ class MessageDetailView(project: Project,
 }
 
 interface MessageSelectionListener {
-    fun onMessageSelectionChanged(message: ParsedNiddlerMessage?)
+    fun onMessageSelectionChanged(message: NiddlerMessageInfo?)
 }
 
 interface BaseUrlHideListener {

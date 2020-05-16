@@ -12,15 +12,15 @@ class CurlCodeGenerator : CodeGenerator {
         private const val COMMAND_NAME = "curl"
     }
 
-    override fun generateRequestCode(request: ParsedNiddlerMessage): String {
+    override fun generateRequestCode(request: NiddlerMessage): String {
         if (!request.isRequest)
             return "<not a request>"
 
         return when (request.method!!.toLowerCase()) {
-            "get" -> generateGet(request.message)
-            "options" -> generateOptions(request.message)
-            "delete" -> generateDelete(request.message)
-            "head" -> generateHead(request.message)
+            "get" -> generateGet(request)
+            "options" -> generateOptions(request)
+            "delete" -> generateDelete(request)
+            "head" -> generateHead(request)
             "post" -> generatePost(request)
             "put" -> generatePut(request)
             else -> "<request type not yet supported>"
@@ -43,11 +43,11 @@ class CurlCodeGenerator : CodeGenerator {
         return generateNoBodyRequest(request, "DELETE")
     }
 
-    private fun generatePost(request: ParsedNiddlerMessage): String {
+    private fun generatePost(request: NiddlerMessage): String {
         return generateBodyRequest(request, "POST")
     }
 
-    private fun generatePut(request: ParsedNiddlerMessage): String {
+    private fun generatePut(request: NiddlerMessage): String {
         return generateBodyRequest(request, "PUT")
     }
 
@@ -69,13 +69,13 @@ class CurlCodeGenerator : CodeGenerator {
         return builder.toString()
     }
 
-    private fun generateBodyRequest(request: ParsedNiddlerMessage, method: String): String {
+    private fun generateBodyRequest(request: NiddlerMessage, method: String): String {
         val builder = StringBuilder(COMMAND_NAME)
         builder.append(" -i ")
-        addHeaders(builder, request.message)
+        addHeaders(builder, request)
         builder.append("-X \"").append(method.toUpperCase()).append("\" ")
 
-        val bytes = request.message.getBodyAsBytes
+        val bytes = request.getBodyAsBytes
         if (bytes != null) {
             builder.append("--data-binary \"")
             builder.append(escape(String(bytes, 0, bytes.size)))

@@ -1,5 +1,6 @@
 package com.icapps.niddler.lib.codegen
 
+import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 
 /**
@@ -7,6 +8,6 @@ import com.icapps.niddler.lib.model.ParsedNiddlerMessage
  */
 interface CodeGenerator {
 
-    fun generateRequestCode(request: ParsedNiddlerMessage): String
+    fun generateRequestCode(request: NiddlerMessage): String
 
 }

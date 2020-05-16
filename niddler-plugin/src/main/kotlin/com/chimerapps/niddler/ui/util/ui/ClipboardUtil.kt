@@ -71,7 +71,7 @@ object ClipboardUtil {
                 clipboardData = StringSelection(message.message.getBodyAsString(message.bodyFormat.encoding))
             }
             BodyFormatType.FORMAT_BINARY -> {
-                message.getBodyAsBytes?.let { data ->
+                message.message.getBodyAsBytes?.let { data ->
                     chooseSaveFile("Save data to", "")?.let { file ->
                         runWriteAction {
                             file.writeBytes(data)

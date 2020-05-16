@@ -3,9 +3,9 @@ package com.chimerapps.niddler.ui.component.renderer
 import com.chimerapps.niddler.ui.component.view.LinkedResponseNode
 import com.chimerapps.niddler.ui.component.view.LinkedRootNode
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
-import com.icapps.niddler.lib.connection.model.isCachedResponse
-import com.icapps.niddler.lib.connection.model.isDebugOverride
-import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import com.icapps.niddler.lib.model.NiddlerMessageInfo
+import com.icapps.niddler.lib.model.NiddlerMessageType
+import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
 import com.icapps.niddler.lib.utils.getStatusCodeString
 import com.intellij.ui.JBDefaultTreeCellRenderer
 import com.intellij.ui.components.JBLabel
@@ -18,12 +18,13 @@ import java.util.Date
 import java.util.Locale
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
+import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.SwingConstants
 
-class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
+class LinkedViewCellRenderer(private val parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider) : JBDefaultTreeCellRenderer() {
 
     private val timeFormatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
     private val directionUp = IncludedIcons.Status.outgoing
@@ -99,7 +100,7 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
         return this
     }
 
-    private fun getRequestComponent(request: ParsedNiddlerMessage?): Component {
+    private fun getRequestComponent(request: NiddlerMessageInfo?): Component {
         updatePanel(requestPanel, myTree)
 
         if (request == null) {
@@ -111,7 +112,7 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
             requestTimeLabel.text = formatTime(request.timestamp)
             methodLabel.text = request.method
             urlLabel.text = request.url
-            requestDirectionLabel.icon = if (request.isDebugOverride) directionUpDebug else directionUp
+            requestDirectionLabel.icon = getIcon(request)
 
             updateForeground(requestTimeLabel)
             updateForeground(methodLabel)
@@ -132,9 +133,10 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
         val response = value.response
         responseTimeLabel.text = formatTime(response.timestamp)
         responseStatusLabel.text = formatStatusCode(response.statusCode)
-        responseTypeLabel.text = response.bodyFormat.toString()
 
-        responseDirectionLabel.icon = if (response.isDebugOverride) directionDownDebug else if (response.isCachedResponse) directionDownCached else directionDown
+        responseTypeLabel.text = response.format ?: ""
+
+        responseDirectionLabel.icon = getIcon(response)
 
         updateForeground(responseTimeLabel)
         updateForeground(responseStatusLabel)
@@ -143,6 +145,16 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
         responsePanel.revalidate()
         responsePanel.repaint()
         return responsePanel
+    }
+
+    private fun getIcon(message: NiddlerMessageInfo): Icon {
+        return when (message.type) {
+            NiddlerMessageType.UP -> directionUp
+            NiddlerMessageType.DOWN -> directionDown
+            NiddlerMessageType.UP_DEBUG -> directionUpDebug
+            NiddlerMessageType.DOWN_DEBUG -> directionDownDebug
+            NiddlerMessageType.DOWN_CACHED -> directionDownCached
+        }
     }
 
     private fun updatePanel(panel: JPanel, tree: JTree) {
@@ -166,7 +178,7 @@ class LinkedViewCellRenderer : JBDefaultTreeCellRenderer() {
 
         if (WideSelectionTreeUI.isWideSelection(tree)) {
             panel.isOpaque = false  // avoid nasty background
-        }else {
+        } else {
             panel.isOpaque = selected && hasFocus || selected && isFocused() // draw selection background even for non-opaque tree
         }
     }

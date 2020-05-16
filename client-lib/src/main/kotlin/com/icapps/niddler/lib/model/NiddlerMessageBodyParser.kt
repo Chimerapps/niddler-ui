@@ -33,16 +33,12 @@ class NiddlerMessageBodyParser(private val classifier: BodyClassifier) {
                             rawMimeType = null,
                             encoding = null),
                     bodyData = message.getBodyAsBytes,
-                    message = message,
-                    parsedNetworkRequest = parseBodyInternal(message.networkRequest),
-                    parsedNetworkReply = parseBodyInternal(message.networkReply))
+                    message = message)
         }
     }
 
     private fun parseBodyWithType(message: NiddlerMessage, content: ConcreteBody?): ParsedNiddlerMessage {
-        return ParsedNiddlerMessage(message, asFormat(content), content?.data,
-                parseBodyInternal(message.networkRequest),
-                parseBodyInternal(message.networkReply))
+        return ParsedNiddlerMessage(message, asFormat(content), content?.data)
     }
 
     private fun parseMessage(message: NiddlerMessage): ParsedNiddlerMessage {
@@ -51,12 +47,9 @@ class NiddlerMessageBodyParser(private val classifier: BodyClassifier) {
             return parseBodyWithType(message, contentType)
         }
         if (message.body.isNullOrEmpty()) {
-            return ParsedNiddlerMessage(message, BodyFormat.NONE, null,
-                    parseBodyInternal(message.networkRequest), parseBodyInternal(message.networkReply))
+            return ParsedNiddlerMessage(message, BodyFormat.NONE, null)
         }
-        return ParsedNiddlerMessage(message, BodyFormat.UNKNOWN, message.getBodyAsBytes,
-                parseBodyInternal(message.networkRequest),
-                parseBodyInternal(message.networkReply))
+        return ParsedNiddlerMessage(message, BodyFormat.UNKNOWN, message.getBodyAsBytes)
     }
 
     private fun classifyFormatFromHeaders(message: NiddlerMessage): ConcreteBody? {

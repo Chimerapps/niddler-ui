@@ -8,6 +8,13 @@
 
     <change-notes><![CDATA[
     <p>
+        <b>2.9.0</b>
+        <ul>
+            <li>Memory usage improvements by not keeping message body, headers, ... in memory all the time</li>
+            <li>Webp images should now load on all platforms without relying on external application</li>
+        </ul>
+    </p>
+    <p>
         <b>2.8.4</b>
         <ul>
             <li>Code folding is now supported in pretty mode for json and xml!</li>

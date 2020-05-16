@@ -76,7 +76,7 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
             }
 
             override fun contentRemoved(event: ContentManagerEvent) {
-                (event.content.component as NiddlerSessionWindow).onClosed()
+                (event.content.component as NiddlerSessionWindow).onWindowClosed()
             }
         }, disposable)
 
