@@ -1,9 +1,12 @@
 package com.icapps.niddler.lib.model.storage
 
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
-import com.icapps.niddler.lib.model.ObservableChronologicalMessageList
-import com.icapps.niddler.lib.model.ObservableLinkedMessageList
+import com.icapps.niddler.lib.model.NiddlerMessageInfo
 
+@Deprecated(message = "Uses a lot of memory without optimizations",
+        level = DeprecationLevel.WARNING,
+        replaceWith = ReplaceWith(expression = "QuickBinaryMessageStorage",
+                imports = ["com.icapps.niddler.lib.model.storage.binary.QuickBinaryMessageStorage"]))
 class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
 
     private val internalList = arrayListOf<NiddlerMessage>()
@@ -17,6 +20,8 @@ class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
     override fun addMessage(message: NiddlerMessage) {
         synchronized(this) {
             internalList += message
+            message.networkRequest?.let(internalList::add)
+            message.networkReply?.let(internalList::add)
         }
     }
 
@@ -28,5 +33,17 @@ class InMemoryNiddlerMessageStorage : NiddlerMessageStorage {
 
     override fun isEmpty(): Boolean {
         return internalList.isEmpty()
+    }
+
+    override fun loadMessage(message: NiddlerMessageInfo): NiddlerMessage? {
+        synchronized(this) {
+            return internalList.find { it.messageId == message.messageId }
+        }
+    }
+
+    override fun loadMessageHeaders(message: NiddlerMessageInfo): Map<String, List<String>>? {
+        synchronized(this) {
+            return internalList.find { it.messageId == message.messageId }?.headers
+        }
     }
 }

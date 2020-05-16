@@ -24,7 +24,9 @@ class NiddlerMessageContainer(vararg storages: NiddlerMessageStorage) {
             if (messagesChronological.addMessage(info)) {
                 messagesLinked.addMessage(info)
 
-                storages.forEach { it.addMessage(niddlerMessage) }
+                synchronized(internalStorages) {
+                    internalStorages.forEach { it.addMessage(niddlerMessage) }
+                }
                 listeners.forEach { it.onServiceMessage(niddlerMessage) }
             }
         }
@@ -33,7 +35,8 @@ class NiddlerMessageContainer(vararg storages: NiddlerMessageStorage) {
     init {
         val (empty, nonEmpty) = storages.partition { it.isEmpty() }
         when {
-            nonEmpty.isEmpty() -> {}
+            nonEmpty.isEmpty() -> {
+            }
             nonEmpty.size == 1 -> {
                 nonEmpty.first().allMessages().forEach {
                     empty.forEach { emptyStorage -> emptyStorage.addMessage(it) }
@@ -98,7 +101,9 @@ class NiddlerMessageContainer(vararg storages: NiddlerMessageStorage) {
     }
 
     fun close() {
-        internalStorages.forEach { (it as? Closeable)?.close() }
+        synchronized(internalStorages) {
+            internalStorages.forEach { (it as? Closeable)?.close() }
+        }
     }
 
     fun isEmpty(): Boolean {
@@ -106,7 +111,17 @@ class NiddlerMessageContainer(vararg storages: NiddlerMessageStorage) {
     }
 
     fun load(message: NiddlerMessageInfo): NiddlerMessage? {
-        TODO("Not yet implemented")
+        synchronized(internalStorages) {
+            internalStorages.forEach { storage -> storage.loadMessage(message)?.let { return it } }
+        }
+        return null
+    }
+
+    fun loadHeaders(message: NiddlerMessageInfo): Map<String, List<String>>? {
+        synchronized(internalStorages) {
+            internalStorages.forEach { storage -> storage.loadMessageHeaders(message)?.let { return it } }
+        }
+        return null
     }
 
 }

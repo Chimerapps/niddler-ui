@@ -2,6 +2,7 @@ package com.icapps.niddler.lib.model
 
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
+import com.icapps.niddler.lib.utils.LruCache
 import com.icapps.niddler.lib.utils.ScalingThreadPoolExecutor
 import java.util.LinkedHashMap
 import java.util.UUID
@@ -16,11 +17,7 @@ class ParsedNiddlerMessageProvider(private val mainDispatcher: (() -> Unit) -> U
         private const val MAX_LRU_SIZE = 200
     }
 
-    private val lruCache = object : LinkedHashMap<String, AsyncMemoizer<ParsedNiddlerMessage>>() {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, AsyncMemoizer<ParsedNiddlerMessage>>?): Boolean {
-            return size > MAX_LRU_SIZE
-        }
-    }
+    private val lruCache = LruCache<String, AsyncMemoizer<ParsedNiddlerMessage>>(MAX_LRU_SIZE)
 
     fun clean() {
         synchronized(lruCache) {

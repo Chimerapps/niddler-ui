@@ -48,9 +48,8 @@ import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
 import com.icapps.niddler.lib.model.SimpleUrlMatchFilter
 import com.icapps.niddler.lib.model.classifier.HeaderBodyClassifier
-import com.icapps.niddler.lib.model.storage.InMemoryNiddlerMessageStorage
 import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
-import com.icapps.niddler.lib.model.storage.SqliteMessageStorage
+import com.icapps.niddler.lib.model.storage.binary.QuickBinaryMessageStorage
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
@@ -128,7 +127,7 @@ class NiddlerSessionWindow(private val project: Project,
     private var currentMessagesView: MessagesView? = null
     private val bodyParser = NiddlerMessageBodyParser(HeaderBodyClassifier(emptyList())) //TODO extensions!
 
-    private val messageContainer = NiddlerMessageContainer(InMemoryNiddlerMessageStorage(), SqliteMessageStorage(File("/Users/nicolaverbeeck/testniddler.db")))
+    private val messageContainer = NiddlerMessageContainer(QuickBinaryMessageStorage())
     private val parsedNiddlerMessageProvider = ParsedNiddlerMessageProvider({ dispatchMain(it) }, bodyParser, messageContainer)
     private var niddlerClient: NiddlerClient? = null
     private var lastConnection: PreparedDeviceConnection? = null

@@ -63,24 +63,24 @@ internal class NiddlerSqliteDatabase(file: File) : Closeable {
     }
 
     fun count(): Int {
-        return getSingleValue("SELECT COUNT(*) FROM $NIDDLER_MESSAGE_TABLE WHERE topLevel != 0", ResultSet::getInt) ?: 0
+        return getSingleValue("SELECT COUNT(*) FROM $NIDDLER_MESSAGE_TABLE WHERE topLevel != 0 LIMIT 1", ResultSet::getInt) ?: 0
     }
 
-    fun getById(messageId: String, nested: Boolean = true): NiddlerMessage? {
+    fun getById(messageId: String, loadNested: Boolean = true): NiddlerMessage? {
         return getRow("SELECT * FROM $NIDDLER_MESSAGE_TABLE WHERE messageId=? AND statusCode=NULL", messageId, messageId)?.let { row ->
-            mapRow(row, nested)
+            mapRow(row, loadNested)
         }
     }
 
     fun findRequest(requestId: String): NiddlerMessage? {
         return getRow("SELECT * FROM $NIDDLER_MESSAGE_TABLE WHERE requestId=? AND statusCode=NULL AND topLevel!=0 LIMIT 1", requestId)?.let { row ->
-            mapRow(row, nested = true)
+            mapRow(row, loadNested = true)
         }
     }
 
     fun findResponse(requestId: String): NiddlerMessage? {
         return getRow("SELECT * FROM $NIDDLER_MESSAGE_TABLE WHERE requestId=? AND statusCode!=NULL AND topLevel!=0 LIMIT 1", requestId)?.let { row ->
-            mapRow(row, nested = true)
+            mapRow(row, loadNested = true)
         }
     }
 
@@ -92,7 +92,7 @@ internal class NiddlerSqliteDatabase(file: File) : Closeable {
         return mapRows("SELECT * FROM $NIDDLER_MESSAGE_TABLE WHERE topLevel!=0", { mapRow(it, true) }).orEmpty()
     }
 
-    private fun mapRow(resultSet: ResultSet, nested: Boolean): NiddlerMessage {
+    private fun mapRow(resultSet: ResultSet, loadNested: Boolean): NiddlerMessage {
         return NetworkNiddlerMessage(
                 requestId = resultSet.getString(1),
                 messageId = resultSet.getString(2),
@@ -107,8 +107,8 @@ internal class NiddlerSqliteDatabase(file: File) : Closeable {
                 readTime = resultSet.optInt(11),
                 waitTime = resultSet.optInt(12),
                 httpVersion = resultSet.getString(13),
-                networkRequest = resultSet.getString(16)?.let { if (nested) getById(it, nested = false) else null },
-                networkReply = resultSet.getString(17)?.let { if (nested) getById(it, nested = false) else null },
+                networkRequest = resultSet.getString(16)?.let { if (loadNested) getById(it, loadNested = false) else null },
+                networkReply = resultSet.getString(17)?.let { if (loadNested) getById(it, loadNested = false) else null },
                 trace = resultSet.getString(14).fromJson(),
                 context = resultSet.getString(15).fromJson()
         )

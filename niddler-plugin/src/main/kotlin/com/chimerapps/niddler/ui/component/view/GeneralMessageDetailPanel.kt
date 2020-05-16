@@ -84,7 +84,7 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
         val loaded = niddlerMessageContainer.load(message)
 
         fillGeneral(message, other)
-        fillHeaders(loaded)
+        fillHeaders(loaded, other, message)
 
         val trace = loaded?.trace
         tracePanel.setStackTrace(trace)
@@ -139,7 +139,7 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
         generalPanel.add(execTimeValue, constraints.xy(3, row))
     }
 
-    private fun fillHeaders(message: NiddlerMessage?) {
+    private fun fillHeaders(message: NiddlerMessage?, other: NiddlerMessageInfo?, source: NiddlerMessageInfo) {
         headersPanel.removeAll()
         message ?: return
 
@@ -165,10 +165,10 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
 
             ++row
         }
-        val otherHeaders = if (message.isRequest) {
-            message.networkRequest?.headers
+        val otherHeaders = if (source.isRequest) {
+            other?.networkRequest?.let(niddlerMessageContainer::loadHeaders)
         } else {
-            message.networkReply?.headers
+            source.networkReply?.let(niddlerMessageContainer::loadHeaders)
         }
 
         if (!otherHeaders.isNullOrEmpty() && messageHeaders != null) {

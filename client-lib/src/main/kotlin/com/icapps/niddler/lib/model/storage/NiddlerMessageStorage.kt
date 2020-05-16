@@ -11,7 +11,14 @@ interface NiddlerMessageStorage {
 
     fun addMessage(message: NiddlerMessage)
 
-    fun allMessages() : List<NiddlerMessage>
+    fun allMessages(): List<NiddlerMessage>
+
+    /**
+     * If more performant, implementations can skip loading nested network requests/responses
+     */
+    fun loadMessage(message: NiddlerMessageInfo): NiddlerMessage?
+
+    fun loadMessageHeaders(message: NiddlerMessageInfo): Map<String, List<String>>?
 
     fun clear()
 
