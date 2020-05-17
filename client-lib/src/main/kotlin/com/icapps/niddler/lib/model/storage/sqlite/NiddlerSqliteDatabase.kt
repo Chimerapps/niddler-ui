@@ -92,6 +92,12 @@ internal class NiddlerSqliteDatabase(file: File) : Closeable {
         return mapRows("SELECT * FROM $NIDDLER_MESSAGE_TABLE WHERE topLevel!=0", { mapRow(it, true) }).orEmpty()
     }
 
+    fun getHeadersById(messageId: String): Map<String, List<String>>? {
+        return getRow("SELECT headers FROM $NIDDLER_MESSAGE_TABLE WHERE messageId=? LIMIT 1", messageId)?.let { row ->
+            row.getString(1)?.fromJson()
+        }
+    }
+
     private fun mapRow(resultSet: ResultSet, loadNested: Boolean): NiddlerMessage {
         return NetworkNiddlerMessage(
                 requestId = resultSet.getString(1),
@@ -219,6 +225,7 @@ internal class NiddlerSqliteDatabase(file: File) : Closeable {
         return gson.fromJson(this, object : TypeToken<T>() {
         }.type)
     }
+
 }
 
 private fun PreparedStatement.optSetString(position: Int, optString: String?) {

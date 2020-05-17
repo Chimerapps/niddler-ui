@@ -28,7 +28,7 @@ class SqliteMessageStorage(file: File) : NiddlerMessageStorage, Closeable {
     }
 
     override fun loadMessageHeaders(message: NiddlerMessageInfo): Map<String, List<String>>? {
-        return niddlerSqliteDatabase.getById(messageId = message.messageId, loadNested = false)?.headers
+        return niddlerSqliteDatabase.getHeadersById(messageId = message.messageId)
     }
 
     override fun clear() {
