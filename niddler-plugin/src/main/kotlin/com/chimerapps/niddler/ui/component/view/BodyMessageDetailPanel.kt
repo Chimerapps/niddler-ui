@@ -5,7 +5,6 @@ import com.chimerapps.niddler.ui.model.renderer.bodyRendererForFormat
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
-import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.model.NiddlerMessageInfo
 import com.icapps.niddler.lib.model.ObservingToken
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
@@ -13,18 +12,18 @@ import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
+import com.intellij.ui.components.JBLoadingPanel
 import java.awt.BorderLayout
 import java.io.FileOutputStream
 import javax.swing.Box
 import javax.swing.ButtonGroup
 import javax.swing.JButton
 import javax.swing.JComponent
-import javax.swing.JPanel
 import javax.swing.JToggleButton
 import javax.swing.JToolBar
 
 class BodyMessageDetailPanel(private val project: Project,
-                             private val parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider) : JPanel(BorderLayout()) {
+                             private val parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider) : JBLoadingPanel(BorderLayout(), project) {
 
     private val structuredButton = JToggleButton("Structured", AllIcons.Hierarchy.Subtypes)
     private val prettyButton = JToggleButton("Pretty", IncludedIcons.Action.pretty)
@@ -69,9 +68,14 @@ class BodyMessageDetailPanel(private val project: Project,
     fun init(message: NiddlerMessageInfo) {
         observingToken?.stopObserving()
 
-        //TODO loading indicator/clear
+        currentAddedComponent?.let { contentPanel.remove(it) }
+        currentAddedComponent = null
+        startLoading()
         observingToken = parsedNiddlerMessageProvider.provideParsedMessage(message).observe {
             initParsed(it)
+            stopLoading()
+            contentPanel.revalidate()
+            contentPanel.repaint()
         }
     }
 
@@ -86,14 +90,9 @@ class BodyMessageDetailPanel(private val project: Project,
 
         saveButton.isVisible = (structuredButton.isVisible || prettyButton.isVisible || rawButton.isVisible) && (message.message.body != null)
 
-        currentAddedComponent?.let(::remove)
-        currentAddedComponent = null
         if (renderer != null) {
             updateComponent()
         }
-
-        revalidate()
-        repaint()
     }
 
     private fun switchToStructured() {
@@ -121,7 +120,7 @@ class BodyMessageDetailPanel(private val project: Project,
         val renderer = currentMessageRenderer ?: return
         val message = currentMessage ?: return
 
-        currentAddedComponent?.let(::remove)
+        currentAddedComponent?.let { contentPanel.remove(it) }
         currentAddedComponent = null
 
         val supportedItems = mutableListOf<CurrentView>()
@@ -148,25 +147,25 @@ class BodyMessageDetailPanel(private val project: Project,
             CurrentView.STRUCTURED -> {
                 previousStructuredComponent = renderer.structured(message, previousStructuredComponent, project).also {
                     currentAddedComponent = it
-                    add(it, BorderLayout.CENTER)
+                    contentPanel.add(it, BorderLayout.CENTER)
                 }
             }
             CurrentView.PRETTY -> {
                 previousPrettyComponent = renderer.pretty(message, previousPrettyComponent, project).also {
                     currentAddedComponent = it
-                    add(it, BorderLayout.CENTER)
+                    contentPanel.add(it, BorderLayout.CENTER)
                 }
             }
             CurrentView.RAW -> {
                 previousRawComponent = renderer.raw(message, previousRawComponent, project).also {
                     currentAddedComponent = it
-                    add(it, BorderLayout.CENTER)
+                    contentPanel.add(it, BorderLayout.CENTER)
                 }
             }
         }
 
-        revalidate()
-        repaint()
+        contentPanel.revalidate()
+        contentPanel.repaint()
     }
 
     private fun saveBody() {
