@@ -7,6 +7,7 @@ import com.chimerapps.niddler.ui.model.renderer.impl.image.ImageBodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.impl.json.JsonBodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.impl.plain.PlainBodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.impl.xml.XMLBodyRenderer
+import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.chimerapps.niddler.ui.util.ui.runWriteAction
 import com.icapps.niddler.lib.model.BodyFormat
 import com.icapps.niddler.lib.model.BodyFormatType
@@ -84,11 +85,13 @@ internal fun textAreaRenderer(stringData: String, reuseComponent: JComponent?, p
             if (fileType != null) {
                 buildCodeFolding(fileType, project, stringData, document, editor.foldingModel)
             }
+            dispatchMain {
+                editor.contentComponent.requestFocus()
+            }
         }, null, null, UndoConfirmationPolicy.DEFAULT, document)
     }
 
     editor.highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(project, fileType ?: UnknownFileType.INSTANCE)
-
     return editor.component
 }
 

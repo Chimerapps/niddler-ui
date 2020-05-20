@@ -19,6 +19,7 @@ import javax.swing.Box
 import javax.swing.ButtonGroup
 import javax.swing.JButton
 import javax.swing.JComponent
+import javax.swing.JScrollPane
 import javax.swing.JToggleButton
 import javax.swing.JToolBar
 
@@ -166,6 +167,13 @@ class BodyMessageDetailPanel(private val project: Project,
 
         contentPanel.revalidate()
         contentPanel.repaint()
+        currentAddedComponent?.let { component ->
+            if (component is JScrollPane && component.componentCount > 0) {
+                component.getComponent(0).requestFocus()
+            } else {
+                component.requestFocus()
+            }
+        }
     }
 
     private fun saveBody() {

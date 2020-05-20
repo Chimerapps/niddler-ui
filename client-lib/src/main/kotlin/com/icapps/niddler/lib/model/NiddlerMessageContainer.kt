@@ -50,6 +50,8 @@ class NiddlerMessageContainer(vararg storages: NiddlerMessageStorage) {
     }
 
     fun clear() {
+        messagesLinked.clear()
+        messagesChronological.clear()
         internalStorages.forEach(NiddlerMessageStorage::clear)
     }
 

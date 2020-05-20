@@ -6,4 +6,4 @@ Niddler-UI is the UI component that communicates with Niddler over a websocket. 
 
 ![Picture](screenshot.png)
 
-To install Niddler-UI into Android Studio / IntelliJ, grab the latest release on our [releases](https://github.com/icapps/niddler-ui/releases) page and load the plugin by going to Preferences > Plugins > Install plugin from disk
+To install Niddler-UI into Android Studio / IntelliJ, go to Preferences > Plugins and search for niddler 
