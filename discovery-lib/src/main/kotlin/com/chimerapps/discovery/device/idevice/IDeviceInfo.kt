@@ -79,7 +79,10 @@ class IDevice internal constructor(val deviceInfo: IDeviceInfo,
         val thread = forwardTCPPort(suggestedLocalPort, remotePort)
         return object : DirectPreparedConnection("127.0.0.1", suggestedLocalPort) {
             override fun tearDown() {
-                super.tearDown()
+                try {
+                    super.tearDown()
+                } catch (ignore: Throwable) {
+                }
 
                 //This should kill the process and release the port
                 thread.interrupt()

@@ -13,15 +13,15 @@ object BinaryBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     override val supportsPretty: Boolean = false
     override val supportsRaw: Boolean = true
 
-    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         throw IllegalStateException("Structured not support")
     }
 
-    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         throw IllegalStateException("Structured not support")
     }
 
-    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         val component = reuseOrNew(project, "hexViewer", reuseComponent) { HexViewer().also { it.postInit() } }
         component.second.setData(message.message.getBodyAsBytes)
         return component.first

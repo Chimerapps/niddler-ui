@@ -36,7 +36,7 @@ object XMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     override val supportsPretty: Boolean = true
     override val supportsRaw: Boolean = true
 
-    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         val data = (message.bodyData as? Document)
         val component = reuseOrNew(project, "xmlTree", reuseComponent) {
             NiddlerXmlTree().also {
@@ -47,16 +47,16 @@ object XMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
         return component.first
     }
 
-    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         val data = (message.bodyData as? Document)
         val text = data?.let { XmlTreeTransferHandler.formatXML(it) } ?: ""
 
-        return textAreaRenderer(text, reuseComponent, project, XmlFileType.INSTANCE)
+        return textAreaRenderer(text, reuseComponent, project, XmlFileType.INSTANCE, requestFocus)
     }
 
-    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         val stringData = message.message.getBodyAsString(message.bodyFormat.encoding) ?: ""
-        return textAreaRenderer(stringData, reuseComponent, project, XmlFileType.INSTANCE)
+        return textAreaRenderer(stringData, reuseComponent, project, XmlFileType.INSTANCE, requestFocus)
     }
 
 }

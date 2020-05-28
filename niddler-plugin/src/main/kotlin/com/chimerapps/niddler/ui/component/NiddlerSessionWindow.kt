@@ -156,9 +156,15 @@ class NiddlerSessionWindow(private val project: Project,
 
     fun onWindowClosed() {
         niddlerClient?.let { messageContainer.detach(it) }
-        niddlerClient?.close()
+        try {
+            niddlerClient?.close()
+        } catch (ignore: Throwable) {
+        }
         niddlerClient = null
-        lastConnection?.tearDown()
+        try {
+            lastConnection?.tearDown()
+        } catch (ignore: Throwable) {
+        }
         lastConnection = null
 
         messageContainer.clear()
@@ -177,9 +183,15 @@ class NiddlerSessionWindow(private val project: Project,
             showConnectDialog(withDebugger = true)
         })
         actionGroup.add(DisconnectAction(this) {
-            niddlerClient?.close()
+            try {
+                niddlerClient?.close()
+            } catch (ignore: Throwable) {
+            }
             niddlerClient = null
-            lastConnection?.tearDown()
+            try {
+                lastConnection?.tearDown()
+            } catch (ignore: Throwable) {
+            }
             lastConnection = null
 
             connectionMode = ConnectionMode.MODE_DISCONNECTED
@@ -267,18 +279,30 @@ class NiddlerSessionWindow(private val project: Project,
     }
 
     private fun tryConnectDirect(directConnection: ManualConnection, withDebugger: Boolean) {
-        niddlerClient?.close()
+        try {
+            niddlerClient?.close()
+        } catch (ignore: Throwable) {
+        }
         niddlerClient = null
-        lastConnection?.tearDown()
+        try {
+            lastConnection?.tearDown()
+        } catch (ignore: Throwable) {
+        }
         lastConnection = null
 
         connectOnConnection(DirectPreparedConnection(directConnection.ip, directConnection.port), withDebugger)
     }
 
     private fun tryConnectSession(discovered: DiscoveredDeviceConnection, withDebugger: Boolean) {
-        niddlerClient?.close()
+        try {
+            niddlerClient?.close()
+        } catch (ignore: Throwable) {
+        }
         niddlerClient = null
-        lastConnection?.tearDown()
+        try {
+            lastConnection?.tearDown()
+        } catch (ignore: Throwable) {
+        }
         lastConnection = null
 
         val connection = discovered.device.prepareConnection(freePort(), discovered.session.port)
@@ -412,9 +436,15 @@ class NiddlerSessionWindow(private val project: Project,
     }
 
     fun connectToDevice(device: Device, port: Int, withDebugger: Boolean) {
-        niddlerClient?.close()
+        try {
+            niddlerClient?.close()
+        } catch (ignore: Throwable) {
+        }
         niddlerClient = null
-        lastConnection?.tearDown()
+        try {
+            lastConnection?.tearDown()
+        } catch (ignore: Throwable) {
+        }
         lastConnection = null
 
         val connection = device.prepareConnection(freePort(), port)

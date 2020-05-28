@@ -25,6 +25,7 @@ import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.FoldingModel
 import com.intellij.openapi.editor.ex.DocumentEx
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
+import com.intellij.openapi.editor.impl.DocumentImpl
 import com.intellij.openapi.editor.impl.EditorImpl
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.UnknownFileType
@@ -42,9 +43,9 @@ interface BodyRenderer<T : ParsedNiddlerMessage> {
     val supportsPretty: Boolean
     val supportsRaw: Boolean
 
-    fun structured(message: T, reuseComponent: JComponent?, project: Project): JComponent
-    fun pretty(message: T, reuseComponent: JComponent?, project: Project): JComponent
-    fun raw(message: T, reuseComponent: JComponent?, project: Project): JComponent
+    fun structured(message: T, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent
+    fun pretty(message: T, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent
+    fun raw(message: T, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent
 
 }
 
@@ -66,9 +67,9 @@ private const val REUSE_COMPONENT_KEY = "niddler_reuse_component_key"
 
 private val projectEditors = IdentityHashMap<Project, EditorImpl>()
 
-internal fun textAreaRenderer(stringData: String, reuseComponent: JComponent?, project: Project, fileType: FileType?): JComponent {
+internal fun textAreaRenderer(stringData: String, reuseComponent: JComponent?, project: Project, fileType: FileType?, requestFocus: Boolean): JComponent {
     val editor = projectEditors.getOrPut(project) {
-        (EditorFactory.getInstance().createViewer(EditorFactory.getInstance().createDocument(stringData), project) as EditorImpl).also {
+        (EditorFactory.getInstance().createViewer(EditorFactory.getInstance().createDocument(""), project) as EditorImpl).also {
             Disposer.register(project, Disposable {
                 projectEditors.remove(project)?.let { editor -> EditorFactory.getInstance().releaseEditor(editor) }
             })
@@ -76,6 +77,7 @@ internal fun textAreaRenderer(stringData: String, reuseComponent: JComponent?, p
     }
 
     val document = editor.document
+    (document as? DocumentImpl)?.setAcceptSlashR(true)
     runWriteAction {
         CommandProcessor.getInstance().executeCommand(project, Runnable {
             document.replaceString(0, document.textLength, stringData)
@@ -85,8 +87,10 @@ internal fun textAreaRenderer(stringData: String, reuseComponent: JComponent?, p
             if (fileType != null) {
                 buildCodeFolding(fileType, project, stringData, document, editor.foldingModel)
             }
-            dispatchMain {
-                editor.contentComponent.requestFocus()
+            if (requestFocus) {
+                dispatchMain {
+                    editor.contentComponent.requestFocus()
+                }
             }
         }, null, null, UndoConfirmationPolicy.DEFAULT, document)
     }

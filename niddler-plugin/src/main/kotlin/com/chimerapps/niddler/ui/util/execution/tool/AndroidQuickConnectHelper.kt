@@ -84,7 +84,10 @@ private class IDeviceWrapper(private val iDevice: IDevice) : Device {
         iDevice.createForward(suggestedLocalPort, remotePort)
         return object : DirectPreparedConnection("127.0.0.1", suggestedLocalPort) {
             override fun tearDown() {
-                iDevice.removeForward(suggestedLocalPort, remotePort)
+                try {
+                    iDevice.removeForward(suggestedLocalPort, remotePort)
+                }catch(ignore: Throwable){
+                }
             }
         }
     }

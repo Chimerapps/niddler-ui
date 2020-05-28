@@ -24,7 +24,7 @@ object FormEncodedBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     override val supportsRaw: Boolean = true
 
     @Suppress("UNCHECKED_CAST")
-    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         val data = message.bodyData as? Map<String, List<String>>
         val component = reuseOrNew(project, "formEncoded", reuseComponent) {
             PopupTable(FormEncodedTableModel(emptyMap()), rowAtIndexCb = { model, index -> model.valueAt(index) }, popupMenuForSelectionCb = ::makePopup).also {
@@ -45,7 +45,7 @@ object FormEncodedBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         val data = message.bodyData as? Map<String, List<String>>
         val asString = buildString {
             data?.forEach { key, values ->
@@ -54,11 +54,11 @@ object FormEncodedBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
                 }
             }
         }
-        return textAreaRenderer(asString, reuseComponent, project, PlainTextFileType.INSTANCE)
+        return textAreaRenderer(asString, reuseComponent, project, PlainTextFileType.INSTANCE, requestFocus)
     }
 
-    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
-        return textAreaRenderer(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent, project, PlainTextFileType.INSTANCE)
+    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
+        return textAreaRenderer(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent, project, PlainTextFileType.INSTANCE, requestFocus)
     }
 
     private fun makePopup(@Suppress("UNUSED_PARAMETER") model: FormEncodedTableModel, data: Pair<String, String>?): JPopupMenu? {

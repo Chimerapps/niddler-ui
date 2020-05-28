@@ -14,15 +14,15 @@ object HTMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     override val supportsPretty: Boolean = false
     override val supportsRaw: Boolean = true
 
-    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         throw IllegalStateException("Structured not supported")
     }
 
-    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         throw IllegalStateException("Pretty not supported")
     }
 
-    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
-        return textAreaRenderer(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent, project, HtmlFileType.INSTANCE)
+    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
+        return textAreaRenderer(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent, project, HtmlFileType.INSTANCE, requestFocus)
     }
 }

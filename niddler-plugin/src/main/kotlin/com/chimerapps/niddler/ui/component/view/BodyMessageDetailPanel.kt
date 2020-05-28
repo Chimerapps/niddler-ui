@@ -60,9 +60,9 @@ class BodyMessageDetailPanel(private val project: Project,
             it.add(prettyButton)
             it.add(rawButton)
         }
-        structuredButton.addItemListener { switchToStructured() }
-        prettyButton.addItemListener { switchToPretty() }
-        rawButton.addItemListener { switchToRaw() }
+        structuredButton.addItemListener { switchToStructured(requestFocus = true) }
+        prettyButton.addItemListener { switchToPretty(requestFocus = true) }
+        rawButton.addItemListener { switchToRaw(requestFocus = true) }
         saveButton.addActionListener { saveBody() }
     }
 
@@ -92,32 +92,32 @@ class BodyMessageDetailPanel(private val project: Project,
         saveButton.isVisible = (structuredButton.isVisible || prettyButton.isVisible || rawButton.isVisible) && (message.message.body != null)
 
         if (renderer != null) {
-            updateComponent()
+            updateComponent(claimFocus = false)
         }
     }
 
-    private fun switchToStructured() {
+    private fun switchToStructured(requestFocus: Boolean) {
         if (currentView == CurrentView.STRUCTURED)
             return
         currentView = CurrentView.STRUCTURED
-        updateComponent()
+        updateComponent(requestFocus)
     }
 
-    private fun switchToPretty() {
+    private fun switchToPretty(requestFocus: Boolean) {
         if (currentView == CurrentView.PRETTY)
             return
         currentView = CurrentView.PRETTY
-        updateComponent()
+        updateComponent(requestFocus)
     }
 
-    private fun switchToRaw() {
+    private fun switchToRaw(requestFocus: Boolean) {
         if (currentView == CurrentView.RAW)
             return
         currentView = CurrentView.RAW
-        updateComponent()
+        updateComponent(requestFocus)
     }
 
-    private fun updateComponent() {
+    private fun updateComponent(claimFocus: Boolean) {
         val renderer = currentMessageRenderer ?: return
         val message = currentMessage ?: return
 
@@ -146,19 +146,19 @@ class BodyMessageDetailPanel(private val project: Project,
 
         when (currentView) {
             CurrentView.STRUCTURED -> {
-                previousStructuredComponent = renderer.structured(message, previousStructuredComponent, project).also {
+                previousStructuredComponent = renderer.structured(message, previousStructuredComponent, project, claimFocus).also {
                     currentAddedComponent = it
                     contentPanel.add(it, BorderLayout.CENTER)
                 }
             }
             CurrentView.PRETTY -> {
-                previousPrettyComponent = renderer.pretty(message, previousPrettyComponent, project).also {
+                previousPrettyComponent = renderer.pretty(message, previousPrettyComponent, project, claimFocus).also {
                     currentAddedComponent = it
                     contentPanel.add(it, BorderLayout.CENTER)
                 }
             }
             CurrentView.RAW -> {
-                previousRawComponent = renderer.raw(message, previousRawComponent, project).also {
+                previousRawComponent = renderer.raw(message, previousRawComponent, project, claimFocus).also {
                     currentAddedComponent = it
                     contentPanel.add(it, BorderLayout.CENTER)
                 }
@@ -167,11 +167,13 @@ class BodyMessageDetailPanel(private val project: Project,
 
         contentPanel.revalidate()
         contentPanel.repaint()
-        currentAddedComponent?.let { component ->
-            if (component is JScrollPane && component.componentCount > 0) {
-                component.getComponent(0).requestFocus()
-            } else {
-                component.requestFocus()
+        if (claimFocus) {
+            currentAddedComponent?.let { component ->
+                if (component is JScrollPane && component.componentCount > 0) {
+                    component.getComponent(0).requestFocus()
+                } else {
+                    component.requestFocus()
+                }
             }
         }
     }

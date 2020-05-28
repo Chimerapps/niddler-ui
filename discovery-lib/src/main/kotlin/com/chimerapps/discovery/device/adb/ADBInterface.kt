@@ -119,7 +119,10 @@ class ADBDevice(device: JadbDevice, private val bootstrap: ADBBootstrap) : BaseD
         forwardTCPPort(suggestedLocalPort, remotePort)
         return object : DirectPreparedConnection("127.0.0.1", suggestedLocalPort) {
             override fun tearDown() {
-                super.tearDown()
+                try {
+                    super.tearDown()
+                } catch (ignore: Throwable) {
+                }
                 removeTCPForward(suggestedLocalPort)
             }
         }

@@ -39,7 +39,7 @@ object JsonBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     override val supportsPretty: Boolean = true
     override val supportsRaw: Boolean = true
 
-    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         val data = (message.bodyData as? JsonElement) ?: JsonPrimitive("")
         if (reuseComponent is JBScrollPane && reuseComponent.componentCount != 0 && reuseComponent.getComponent(0) is NiddlerJsonTree) {
             return (reuseComponent.getComponent(0) as NiddlerJsonTree).also { it.resetModel(data) }
@@ -47,14 +47,14 @@ object JsonBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
         return JBScrollPane(NiddlerJsonTree(data).also { TreeSpeedSearch(it, { path -> path.lastPathComponent.toString() }, true) })
     }
 
-    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         val stringData = GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(message.bodyData)
-        return textAreaRenderer(stringData, reuseComponent, project, JsonFileType.INSTANCE)
+        return textAreaRenderer(stringData, reuseComponent, project, JsonFileType.INSTANCE, requestFocus)
     }
 
-    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         val stringData = message.message.getBodyAsString(message.bodyFormat.encoding) ?: ""
-        return textAreaRenderer(stringData, reuseComponent, project, JsonFileType.INSTANCE)
+        return textAreaRenderer(stringData, reuseComponent, project, JsonFileType.INSTANCE, requestFocus)
     }
 
 }

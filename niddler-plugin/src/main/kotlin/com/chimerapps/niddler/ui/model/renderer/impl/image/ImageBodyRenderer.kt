@@ -16,11 +16,11 @@ object ImageBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     override val supportsPretty: Boolean = true
     override val supportsRaw: Boolean = true
 
-    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun structured(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         throw IllegalStateException("Structured not supported")
     }
 
-    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         val component = reuseOrNew(project, "image", reuseComponent) { JLabel() }
 
         val label = component.second
@@ -32,7 +32,7 @@ object ImageBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
         return component.first
     }
 
-    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project): JComponent {
+    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         val component = reuseOrNew(project, "hexViewer", reuseComponent) { HexViewer().also { it.postInit() } }
         component.second.setData(message.message.getBodyAsBytes)
         return component.first

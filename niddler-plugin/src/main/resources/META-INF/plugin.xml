@@ -1,12 +1,19 @@
 <idea-plugin>
     <id>com.icapps.niddler</id>
     <name>Niddler</name>
-    <version>2.9.1</version>
+    <version>2.9.2</version>
     <vendor email="support@chimerapps.com" url="https://www.icapps.com">Chimerapps &amp; icapps</vendor>
 
     <description>This plugin enables the niddler ui inside the IDE</description>
 
     <change-notes><![CDATA[
+    <p>
+        <b>2.9.2</b>
+        <ul>
+            <li>Fixed issue where focus was stolen from the messages list</li>
+            <li>Fixed issue during connection flow that sometimes makes connections impossible</li>
+        </ul>
+    </p>
     <p>
         <b>2.9.1</b>
         <ul>
