@@ -137,6 +137,7 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
 
     private fun onItemUpdated(old: RewriteSet, new: RewriteSet) {
         val oldIndex = rules.indexOf(old)
+        if (oldIndex < 0) return
         rules[oldIndex] = new
         masterPanel.rewriteSetUpdated(oldIndex, new)
     }
