@@ -121,7 +121,7 @@ private class JsonTreeNode(override val jsonElement: JsonElement, private val pa
         return JsonTreeNode(value, this, key, index)
     }
 
-    override fun children(): Enumeration<*> = object : Enumeration<JsonTreeNode> {
+    override fun children(): Enumeration<out TreeNode>? = object : Enumeration<JsonTreeNode> {
 
         private val it = children.iterator()
 

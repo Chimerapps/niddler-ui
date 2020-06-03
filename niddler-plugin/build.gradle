@@ -48,7 +48,7 @@ dependencies {
             exclude group: 'org.slf4j', module: 'slf4j-api'
         }
     }
-    implementation(project(':client-lib')) {
+    implementation(project(path: ':client-lib', configuration: 'default')) {
         exclude group: 'org.slf4j', module: 'slf4j-api'
     }
 }

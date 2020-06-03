@@ -95,6 +95,5 @@ public class NiddlerSettingsForm {
     public JComponent $$$getRootComponent$$$() {
         return root;
     }
-
 }
 

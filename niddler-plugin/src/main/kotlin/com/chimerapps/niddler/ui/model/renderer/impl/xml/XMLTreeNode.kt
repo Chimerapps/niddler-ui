@@ -43,7 +43,7 @@ internal class XMLTreeNode(val xmlElement: Node, private val parent: TreeNode?, 
         }
     }
 
-    override fun children(): Enumeration<*> = object : Enumeration<XMLTreeNode> {
+    override fun children(): Enumeration<out TreeNode>? = object : Enumeration<XMLTreeNode> {
 
         private val it = children.iterator()
 

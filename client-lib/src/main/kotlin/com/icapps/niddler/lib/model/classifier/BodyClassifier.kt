@@ -56,6 +56,8 @@ class HeaderBodyClassifier(private val bodyFormatExtensions: Iterable<BodyFormat
             val type = classifyFromMimeType(parsedContentType.mimeType, parsedContentType.charset?.name(), parsedContentType)
             if (type != null)
                 return type
+
+            return BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_EMPTY, parsedContentType.mimeType, parsedContentType.charset?.name()), bodyParser = BinaryBodyParser())
         }
         return BodyClassifierResult(BodyFormat.NONE, bodyParser = BinaryBodyParser())
     }

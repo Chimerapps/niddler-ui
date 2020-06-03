@@ -53,5 +53,4 @@ public class NiddlerProjectSettingsForm {
     public JComponent $$$getRootComponent$$$() {
         return root;
     }
-
 }

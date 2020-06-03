@@ -16,7 +16,7 @@ class GuessingBodyParser(private val initialBodyFormat: BodyClassifierResult, pr
         private const val LF = 10.toByte()
         private const val CR = 13.toByte()
         private const val TAB = 9.toByte()
-        private const val MAX_ASCII_CHECK_LENGTH = 256
+        private const val MAX_ASCII_CHECK_LENGTH = 80*1024
 
         private val MAGIC_NUMBER_BMP = byteArrayOf(0x42.toByte(), 0x4D.toByte())
         private val MAGIC_NUMBER_PNG = byteArrayOf(0x89.toByte(), 0x50.toByte(), 0x4E.toByte(), 0x47.toByte())
@@ -38,7 +38,7 @@ class GuessingBodyParser(private val initialBodyFormat: BodyClassifierResult, pr
 
         initialBodyFormat.bodyParser.parse(initialBodyFormat.format, bodyBytes)?.let { return ConcreteBody(initialBodyFormat.format.type, initialBodyFormat.format.rawMimeType, it) }
         //Failed to parse. Quick check to see if this is a binary or not
-        if (bodyBytes.size < MAX_ASCII_CHECK_LENGTH) {
+        if (bodyBytes.size <= MAX_ASCII_CHECK_LENGTH) {
             if (bodyBytes.all { it in 32..126 || it == 10.toByte() || it == 13.toByte() }) {
                 //Seems like text!
                 return ConcreteBody(BodyFormatType.FORMAT_PLAIN,
@@ -75,6 +75,16 @@ class GuessingBodyParser(private val initialBodyFormat: BodyClassifierResult, pr
         if (checkMagic(MAGIC_NUMBER_JPG, content)) return checkImage(content, "image/jpeg")
         if (checkMagic(MAGIC_NUMBER_GIF, content)) return checkImage(content, "image/gif")
         if (checkMagic(MAGIC_NUMBER_WEBP, content)) return checkImage(content, "image/webp")
+
+        if (content.size <= MAX_ASCII_CHECK_LENGTH) {
+            if (content.all { it in 32..126 || it == 10.toByte() || it == 13.toByte() }) {
+                //Seems like text!
+                return ConcreteBody(BodyFormatType.FORMAT_PLAIN,
+                        initialBodyFormat.format.rawMimeType,
+                        data = bodyBytes)
+            }
+        }
+
         return null
     }
 

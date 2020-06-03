@@ -2,6 +2,7 @@ package com.chimerapps.niddler.ui.component.view
 
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.bodyRendererForFormat
+import com.chimerapps.niddler.ui.model.renderer.impl.binary.BinaryBodyRenderer
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
@@ -81,7 +82,7 @@ class BodyMessageDetailPanel(private val project: Project,
     }
 
     private fun initParsed(message: ParsedNiddlerMessage) {
-        val renderer = bodyRendererForFormat(message.bodyFormat)
+        val renderer = bodyRendererForFormat(message.bodyFormat) ?: BinaryBodyRenderer
         currentMessageRenderer = renderer
         currentMessage = message
 
