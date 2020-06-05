@@ -35,13 +35,15 @@ class ProcessExecutionListener(val project: Project) {
             return
         }
 
-        handler.addProcessListener(NiddlerProcessListener(project, env, handler, settings.reuseSession == true))
+        handler.addProcessListener(NiddlerProcessListener(project, env, handler,
+                settings.reuseSession == true, settings.connectUsingDebugger == true))
     }
 
     private class NiddlerProcessListener(private val project: Project,
                                          executionEnvironment: ExecutionEnvironment,
                                          handler: ProcessHandler,
-                                         private val reuseSession: Boolean) : ProcessListener {
+                                         private val reuseSession: Boolean,
+                                         private val connectUsingDebugger: Boolean) : ProcessListener {
 
         private val androidHelper = AndroidQuickConnectHelper(executionEnvironment, handler, project)
 
@@ -75,9 +77,9 @@ class ProcessExecutionListener(val project: Project) {
                 val niddlerWindow = window.contentManager.getContent(0)?.component as? NiddlerToolWindow ?: return@ensureMain
 
                 if (!window.isVisible) {
-                    niddlerWindow.newSessionFor(info, reuseSession)
+                    niddlerWindow.newSessionFor(info, reuse = reuseSession, connectUsingDebugger = connectUsingDebugger)
                 } else {
-                    niddlerWindow.newSessionFor(info, reuseSession)
+                    niddlerWindow.newSessionFor(info, reuse = reuseSession, connectUsingDebugger = connectUsingDebugger)
                 }
             }
         }

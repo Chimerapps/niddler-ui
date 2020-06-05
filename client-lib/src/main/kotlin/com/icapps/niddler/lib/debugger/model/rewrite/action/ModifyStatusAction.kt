@@ -4,7 +4,7 @@ import com.icapps.niddler.lib.debugger.model.DebugResponse
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import java.util.regex.Pattern
 
-class ModifyStatusAction(rule: RewriteRule) : BaseValueMatcher(rule), ResponseAction {
+class ModifyStatusAction(rule: RewriteRule, private val wrongValueCallback: (newValue: String) -> Unit) : BaseValueMatcher(rule), ResponseAction {
 
     private companion object {
         private val STATUS_CODE_REGEX = Pattern.compile("(\\d+)\\s+(.*)")
@@ -17,7 +17,10 @@ class ModifyStatusAction(rule: RewriteRule) : BaseValueMatcher(rule), ResponseAc
         val newStatus = createReplacement(status)
 
         val matcher = STATUS_CODE_REGEX.matcher(newStatus)
-        if (!matcher.matches()) return debugResponse
+        if (!matcher.matches()) {
+            wrongValueCallback(newStatus)
+            return debugResponse
+        }
 
         val code = matcher.group(1).toInt()
         val message = matcher.group(2).trim()

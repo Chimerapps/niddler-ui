@@ -90,7 +90,7 @@ class NiddlerSessionWindow(private val project: Project,
     private val splitter = JBSplitter(APP_PREFERENCE_SPLITTER_STATE, 0.6f)
     private var baseUrlHider: BaseUrlHider? = null
     private var currentFilter: NiddlerMessageStorage.Filter? = null
-    private val debugListener = RewriteDebugListener()
+    private val debugListener = RewriteDebugListener(::onWrongStatusMessageReplacement)
     private var debuggerService: DebuggerService? = null//TODO disconnect
 
     var currentViewMode: ViewMode = ViewMode.VIEW_MODE_TIMELINE
@@ -419,7 +419,7 @@ class NiddlerSessionWindow(private val project: Project,
         }
     }
 
-    fun connectToTag(tag: String) {
+    fun connectToTag(tag: String, withDebugger: Boolean) {
         val adb = niddlerToolWindow.adbInterface
         val iDevice = IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin"))
         val port = Device.NIDDLER_ANNOUNCEMENT_PORT
@@ -430,7 +430,7 @@ class NiddlerSessionWindow(private val project: Project,
 
             override fun done() {
                 val session = get() ?: return
-                tryConnectSession(session, withDebugger = false) //TODO Debugger?
+                tryConnectSession(session, withDebugger = withDebugger)
             }
         }.execute()
     }
@@ -449,6 +449,14 @@ class NiddlerSessionWindow(private val project: Project,
 
         val connection = device.prepareConnection(freePort(), port)
         connectOnConnection(connection, withDebugger)
+    }
+
+    private fun onWrongStatusMessageReplacement(replacement: String) {
+        dispatchMain {
+            NotificationUtil.error("Replacement failed",
+                    "Status code replacement failed, new value is not a valid HTTP status line. Required format: '\\d+\\s+.*'. Got: '$replacement'",
+                    project)
+        }
     }
 }
 

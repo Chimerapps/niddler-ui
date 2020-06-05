@@ -12,6 +12,7 @@ import com.icapps.niddler.lib.debugger.model.rewrite.action.ModifyHeaderAction
 import com.icapps.niddler.lib.debugger.model.rewrite.action.ModifyHostAction
 import com.icapps.niddler.lib.debugger.model.rewrite.action.ModifyPathAction
 import com.icapps.niddler.lib.debugger.model.rewrite.action.ModifyQueryParameterAction
+import com.icapps.niddler.lib.debugger.model.rewrite.action.ModifyStatusAction
 import com.icapps.niddler.lib.debugger.model.rewrite.action.ModifyUrlAction
 import com.icapps.niddler.lib.debugger.model.rewrite.action.RemoveHeaderAction
 import com.icapps.niddler.lib.debugger.model.rewrite.action.RemoveQueryParameterAction
@@ -52,7 +53,7 @@ class RewriteDebuggerInterface(private val debuggerService: DebuggerService) {
 
 }
 
-class RewriteDebugListener : NiddlerDebugListener {
+class RewriteDebugListener(private val onWrongStatusMessageReplacement: (String) -> Unit) : NiddlerDebugListener {
 
     private var rulesSets: List<RewriteSet> = emptyList()
 
@@ -123,13 +124,13 @@ class RewriteDebugListener : NiddlerDebugListener {
             RewriteType.MODIFY_HEADER -> ModifyHeaderAction(rule)
             RewriteType.REMOVE_HEADER -> RemoveHeaderAction(rule)
             RewriteType.BODY -> ModifyBodyAction(rule)
+            RewriteType.RESPONSE_STATUS -> ModifyStatusAction(rule, onWrongStatusMessageReplacement)
             RewriteType.HOST,
             RewriteType.PATH,
             RewriteType.URL,
             RewriteType.ADD_QUERY_PARAM,
             RewriteType.MODIFY_QUERY_PARAM,
-            RewriteType.REMOVE_QUERY_PARAM,
-            RewriteType.RESPONSE_STATUS -> null
+            RewriteType.REMOVE_QUERY_PARAM -> null
         }
     }
 
