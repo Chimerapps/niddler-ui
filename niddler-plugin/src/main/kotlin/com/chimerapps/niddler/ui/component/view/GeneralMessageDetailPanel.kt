@@ -8,7 +8,8 @@ import com.chimerapps.niddler.ui.util.ui.action
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
 import com.icapps.niddler.lib.model.NiddlerMessageInfo
-import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
+import com.intellij.ide.IdeTooltip
+import com.intellij.ide.IdeTooltipManager
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
@@ -19,10 +20,14 @@ import com.jgoodies.forms.layout.RowSpec
 import java.awt.BorderLayout
 import java.awt.Font
 import java.awt.datatransfer.StringSelection
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import java.net.URL
 import java.net.URLDecoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.TreeMap
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.JComponent
@@ -113,7 +118,7 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
 
         val urlValue = message.url ?: other?.url
         generalPanel.add(buildLabel("URL", value = urlValue, withPopupMenu = true), constraints.xy(1, 3))
-        generalPanel.add(buildValue(message.url ?: other?.url, key = "URL"), constraints.xy(3, 3))
+        generalPanel.add(buildValue(message.url ?: other?.url, key = "URL", toolTip = makeUrlTooltip(message.url ?: other?.url)), constraints.xy(3, 3))
 
         var row = 4
 
@@ -122,7 +127,7 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
                 val urlDecoded = URLDecoder.decode(url, "utf-8")
                 if (urlDecoded != url) {
                     generalPanel.add(buildLabel("Decoded URL", value = urlDecoded, withPopupMenu = true), constraints.xy(1, row))
-                    generalPanel.add(buildValue(urlDecoded, key = "Decoded URL"), constraints.xy(3, row))
+                    generalPanel.add(buildValue(urlDecoded, key = "Decoded URL", toolTip = makeUrlTooltip(url)), constraints.xy(3, row))
                     ++row
                 }
             } catch (e: Throwable) {
@@ -137,6 +142,37 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
         val execTimeValue = makeExecutionTimeLabel(message, other, "Execution time")
         generalPanel.add(buildLabel("Execution time", value = execTimeValue.text, withPopupMenu = true), constraints.xy(1, row))
         generalPanel.add(execTimeValue, constraints.xy(3, row))
+    }
+
+    private fun makeUrlTooltip(url: String?): String? {
+        url ?: return null
+        try {
+            val queryParts = URL(url).query.split("&")
+            val urlParameters = queryParts.map { pair ->
+                val index = pair.indexOf('=')
+                val key = if (index > 0) URLDecoder.decode(pair.substring(0, index), "UTF-8") else pair
+                val value = if (index > 0 && pair.length >= index + 1) URLDecoder.decode(pair.substring(index + 1), "UTF-8") else ""
+                key to value
+            }.groupByTo(TreeMap()) { it.first }.mapValues { it.value.map { value -> value.second } }
+
+            if (urlParameters.isEmpty()) return null
+
+            return buildString {
+                append("<html>")
+                urlParameters.forEach { (key, values) ->
+                    if (values.isEmpty()) {
+                        append(key).append("<br/>")
+                    } else {
+                        values.forEach { value ->
+                            append(key).append(" = ").append(value).append("<br/>")
+                        }
+                    }
+                }
+                append("</html>")
+            }.trim()
+        } catch (e: Throwable) {
+            return null
+        }
     }
 
     private fun fillHeaders(message: NiddlerMessage?, other: NiddlerMessageInfo?, source: NiddlerMessageInfo) {
@@ -196,11 +232,33 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
         }
     }
 
-    private fun buildValue(text: String?, key: String? = null): JBLabel {
+    private fun buildValue(text: String?, key: String? = null, toolTip: String? = null): JBLabel {
         return JBLabel(text ?: "").also {
             it.font = valueFont
 
             it.componentPopupMenu = makePopup(key ?: "", text ?: "", text ?: "")
+
+            if (toolTip != null){
+                it.addMouseListener(object: MouseAdapter() {
+
+                    private var toolTipInstance: IdeTooltip?=null
+                    override fun mouseEntered(e: MouseEvent) {
+                        val tip = object : IdeTooltip(it,e.point,JBLabel(toolTip)) {
+                            override fun canBeDismissedOnTimeout(): Boolean {
+                                return false
+                            }
+                        }
+                        IdeTooltipManager.getInstance().hide(toolTipInstance)
+                        toolTipInstance = IdeTooltipManager.getInstance().show(tip,true)
+                    }
+
+                    override fun mouseExited(e: MouseEvent?) {
+                        super.mouseExited(e)
+                        IdeTooltipManager.getInstance().hide(toolTipInstance)
+                        toolTipInstance = null
+                    }
+                })
+            }
         }
     }
 
