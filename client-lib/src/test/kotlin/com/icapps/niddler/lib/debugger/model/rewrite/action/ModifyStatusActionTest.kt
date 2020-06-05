@@ -17,7 +17,7 @@ class ModifyStatusActionTest {
                 replaceType = ReplaceType.REPLACE_ALL, newHeaderRegex = false, matchWholeValue = false, matchValueRegex = false, caseSensitive = false, newHeader = null,
                 newValue = "400 Bad request", newValueRegex = false, matchHeaderRegex = false)
 
-        val response = ModifyStatusAction(rule).apply(response)
+        val response = ModifyStatusAction(rule) {}.apply(response)
         assertEquals(400, response.code)
         assertEquals("Bad request", response.message)
     }
@@ -28,7 +28,7 @@ class ModifyStatusActionTest {
                 replaceType = ReplaceType.REPLACE_ALL, newHeaderRegex = false, matchWholeValue = false, matchValueRegex = true, caseSensitive = false, newHeader = null,
                 newValue = "$1 Bad request", newValueRegex = false, matchHeaderRegex = false)
 
-        val response = ModifyStatusAction(rule).apply(response)
+        val response = ModifyStatusAction(rule) {}.apply(response)
         assertEquals(200, response.code)
         assertEquals("Bad request", response.message)
     }
