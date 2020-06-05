@@ -238,18 +238,19 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
 
             it.componentPopupMenu = makePopup(key ?: "", text ?: "", text ?: "")
 
-            if (toolTip != null){
-                it.addMouseListener(object: MouseAdapter() {
+            if (toolTip != null) {
+                it.addMouseListener(object : MouseAdapter() {
 
-                    private var toolTipInstance: IdeTooltip?=null
+                    private var toolTipInstance: IdeTooltip? = null
+                    
                     override fun mouseEntered(e: MouseEvent) {
-                        val tip = object : IdeTooltip(it,e.point,JBLabel(toolTip)) {
+                        val tip = object : IdeTooltip(it, e.point, JBLabel(toolTip)) {
                             override fun canBeDismissedOnTimeout(): Boolean {
                                 return false
                             }
                         }
                         IdeTooltipManager.getInstance().hide(toolTipInstance)
-                        toolTipInstance = IdeTooltipManager.getInstance().show(tip,true)
+                        toolTipInstance = IdeTooltipManager.getInstance().show(tip, true)
                     }
 
                     override fun mouseExited(e: MouseEvent?) {
