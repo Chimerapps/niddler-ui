@@ -12,16 +12,19 @@ class ProjectSettingsFormWrapper(private val niddlerSettings: NiddlerProjectSett
 
     val isModified: Boolean
         get() = ((settingsForm.reconnectCheckbox.isSelected != (niddlerSettings.automaticallyReconnect))
-                || (settingsForm.reuseCheckbox.isSelected != (niddlerSettings.reuseSession)))
+                || (settingsForm.reuseCheckbox.isSelected != (niddlerSettings.reuseSession))
+                || (settingsForm.connectUsingDebuggerCheckbox.isSelected != (niddlerSettings.connectUsingDebugger)))
 
     fun save() {
         niddlerSettings.reuseSession = settingsForm.reuseCheckbox.isSelected
         niddlerSettings.automaticallyReconnect = settingsForm.reconnectCheckbox.isSelected
+        niddlerSettings.connectUsingDebugger = settingsForm.connectUsingDebuggerCheckbox.isSelected
     }
 
     fun reset() {
         settingsForm.reconnectCheckbox.isSelected = niddlerSettings.automaticallyReconnect ?: false
         settingsForm.reuseCheckbox.isSelected = niddlerSettings.reuseSession ?: false
+        settingsForm.connectUsingDebuggerCheckbox.isSelected = niddlerSettings.connectUsingDebugger ?: false
     }
     
 }

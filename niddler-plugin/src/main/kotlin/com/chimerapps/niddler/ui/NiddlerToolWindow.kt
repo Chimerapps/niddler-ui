@@ -149,17 +149,17 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
     }
 
     fun newSessionForTag(tag: String) {
-        newSessionWindow().connectToTag(tag)
+        newSessionWindow().connectToTag(tag, withDebugger = false) //TODO debugger
     }
 
-    fun newSessionFor(info: QuickConnectionInfo, reuse: Boolean) {
+    fun newSessionFor(info: QuickConnectionInfo, reuse: Boolean, connectUsingDebugger: Boolean) {
         val window = if (reuse) unusedOrNewSessionWindow() else newSessionWindow()
         info.device?.let {
-            window.connectToDevice(it, info.port, withDebugger = false)
+            window.connectToDevice(it, info.port, withDebugger = connectUsingDebugger)
             return
         }
 
-        window.connectToTag(info.tag)
+        window.connectToTag(info.tag, withDebugger = connectUsingDebugger)
     }
 
 }

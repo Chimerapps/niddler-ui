@@ -419,7 +419,7 @@ class NiddlerSessionWindow(private val project: Project,
         }
     }
 
-    fun connectToTag(tag: String) {
+    fun connectToTag(tag: String, withDebugger: Boolean) {
         val adb = niddlerToolWindow.adbInterface
         val iDevice = IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin"))
         val port = Device.NIDDLER_ANNOUNCEMENT_PORT
@@ -430,7 +430,7 @@ class NiddlerSessionWindow(private val project: Project,
 
             override fun done() {
                 val session = get() ?: return
-                tryConnectSession(session, withDebugger = false) //TODO Debugger?
+                tryConnectSession(session, withDebugger = withDebugger)
             }
         }.execute()
     }
