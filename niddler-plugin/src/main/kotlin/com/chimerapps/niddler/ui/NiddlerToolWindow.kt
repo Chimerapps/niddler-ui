@@ -7,6 +7,7 @@ import com.chimerapps.niddler.ui.actions.ConfigureRewriteAction
 import com.chimerapps.niddler.ui.actions.NewSessionAction
 import com.chimerapps.niddler.ui.component.ConnectionMode
 import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
+import com.chimerapps.niddler.ui.debugging.rewrite.RewriteConfig
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.ProjectConfig
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
@@ -138,6 +139,7 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
         val configureDebuggerAction = ConfigureRewriteAction(this) {
             RewriteDialog.show(SwingUtilities.getWindowAncestor(this), project)?.let {
                 ProjectConfig.save(project, ProjectConfig.CONFIG_REWRITE, it)
+                applyRewriteConfig(it)
             }
         }
         actionGroup.add(newSessionAction)
@@ -146,6 +148,28 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, false)
         setToolbar(toolbar.component)
         return toolbar
+    }
+
+    //TODO optimize performance
+    private fun applyRewriteConfig(config: RewriteConfig) {
+        tabsContainer.contents.mapNotNull { content ->
+            val sessionWindow = (content.component as? NiddlerSessionWindow) ?: return@mapNotNull null
+            if (sessionWindow.connectionMode == ConnectionMode.MODE_CONNECTED)
+                sessionWindow
+            else
+                null
+        }.forEach { sessionWindow ->
+            sessionWindow.debuggerService?.let { debuggerService ->
+                try {
+                    debuggerService.rewriteInterface.clearRuleSets()
+                    if (config.allEnabled) {
+                        config.sets.forEach { set -> debuggerService.rewriteInterface.addRuleSet(set) }
+                    }
+                } catch (e: Throwable) {
+                }
+            }
+            sessionWindow.debugListener.updateRuleSets(config.sets)
+        }
     }
 
     fun newSessionForTag(tag: String) {

@@ -206,4 +206,12 @@ class RewriteMasterPanel(private val project: Project?,
             rulesList.selectedIndex = rulesList.itemsCount - 1
     }
 
+    fun isRewriteSetEnabled(set: RewriteSet): Boolean {
+        for (i in 0 until rulesList.itemsCount) {
+            if (rulesList.getItemAt(i)?.id == set.id)
+                return rulesList.isItemSelected(i)
+        }
+        return false
+    }
+
 }
