@@ -51,6 +51,15 @@ class RewriteDebuggerInterface(private val debuggerService: DebuggerService) {
         return request to response
     }
 
+    fun clearRuleSets() {
+        rulesetMap.forEach { (_, ruleSetReference) ->
+            ruleSetReference.remoteIds.forEach {
+                debuggerService.removeRequestOverrideMethod(it.first)
+                debuggerService.removeResponseAction(it.first)
+            }
+        }
+    }
+
 }
 
 class RewriteDebugListener(private val onWrongStatusMessageReplacement: (String) -> Unit) : NiddlerDebugListener {
