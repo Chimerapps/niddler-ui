@@ -40,7 +40,6 @@ import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
 import com.icapps.niddler.lib.debugger.model.DebuggerService
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebugListener
-import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebuggerInterface
 import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.NiddlerMessageBodyParser
@@ -90,8 +89,9 @@ class NiddlerSessionWindow(private val project: Project,
     private val splitter = JBSplitter(APP_PREFERENCE_SPLITTER_STATE, 0.6f)
     private var baseUrlHider: BaseUrlHider? = null
     private var currentFilter: NiddlerMessageStorage.Filter? = null
-    private val debugListener = RewriteDebugListener(::onWrongStatusMessageReplacement)
-    private var debuggerService: DebuggerService? = null//TODO disconnect
+    val debugListener = RewriteDebugListener(::onWrongStatusMessageReplacement)
+    var debuggerService: DebuggerService? = null//TODO disconnect
+        private set
 
     var currentViewMode: ViewMode = ViewMode.VIEW_MODE_TIMELINE
         set(value) {
@@ -311,6 +311,11 @@ class NiddlerSessionWindow(private val project: Project,
 
     private fun connectOnConnection(connection: PreparedDeviceConnection, withDebugger: Boolean) {
         messageContainer.clear()
+        try {
+            debuggerService?.disconnect()
+        } catch (e: Throwable) {
+        }
+        debuggerService = null
 
         niddlerClient = NiddlerClient(connection.uri, withDebugger = withDebugger, messageStorage = messageContainer).also {
             if (withDebugger) {
@@ -326,6 +331,7 @@ class NiddlerSessionWindow(private val project: Project,
                             content.icon = IconUtil.desaturate(icon)
                         }
                     }
+                    debuggerService = null
                 }
             })
             it.registerMessageListener(object : NiddlerMessageListener {
@@ -348,10 +354,8 @@ class NiddlerSessionWindow(private val project: Project,
                         debuggerService = DebuggerService(client).also { service ->
                             service.connect()
                             if (rewriteConfig.allEnabled) {
-                                RewriteDebuggerInterface(service).also { rewriteDebuggerInterface ->
-                                    debugListener.updateRuleSets(rewriteConfig.sets)
-                                    rewriteConfig.sets.forEach { set -> rewriteDebuggerInterface.addRuleSet(set) }
-                                }
+                                debugListener.updateRuleSets(rewriteConfig.sets)
+                                rewriteConfig.sets.forEach { set -> service.rewriteInterface.addRuleSet(set) }
                             }
                             service.setActive(true)
                         }

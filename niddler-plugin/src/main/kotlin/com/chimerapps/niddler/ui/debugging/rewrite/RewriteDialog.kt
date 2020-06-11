@@ -1,12 +1,10 @@
 package com.chimerapps.niddler.ui.debugging.rewrite
 
 import com.chimerapps.niddler.ui.model.ProjectConfig
-import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocation
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocationMatch
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteSet
 import com.icapps.niddler.lib.model.NiddlerMessageInfo
-import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.openapi.project.Project
 import java.awt.Dimension
 import java.awt.GridBagConstraints
@@ -101,6 +99,9 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
     private val okButton = JButton("OK").also {
         buttonPanel.add(it)
         it.addActionListener {
+            for (i in 0 until rules.size) {
+                rules[i] = rules[i].copy(active = masterPanel.isRewriteSetEnabled(rules[i]))
+            }
             response = RewriteConfig(masterPanel.allEnabled, rules)
             dispose()
         }
