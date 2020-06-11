@@ -1,5 +1,7 @@
 package com.icapps.niddler.lib.debugger.model.rewrite
 
+import com.icapps.niddler.lib.debugger.model.configuration.BaseDebuggerConfiguration
+import com.icapps.niddler.lib.debugger.model.configuration.DebuggerLocationMatch
 import java.util.regex.Pattern
 
 enum class RewriteType(val charlesCode: Int) {
@@ -33,11 +35,11 @@ enum class ReplaceType(val charlesCode: Int) {
     }
 }
 
-data class RewriteSet(val active: Boolean,
-                      val name: String,
-                      val locations: List<RewriteLocationMatch>,
+data class RewriteSet(override val active: Boolean,
+                      override val name: String,
+                      override val locations: List<DebuggerLocationMatch>,
                       val rules: List<RewriteRule>,
-                      @Transient val id: String) {
+                      @Transient override val id: String) : BaseDebuggerConfiguration {
 
     fun matchesUrl(url: String): Boolean {
         return locations.any { Regex(it.location.asRegex()).matches(url) }
@@ -77,89 +79,6 @@ data class RewriteRule(val active: Boolean,
             if (!newValue.isNullOrBlank()) append(newValue)
         }
     }
-}
-
-data class RewriteLocationMatch(val location: RewriteLocation,
-                                val enabled: Boolean)
-
-data class RewriteLocation(val protocol: String? = null,
-                           val host: String? = null,
-                           val port: String? = null,
-                           val path: String? = null,
-                           val query: String? = null) {
-
-    fun asString(): String {
-        var previousWasStar = false
-        return buildString {
-            if (protocol != null) {
-                append(protocol).append("://")
-            } else {
-                previousWasStar = true
-                append('*')
-            }
-            if (host != null) {
-                if (previousWasStar)
-                    append("://")
-                append(host)
-                previousWasStar = false
-            } else if (!previousWasStar) {
-                previousWasStar = true
-                append('*')
-            }
-            if (port != null) {
-                append(':').append(port)
-                previousWasStar = false
-            }
-            if (path != null) {
-                if (host == null && protocol == null)
-                    append('*')
-                if (!path.startsWith('/'))
-                    append('/')
-                append(path)
-            }
-            if (query != null) {
-                if (!query.startsWith('?'))
-                    append('?')
-                append(query)
-            }
-        }
-    }
-
-    fun asRegex(): String {
-        return buildString {
-            if (protocol != null) {
-                append(protocol).append("://")
-            } else {
-                append(".*://")
-            }
-            if (host != null) {
-                append(host.replace("*", ".*").replace("?", ".?"))
-            } else {
-                append(".*")
-            }
-            if (port != null) {
-                append(':').append(port.replace("*", "\\d*").replace("?", "\\d?"))
-            } else {
-                append("(:\\d+)?")
-            }
-            if (path != null) {
-                if (!path.startsWith('/'))
-                    append('/')
-                append(path.replace("*", ".*").replace("?", ".?"))
-            } else {
-                append("(/[^?]*)?")
-            }
-            if (query != null) {
-                if (!query.startsWith('?'))
-                    append("\\?")
-                append(query.replace("*", ".*").replace("?", ".?"))
-            } else {
-                append("(\\?[^#]*)?")
-            }
-            append("(#.*)?")
-        }
-    }
-
 }
 
 private fun escapeSafeRegex(value: String): String {

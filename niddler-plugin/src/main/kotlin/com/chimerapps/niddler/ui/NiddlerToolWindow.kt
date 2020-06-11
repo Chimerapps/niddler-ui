@@ -3,10 +3,12 @@ package com.chimerapps.niddler.ui
 import com.chimerapps.discovery.device.Device
 import com.chimerapps.discovery.device.adb.ADBBootstrap
 import com.chimerapps.discovery.device.adb.ADBInterface
+import com.chimerapps.niddler.ui.actions.ConfigureBreakpointsAction
 import com.chimerapps.niddler.ui.actions.ConfigureRewriteAction
 import com.chimerapps.niddler.ui.actions.NewSessionAction
 import com.chimerapps.niddler.ui.component.ConnectionMode
 import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
+import com.chimerapps.niddler.ui.debugging.breakpoints.BreakpointsDialog
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteConfig
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.ProjectConfig
@@ -142,8 +144,15 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
                 applyRewriteConfig(it)
             }
         }
+        val configureBreakpointsAction = ConfigureBreakpointsAction(this) {
+            BreakpointsDialog.show(SwingUtilities.getWindowAncestor(this), project)?.let {
+                ProjectConfig.save(project, ProjectConfig.CONFIG_BREAKPOINTS, it)
+                //TODO applyRewriteConfig(it)
+            }
+        }
         actionGroup.add(newSessionAction)
         actionGroup.add(configureDebuggerAction)
+        actionGroup.add(configureBreakpointsAction)
 
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, false)
         setToolbar(toolbar.component)

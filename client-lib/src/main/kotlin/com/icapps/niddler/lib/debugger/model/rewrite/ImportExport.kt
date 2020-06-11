@@ -1,5 +1,12 @@
 package com.icapps.niddler.lib.debugger.model.rewrite
 
+import com.icapps.niddler.lib.debugger.model.configuration.ConfigurationExporter
+import com.icapps.niddler.lib.debugger.model.configuration.ConfigurationImporter
+import com.icapps.niddler.lib.debugger.model.configuration.DebugLocation
+import com.icapps.niddler.lib.debugger.model.configuration.DebuggerConfigurationFactory
+import com.icapps.niddler.lib.debugger.model.configuration.DebuggerLocationMatch
+import com.icapps.niddler.lib.debugger.model.configuration.createGenericLocationNode
+import com.icapps.niddler.lib.debugger.model.configuration.parseGenericLocationNode
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -14,9 +21,17 @@ import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 
-class RewriteExporter {
+object RewriteDebuggerConfigurationFactory : DebuggerConfigurationFactory<RewriteSet> {
+    override fun create(): RewriteSet = RewriteSet(true, "Unnamed", emptyList(), emptyList(), UUID.randomUUID().toString())
 
-    fun export(sets: Collection<RewriteSet>, output: OutputStream) {
+    override fun exporter(): ConfigurationExporter<RewriteSet> = RewriteExporter()
+
+    override fun importer(): ConfigurationImporter<RewriteSet> = RewriteImporter()
+}
+
+class RewriteExporter : ConfigurationExporter<RewriteSet> {
+
+    override fun export(configurations: Collection<RewriteSet>, output: OutputStream) {
         val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument()
         document.xmlStandalone = true
 
@@ -24,7 +39,7 @@ class RewriteExporter {
         document.appendChild(document.createProcessingInstruction("charles", "serialisation-version='2.0' "))
         document.appendChild(root)
 
-        sets.forEach { root.appendChild(writeSet(it, document)) }
+        configurations.forEach { root.appendChild(writeSet(it, document)) }
 
         val transformer = TransformerFactory.newInstance().newTransformer().apply {
             setOutputProperty(OutputKeys.ENCODING, "UTF-8")
@@ -53,7 +68,7 @@ class RewriteExporter {
         return root
     }
 
-    private fun writeLocations(locations: List<RewriteLocationMatch>, document: Document): Node {
+    private fun writeLocations(locations: List<DebuggerLocationMatch>, document: Document): Node {
         val root = document.createElement("hosts")
         val patternsRoot = document.createElement("locationPatterns")
         root.appendChild(patternsRoot)
@@ -65,22 +80,10 @@ class RewriteExporter {
         return root
     }
 
-    private fun writeLocationMatch(locationMatch: RewriteLocationMatch, document: Document): Node {
+    private fun writeLocationMatch(locationMatch: DebuggerLocationMatch, document: Document): Node {
         val root = document.createElement("locationMatch")
-        root.appendChild(writeLocation(locationMatch.location, document))
+        root.appendChild(createGenericLocationNode(locationMatch.location, document))
         root.appendChild(document.createTextNode("enabled", locationMatch.enabled.toString()))
-        return root
-    }
-
-    private fun writeLocation(location: RewriteLocation, document: Document): Node {
-        val root = document.createElement("location")
-
-        location.protocol?.let { root.appendChild(document.createTextNode("protocol", it)) }
-        location.host?.let { root.appendChild(document.createTextNode("host", it)) }
-        location.port?.let { root.appendChild(document.createTextNode("port", it.toString())) }
-        location.path?.let { root.appendChild(document.createTextNode("path", it)) }
-        location.query?.let { root.appendChild(document.createTextNode("query", it)) }
-
         return root
     }
 
@@ -112,9 +115,9 @@ class RewriteExporter {
 
 }
 
-class RewriteImporter {
+class RewriteImporter : ConfigurationImporter<RewriteSet> {
 
-    fun import(stream: InputStream): List<RewriteSet> {
+    override fun import(stream: InputStream): List<RewriteSet> {
         val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream)
         val root = document.documentElement
         if (root.tagName != "rewriteSet-array")
@@ -179,31 +182,20 @@ class RewriteImporter {
         )
     }
 
-    private fun parseHostLocationPattern(locationPatternNode: Node): List<RewriteLocationMatch> {
+    private fun parseHostLocationPattern(locationPatternNode: Node): List<DebuggerLocationMatch> {
         return locationPatternNode.childNodes.mapNotNullNodesWithName("locationMatch", ::parseLocationMatch)
     }
 
-    private fun parseLocationMatch(locationMatchNode: Node): RewriteLocationMatch? {
+    private fun parseLocationMatch(locationMatchNode: Node): DebuggerLocationMatch? {
         val enabled = locationMatchNode.childWithTag("enabled")?.textContent?.toBoolean() ?: false
-        val locationNode = locationMatchNode.childWithTag("location") ?: return null
+        val location = locationMatchNode.childWithTag("location")?.let(::parseGenericLocationNode) ?: return null
 
-        val protocol = locationNode.childWithTag("protocol")?.textContent?.trim()
-        val host = locationNode.childWithTag("host")?.textContent?.trim()
-        val port = locationNode.childWithTag("port")?.textContent?.trim()
-        val path = locationNode.childWithTag("path")?.textContent?.trim()
-        val query = locationNode.childWithTag("query")?.textContent?.trim()
-
-        return RewriteLocationMatch(enabled = enabled,
-                location = RewriteLocation(protocol = protocol,
-                        host = host,
-                        port = port,
-                        path = path,
-                        query = query))
+        return DebuggerLocationMatch(enabled = enabled, location = location)
     }
 
 }
 
-private fun Node.childWithTag(name: String): Node? {
+internal fun Node.childWithTag(name: String): Node? {
     val children = childNodes
     for (i in 0..children.length) {
         val child = children.item(i) ?: continue
@@ -213,7 +205,7 @@ private fun Node.childWithTag(name: String): Node? {
     return null
 }
 
-private fun <T> NodeList.mapNotNullNodesWithName(name: String, map: (Node) -> T?): List<T> {
+internal fun <T> NodeList.mapNotNullNodesWithName(name: String, map: (Node) -> T?): List<T> {
     val list = mutableListOf<T>()
     for (i in 0..length) {
         val hostChild = item(i) ?: continue
@@ -224,7 +216,7 @@ private fun <T> NodeList.mapNotNullNodesWithName(name: String, map: (Node) -> T?
     return list
 }
 
-private fun Document.createTextNode(name: String, value: String): Element {
+internal fun Document.createTextNode(name: String, value: String): Element {
     val item = createElement(name)
     item.appendChild(createTextNode(value))
     return item

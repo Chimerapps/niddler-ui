@@ -1,12 +1,11 @@
-package com.chimerapps.niddler.ui.debugging.rewrite
+package com.chimerapps.niddler.ui.debugging.base
 
 import com.chimerapps.niddler.ui.util.ui.CheckBox
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseOpenFile
 import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
-import com.icapps.niddler.lib.debugger.model.rewrite.RewriteExporter
-import com.icapps.niddler.lib.debugger.model.rewrite.RewriteImporter
-import com.icapps.niddler.lib.debugger.model.rewrite.RewriteSet
+import com.icapps.niddler.lib.debugger.model.configuration.BaseDebuggerConfiguration
+import com.icapps.niddler.lib.debugger.model.configuration.DebuggerConfigurationFactory
 import com.intellij.openapi.project.Project
 import com.intellij.ui.CheckBoxList
 import com.intellij.ui.components.JBScrollPane
@@ -14,38 +13,38 @@ import java.awt.Color
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.io.File
-import java.util.UUID
 import javax.swing.BorderFactory
 import javax.swing.DefaultListModel
 import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.ListSelectionModel
 
-class RewriteMasterPanel(private val project: Project?,
-                         private val onRewriteSetAdded: (RewriteSet) -> Unit,
-                         private val onRewriteSetRemoved: (Int) -> Unit,
-                         private val selectionListener: (RewriteSet?) -> Unit) : JPanel(GridBagLayout()) {
+class DebuggingMasterPanel<T : BaseDebuggerConfiguration>(private val project: Project?,
+                                                          private val onConfigurationAdded: (T) -> Unit,
+                                                          private val onConfigurationRemoved: (Int) -> Unit,
+                                                          private val selectionListener: (T?) -> Unit,
+                                                          private val factory: DebuggerConfigurationFactory<T>) : JPanel(GridBagLayout()) {
 
     var allEnabled: Boolean = false
         set(value) {
             field = value
-            rulesList.isEnabled = value
+            configurationList.isEnabled = value
             enableAllToggle.isSelected = value
 
-            val selectedIndices = rulesList.selectedIndices
+            val selectedIndices = configurationList.selectedIndices
             val enableExportAndRemove = value && selectedIndices.isNotEmpty()
             exportButton.isEnabled = enableExportAndRemove
             removeButton.isEnabled = enableExportAndRemove
 
             if (value && selectedIndices.size == 1) {
-                selectionListener(rulesList.getItemAt(selectedIndices[0]))
+                selectionListener(configurationList.getItemAt(selectedIndices[0]))
             } else {
                 selectionListener(null)
             }
         }
 
     @Suppress("MoveLambdaOutsideParentheses")
-    val enableAllToggle = CheckBox("Enable rewrite", ::allEnabled).also {
+    val enableAllToggle = CheckBox("Enable", ::allEnabled).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 0
@@ -57,7 +56,7 @@ class RewriteMasterPanel(private val project: Project?,
         add(it, constraints)
     }
 
-    private val rulesList = CheckBoxList<RewriteSet>().also {
+    private val configurationList = CheckBoxList<T>().also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 1
@@ -102,10 +101,10 @@ class RewriteMasterPanel(private val project: Project?,
         }
         add(it, constraints)
         it.addActionListener {
-            val ruleSet = RewriteSet(true, "Unnamed", emptyList(), emptyList(), UUID.randomUUID().toString())
-            onRewriteSetAdded(ruleSet)
-            rulesList.addItem(ruleSet, ruleSet.name, ruleSet.active)
-            rulesList.selectedIndex = rulesList.itemsCount - 1
+            val configuration = factory.create()
+            onConfigurationAdded(configuration)
+            configurationList.addItem(configuration, configuration.name, configuration.active)
+            configurationList.selectedIndex = configurationList.itemsCount - 1
         }
     }
 
@@ -121,10 +120,9 @@ class RewriteMasterPanel(private val project: Project?,
         }
         add(it, constraints)
         it.addActionListener {
-            rulesList.selectedIndices.reversed().forEach { index ->
-                onRewriteSetRemoved(index)
-                (rulesList.model as DefaultListModel).remove(index)
-                print("Items left: ${rulesList.model.size}")
+            configurationList.selectedIndices.reversed().forEach { index ->
+                onConfigurationRemoved(index)
+                (configurationList.model as DefaultListModel).remove(index)
             }
         }
     }
@@ -162,7 +160,7 @@ class RewriteMasterPanel(private val project: Project?,
     }
 
     init {
-        val enableExportAndRemove = allEnabled && rulesList.selectedIndices.isNotEmpty()
+        val enableExportAndRemove = allEnabled && configurationList.selectedIndices.isNotEmpty()
         exportButton.isEnabled = enableExportAndRemove
         removeButton.isEnabled = enableExportAndRemove
     }
@@ -170,11 +168,11 @@ class RewriteMasterPanel(private val project: Project?,
     private fun showImportDialog() {
         val file = chooseOpenFile("Select file") ?: return
         try {
-            val importedData = file.inputStream.use { RewriteImporter().import(it) }
+            val importedData = file.inputStream.use { factory.importer().import(it) }
 
-            importedData.forEach { ruleSet ->
-                onRewriteSetAdded(ruleSet)
-                rulesList.addItem(ruleSet, ruleSet.name, ruleSet.active)
+            importedData.forEach { configuration ->
+                onConfigurationAdded(configuration)
+                configurationList.addItem(configuration, configuration.name, configuration.active)
             }
         } catch (e: Throwable) {
             NotificationUtil.error("Failed to import", e.message ?: "Failed to parse file", project)
@@ -182,34 +180,34 @@ class RewriteMasterPanel(private val project: Project?,
     }
 
     private fun showExportDialog() {
-        val items = rulesList.selectedIndices.map { rulesList.getItemAt(it) }.filterNotNull()
+        val items = configurationList.selectedIndices.map { configurationList.getItemAt(it) }.filterNotNull()
         if (items.isEmpty()) return
 
         var file = chooseSaveFile("Export to", ".xml") ?: return
         if (file.extension.isEmpty()) {
             file = File(file.absolutePath + ".xml")
         }
-        file.outputStream().use { RewriteExporter().export(items, it) }
+        file.outputStream().use { factory.exporter().export(items, it) }
         NotificationUtil.info("Rule export complete", "<html>Rule export completed to <a href=\"file://${file.absolutePath}\">${file.name}</a></html>", project)
     }
 
-    fun rewriteSetUpdated(index: Int, new: RewriteSet) {
-        rulesList.updateItem(rulesList.getItemAt(index)!!, new, new.name)
+    fun configurationUpdated(index: Int, new: T) {
+        configurationList.updateItem(configurationList.getItemAt(index)!!, new, new.name)
     }
 
-    fun addRewriteSets(sets: List<RewriteSet>, selectLast: Boolean) {
-        sets.forEach { ruleSet ->
-            onRewriteSetAdded(ruleSet)
-            rulesList.addItem(ruleSet, ruleSet.name, ruleSet.active)
+    fun addConfigurations(items: List<T>, selectLast: Boolean) {
+        items.forEach { ruleSet ->
+            onConfigurationAdded(ruleSet)
+            configurationList.addItem(ruleSet, ruleSet.name, ruleSet.active)
         }
         if (selectLast)
-            rulesList.selectedIndex = rulesList.itemsCount - 1
+            configurationList.selectedIndex = configurationList.itemsCount - 1
     }
 
-    fun isRewriteSetEnabled(set: RewriteSet): Boolean {
-        for (i in 0 until rulesList.itemsCount) {
-            if (rulesList.getItemAt(i)?.id == set.id)
-                return rulesList.isItemSelected(i)
+    fun isConfigurationEnabled(configuration: T): Boolean {
+        for (i in 0 until configurationList.itemsCount) {
+            if (configurationList.getItemAt(i)?.id == configuration.id)
+                return configurationList.isItemSelected(i)
         }
         return false
     }

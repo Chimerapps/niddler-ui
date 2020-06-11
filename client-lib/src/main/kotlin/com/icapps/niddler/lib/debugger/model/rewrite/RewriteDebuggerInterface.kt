@@ -5,6 +5,7 @@ import com.icapps.niddler.lib.connection.protocol.NiddlerDebugListener
 import com.icapps.niddler.lib.debugger.model.DebugRequest
 import com.icapps.niddler.lib.debugger.model.DebugResponse
 import com.icapps.niddler.lib.debugger.model.DebuggerService
+import com.icapps.niddler.lib.debugger.model.configuration.DebuggerLocationMatch
 import com.icapps.niddler.lib.debugger.model.rewrite.action.AddHeaderAction
 import com.icapps.niddler.lib.debugger.model.rewrite.action.AddQueryParameterAction
 import com.icapps.niddler.lib.debugger.model.rewrite.action.ModifyBodyAction
@@ -42,9 +43,9 @@ class RewriteDebuggerInterface(private val debuggerService: DebuggerService) {
         }
     }
 
-    private fun createLocationInterceptor(rewriteLocationMatch: RewriteLocationMatch): Pair<String, String> {
-        val active = rewriteLocationMatch.enabled
-        val regex = rewriteLocationMatch.location.asRegex()
+    private fun createLocationInterceptor(debuggerLocationMatch: DebuggerLocationMatch): Pair<String, String> {
+        val active = debuggerLocationMatch.enabled
+        val regex = debuggerLocationMatch.location.asRegex()
         val request = debuggerService.addRequestOverride(regex, method = null, active = active)
         val response = debuggerService.addResponseIntercept(regex, method = null, responseCode = null, active = active)
 

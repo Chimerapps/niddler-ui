@@ -1,17 +1,17 @@
 package com.chimerapps.niddler.ui.debugging.rewrite.location
 
 import com.chimerapps.niddler.ui.util.ext.trimToNull
-import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocation
+import com.icapps.niddler.lib.debugger.model.configuration.DebugLocation
 import java.awt.Window
 import java.awt.event.KeyEvent
 import javax.swing.JComponent
 import javax.swing.KeyStroke
 
 
-class EditLocationDialog(parent: Window?, source: RewriteLocation?) : EditLocationDialogUI(parent) {
+class EditLocationDialog(parent: Window?, source: DebugLocation?) : EditLocationDialogUI(parent) {
 
     companion object {
-        fun show(parent: Window?, source: RewriteLocation?): RewriteLocation? {
+        fun show(parent: Window?, source: DebugLocation?): DebugLocation? {
             val dialog = EditLocationDialog(parent, source)
             dialog.pack()
             dialog.setSize(420, dialog.height)
@@ -23,7 +23,7 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : EditLocati
         }
     }
 
-    var result: RewriteLocation? = null
+    var result: DebugLocation? = null
         private set
 
     init {
@@ -49,8 +49,8 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : EditLocati
         }
     }
 
-    private fun makeResult(): RewriteLocation {
-        return RewriteLocation(protocol = (protocolChooser.selectedItem as String).trimToNull(),
+    private fun makeResult(): DebugLocation {
+        return DebugLocation(protocol = (protocolChooser.selectedItem as String).trimToNull(),
                 host = host.text.trimToNull(),
                 path = path.text.trimToNull(),
                 query = query.text.trimToNull(),

@@ -1,8 +1,10 @@
 package com.chimerapps.niddler.ui.debugging.rewrite
 
+import com.chimerapps.niddler.ui.debugging.base.DebuggingMasterPanel
 import com.chimerapps.niddler.ui.model.ProjectConfig
-import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocation
-import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocationMatch
+import com.icapps.niddler.lib.debugger.model.configuration.DebugLocation
+import com.icapps.niddler.lib.debugger.model.configuration.DebuggerLocationMatch
+import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebuggerConfigurationFactory
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteSet
 import com.icapps.niddler.lib.model.NiddlerMessageInfo
 import com.intellij.openapi.project.Project
@@ -50,7 +52,8 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
     private val rootContainer = JPanel(GridBagLayout())
     private val rules = mutableListOf<RewriteSet>()
 
-    private val masterPanel = RewriteMasterPanel(project, ::onRewriteSetAdded, ::onRewriteSetRemoved, ::onMasterSelectionChanged).also {
+    private val masterPanel = DebuggingMasterPanel(project, ::onRewriteSetAdded, ::onRewriteSetRemoved,
+            ::onMasterSelectionChanged, RewriteDebuggerConfigurationFactory).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 0
@@ -100,7 +103,7 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
         buttonPanel.add(it)
         it.addActionListener {
             for (i in 0 until rules.size) {
-                rules[i] = rules[i].copy(active = masterPanel.isRewriteSetEnabled(rules[i]))
+                rules[i] = rules[i].copy(active = masterPanel.isConfigurationEnabled(rules[i]))
             }
             response = RewriteConfig(masterPanel.allEnabled, rules)
             dispose()
@@ -120,7 +123,7 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
         ProjectConfig.load<RewriteConfig>(project, ProjectConfig.CONFIG_REWRITE)?.let {
             val config = it.copy(sets = it.sets.createIds())
             masterPanel.allEnabled = config.allEnabled
-            masterPanel.addRewriteSets(config.sets, selectLast = false)
+            masterPanel.addConfigurations(config.sets, selectLast = false)
         }
     }
 
@@ -140,17 +143,17 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
         val oldIndex = rules.indexOf(old)
         if (oldIndex < 0) return
         rules[oldIndex] = new
-        masterPanel.rewriteSetUpdated(oldIndex, new)
+        masterPanel.configurationUpdated(oldIndex, new)
     }
 
     private fun addNewRuleFor(message: NiddlerMessageInfo) {
         val set = RewriteSet(active = true,
                 name = "No name",
-                locations = listOf(RewriteLocationMatch(enabled = true, location = createRewriteLocationFor(message))),
+                locations = listOf(DebuggerLocationMatch(enabled = true, location = createRewriteLocationFor(message))),
                 rules = listOf(),
                 id = UUID.randomUUID().toString())
 
-        masterPanel.addRewriteSets(listOf(set), selectLast = true)
+        masterPanel.addConfigurations(listOf(set), selectLast = true)
     }
 }
 
@@ -160,10 +163,10 @@ private fun List<RewriteSet>.createIds(): List<RewriteSet> {
 
 data class RewriteConfig(val allEnabled: Boolean, val sets: List<RewriteSet>)
 
-private fun createRewriteLocationFor(message: NiddlerMessageInfo): RewriteLocation {
-    val uri = message.url?.let { URI.create(it) } ?: return RewriteLocation()
+private fun createRewriteLocationFor(message: NiddlerMessageInfo): DebugLocation {
+    val uri = message.url?.let { URI.create(it) } ?: return DebugLocation()
 
-    return RewriteLocation(protocol = uri.scheme,
+    return DebugLocation(protocol = uri.scheme,
             port = uri.port.let { if (it == -1) null else it }?.toString(),
             query = uri.query,
             path = uri.path,

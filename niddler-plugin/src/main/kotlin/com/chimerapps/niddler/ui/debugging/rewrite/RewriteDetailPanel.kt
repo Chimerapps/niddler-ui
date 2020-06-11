@@ -5,7 +5,7 @@ import com.chimerapps.niddler.ui.debugging.rewrite.rule.EditRewriteRuleDialog
 import com.chimerapps.niddler.ui.util.ext.swap
 import com.chimerapps.niddler.ui.util.ui.addChangeListener
 import com.chimerapps.niddler.ui.util.ui.setColumnFixedWidth
-import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocationMatch
+import com.icapps.niddler.lib.debugger.model.configuration.DebuggerLocationMatch
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteSet
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 import com.intellij.ui.components.JBScrollPane
@@ -147,7 +147,7 @@ class RewriteDetailPanel(private val parentWindow: Window,
 
             val item = currentItem ?: return@addActionListener
             val locationsCopy = item.locations.toMutableList()
-            locationsCopy.add(RewriteLocationMatch(newLocation, enabled = true))
+            locationsCopy.add(DebuggerLocationMatch(location = newLocation, enabled = true))
             val copy = item.copy(locations = locationsCopy)
             (locationTable.model as DefaultTableModel).addRow(arrayOf(true, newLocation.asString()))
             _currentItemInternal = copy
