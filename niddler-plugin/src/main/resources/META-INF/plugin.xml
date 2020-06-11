@@ -1,12 +1,19 @@
 <idea-plugin>
     <id>com.icapps.niddler</id>
     <name>Niddler</name>
-    <version>2.9.4</version>
+    <version>2.9.5</version>
     <vendor email="support@chimerapps.com" url="https://www.icapps.com">Chimerapps &amp; icapps</vendor>
 
     <description>This plugin enables the niddler ui inside the IDE</description>
 
     <change-notes><![CDATA[
+    <p>
+        <b>2.9.5</b>
+        <ul>
+            <li>Apply debugger configuration when it changes even if the session is already connected</li>
+            <li>Fixed issue where rules could not be disabled</li>
+        </ul>
+    </p>
     <p>
         <b>2.9.4</b>
         <ul>
