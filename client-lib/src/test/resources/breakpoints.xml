@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<?charles serialisation-version='2.0' ?>
+<breakpoints>
+  <toolEnabled>true</toolEnabled>
+  <breakpoints>
+    <breakpoint>
+      <location>
+        <path>/session</path>
+      </location>
+      <scheme>https</scheme>
+      <request>false</request>
+      <response>true</response>
+      <enabled>false</enabled>
+    </breakpoint>
+    <breakpoint>
+      <location>
+        <protocol>https</protocol>
+        <host>www.horizon.tv</host>
+        <port>443</port>
+        <path>/content/unified/NL/eng/androidtv/settings.json</path>
+        <query>latest</query>
+      </location>
+      <request>true</request>
+      <response>true</response>
+      <enabled>true</enabled>
+    </breakpoint>
+    <breakpoint>
+      <location/>
+      <request>false</request>
+      <response>true</response>
+      <enabled>true</enabled>
+    </breakpoint>
+  </breakpoints>
+</breakpoints>

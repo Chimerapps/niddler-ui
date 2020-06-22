@@ -78,10 +78,10 @@ class BreakpointExporter : ConfigurationExporter<Breakpoint>, CharlesConfigurati
         val root = document.createElement("breakpoint")
 
         root.appendChild(createGenericLocationNode(breakpoint.locations[0].location, document))
+        breakpoint.method?.let { root.appendChild(document.createTextNode("scheme", it)) }
         root.appendChild(document.createTextNode("request", breakpoint.request.toString()))
         root.appendChild(document.createTextNode("response", breakpoint.response.toString()))
         root.appendChild(document.createTextNode("enabled", breakpoint.active.toString()))
-        breakpoint.method?.let { root.appendChild(document.createTextNode("scheme", it)) }
 
         return root
     }

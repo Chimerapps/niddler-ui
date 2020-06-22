@@ -1,11 +1,11 @@
-package com.icapps.niddler.lib.debugger.model.rewrite
+package com.icapps.niddler.lib.debugger.model
 
 import com.icapps.niddler.lib.debugger.model.configuration.DebugLocation
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class RewriteLocationTest {
+class DebugLocationTest {
 
     private companion object {
         val protocols = arrayOf("http", null)
