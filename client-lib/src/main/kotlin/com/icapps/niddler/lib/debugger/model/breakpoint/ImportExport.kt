@@ -1,5 +1,6 @@
 package com.icapps.niddler.lib.debugger.model.breakpoint
 
+import com.icapps.niddler.lib.debugger.model.configuration.CharlesConfigurationHelper
 import com.icapps.niddler.lib.debugger.model.configuration.ConfigurationExporter
 import com.icapps.niddler.lib.debugger.model.configuration.ConfigurationImporter
 import com.icapps.niddler.lib.debugger.model.configuration.DebuggerConfigurationFactory
@@ -16,10 +17,6 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.UUID
 import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.OutputKeys
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
 
 object BreakpointDebuggerConfigurationFactory : DebuggerConfigurationFactory<Breakpoint> {
     override fun create(): Breakpoint = Breakpoint(active = true, name = "Unnamed", locations = emptyList(), method = null,
@@ -64,30 +61,17 @@ class BreakpointImporter : ConfigurationImporter<Breakpoint> {
 
 }
 
-class BreakpointExporter : ConfigurationExporter<Breakpoint> {
+class BreakpointExporter : ConfigurationExporter<Breakpoint>, CharlesConfigurationHelper {
 
     override fun export(configurations: Collection<Breakpoint>, output: OutputStream) {
-        val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument()
-        document.xmlStandalone = true
+        writeDocument(output, "breakpoints") { document, root ->
+            root.appendChild(document.createTextNode("toolEnabled", "true"))
 
-        val root = document.createElement("breakpoints")
-        document.appendChild(document.createProcessingInstruction("charles", "serialisation-version='2.0' "))
-        document.appendChild(root)
+            val breakpointRoots = document.createElement("breakpoints")
+            root.appendChild(breakpointRoots)
 
-        root.appendChild(document.createTextNode("toolEnabled", "true"))
-
-        val breakpointRoots = document.createElement("breakpoints")
-        root.appendChild(breakpointRoots)
-
-        configurations.forEach { breakpointRoots.appendChild(writeBreakpoint(it, document)) }
-
-        val transformer = TransformerFactory.newInstance().newTransformer().apply {
-            setOutputProperty(OutputKeys.ENCODING, "UTF-8")
-            setOutputProperty(OutputKeys.INDENT, "yes")
-            setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "")
-            setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
+            configurations.forEach { breakpointRoots.appendChild(writeBreakpoint(it, document)) }
         }
-        transformer.transform(DOMSource(document), StreamResult(output))
     }
 
     private fun writeBreakpoint(breakpoint: Breakpoint, document: Document): Node {

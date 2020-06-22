@@ -1,5 +1,6 @@
 package com.icapps.niddler.lib.debugger.model.rewrite
 
+import com.icapps.niddler.lib.debugger.model.configuration.DebugLocation
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -21,7 +22,7 @@ class RewriteLocationTest {
                 for (port in ports) {
                     for (path in paths) {
                         for (query in queries) {
-                            checkMatches(RewriteLocation(protocol, host, port, path, query).asRegex())
+                            checkMatches(DebugLocation(protocol, host, port, path, query).asRegex())
                         }
                     }
                 }
@@ -31,13 +32,13 @@ class RewriteLocationTest {
 
     @Test
     fun testWildcardToRegex() {
-        assertTrue(Regex(RewriteLocation("http", null, null, null, null).asRegex()).matches("http://test.com:8888/api/v1/NL/getItems?matchAll=true#fragment=1029"))
-        assertFalse(Regex(RewriteLocation("http", "test.com", null, null, null).asRegex()).matches("http://test.come:8888/api/v1/NL/getItems?matchAll=true#fragment=1029"))
-        assertFalse(Regex(RewriteLocation("http", null, "8888", null, null).asRegex()).matches("http://test.com:88881/api/v1/NL/getItems?matchAll=true#fragment=1029"))
-        assertFalse(Regex(RewriteLocation("http", null, null, "api/v1/NL/getItems", null).asRegex()).matches("http://test.com:8888/api/v1/NL/getItems/f?matchAll=true#fragment=1029"))
-        assertFalse(Regex(RewriteLocation("http", null, null, null, "matchAll=true").asRegex()).matches("http://test.com:8888/api/v1/NL/getItems/f?matchAll=true&matchNone=false#fragment=1029"))
+        assertTrue(Regex(DebugLocation("http", null, null, null, null).asRegex()).matches("http://test.com:8888/api/v1/NL/getItems?matchAll=true#fragment=1029"))
+        assertFalse(Regex(DebugLocation("http", "test.com", null, null, null).asRegex()).matches("http://test.come:8888/api/v1/NL/getItems?matchAll=true#fragment=1029"))
+        assertFalse(Regex(DebugLocation("http", null, "8888", null, null).asRegex()).matches("http://test.com:88881/api/v1/NL/getItems?matchAll=true#fragment=1029"))
+        assertFalse(Regex(DebugLocation("http", null, null, "api/v1/NL/getItems", null).asRegex()).matches("http://test.com:8888/api/v1/NL/getItems/f?matchAll=true#fragment=1029"))
+        assertFalse(Regex(DebugLocation("http", null, null, null, "matchAll=true").asRegex()).matches("http://test.com:8888/api/v1/NL/getItems/f?matchAll=true&matchNone=false#fragment=1029"))
 
-        assertTrue(Regex(RewriteLocation(null, "test.com", null, null, null).asRegex()).matches("https://test.com/posts"))
+        assertTrue(Regex(DebugLocation(null, "test.com", null, null, null).asRegex()).matches("https://test.com/posts"))
     }
 
     private fun checkMatches(regex: String) {

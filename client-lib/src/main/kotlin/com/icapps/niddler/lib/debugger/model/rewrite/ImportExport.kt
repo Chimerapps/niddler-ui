@@ -1,8 +1,8 @@
 package com.icapps.niddler.lib.debugger.model.rewrite
 
+import com.icapps.niddler.lib.debugger.model.configuration.CharlesConfigurationHelper
 import com.icapps.niddler.lib.debugger.model.configuration.ConfigurationExporter
 import com.icapps.niddler.lib.debugger.model.configuration.ConfigurationImporter
-import com.icapps.niddler.lib.debugger.model.configuration.DebugLocation
 import com.icapps.niddler.lib.debugger.model.configuration.DebuggerConfigurationFactory
 import com.icapps.niddler.lib.debugger.model.configuration.DebuggerLocationMatch
 import com.icapps.niddler.lib.debugger.model.configuration.createGenericLocationNode
@@ -16,10 +16,6 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.UUID
 import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.OutputKeys
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
 
 object RewriteDebuggerConfigurationFactory : DebuggerConfigurationFactory<RewriteSet> {
     override fun create(): RewriteSet = RewriteSet(true, "Unnamed", emptyList(), emptyList(), UUID.randomUUID().toString())
@@ -29,25 +25,12 @@ object RewriteDebuggerConfigurationFactory : DebuggerConfigurationFactory<Rewrit
     override fun importer(): ConfigurationImporter<RewriteSet> = RewriteImporter()
 }
 
-class RewriteExporter : ConfigurationExporter<RewriteSet> {
+class RewriteExporter : ConfigurationExporter<RewriteSet>, CharlesConfigurationHelper {
 
     override fun export(configurations: Collection<RewriteSet>, output: OutputStream) {
-        val document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument()
-        document.xmlStandalone = true
-
-        val root = document.createElement("rewriteSet-array")
-        document.appendChild(document.createProcessingInstruction("charles", "serialisation-version='2.0' "))
-        document.appendChild(root)
-
-        configurations.forEach { root.appendChild(writeSet(it, document)) }
-
-        val transformer = TransformerFactory.newInstance().newTransformer().apply {
-            setOutputProperty(OutputKeys.ENCODING, "UTF-8")
-            setOutputProperty(OutputKeys.INDENT, "yes")
-            setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "")
-            setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
+        writeDocument(output, "rewriteSet-array") { document, root ->
+            configurations.forEach { root.appendChild(writeSet(it, document)) }
         }
-        transformer.transform(DOMSource(document), StreamResult(output))
     }
 
     private fun writeSet(rewriteSet: RewriteSet, document: Document): Element {
