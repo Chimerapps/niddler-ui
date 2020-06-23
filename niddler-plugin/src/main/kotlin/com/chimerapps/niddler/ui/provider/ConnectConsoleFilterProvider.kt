@@ -1,6 +1,10 @@
 package com.chimerapps.niddler.ui.provider
 
 import com.chimerapps.niddler.ui.NiddlerToolWindow
+import com.chimerapps.niddler.ui.QuickConnectionInfo
+import com.chimerapps.niddler.ui.settings.NiddlerProjectSettings
+import com.chimerapps.niddler.ui.util.execution.NiddlerAutomaticConnectionHelper
+import com.chimerapps.niddler.ui.util.execution.ProcessExecutionListener
 import com.intellij.execution.filters.ConsoleFilterProviderEx
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.HyperlinkInfo
@@ -25,9 +29,11 @@ class NiddlerConnectFilter(private val project: Project) : Filter, DumbAware {
 
     companion object {
         const val START_REGEX = ".*Niddler Server running on (\\d+)\\s+\\[(\\S+)\\]\\s*"
+        private const val START_PROCESS_REGEX = "\\S+ \\S+ (\\d+)-(\\d+)/.*"
     }
 
     private val matcher = Pattern.compile(START_REGEX).matcher("")
+    private val startProcessMatcher = Pattern.compile(START_PROCESS_REGEX).matcher("")
 
     override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
         if (!matcher.reset(line).matches()) return null
@@ -35,6 +41,26 @@ class NiddlerConnectFilter(private val project: Project) : Filter, DumbAware {
         val tag = matcher.group(2)
         val tagGroupStart = matcher.start(2)
         val tagGroupEnd = matcher.end(2)
+
+        val processId = if (startProcessMatcher.reset(line.trim()).matches())
+            startProcessMatcher.group(1).toIntOrNull()
+        else
+            null
+
+        if (processId?.let(ProcessExecutionListener.autoConnectHelper::remove) == true) {
+            val settings = NiddlerProjectSettings.instance(project)
+            if (settings.automaticallyReconnect == true) {
+                val info = QuickConnectionInfo(port, tag, null)
+                val reuseSession = settings.reuseSession == true
+                val connectUsingDebugger = settings.connectUsingDebugger == true
+                NiddlerAutomaticConnectionHelper.connect(
+                        project = project,
+                        info = info,
+                        reuseSession = reuseSession,
+                        connectUsingDebugger = connectUsingDebugger
+                )
+            }
+        }
 
         val textStartOffset = entireLength - line.length
         return Filter.Result(textStartOffset + tagGroupStart, textStartOffset + tagGroupEnd, NiddlerConnectHyperlinkInfo(port, tag))
