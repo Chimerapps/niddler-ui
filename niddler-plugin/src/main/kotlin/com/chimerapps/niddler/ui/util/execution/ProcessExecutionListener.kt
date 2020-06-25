@@ -8,6 +8,7 @@ import com.chimerapps.niddler.ui.util.execution.tool.AndroidQuickConnectHelper
 import com.chimerapps.niddler.ui.util.ui.ensureMain
 import com.intellij.execution.ExecutionListener
 import com.intellij.execution.ExecutionManager
+import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessListener
@@ -19,43 +20,68 @@ import java.util.regex.Pattern
 
 class ProcessExecutionListener(val project: Project) {
 
+    companion object {
+        val autoConnectHelper = mutableSetOf<Int>()
+    }
+
     init {
         project.messageBus.connect(project).subscribe(ExecutionManager.EXECUTION_TOPIC, object : ExecutionListener {
             override fun processStarted(executorId: String, env: ExecutionEnvironment, handler: ProcessHandler) {
                 super.processStarted(executorId, env, handler)
-                onProcessStarted(env, handler);
+                val isAndroidDebug = env.executor is DefaultDebugExecutor
+
+                onProcessStarted(env, handler, isAndroidDebug = isAndroidDebug)
             }
 
         })
     }
 
-    private fun onProcessStarted(env: ExecutionEnvironment, handler: ProcessHandler) {
+    private fun onProcessStarted(env: ExecutionEnvironment, handler: ProcessHandler, isAndroidDebug: Boolean) {
         val settings = NiddlerProjectSettings.instance(project)
         if (settings.automaticallyReconnect != true) {
             return
         }
 
-        handler.addProcessListener(NiddlerProcessListener(project, env, handler,
-                settings.reuseSession == true, settings.connectUsingDebugger == true))
+        handler.addProcessListener(NiddlerProcessListener(
+                project = project,
+                executionEnvironment = env,
+                handler = handler,
+                reuseSession = settings.reuseSession == true,
+                connectUsingDebugger = settings.connectUsingDebugger == true,
+                isAndroidDebug = isAndroidDebug
+        ))
     }
 
     private class NiddlerProcessListener(private val project: Project,
                                          executionEnvironment: ExecutionEnvironment,
                                          handler: ProcessHandler,
                                          private val reuseSession: Boolean,
-                                         private val connectUsingDebugger: Boolean) : ProcessListener {
+                                         private val connectUsingDebugger: Boolean,
+                                         private val isAndroidDebug: Boolean) : ProcessListener {
+
+        private companion object {
+            private const val CONNECTED_DEBUGGER_REGEX = "Connected to process (\\d+) on device.*" //TODO also figure out device info
+        }
 
         private val androidHelper = AndroidQuickConnectHelper(executionEnvironment, handler, project)
 
         private val matcher = Pattern.compile(NiddlerConnectFilter.START_REGEX).matcher("")
+        private val debuggerMatcher = Pattern.compile(CONNECTED_DEBUGGER_REGEX).matcher("")
 
         override fun onTextAvailable(p0: ProcessEvent, p1: Key<*>) {
             synchronized(matcher) {
-                matcher.reset(p0.text)
-                if (matcher.matches()) {
+                if (matcher.reset(p0.text).matches()) {
                     val port = matcher.group(1).toInt()
                     val tag = matcher.group(2)
                     connectNiddler(port, tag)
+                }
+            }
+            if (isAndroidDebug) {
+                synchronized(debuggerMatcher) {
+                    if (debuggerMatcher.reset(p0.text.trim()).matches()) {
+                        val processId = debuggerMatcher.group(1).toInt()
+                        autoConnectHelper.add(processId)
+                    }
                 }
             }
         }
@@ -72,16 +98,12 @@ class ProcessExecutionListener(val project: Project) {
         private fun connectNiddler(port: Int, tag: String) {
             val info = getQuickConnectionInfo(port, tag)
 
-            ensureMain {
-                val window = ToolWindowManager.getInstance(project).getToolWindow("Niddler") ?: return@ensureMain
-                val niddlerWindow = window.contentManager.getContent(0)?.component as? NiddlerToolWindow ?: return@ensureMain
-
-                if (!window.isVisible) {
-                    niddlerWindow.newSessionFor(info, reuse = reuseSession, connectUsingDebugger = connectUsingDebugger)
-                } else {
-                    niddlerWindow.newSessionFor(info, reuse = reuseSession, connectUsingDebugger = connectUsingDebugger)
-                }
-            }
+            NiddlerAutomaticConnectionHelper.connect(
+                    project = project,
+                    info = info,
+                    reuseSession = reuseSession,
+                    connectUsingDebugger = connectUsingDebugger
+            )
         }
 
         private fun getQuickConnectionInfo(port: Int, tag: String): QuickConnectionInfo {
@@ -90,6 +112,23 @@ class ProcessExecutionListener(val project: Project) {
             }
 
             return QuickConnectionInfo(port, tag)
+        }
+    }
+
+}
+
+object NiddlerAutomaticConnectionHelper {
+
+    fun connect(project: Project, info: QuickConnectionInfo, reuseSession: Boolean, connectUsingDebugger: Boolean) {
+        ensureMain {
+            val window = ToolWindowManager.getInstance(project).getToolWindow("Niddler") ?: return@ensureMain
+            val niddlerWindow = window.contentManager.getContent(0)?.component as? NiddlerToolWindow ?: return@ensureMain
+
+            if (!window.isVisible) {
+                niddlerWindow.newSessionFor(info, reuse = reuseSession, connectUsingDebugger = connectUsingDebugger)
+            } else {
+                niddlerWindow.newSessionFor(info, reuse = reuseSession, connectUsingDebugger = connectUsingDebugger)
+            }
         }
     }
 
