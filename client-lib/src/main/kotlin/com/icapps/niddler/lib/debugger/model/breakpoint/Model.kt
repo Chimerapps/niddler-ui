@@ -9,4 +9,5 @@ data class Breakpoint(override val active: Boolean,
                       val request: Boolean,
                       val response: Boolean,
                       val method: String?,
-                      @Transient override val id: String) : BaseDebuggerConfiguration
+                      @Transient override val id: String) : BaseDebuggerConfiguration {
+}

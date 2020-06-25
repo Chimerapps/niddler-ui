@@ -14,6 +14,8 @@ class UrlUtil(private val fullUrl: String?) {
 
     val queryString: String? = internalUrl?.query
 
+    val path: String? = internalUrl?.path
+
     val url: String?
         get() {
             if (internalUrl?.query == null)

@@ -8,6 +8,7 @@ import com.chimerapps.niddler.ui.actions.ConfigureRewriteAction
 import com.chimerapps.niddler.ui.actions.NewSessionAction
 import com.chimerapps.niddler.ui.component.ConnectionMode
 import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
+import com.chimerapps.niddler.ui.debugging.breakpoints.BreakpointConfig
 import com.chimerapps.niddler.ui.debugging.breakpoints.BreakpointsDialog
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteConfig
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
@@ -147,7 +148,7 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
         val configureBreakpointsAction = ConfigureBreakpointsAction(this) {
             BreakpointsDialog.show(SwingUtilities.getWindowAncestor(this), project)?.let {
                 ProjectConfig.save(project, ProjectConfig.CONFIG_BREAKPOINTS, it)
-                //TODO applyRewriteConfig(it)
+                applyBreakpointConfig(it)
             }
         }
         actionGroup.add(newSessionAction)
@@ -172,12 +173,33 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
                 try {
                     debuggerService.rewriteInterface.clearRuleSets()
                     if (config.allEnabled) {
-                        config.sets.forEach { set -> debuggerService.rewriteInterface.addRuleSet(set) }
+                        config.sets.forEach { set -> if (set.active) debuggerService.rewriteInterface.addRuleSet(set) }
                     }
                 } catch (e: Throwable) {
                 }
             }
-            sessionWindow.debugListener.updateRuleSets(config.sets)
+            sessionWindow.rewriteDebugListener.updateRuleSets(config.sets)
+        }
+    }
+
+    private fun applyBreakpointConfig(config: BreakpointConfig) {
+        tabsContainer.contents.mapNotNull { content ->
+            val sessionWindow = (content.component as? NiddlerSessionWindow) ?: return@mapNotNull null
+            if (sessionWindow.connectionMode == ConnectionMode.MODE_CONNECTED)
+                sessionWindow
+            else
+                null
+        }.forEach { sessionWindow ->
+            sessionWindow.debuggerService?.let { debuggerService ->
+                try {
+                    debuggerService.breakpointInterface.clearBreakpoints()
+                    if (config.allEnabled) {
+                        config.breakpoints.forEach { breakpoint -> if (breakpoint.active) debuggerService.breakpointInterface.addBreakpoint(breakpoint) }
+                    }
+                } catch (e: Throwable) {
+                }
+            }
+            sessionWindow.breakpointDebugListener.updateBreakpoints(config.breakpoints)
         }
     }
 

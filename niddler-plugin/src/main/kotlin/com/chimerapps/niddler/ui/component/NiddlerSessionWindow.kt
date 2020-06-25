@@ -17,12 +17,14 @@ import com.chimerapps.niddler.ui.actions.LinkedAction
 import com.chimerapps.niddler.ui.actions.ScrollToBottomAction
 import com.chimerapps.niddler.ui.actions.SimpleAction
 import com.chimerapps.niddler.ui.actions.TimelineAction
+import com.chimerapps.niddler.ui.component.debug.DebugItemWindow
 import com.chimerapps.niddler.ui.component.view.BaseUrlHideListener
 import com.chimerapps.niddler.ui.component.view.LinkedView
 import com.chimerapps.niddler.ui.component.view.MessageDetailView
 import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
+import com.chimerapps.niddler.ui.debugging.breakpoints.BreakpointConfig
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteConfig
 import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.model.ProjectConfig
@@ -38,7 +40,10 @@ import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
+import com.icapps.niddler.lib.debugger.model.CombiningNiddlerDebugListener
 import com.icapps.niddler.lib.debugger.model.DebuggerService
+import com.icapps.niddler.lib.debugger.model.breakpoint.BreakpointDebugListener
+import com.icapps.niddler.lib.debugger.model.breakpoint.BreakpointDebuggerInterface
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebugListener
 import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.BaseUrlHider
@@ -89,8 +94,8 @@ class NiddlerSessionWindow(private val project: Project,
     private val splitter = JBSplitter(APP_PREFERENCE_SPLITTER_STATE, 0.6f)
     private var baseUrlHider: BaseUrlHider? = null
     private var currentFilter: NiddlerMessageStorage.Filter? = null
-    val debugListener = RewriteDebugListener(::onWrongStatusMessageReplacement)
-    var debuggerService: DebuggerService? = null//TODO disconnect
+    var debuggerService: DebuggerService? = null
+        //TODO disconnect
         private set
 
     var currentViewMode: ViewMode = ViewMode.VIEW_MODE_TIMELINE
@@ -132,6 +137,9 @@ class NiddlerSessionWindow(private val project: Project,
     private var niddlerClient: NiddlerClient? = null
     private var lastConnection: PreparedDeviceConnection? = null
     private val detailView = MessageDetailView(project, disposable, parsedNiddlerMessageProvider, messageContainer)
+    private val debugWindow = DebugItemWindow(project)
+    val rewriteDebugListener = RewriteDebugListener(::onWrongStatusMessageReplacement)
+    val breakpointDebugListener = BreakpointDebugListener(debugWindow)
 
     init {
         add(rootContent, BorderLayout.CENTER)
@@ -142,6 +150,11 @@ class NiddlerSessionWindow(private val project: Project,
 
         rootContent.add(splitter, BorderLayout.CENTER)
         messageContainer.registerListener(this)
+    }
+
+    fun switchToDebugger() {
+        remove(rootContent)
+        add(debugWindow, BorderLayout.CENTER)
     }
 
     fun currentViewModeUnselected() {
@@ -319,7 +332,7 @@ class NiddlerSessionWindow(private val project: Project,
 
         niddlerClient = NiddlerClient(connection.uri, withDebugger = withDebugger, messageStorage = messageContainer).also {
             if (withDebugger) {
-                it.debugListener = debugListener
+                it.debugListener = CombiningNiddlerDebugListener(breakpointDebugListener, rewriteDebugListener)
             }
             messageContainer.attach(it)
             it.registerMessageListener(statusBar)
@@ -350,12 +363,17 @@ class NiddlerSessionWindow(private val project: Project,
                 override fun onReady() {
                     val client = niddlerClient
                     if (client?.withDebugger == true) {
-                        val rewriteConfig = ProjectConfig.load<RewriteConfig>(project, ProjectConfig.CONFIG_REWRITE) ?: return
+                        val rewriteConfig = ProjectConfig.load<RewriteConfig>(project, ProjectConfig.CONFIG_REWRITE)
+                        val debugConfig = ProjectConfig.load<BreakpointConfig>(project, ProjectConfig.CONFIG_BREAKPOINTS)
                         debuggerService = DebuggerService(client).also { service ->
                             service.connect()
-                            if (rewriteConfig.allEnabled) {
-                                debugListener.updateRuleSets(rewriteConfig.sets)
-                                rewriteConfig.sets.forEach { set -> service.rewriteInterface.addRuleSet(set) }
+                            if (rewriteConfig?.allEnabled == true) {
+                                rewriteDebugListener.updateRuleSets(rewriteConfig.sets)
+                                rewriteConfig.sets.forEach { set -> if (set.active) service.rewriteInterface.addRuleSet(set) }
+                            }
+                            if (debugConfig?.allEnabled == true) {
+                                breakpointDebugListener.updateBreakpoints(debugConfig.breakpoints)
+                                debugConfig.breakpoints.forEach { breakPoint -> if (breakPoint.active) service.breakpointInterface.addBreakpoint(breakPoint) }
                             }
                             service.setActive(true)
                         }

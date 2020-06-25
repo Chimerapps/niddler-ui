@@ -41,9 +41,6 @@ data class RewriteSet(override val active: Boolean,
                       val rules: List<RewriteRule>,
                       @Transient override val id: String) : BaseDebuggerConfiguration {
 
-    fun matchesUrl(url: String): Boolean {
-        return locations.any { Regex(it.location.asRegex()).matches(url) }
-    }
 }
 
 data class RewriteRule(val active: Boolean,

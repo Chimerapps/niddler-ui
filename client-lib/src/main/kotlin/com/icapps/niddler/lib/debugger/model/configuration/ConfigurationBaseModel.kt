@@ -12,6 +12,10 @@ interface BaseDebuggerConfiguration {
     val name: String
     val locations: List<DebuggerLocationMatch>
     val id: String
+
+    fun matchesUrl(url: String): Boolean {
+        return locations.any { it.enabled && Regex(it.location.asRegex()).matches(url) }
+    }
 }
 
 interface ConfigurationImporter<T : BaseDebuggerConfiguration> {
