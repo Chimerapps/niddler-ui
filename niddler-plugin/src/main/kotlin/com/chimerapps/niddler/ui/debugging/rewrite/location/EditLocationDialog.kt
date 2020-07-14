@@ -5,10 +5,11 @@ import com.icapps.niddler.lib.debugger.model.configuration.DebugLocation
 import java.awt.Window
 import java.awt.event.KeyEvent
 import javax.swing.JComponent
+import javax.swing.JDialog
 import javax.swing.KeyStroke
 
 
-class EditLocationDialog(parent: Window?, source: DebugLocation?) : EditLocationDialogUI(parent) {
+class EditLocationDialog(parent: Window?, source: DebugLocation?) : JDialog(parent, "Edit Location", ModalityType.APPLICATION_MODAL) {
 
     companion object {
         fun show(parent: Window?, source: DebugLocation?): DebugLocation? {
@@ -23,37 +24,40 @@ class EditLocationDialog(parent: Window?, source: DebugLocation?) : EditLocation
         }
     }
 
+    private val ui = EditLocationUI(includeAction = false, includeButtons = true)
+
     var result: DebugLocation? = null
         private set
 
     init {
-        content.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-        protocolChooser.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+        contentPane = ui.content
+        ui.content.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+        ui.protocolChooser.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
 
-        rootPane.defaultButton = okButton
+        rootPane.defaultButton = ui.okButton
 
-        okButton.addActionListener {
+        ui.okButton.addActionListener {
             result = makeResult()
             dispose()
         }
-        cancelButton.addActionListener {
+        ui.cancelButton.addActionListener {
             dispose()
         }
 
         source?.let { initFrom ->
-            initFrom.protocol?.let { protocolChooser.selectedItem = it }
-            initFrom.host?.let { host.text = it }
-            initFrom.port?.let { port.text = it.toString() }
-            initFrom.path?.let { path.text = it }
-            initFrom.query?.let { query.text = it }
+            initFrom.protocol?.let { ui.protocolChooser.selectedItem = it }
+            initFrom.host?.let { ui.host.text = it }
+            initFrom.port?.let { ui.port.text = it.toString() }
+            initFrom.path?.let { ui.path.text = it }
+            initFrom.query?.let { ui.query.text = it }
         }
     }
 
     private fun makeResult(): DebugLocation {
-        return DebugLocation(protocol = (protocolChooser.selectedItem as String).trimToNull(),
-                host = host.text.trimToNull(),
-                path = path.text.trimToNull(),
-                query = query.text.trimToNull(),
-                port = port.text.trimToNull())
+        return DebugLocation(protocol = (ui.protocolChooser.selectedItem as String).trimToNull(),
+                host = ui.host.text.trimToNull(),
+                path = ui.path.text.trimToNull(),
+                query = ui.query.text.trimToNull(),
+                port = ui.port.text.trimToNull())
     }
 }

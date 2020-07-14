@@ -64,19 +64,19 @@ class BreakpointsDialog(parent: Window?, project: Project) : JDialog(parent, "Br
         rootContainer.add(it.also { it.border = BorderFactory.createEmptyBorder(10, 10, 5, 10) }, constraints)
     }
 
-    //    private val detailPanel = RewriteDetailPanel(this, ::onItemUpdated).also {
-//        val constraints = GridBagConstraints().apply {
-//            gridx = 1
-//            gridy = 0
-//            gridwidth = 1
-//            gridheight = 1
-//            fill = GridBagConstraints.BOTH
-//            anchor = GridBagConstraints.NORTHEAST
-//            weightx = 65.0
-//            weighty = 100.0
-//        }
-//        rootContainer.add(it.also { it.border = BorderFactory.createEmptyBorder(10, 10, 5, 10) }, constraints)
-//    }
+    private val detailPanel = BreakpointsDetailPanel(this, ::onItemUpdated).also {
+        val constraints = GridBagConstraints().apply {
+            gridx = 1
+            gridy = 0
+            gridwidth = 1
+            gridheight = 1
+            fill = GridBagConstraints.BOTH
+            anchor = GridBagConstraints.NORTHEAST
+            weightx = 65.0
+            weighty = 100.0
+        }
+        rootContainer.add(it.also { it.border = BorderFactory.createEmptyBorder(10, 10, 5, 10) }, constraints)
+    }
     private val buttonPanel = JPanel().also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
@@ -134,7 +134,10 @@ class BreakpointsDialog(parent: Window?, project: Project) : JDialog(parent, "Br
     }
 
     private fun onMasterSelectionChanged(selectedItem: Breakpoint?) {
-        //TODO detailPanel.currentItem = selectedItem
+        detailPanel.currentItem = selectedItem
+    }
+
+    private fun onItemUpdated(old: Breakpoint, new: Breakpoint) {
     }
 
 }
