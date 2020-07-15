@@ -3,6 +3,7 @@ package com.icapps.niddler.lib.debugger.model.breakpoint
 import com.icapps.niddler.lib.debugger.model.configuration.CharlesConfigurationHelper
 import com.icapps.niddler.lib.debugger.model.configuration.ConfigurationExporter
 import com.icapps.niddler.lib.debugger.model.configuration.ConfigurationImporter
+import com.icapps.niddler.lib.debugger.model.configuration.DebugLocation
 import com.icapps.niddler.lib.debugger.model.configuration.DebuggerConfigurationFactory
 import com.icapps.niddler.lib.debugger.model.configuration.DebuggerLocationMatch
 import com.icapps.niddler.lib.debugger.model.configuration.createGenericLocationNode
@@ -19,7 +20,7 @@ import java.util.UUID
 import javax.xml.parsers.DocumentBuilderFactory
 
 object BreakpointDebuggerConfigurationFactory : DebuggerConfigurationFactory<Breakpoint> {
-    override fun create(): Breakpoint = Breakpoint(active = true, name = "Unnamed", locations = emptyList(), method = null,
+    override fun create(): Breakpoint = Breakpoint(active = true, name = "", locations = listOf(DebuggerLocationMatch(enabled = true, location = DebugLocation())), method = null,
             request = false, response = false, id = UUID.randomUUID().toString())
 
     override fun exporter(): ConfigurationExporter<Breakpoint> = BreakpointExporter()
