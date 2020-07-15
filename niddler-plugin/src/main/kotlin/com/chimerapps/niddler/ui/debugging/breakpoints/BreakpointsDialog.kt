@@ -138,6 +138,10 @@ class BreakpointsDialog(parent: Window?, project: Project) : JDialog(parent, "Br
     }
 
     private fun onItemUpdated(old: Breakpoint, new: Breakpoint) {
+        val oldIndex = breakpoints.indexOf(old)
+        if (oldIndex < 0) return
+        breakpoints[oldIndex] = new
+        masterPanel.configurationUpdated(oldIndex, new)
     }
 
 }

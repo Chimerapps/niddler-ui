@@ -37,7 +37,7 @@ fun ensureMain(toExecute: () -> Unit) {
         dispatchMain(toExecute)
 }
 
-fun JTextField.addChangeListener(changeListener: (JTextField) -> Unit) {
+fun <T: JTextField> T.addChangeListener(changeListener: (T) -> Unit) {
     val dl = object : DocumentListener {
         private var lastChange = 0
         private var lastNotifiedChange = 0

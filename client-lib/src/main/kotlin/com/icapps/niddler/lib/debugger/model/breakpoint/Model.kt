@@ -10,4 +10,7 @@ data class Breakpoint(override val active: Boolean,
                       val response: Boolean,
                       val method: String?,
                       @Transient override val id: String) : BaseDebuggerConfiguration {
+
+    val location : DebuggerLocationMatch
+        get() = locations.first()
 }
