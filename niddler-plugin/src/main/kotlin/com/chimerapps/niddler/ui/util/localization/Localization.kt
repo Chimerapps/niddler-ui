@@ -1,4 +1,4 @@
-package com.chimerapps.niddler.ui.util
+package com.chimerapps.niddler.ui.util.localization
 
 import java.util.Locale
 import java.util.ResourceBundle
@@ -11,8 +11,4 @@ object Localization {
         return bundle.getString(key)
     }
 
-}
-
-fun String.tr() : String {
-    return Localization.getString(this)
 }

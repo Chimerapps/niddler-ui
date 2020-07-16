@@ -53,6 +53,35 @@ dependencies {
     }
 }
 
+tasks.create("buildTranslationsEnum") {
+    doLast {
+        def translationProperties = new Properties()
+        translationProperties.load(project.rootProject.file("niddler-plugin/src/main/resources/translations/translations.properties").newInputStream())
+
+        def file = project.rootProject.file("niddler-plugin/src/main/kotlin/com/chimerapps/niddler/ui/util/localization/Tr.kt")
+        file.write "package com.chimerapps.niddler.ui.util.localization\n\n"
+        file << "import com.chimerapps.niddler.ui.util.localization.Localization\n\n"
+        file << "enum class Tr(val key: String) {\n"
+        def sorted = new TreeSet<String>()
+        translationProperties.propertyNames().each {
+            sorted.add(it.toString());
+        }
+        def c = 0
+        sorted.each { string ->
+            def parts = string.split('\\.')
+            def str = ""
+            for (int i = 1; i < parts.length; ++i) {
+                str += parts[i].capitalize()
+            }
+            file << "    $str(\"$string\")${(++c == sorted.size()) ? ";" : ","}\n"
+        }
+        file << "\n    fun tr() : String {\n"
+        file << "        return Localization.getString(key)\n"
+        file << "    }\n"
+        file << "}"
+    }
+}
+
 tasks.create('uploadToInternalServer') {
     doLast {
         ant {

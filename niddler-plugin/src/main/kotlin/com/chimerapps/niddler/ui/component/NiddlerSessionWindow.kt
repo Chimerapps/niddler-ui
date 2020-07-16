@@ -29,8 +29,8 @@ import com.chimerapps.niddler.ui.debugging.rewrite.RewriteConfig
 import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.model.ProjectConfig
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.chimerapps.niddler.ui.util.session.SessionFinderUtil
-import com.chimerapps.niddler.ui.util.tr
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.ProjectSessionIconProvider
@@ -257,7 +257,7 @@ class NiddlerSessionWindow(private val project: Project,
         actionGroup.add(ScrollToBottomAction(window = this))
         actionGroup.addSeparator()
 
-        actionGroup.add(SimpleAction("niddler.action.clear".tr(), "niddler.action.clear.description".tr(), icon = AllIcons.Actions.GC) {
+        actionGroup.add(SimpleAction(Tr.ActionClear.tr(), Tr.ActionClearDescription.tr(), icon = AllIcons.Actions.GC) {
             messageContainer.clear()
             exportAction.isEnabled = !messageContainer.isEmpty()
             viewToolbar.updateActionsImmediately()
