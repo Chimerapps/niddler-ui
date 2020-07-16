@@ -51,15 +51,16 @@ data class DiscoveredDeviceConnection(val device: Device, val session: Discovere
 data class ConnectDialogResult(val direct: ManualConnection?, val discovered: DiscoveredDeviceConnection?)
 
 class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInterface,
-                    iDeviceBootstrap: IDeviceBootstrap, sessionIconProvider: SessionIconProvider)
-    : ConnectDialogUI(parent, "Select a device to connect to", sessionIconProvider) {
+                    iDeviceBootstrap: IDeviceBootstrap, sessionIconProvider: SessionIconProvider,
+                    private val localization: ConnectDialogLocalization)
+    : ConnectDialogUI(parent, localization.dialogTitle, sessionIconProvider, localization) {
 
     companion object {
         private const val PORT_MAX = 65535
 
         fun show(parent: Window?, adbInterface: ADBInterface, iDeviceBootstrap: IDeviceBootstrap, announcementPort: Int,
-                 sessionIconProvider: SessionIconProvider = DefaultSessionIconProvider()): ConnectDialogResult? {
-            val dialog = ConnectDialog(parent, announcementPort, adbInterface, iDeviceBootstrap, sessionIconProvider)
+                 sessionIconProvider: SessionIconProvider = DefaultSessionIconProvider(), localization: ConnectDialogLocalization): ConnectDialogResult? {
+            val dialog = ConnectDialog(parent, announcementPort, adbInterface, iDeviceBootstrap, sessionIconProvider, localization)
             dialog.pack()
             dialog.setSize(500, 350)
             if (dialog.parent != null)
@@ -80,10 +81,10 @@ class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInt
     init {
         val statuses = mutableListOf<String>()
         if (!adbInterface.isRealConnection) {
-            statuses += "ADB path not found"
+            statuses += localization.adbPathNotFound
         }
         if (!iDeviceBootstrap.isRealConnection) {
-            statuses += "iDevice path not found"
+            statuses += localization.iDevicePathNotFound
         }
         setStatuses(statuses)
         deviceScanner.startScanning()
@@ -118,7 +119,7 @@ class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInt
         }
         val parsedPort = port.toIntOrNull()
         if (parsedPort == null || parsedPort < 0 || parsedPort > PORT_MAX) {
-            JOptionPane.showMessageDialog(this, "Invalid port", "Could not connect", JOptionPane.ERROR_MESSAGE)
+            JOptionPane.showMessageDialog(this, localization.invalidPort, localization.invalidPortTitle, JOptionPane.ERROR_MESSAGE)
             return
         }
         connectDirectly(ip, parsedPort)
@@ -158,7 +159,8 @@ class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInt
 
 }
 
-abstract class ConnectDialogUI(parent: Window?, title: String, sessionIconProvider: SessionIconProvider) : JDialog(parent, title, ModalityType.APPLICATION_MODAL) {
+abstract class ConnectDialogUI(parent: Window?, title: String,
+                               sessionIconProvider: SessionIconProvider, localization: ConnectDialogLocalization) : JDialog(parent, title, ModalityType.APPLICATION_MODAL) {
 
     protected val deviceModel = ConnectDialogModel()
     protected val devicesTree = Tree(deviceModel).also {
@@ -166,7 +168,7 @@ abstract class ConnectDialogUI(parent: Window?, title: String, sessionIconProvid
         it.showsRootHandles = true
         it.isRootVisible = false
         it.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
-        it.cellRenderer = ConnectDialogTreeCellRenderer(sessionIconProvider)
+        it.cellRenderer = ConnectDialogTreeCellRenderer(sessionIconProvider, localization)
         it.selectionModel.addTreeSelectionListener { onDeviceSelectionChanged() }
 
         it.addMouseListener(object : MouseAdapter() {
@@ -178,14 +180,14 @@ abstract class ConnectDialogUI(parent: Window?, title: String, sessionIconProvid
             }
         })
     }
-    protected val cancelButton = JButton("Cancel").also {
+    protected val cancelButton = JButton(localization.cancel).also {
         it.addActionListener { onCancel() }
     }
-    protected val connectButton = JButton("Connect").also {
+    protected val connectButton = JButton(localization.connect).also {
         it.addActionListener { onConnect() }
     }
-    private val deviceIpLabel = JLabel("Device ip:")
-    private val portLabel = JLabel("Port:")
+    private val deviceIpLabel = JLabel(localization.deviceIp)
+    private val portLabel = JLabel(localization.portLabel)
     protected val deviceIpField = JTextField().also {
         it.addChangeListener { onDeviceIpChanged() }
     }

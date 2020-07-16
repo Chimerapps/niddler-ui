@@ -12,7 +12,7 @@ def versions = [
         minIntelliJ           : '2018.1',
         androidEmulatorControl: '0.1.2',
         discoveryLib          : '1.2.0',
-        discoveryPluginLib    : '1.2.0',
+        discoveryPluginLib    : '1.3.0',
         multiPart             : '1.1.0',
         xmlUnit               : '1.6',
         sqlite                : '3.31.1',

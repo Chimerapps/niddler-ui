@@ -5,6 +5,7 @@ import com.chimerapps.discovery.device.DirectPreparedConnection
 import com.chimerapps.discovery.device.PreparedDeviceConnection
 import com.chimerapps.discovery.device.idevice.IDeviceBootstrap
 import com.chimerapps.discovery.ui.ConnectDialog
+import com.chimerapps.discovery.ui.ConnectDialogLocalization
 import com.chimerapps.discovery.ui.DiscoveredDeviceConnection
 import com.chimerapps.discovery.ui.ManualConnection
 import com.chimerapps.discovery.utils.freePort
@@ -237,7 +238,8 @@ class NiddlerSessionWindow(private val project: Project,
                 niddlerToolWindow.adbInterface ?: return,
                 IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin")),
                 Device.NIDDLER_ANNOUNCEMENT_PORT,
-                sessionIconProvider = ProjectSessionIconProvider.instance(project)) ?: return
+                sessionIconProvider = ProjectSessionIconProvider.instance(project),
+                localization = object : ConnectDialogLocalization {}) ?: return
 
         result.discovered?.let {
             tryConnectSession(it, withDebugger)
