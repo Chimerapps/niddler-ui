@@ -1,6 +1,7 @@
 package com.chimerapps.niddler.ui
 
 import com.chimerapps.discovery.utils.LoggerFactory
+import com.chimerapps.niddler.ui.util.Localization
 import com.chimerapps.niddler.ui.util.logging.IdeaLoggerFactory
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -19,6 +20,8 @@ class NiddlerToolWindowFactory : ToolWindowFactory, DumbAware {
         if (LoggerFactory.instance == null) {
             LoggerFactory.instance = IdeaLoggerFactory()
         }
+
+        Localization.getString("niddler.action.connect")
 
         val contentService = ContentFactory.SERVICE.getInstance()
 

@@ -30,6 +30,7 @@ import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.model.ProjectConfig
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.session.SessionFinderUtil
+import com.chimerapps.niddler.ui.util.tr
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.ProjectSessionIconProvider
@@ -43,7 +44,6 @@ import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
 import com.icapps.niddler.lib.debugger.model.CombiningNiddlerDebugListener
 import com.icapps.niddler.lib.debugger.model.DebuggerService
 import com.icapps.niddler.lib.debugger.model.breakpoint.BreakpointDebugListener
-import com.icapps.niddler.lib.debugger.model.breakpoint.BreakpointDebuggerInterface
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebugListener
 import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.BaseUrlHider
@@ -257,7 +257,7 @@ class NiddlerSessionWindow(private val project: Project,
         actionGroup.add(ScrollToBottomAction(window = this))
         actionGroup.addSeparator()
 
-        actionGroup.add(SimpleAction("Clear local", "Remove locally cached messages", icon = AllIcons.Actions.GC) {
+        actionGroup.add(SimpleAction("niddler.action.clear".tr(), "niddler.action.clear.description".tr(), icon = AllIcons.Actions.GC) {
             messageContainer.clear()
             exportAction.isEnabled = !messageContainer.isEmpty()
             viewToolbar.updateActionsImmediately()

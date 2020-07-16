@@ -35,6 +35,7 @@ object IncludedIcons {
 
     object Action {
         val pretty = loadIcon("/ic_pretty$hasSvgExtension")
+        val amend = loadIcon("/ic_amend$hasSvgExtension")
         val chronological = if (isFlat)
             loadIcon("/ic_chronological_flat$hasSvgExtension")
         else
