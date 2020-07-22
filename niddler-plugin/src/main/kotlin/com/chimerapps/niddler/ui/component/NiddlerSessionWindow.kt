@@ -83,6 +83,7 @@ class NiddlerSessionWindow(private val project: Project,
     private companion object {
         private const val APP_PREFERENCE_SCROLL_TO_END = "scrollToEnd"
         private const val APP_PREFERENCE_SPLITTER_STATE = "${AppPreferences.NIDDLER_PREFIX}detailSplitter"
+        private const val DEFAULT_IDEVICE_PATH = "/usr/local/bin"
     }
 
     lateinit var content: Content
@@ -236,7 +237,7 @@ class NiddlerSessionWindow(private val project: Project,
     private fun showConnectDialog(withDebugger: Boolean) {
         val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
                 niddlerToolWindow.adbInterface ?: return,
-                IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin")),
+                IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: DEFAULT_IDEVICE_PATH)),
                 Device.NIDDLER_ANNOUNCEMENT_PORT,
                 sessionIconProvider = ProjectSessionIconProvider.instance(project),
                 localization = object : ConnectDialogLocalization {}) ?: return
@@ -423,15 +424,15 @@ class NiddlerSessionWindow(private val project: Project,
         val filter = currentFilter
         var applyFilter = false
         if (filter != null) {
-            val option = JOptionPane.showOptionDialog(this, "A filter is active.\nDo you wish to export only the items matching the filter?",
-                    "Export options", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, IncludedIcons.Status.logo,
-                    arrayOf("Current view", "All"), "All")
+            val option = JOptionPane.showOptionDialog(this, Tr.ActionExportFilterMessage.tr(),
+                    Tr.ActionExportFilterTitle.tr(), JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, IncludedIcons.Status.logo,
+                    arrayOf(Tr.ActionExportFilterCurrentView.tr(), Tr.ActionExportFilterAll.tr()), Tr.ActionExportFilterAll.tr())
             when (option) {
                 0 -> applyFilter = true
                 -1 -> return
             }
         }
-        val chosenFile = chooseSaveFile("Save export to", ".har") ?: return
+        val chosenFile = chooseSaveFile(Tr.ActionExportTitle.tr(), ".har") ?: return
         runWriteAction {
             val exportFile = if (chosenFile.extension.isEmpty()) {
                 File(chosenFile.absolutePath + ".har")
@@ -439,13 +440,14 @@ class NiddlerSessionWindow(private val project: Project,
                 chosenFile
 
             HarExport(parsedNiddlerMessageProvider).export(FileOutputStream(exportFile), messageContainer, if (applyFilter) filter else null)
-            NotificationUtil.info("Save complete", "<html>Export completed to <a href=\"file://${chosenFile.absolutePath}\">${chosenFile.name}</a></html>", project)
+            NotificationUtil.info(Tr.ActionExportSuccessTitle.tr(),
+                    "<html>${Tr.ActionExportSuccessMessage.tr()} <a href=\"file://${chosenFile.absolutePath}\">${chosenFile.name}</a></html>", project)
         }
     }
 
     fun connectToTag(tag: String, withDebugger: Boolean) {
         val adb = niddlerToolWindow.adbInterface
-        val iDevice = IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin"))
+        val iDevice = IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: DEFAULT_IDEVICE_PATH))
         val port = Device.NIDDLER_ANNOUNCEMENT_PORT
         object : SwingWorker<DiscoveredDeviceConnection?, Any>() {
             override fun doInBackground(): DiscoveredDeviceConnection? {
@@ -477,8 +479,8 @@ class NiddlerSessionWindow(private val project: Project,
 
     private fun onWrongStatusMessageReplacement(replacement: String) {
         dispatchMain {
-            NotificationUtil.error("Replacement failed",
-                    "Status code replacement failed, new value is not a valid HTTP status line. Required format: '\\d+\\s+.*'. Got: '$replacement'",
+            NotificationUtil.error(Tr.RewriteReplaceFailedTitle.tr(),
+                    "${Tr.RewriteReplaceFailedMessage.tr()} '$replacement'",
                     project)
         }
     }

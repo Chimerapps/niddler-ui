@@ -3,6 +3,7 @@ package com.chimerapps.niddler.ui.model.renderer.impl.xml
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.reuseOrNew
 import com.chimerapps.niddler.ui.model.renderer.textAreaRenderer
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.Popup
@@ -93,10 +94,10 @@ private class NiddlerXmlTree : Tree() {
 
         val node = path.lastPathComponent as XMLTreeNode
         val actions = mutableListOf<PopupAction>()
-        actions += "Copy XML tree" action {
+        actions += Tr.ViewXmlActionCopyTree.tr() action {
             ClipboardUtil.copyToClipboard(StringSelection(XmlTreeTransferHandler.formatXML(node.xmlElement)))
         }
-        actions += "Copy value" action { ClipboardUtil.copyToClipboard(StringSelection(node.toString())) }
+        actions += Tr.ViewXmlActionCopyValue.tr() action { ClipboardUtil.copyToClipboard(StringSelection(node.toString())) }
 
         return Popup(actions)
     }

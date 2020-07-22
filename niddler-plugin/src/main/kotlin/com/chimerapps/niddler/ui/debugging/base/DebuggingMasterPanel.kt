@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.debugging.base
 
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.chimerapps.niddler.ui.util.ui.CheckBox
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseOpenFile
@@ -44,7 +45,7 @@ class DebuggingMasterPanel<T : BaseDebuggerConfiguration>(private val project: P
         }
 
     @Suppress("MoveLambdaOutsideParentheses")
-    val enableAllToggle = CheckBox("Enable", ::allEnabled).also {
+    val enableAllToggle = CheckBox(Tr.DebuggerToggleEnable.tr(), ::allEnabled).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 0
@@ -89,7 +90,7 @@ class DebuggingMasterPanel<T : BaseDebuggerConfiguration>(private val project: P
         add(JBScrollPane(it).also { scroller -> scroller.border = BorderFactory.createLineBorder(Color.GRAY) }, constraints)
     }
 
-    private val addButton = JButton("Add").also {
+    private val addButton = JButton(Tr.DebuggerActionAdd.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 2
@@ -108,7 +109,7 @@ class DebuggingMasterPanel<T : BaseDebuggerConfiguration>(private val project: P
         }
     }
 
-    private val removeButton: JButton = JButton("Remove").also {
+    private val removeButton: JButton = JButton(Tr.DebuggerActionRemove.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 2
@@ -127,7 +128,7 @@ class DebuggingMasterPanel<T : BaseDebuggerConfiguration>(private val project: P
         }
     }
 
-    private val importButton = JButton("Import").also {
+    private val importButton = JButton(Tr.DebuggerActionImport.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 3
@@ -143,7 +144,7 @@ class DebuggingMasterPanel<T : BaseDebuggerConfiguration>(private val project: P
         }
     }
 
-    private val exportButton = JButton("Export").also {
+    private val exportButton = JButton(Tr.DebuggerActionExport.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 3
@@ -166,7 +167,7 @@ class DebuggingMasterPanel<T : BaseDebuggerConfiguration>(private val project: P
     }
 
     private fun showImportDialog() {
-        val file = chooseOpenFile("Select file") ?: return
+        val file = chooseOpenFile(Tr.DebuggerActionImportTitle.tr()) ?: return
         try {
             val importedData = file.inputStream.use { factory.importer().import(it) }
 
@@ -175,7 +176,7 @@ class DebuggingMasterPanel<T : BaseDebuggerConfiguration>(private val project: P
                 configurationList.addItem(configuration, configuration.name, configuration.active)
             }
         } catch (e: Throwable) {
-            NotificationUtil.error("Failed to import", e.message ?: "Failed to parse file", project)
+            NotificationUtil.error(Tr.DebuggerActionImportFailedTitle.tr(), e.message ?: Tr.DebuggerActionImportFailedDescription.tr(), project)
         }
     }
 
@@ -183,12 +184,13 @@ class DebuggingMasterPanel<T : BaseDebuggerConfiguration>(private val project: P
         val items = configurationList.selectedIndices.map { configurationList.getItemAt(it) }.filterNotNull()
         if (items.isEmpty()) return
 
-        var file = chooseSaveFile("Export to", ".xml") ?: return
+        var file = chooseSaveFile(Tr.DebuggerActionExportTitle.tr(), ".xml") ?: return
         if (file.extension.isEmpty()) {
             file = File(file.absolutePath + ".xml")
         }
         file.outputStream().use { factory.exporter().export(items, it) }
-        NotificationUtil.info("Rule export complete", "<html>Rule export completed to <a href=\"file://${file.absolutePath}\">${file.name}</a></html>", project)
+        NotificationUtil.info(Tr.DebuggerActionExportSuccessTitle.tr(),
+                "<html>${Tr.DebuggerActionExportSuccessMessage.tr()} <a href=\"file://${file.absolutePath}\">${file.name}</a></html>", project)
     }
 
     fun configurationUpdated(index: Int, new: T) {

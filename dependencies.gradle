@@ -17,6 +17,7 @@ def versions = [
         xmlUnit               : '1.6',
         sqlite                : '3.31.1',
         webp                  : '0.1.5',
+        commonText            : '1.8',
 ]
 
 ext.versions = versions
@@ -55,6 +56,7 @@ def pluginCompile = [
         kotlin       : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
         kotlinReflect: "org.jetbrains.kotlin:kotlin-reflect:${versions.kotlin}",
         discoveryLib : "com.chimerapps:discovery-plugin-ui:${versions.discoveryPluginLib}",
+        commonText   : "org.apache.commons:commons-text:${versions.commonText}",
 ]
 
 def libTestCompile = [

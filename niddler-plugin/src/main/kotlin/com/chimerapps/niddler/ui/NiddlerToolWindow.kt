@@ -15,6 +15,7 @@ import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.ProjectConfig
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.adb.ADBUtils
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.intellij.execution.ui.RunnerLayoutUi
 import com.intellij.execution.ui.layout.PlaceInGrid
@@ -93,7 +94,7 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
 
         val labelAndLoading = JPanel(BorderLayout())
 
-        labelAndLoading.add(JBLabel("Starting adb").also {
+        labelAndLoading.add(JBLabel(Tr.ViewStartingAdb.tr()).also {
             it.font = it.font.deriveFont(50.0f)
             it.foreground = Color.lightGray
         }, BorderLayout.NORTH)
@@ -117,7 +118,7 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
 
     private fun newSessionWindow(): NiddlerSessionWindow {
         val sessionWindow = NiddlerSessionWindow(project, disposable, this)
-        val content = tabsContainer.createContent("${c++}-contentId", sessionWindow, "Session $c", null, null)
+        val content = tabsContainer.createContent("${c++}-contentId", sessionWindow, "${Tr.ViewSession.tr()} $c", null, null)
         content.setPreferredFocusedComponent { sessionWindow }
         sessionWindow.content = content
 

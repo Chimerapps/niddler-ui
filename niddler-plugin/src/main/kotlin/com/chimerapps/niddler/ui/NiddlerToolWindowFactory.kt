@@ -21,8 +21,6 @@ class NiddlerToolWindowFactory : ToolWindowFactory, DumbAware {
             LoggerFactory.instance = IdeaLoggerFactory()
         }
 
-        Localization.getString("niddler.action.connect")
-
         val contentService = ContentFactory.SERVICE.getInstance()
 
         val window = NiddlerToolWindow(project, toolWindow.contentManager)
