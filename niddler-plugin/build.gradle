@@ -60,7 +60,7 @@ tasks.create("buildTranslationsEnum") {
 
         def file = project.rootProject.file("niddler-plugin/src/main/kotlin/com/chimerapps/niddler/ui/util/localization/Tr.kt")
         file.write "package com.chimerapps.niddler.ui.util.localization\n\n"
-        file << "import com.chimerapps.niddler.ui.util.localization.Localization\n\n"
+//        file << "import com.chimerapps.niddler.ui.util.localization.Localization\n\n"
         file << "enum class Tr(val key: String) {\n"
         def sorted = new TreeSet<String>()
         translationProperties.propertyNames().each {

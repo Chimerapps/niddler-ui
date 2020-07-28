@@ -1,7 +1,5 @@
 package com.chimerapps.niddler.ui.util.localization
 
-import com.chimerapps.niddler.ui.util.localization.Localization
-
 enum class Tr(val key: String) {
     ActionClear("niddler.action.clear"),
     ActionClearDescription("niddler.action.clear.description"),
@@ -32,6 +30,13 @@ enum class Tr(val key: String) {
     ActionViewLinkedDescription("niddler.action.view.linked.description"),
     ActionViewTimeline("niddler.action.view.timeline"),
     ActionViewTimelineDescription("niddler.action.view.timeline.description"),
+    BodyActionHintSaveBody("niddler.body.action.hint.save.body"),
+    BodyButtonPretty("niddler.body.button.pretty"),
+    BodyButtonRaw("niddler.body.button.raw"),
+    BodyButtonStructured("niddler.body.button.structured"),
+    BodySaveSuccessMessage("niddler.body.save.success.message"),
+    BodySaveSuccessTitle("niddler.body.save.success.title"),
+    BodySaveTitle("niddler.body.save.title"),
     DebuggerActionAdd("niddler.debugger.action.add"),
     DebuggerActionExport("niddler.debugger.action.export"),
     DebuggerActionExportSuccessMessage("niddler.debugger.action.export.success.message"),
@@ -45,6 +50,20 @@ enum class Tr(val key: String) {
     DebuggerToggleEnable("niddler.debugger.toggle.enable"),
     RewriteReplaceFailedMessage("niddler.rewrite.replace.failed.message"),
     RewriteReplaceFailedTitle("niddler.rewrite.replace.failed.title"),
+    ViewDetailActionCopy("niddler.view.detail.action.copy"),
+    ViewDetailActionCopyKeyAndValue("niddler.view.detail.action.copy.key.and.value"),
+    ViewDetailDecodedUrl("niddler.view.detail.decoded.url"),
+    ViewDetailExecutionTime("niddler.view.detail.execution.time"),
+    ViewDetailExecutionTimeMilliseconds("niddler.view.detail.execution.time.milliseconds"),
+    ViewDetailExecutionTimeUnknown("niddler.view.detail.execution.time.unknown"),
+    ViewDetailMethod("niddler.view.detail.method"),
+    ViewDetailSectionContext("niddler.view.detail.section.context"),
+    ViewDetailSectionGeneral("niddler.view.detail.section.general"),
+    ViewDetailSectionHeaders("niddler.view.detail.section.headers"),
+    ViewDetailSectionStacktrace("niddler.view.detail.section.stacktrace"),
+    ViewDetailStatus("niddler.view.detail.status"),
+    ViewDetailTimestamp("niddler.view.detail.timestamp"),
+    ViewDetailUrl("niddler.view.detail.url"),
     ViewSession("niddler.view.session"),
     ViewStartingAdb("niddler.view.starting.adb"),
     ViewXmlActionCopyTree("niddler.view.xml.action.copy.tree"),

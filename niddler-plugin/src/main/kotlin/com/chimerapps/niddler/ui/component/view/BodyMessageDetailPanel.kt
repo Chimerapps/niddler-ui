@@ -3,6 +3,7 @@ package com.chimerapps.niddler.ui.component.view
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.bodyRendererForFormat
 import com.chimerapps.niddler.ui.model.renderer.impl.binary.BinaryBodyRenderer
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.NotificationUtil
 import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
@@ -27,11 +28,11 @@ import javax.swing.JToolBar
 class BodyMessageDetailPanel(private val project: Project,
                              private val parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider) : JBLoadingPanel(BorderLayout(), project) {
 
-    private val structuredButton = JToggleButton("Structured", AllIcons.Hierarchy.Subtypes)
-    private val prettyButton = JToggleButton("Pretty", IncludedIcons.Action.pretty)
-    private val rawButton = JToggleButton("Raw", AllIcons.Debugger.Db_primitive)
+    private val structuredButton = JToggleButton(Tr.BodyButtonStructured.tr(), AllIcons.Hierarchy.Subtypes)
+    private val prettyButton = JToggleButton(Tr.BodyButtonPretty.tr(), IncludedIcons.Action.pretty)
+    private val rawButton = JToggleButton(Tr.BodyButtonRaw.tr(), AllIcons.Debugger.Db_primitive)
     private val saveButton = JButton("", AllIcons.Actions.Menu_saveall).also {
-        it.toolTipText = "Save body"
+        it.toolTipText = Tr.BodyActionHintSaveBody.tr()
     }
 
     private var previousStructuredComponent: JComponent? = null
@@ -86,15 +87,13 @@ class BodyMessageDetailPanel(private val project: Project,
         currentMessageRenderer = renderer
         currentMessage = message
 
-        structuredButton.isVisible = renderer?.supportsStructure ?: false
-        prettyButton.isVisible = renderer?.supportsPretty ?: false
-        rawButton.isVisible = renderer?.supportsRaw ?: false
+        structuredButton.isVisible = renderer.supportsStructure ?: false
+        prettyButton.isVisible = renderer.supportsPretty ?: false
+        rawButton.isVisible = renderer.supportsRaw ?: false
 
         saveButton.isVisible = (structuredButton.isVisible || prettyButton.isVisible || rawButton.isVisible) && (message.message.body != null)
 
-        if (renderer != null) {
-            updateComponent(claimFocus = false)
-        }
+        updateComponent(claimFocus = false)
     }
 
     private fun switchToStructured(requestFocus: Boolean) {
@@ -182,11 +181,12 @@ class BodyMessageDetailPanel(private val project: Project,
     private fun saveBody() {
         val message = currentMessage ?: return
         message.message.getBodyAsBytes?.let { bytes ->
-            val chosenFile = chooseSaveFile("Save to", "") ?: return
+            val chosenFile = chooseSaveFile(Tr.BodySaveTitle.tr(), "") ?: return
             runWriteAction {
                 FileOutputStream(chosenFile).use { it.write(bytes) }
 
-                NotificationUtil.info("Save complete", "<html>Export completed to <a href=\"file://${chosenFile.absolutePath}\">${chosenFile.name}</a></html>", project)
+                NotificationUtil.info(Tr.BodySaveSuccessTitle.tr(),
+                        "<html>${Tr.BodySaveSuccessMessage.tr()} <a href=\"file://${chosenFile.absolutePath}\">${chosenFile.name}</a></html>", project)
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.chimerapps.niddler.ui.component.view
 
 import com.chimerapps.niddler.ui.util.ext.headerCase
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
 import com.chimerapps.niddler.ui.util.ui.Popup
 import com.chimerapps.niddler.ui.util.ui.PopupAction
@@ -60,10 +61,10 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
     private val detailContainer = JPanel().also {
         it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
 
-        it.add(createOuterContainer("General", generalPanel))
-        it.add(createOuterContainer("Headers", headersPanel))
-        it.add(createOuterContainer("Stacktrace", tracePanel))
-        it.add(createOuterContainer("Context", contextPanel))
+        it.add(createOuterContainer(Tr.ViewDetailSectionGeneral.tr(), generalPanel))
+        it.add(createOuterContainer(Tr.ViewDetailSectionHeaders.tr(), headersPanel))
+        it.add(createOuterContainer(Tr.ViewDetailSectionStacktrace.tr(), tracePanel))
+        it.add(createOuterContainer(Tr.ViewDetailSectionContext.tr(), contextPanel))
     }
 
     private val contentScroller = JBScrollPane(JPanel(BorderLayout()).also {
@@ -109,16 +110,16 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
         val constraints = CellConstraints()
 
         val timestampValue = timestampFormatter.format(Date(message.timestamp))
-        generalPanel.add(buildLabel("Timestamp", value = timestampValue, withPopupMenu = true), constraints.xy(1, 1))
-        generalPanel.add(buildValue(timestampValue, key = "Timestamp"), constraints.xy(3, 1))
+        generalPanel.add(buildLabel(Tr.ViewDetailTimestamp.tr(), value = timestampValue, withPopupMenu = true), constraints.xy(1, 1))
+        generalPanel.add(buildValue(timestampValue, key = Tr.ViewDetailTimestamp.tr()), constraints.xy(3, 1))
 
         val methodValue = message.method ?: other?.method
-        generalPanel.add(buildLabel("Method", value = methodValue, withPopupMenu = true), constraints.xy(1, 2))
-        generalPanel.add(buildValue(methodValue, key = "Method"), constraints.xy(3, 2))
+        generalPanel.add(buildLabel(Tr.ViewDetailMethod.tr(), value = methodValue, withPopupMenu = true), constraints.xy(1, 2))
+        generalPanel.add(buildValue(methodValue, key = Tr.ViewDetailMethod.tr()), constraints.xy(3, 2))
 
         val urlValue = message.url ?: other?.url
-        generalPanel.add(buildLabel("URL", value = urlValue, withPopupMenu = true), constraints.xy(1, 3))
-        generalPanel.add(buildValue(message.url ?: other?.url, key = "URL", toolTip = makeUrlTooltip(message.url ?: other?.url)), constraints.xy(3, 3))
+        generalPanel.add(buildLabel(Tr.ViewDetailUrl.tr(), value = urlValue, withPopupMenu = true), constraints.xy(1, 3))
+        generalPanel.add(buildValue(message.url ?: other?.url, key = Tr.ViewDetailUrl.tr(), toolTip = makeUrlTooltip(message.url ?: other?.url)), constraints.xy(3, 3))
 
         var row = 4
 
@@ -126,8 +127,8 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
             try {
                 val urlDecoded = URLDecoder.decode(url, "utf-8")
                 if (urlDecoded != url) {
-                    generalPanel.add(buildLabel("Decoded URL", value = urlDecoded, withPopupMenu = true), constraints.xy(1, row))
-                    generalPanel.add(buildValue(urlDecoded, key = "Decoded URL", toolTip = makeUrlTooltip(url)), constraints.xy(3, row))
+                    generalPanel.add(buildLabel(Tr.ViewDetailDecodedUrl.tr(), value = urlDecoded, withPopupMenu = true), constraints.xy(1, row))
+                    generalPanel.add(buildValue(urlDecoded, key = Tr.ViewDetailDecodedUrl.tr(), toolTip = makeUrlTooltip(url)), constraints.xy(3, row))
                     ++row
                 }
             } catch (e: Throwable) {
@@ -135,12 +136,12 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
         }
 
         val statusMessage = (message.statusCode ?: other?.statusCode)?.toString()
-        generalPanel.add(buildLabel("Status", value = statusMessage, withPopupMenu = true), constraints.xy(1, row))
-        generalPanel.add(buildValue(statusMessage, key = "Status"), constraints.xy(3, row))
+        generalPanel.add(buildLabel(Tr.ViewDetailStatus.tr(), value = statusMessage, withPopupMenu = true), constraints.xy(1, row))
+        generalPanel.add(buildValue(statusMessage, key = Tr.ViewDetailStatus.tr()), constraints.xy(3, row))
         ++row
 
-        val execTimeValue = makeExecutionTimeLabel(message, other, "Execution time")
-        generalPanel.add(buildLabel("Execution time", value = execTimeValue.text, withPopupMenu = true), constraints.xy(1, row))
+        val execTimeValue = makeExecutionTimeLabel(message, other, Tr.ViewDetailExecutionTime.tr())
+        generalPanel.add(buildLabel(Tr.ViewDetailExecutionTime.tr(), value = execTimeValue.text, withPopupMenu = true), constraints.xy(1, row))
         generalPanel.add(execTimeValue, constraints.xy(3, row))
     }
 
@@ -242,7 +243,7 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
                 it.addMouseListener(object : MouseAdapter() {
 
                     private var toolTipInstance: IdeTooltip? = null
-                    
+
                     override fun mouseEntered(e: MouseEvent) {
                         val tip = object : IdeTooltip(it, e.point, JBLabel(toolTip)) {
                             override fun canBeDismissedOnTimeout(): Boolean {
@@ -265,20 +266,20 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
 
     private fun makeExecutionTimeLabel(firstMessage: NiddlerMessageInfo?, secondMessage: NiddlerMessageInfo?, key: String): JBLabel {
         if (firstMessage == null || secondMessage == null) {
-            return JBLabel("Unknown").also { it.font = italicFont }
+            return JBLabel(Tr.ViewDetailExecutionTimeUnknown.tr()).also { it.font = italicFont }
         }
         val time = if (firstMessage.timestamp > secondMessage.timestamp)
             firstMessage.timestamp - secondMessage.timestamp
         else
             secondMessage.timestamp - firstMessage.timestamp
-        return buildValue("$time msec", key = key)
+        return buildValue("$time ${Tr.ViewDetailExecutionTimeMilliseconds.tr()}", key = key)
     }
 
     private fun makePopup(key: String, valueToCopySolo: String, value: String?): Popup {
         val actions = mutableListOf<PopupAction>()
-        actions += "Copy" action { ClipboardUtil.copyToClipboard(StringSelection(valueToCopySolo)) }
+        actions += Tr.ViewDetailActionCopy.tr() action { ClipboardUtil.copyToClipboard(StringSelection(valueToCopySolo)) }
         if (value != null)
-            actions += "Copy key and value" action { ClipboardUtil.copyToClipboard(StringSelection("$key: $value")) }
+            actions += Tr.ViewDetailActionCopyKeyAndValue.tr() action { ClipboardUtil.copyToClipboard(StringSelection("$key: $value")) }
         return Popup(actions)
     }
 }
