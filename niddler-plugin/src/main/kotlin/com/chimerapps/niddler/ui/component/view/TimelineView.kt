@@ -3,6 +3,7 @@ package com.chimerapps.niddler.ui.component.view
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.model.ProjectConfig
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.Popup
@@ -314,17 +315,16 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageContainer) 
             NiddlerMessageType.UP_DEBUG -> upDebugIcon
             NiddlerMessageType.DOWN_DEBUG -> downDebugIcon
             NiddlerMessageType.DOWN_CACHED -> downCacheIcon
-            null -> downIcon
         }
     }
 
     override fun getColumnName(columnIndex: Int): String = when (columnIndex) {
-        INDEX_TIMESTAMP -> "Timestamp"
-        INDEX_DIRECTION -> "Up/Down"
-        INDEX_METHOD -> "Method"
-        INDEX_URL -> "Url"
-        INDEX_STATUS_CODE -> "Status"
-        INDEX_FORMAT -> "Format"
+        INDEX_TIMESTAMP -> Tr.ViewTimelineHeaderTimestamp.tr()
+        INDEX_DIRECTION -> Tr.ViewTimelineHeaderDirection.tr()
+        INDEX_METHOD -> Tr.ViewTimelineHeaderMethod.tr()
+        INDEX_URL -> Tr.ViewTimelineHeaderUrl.tr()
+        INDEX_STATUS_CODE -> Tr.ViewTimelineHeaderStatus.tr()
+        INDEX_FORMAT -> Tr.ViewTimelineHeaderFormat.tr()
         else -> "<NO COLUMN NAME>"
     }
 

@@ -2,6 +2,7 @@ package com.chimerapps.niddler.ui.debugging.rewrite
 
 import com.chimerapps.niddler.ui.debugging.base.DebuggingMasterPanel
 import com.chimerapps.niddler.ui.model.ProjectConfig
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.icapps.niddler.lib.debugger.model.configuration.DebugLocation
 import com.icapps.niddler.lib.debugger.model.configuration.DebuggerLocationMatch
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebuggerConfigurationFactory
@@ -22,7 +23,7 @@ import javax.swing.JButton
 import javax.swing.JDialog
 import javax.swing.JPanel
 
-class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrite settings", ModalityType.APPLICATION_MODAL) {
+class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, Tr.RewriteDialogTitle.tr(), ModalityType.APPLICATION_MODAL) {
 
     companion object {
         fun show(parent: Window?, project: Project): RewriteConfig? {
@@ -93,13 +94,13 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
         rootContainer.add(it, constraints)
         it.add(Box.createGlue())
     }
-    private val cancelButton = JButton("Cancel").also {
+    private val cancelButton = JButton(Tr.RewriteDialogCancel.tr()).also {
         buttonPanel.add(it)
         it.addActionListener {
             dispose()
         }
     }
-    private val okButton = JButton("OK").also {
+    private val okButton = JButton(Tr.RewriteDialogOk.tr()).also {
         buttonPanel.add(it)
         it.addActionListener {
             for (i in 0 until rules.size) {
@@ -148,7 +149,7 @@ class RewriteDialog(parent: Window?, project: Project) : JDialog(parent, "Rewrit
 
     private fun addNewRuleFor(message: NiddlerMessageInfo) {
         val set = RewriteSet(active = true,
-                name = "No name",
+                name = Tr.RewriteDialogDefaultName.tr(),
                 locations = listOf(DebuggerLocationMatch(enabled = true, location = createRewriteLocationFor(message))),
                 rules = listOf(),
                 id = UUID.randomUUID().toString())

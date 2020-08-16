@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.debugging.rewrite.rule
 
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.CheckBox
@@ -19,7 +20,7 @@ import javax.swing.ListCellRenderer
 import javax.swing.border.Border
 
 @Suppress("DuplicatedCode")
-open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, "Edit Rewrite Rule", Dialog.ModalityType.APPLICATION_MODAL) {
+open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRewriteDialogTitle.tr(), Dialog.ModalityType.APPLICATION_MODAL) {
 
     private companion object {
         private fun createPanelBorder(title: String): Border {
@@ -40,17 +41,17 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, "Edit Rewr
         it.renderer = ListCellRenderer { list, value, index, isSelected, cellHasFocus ->
             val label = when (value) {
                 null -> ""
-                RewriteType.ADD_HEADER -> "Add header"
-                RewriteType.MODIFY_HEADER -> "Modify header"
-                RewriteType.REMOVE_HEADER -> "Remove header"
-                RewriteType.HOST -> "Host"
-                RewriteType.PATH -> "Path"
-                RewriteType.URL -> "Url"
-                RewriteType.ADD_QUERY_PARAM -> "Add query parameter"
-                RewriteType.MODIFY_QUERY_PARAM -> "Modify query parameter"
-                RewriteType.REMOVE_QUERY_PARAM -> "Remove query parameter"
-                RewriteType.RESPONSE_STATUS -> "Response status"
-                RewriteType.BODY -> "Body"
+                RewriteType.ADD_HEADER -> Tr.EditRewriteDialogActionAppendHeader.tr()
+                RewriteType.MODIFY_HEADER -> Tr.EditRewriteDialogActionModifyHeader.tr()
+                RewriteType.REMOVE_HEADER -> Tr.EditRewriteDialogActionRemoveHeader.tr()
+                RewriteType.HOST -> Tr.EditRewriteDialogActionModifyHost.tr()
+                RewriteType.PATH -> Tr.EditRewriteDialogActionModifyPath.tr()
+                RewriteType.URL -> Tr.EditRewriteDialogActionModifyUrl.tr()
+                RewriteType.ADD_QUERY_PARAM -> Tr.EditRewriteDialogActionAppendQueryParameter.tr()
+                RewriteType.MODIFY_QUERY_PARAM -> Tr.EditRewriteDialogActionModifyQueryParameter.tr()
+                RewriteType.REMOVE_QUERY_PARAM -> Tr.EditRewriteDialogActionRemoveQueryParameter.tr()
+                RewriteType.RESPONSE_STATUS -> Tr.EditRewriteDialogActionModifyResponseStatus.tr()
+                RewriteType.BODY -> Tr.EditRewriteDialogActionModifyBody.tr()
             }
             defaultRenderer.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus)
         }

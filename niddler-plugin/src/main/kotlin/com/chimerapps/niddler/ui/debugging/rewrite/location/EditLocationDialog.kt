@@ -1,6 +1,7 @@
 package com.chimerapps.niddler.ui.debugging.rewrite.location
 
 import com.chimerapps.niddler.ui.util.ext.trimToNull
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.icapps.niddler.lib.debugger.model.configuration.DebugLocation
 import java.awt.Window
 import java.awt.event.KeyEvent
@@ -9,7 +10,7 @@ import javax.swing.JDialog
 import javax.swing.KeyStroke
 
 
-class EditLocationDialog(parent: Window?, source: DebugLocation?) : JDialog(parent, "Edit Location", ModalityType.APPLICATION_MODAL) {
+class EditLocationDialog(parent: Window?, source: DebugLocation?) : JDialog(parent, Tr.EditLocationDialogTitle.tr(), ModalityType.APPLICATION_MODAL) {
 
     companion object {
         fun show(parent: Window?, source: DebugLocation?): DebugLocation? {

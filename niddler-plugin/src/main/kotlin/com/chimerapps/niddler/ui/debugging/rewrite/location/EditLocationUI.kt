@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.debugging.rewrite.location
 
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.chimerapps.niddler.ui.util.ui.NumberOrRegexDocumentFilter
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBLabel
@@ -49,7 +50,7 @@ open class EditLocationUI(includeAction: Boolean, includeButtons: Boolean) {
         it.addItem("http")
         it.addItem("https")
 
-        addLabel("Protocol:", gridY)
+        addLabel(Tr.EditLocationProtocol.tr(), gridY)
 
         val constraints = GridBagConstraints().apply {
             gridx = 1
@@ -62,14 +63,14 @@ open class EditLocationUI(includeAction: Boolean, includeButtons: Boolean) {
     }
 
     val host = JBTextField().also {
-        addLabel("Host:", gridY)
+        addLabel(Tr.EditLocationHost.tr(), gridY)
 
         val constraints = createGenericValueConstraints()
         content.add(it, constraints)
     }
 
     val port = JBTextField(5).also {
-        addLabel("Port:", gridY)
+        addLabel(Tr.EditLocationPort.tr(), gridY)
 
         (it.document as AbstractDocument).documentFilter = NumberOrRegexDocumentFilter()
 
@@ -85,14 +86,14 @@ open class EditLocationUI(includeAction: Boolean, includeButtons: Boolean) {
     }
 
     val path = JBTextField().also {
-        addLabel("Path:", gridY)
+        addLabel(Tr.EditLocationPath.tr(), gridY)
 
         val constraints = createGenericValueConstraints()
         content.add(it, constraints)
     }
 
     val query = JBTextField().also {
-        addLabel("Query:", gridY)
+        addLabel(Tr.EditLocationQuery.tr(), gridY)
 
         val constraints = createGenericValueConstraints()
         content.add(it, constraints)
@@ -106,7 +107,7 @@ open class EditLocationUI(includeAction: Boolean, includeButtons: Boolean) {
             gridheight = 1
             anchor = GridBagConstraints.WEST
         }
-        content.add(JBLabel("Empty fields match all values. Wildcards * and ? may be used.").also {
+        content.add(JBLabel(Tr.EditLocationMatchDescription.tr()).also {
             it.font = it.font.deriveFont(10.0f)
         }.also { it.border = BorderFactory.createEmptyBorder(5, 0, 0, 0) }, constraints)
     }
@@ -124,11 +125,11 @@ open class EditLocationUI(includeAction: Boolean, includeButtons: Boolean) {
             content.add(it, constraints)
     }
 
-    val cancelButton = JButton("Cancel").also {
+    val cancelButton = JButton(Tr.EditLocationDialogCancel.tr()).also {
         buttonPanel.add(it)
     }
 
-    val okButton = JButton("OK").also {
+    val okButton = JButton(Tr.EditLocationDialogOk.tr()).also {
         buttonPanel.add(it)
     }
 

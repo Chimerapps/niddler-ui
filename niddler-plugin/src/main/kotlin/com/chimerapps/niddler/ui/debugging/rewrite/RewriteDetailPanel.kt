@@ -3,6 +3,7 @@ package com.chimerapps.niddler.ui.debugging.rewrite
 import com.chimerapps.niddler.ui.debugging.rewrite.location.EditLocationDialog
 import com.chimerapps.niddler.ui.debugging.rewrite.rule.EditRewriteRuleDialog
 import com.chimerapps.niddler.ui.util.ext.swap
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.chimerapps.niddler.ui.util.ui.addChangeListener
 import com.chimerapps.niddler.ui.util.ui.setColumnFixedWidth
 import com.icapps.niddler.lib.debugger.model.configuration.DebuggerLocationMatch
@@ -52,7 +53,7 @@ class RewriteDetailPanel(private val parentWindow: Window,
         }
         add(it.also { it.border = BorderFactory.createEmptyBorder(0, 0, 10, 0) }, constraints)
 
-        Label("Name:").also { label ->
+        Label(Tr.RewriteConfigureDetailName.tr()).also { label ->
             val childConstraints = GridBagConstraints().apply {
                 gridx = 0
                 gridy = 0
@@ -115,7 +116,7 @@ class RewriteDetailPanel(private val parentWindow: Window,
         }
         val model = it.model as EditableTableModel
         model.addColumn("", java.lang.Boolean::class.java)
-        model.addColumn("Location", String::class.java)
+        model.addColumn(Tr.RewriteConfigureDetailLocation.tr(), String::class.java)
 
         it.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
         it.rowSelectionAllowed = true
@@ -140,7 +141,7 @@ class RewriteDetailPanel(private val parentWindow: Window,
         }
         add(it, constraints)
     }
-    private val locationAddButton = JButton("Add").also {
+    private val locationAddButton = JButton(Tr.RewriteConfigureDetailLocationAdd.tr()).also {
         locationActionsPanel.add(it)
         it.addActionListener {
             val newLocation = EditLocationDialog.show(parentWindow, null) ?: return@addActionListener
@@ -154,7 +155,7 @@ class RewriteDetailPanel(private val parentWindow: Window,
             onItemUpdated(item, copy)
         }
     }
-    private val locationRemoveButton = JButton("Remove").also {
+    private val locationRemoveButton = JButton(Tr.RewriteConfigureDetailLocationRemove.tr()).also {
         locationActionsPanel.add(it)
         it.addActionListener {
             val item = currentItem ?: return@addActionListener
@@ -205,8 +206,8 @@ class RewriteDetailPanel(private val parentWindow: Window,
         }
         val model = it.model as EditableTableModel
         model.addColumn("", java.lang.Boolean::class.java)
-        model.addColumn("Type", String::class.java)
-        model.addColumn("Action", String::class.java)
+        model.addColumn(Tr.RewriteConfigureDetailType.tr(), String::class.java)
+        model.addColumn(Tr.RewriteConfigureDetailAction.tr(), String::class.java)
 
         it.packColumn(1)
 
@@ -235,7 +236,7 @@ class RewriteDetailPanel(private val parentWindow: Window,
         }
         add(it, constraints)
     }
-    private val rulesAddButton = JButton("Add").also {
+    private val rulesAddButton = JButton(Tr.RewriteConfigureDetailRuleAdd.tr()).also {
         rulesActionsPanel.add(it)
         it.addActionListener {
             val newRule = EditRewriteRuleDialog.show(parentWindow, null) ?: return@addActionListener
@@ -249,7 +250,7 @@ class RewriteDetailPanel(private val parentWindow: Window,
             onItemUpdated(item, copy)
         }
     }
-    private val rulesRemoveButton = JButton("Remove").also {
+    private val rulesRemoveButton = JButton(Tr.RewriteConfigureDetailRuleRemove.tr()).also {
         rulesActionsPanel.add(it)
         it.addActionListener {
             val rows = rulesTable.selectedRows.reversed()
@@ -259,7 +260,7 @@ class RewriteDetailPanel(private val parentWindow: Window,
             rulesTable.clearSelection()
         }
     }
-    private val rulesUpButton = JButton("Up").also {
+    private val rulesUpButton = JButton(Tr.RewriteConfigureDetailRuleUp.tr()).also {
         rulesActionsPanel.add(it)
         it.addActionListener {
             val row = rulesTable.selectedRow
@@ -278,7 +279,7 @@ class RewriteDetailPanel(private val parentWindow: Window,
             }
         }
     }
-    private val rulesDownButton = JButton("Down").also {
+    private val rulesDownButton = JButton(Tr.RewriteConfigureDetailRuleDown.tr()).also {
         rulesActionsPanel.add(it)
         it.addActionListener {
             val row = rulesTable.selectedRow
@@ -328,17 +329,17 @@ class RewriteDetailPanel(private val parentWindow: Window,
 
     private fun ruleTypeString(ruleType: RewriteType): String {
         return when (ruleType) {
-            RewriteType.ADD_HEADER -> "Append header"
-            RewriteType.MODIFY_HEADER -> "Modify header"
-            RewriteType.REMOVE_HEADER -> "Remove header"
-            RewriteType.HOST -> "Host"
-            RewriteType.PATH -> "Path"
-            RewriteType.URL -> "URL"
-            RewriteType.ADD_QUERY_PARAM -> "Append query"
-            RewriteType.MODIFY_QUERY_PARAM -> "Modify query"
-            RewriteType.REMOVE_QUERY_PARAM -> "Remove query"
-            RewriteType.RESPONSE_STATUS -> "Status"
-            RewriteType.BODY -> "Body"
+            RewriteType.ADD_HEADER -> Tr.RewriteConfigureDetailActionAppendHeader.tr()
+            RewriteType.MODIFY_HEADER -> Tr.RewriteConfigureDetailActionModifyHeader.tr()
+            RewriteType.REMOVE_HEADER -> Tr.RewriteConfigureDetailActionRemoveHeader.tr()
+            RewriteType.HOST -> Tr.RewriteConfigureDetailActionHost.tr()
+            RewriteType.PATH -> Tr.RewriteConfigureDetailPath.tr()
+            RewriteType.URL -> Tr.RewriteConfigureDetailUrl.tr()
+            RewriteType.ADD_QUERY_PARAM -> Tr.RewriteConfigureDetailAppendQuery.tr()
+            RewriteType.MODIFY_QUERY_PARAM -> Tr.RewriteConfigureDetailModifyQuery.tr()
+            RewriteType.REMOVE_QUERY_PARAM -> Tr.RewriteConfigureDetailRemoveQuery.tr()
+            RewriteType.RESPONSE_STATUS -> Tr.RewriteConfigureDetailStatus.tr()
+            RewriteType.BODY -> Tr.RewriteConfigureDetailBody.tr()
         }
     }
 }

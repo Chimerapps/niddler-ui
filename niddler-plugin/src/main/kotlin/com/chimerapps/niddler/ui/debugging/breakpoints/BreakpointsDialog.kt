@@ -2,6 +2,7 @@ package com.chimerapps.niddler.ui.debugging.breakpoints
 
 import com.chimerapps.niddler.ui.debugging.base.DebuggingMasterPanel
 import com.chimerapps.niddler.ui.model.ProjectConfig
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.icapps.niddler.lib.debugger.model.breakpoint.Breakpoint
 import com.icapps.niddler.lib.debugger.model.breakpoint.BreakpointDebuggerConfigurationFactory
 import com.icapps.niddler.lib.model.NiddlerMessageInfo
@@ -19,7 +20,7 @@ import javax.swing.JButton
 import javax.swing.JDialog
 import javax.swing.JPanel
 
-class BreakpointsDialog(parent: Window?, project: Project) : JDialog(parent, "Breakpoint settings", ModalityType.APPLICATION_MODAL) {
+class BreakpointsDialog(parent: Window?, project: Project) : JDialog(parent, Tr.BreakpointsConfigureTitle.tr(), ModalityType.APPLICATION_MODAL) {
 
     companion object {
         fun show(parent: Window?, project: Project): BreakpointConfig? {
@@ -91,13 +92,13 @@ class BreakpointsDialog(parent: Window?, project: Project) : JDialog(parent, "Br
         rootContainer.add(it, constraints)
         it.add(Box.createGlue())
     }
-    private val cancelButton = JButton("Cancel").also {
+    private val cancelButton = JButton(Tr.BreakpointsConfigureCancel.tr()).also {
         buttonPanel.add(it)
         it.addActionListener {
             dispose()
         }
     }
-    private val okButton = JButton("OK").also {
+    private val okButton = JButton(Tr.BreakpointsConfigureOk.tr()).also {
         buttonPanel.add(it)
         it.addActionListener {
             for (i in 0 until breakpoints.size) {

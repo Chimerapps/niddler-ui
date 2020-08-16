@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.component.view
 
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.ensureMain
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
@@ -47,8 +48,8 @@ class NiddlerStatusBar : JPanel(BorderLayout()), NiddlerMessageListener {
 
     private fun updateStatusText() {
         val text = when (status) {
-            Status.CONNECTED -> buildText("Connected", "to")
-            Status.DISCONNECTED -> "Disconnected"
+            Status.CONNECTED -> buildText(Tr.StatusConnected.tr(), Tr.StatusConnectedTo.tr())
+            Status.DISCONNECTED -> Tr.StatusDisconnected.tr()
         }
         ensureMain {
             statusText.text = text

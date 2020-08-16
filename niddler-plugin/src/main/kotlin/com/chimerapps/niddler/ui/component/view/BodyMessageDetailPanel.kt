@@ -87,9 +87,9 @@ class BodyMessageDetailPanel(private val project: Project,
         currentMessageRenderer = renderer
         currentMessage = message
 
-        structuredButton.isVisible = renderer.supportsStructure ?: false
-        prettyButton.isVisible = renderer.supportsPretty ?: false
-        rawButton.isVisible = renderer.supportsRaw ?: false
+        structuredButton.isVisible = renderer.supportsStructure
+        prettyButton.isVisible = renderer.supportsPretty
+        rawButton.isVisible = renderer.supportsRaw
 
         saveButton.isVisible = (structuredButton.isVisible || prettyButton.isVisible || rawButton.isVisible) && (message.message.body != null)
 
