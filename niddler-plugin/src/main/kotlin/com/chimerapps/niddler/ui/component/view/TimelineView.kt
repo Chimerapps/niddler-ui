@@ -84,6 +84,11 @@ class TimelineView(private val project: Project,
             val actions = mutableListOf<PopupAction>()
             val url = urlContainer?.url
 
+            actions += if (message.isRequest)
+                "View response" action { toggleRequestResponse() }
+            else
+                "View request" action { toggleRequestResponse() }
+
             if (url != null) {
                 actions += "Copy URL" action { ClipboardUtil.copyToClipboard(StringSelection(url)) }
             }
@@ -152,7 +157,6 @@ class TimelineView(private val project: Project,
             selectionListener.onMessageSelectionChanged(this@TimelineView.model.getMessageAtRow(row))
         }
 
-
         addMouseListener(TableResizeAdapter(this) { columnIndex, newWidth ->
             val key = when (columnIndex) {
                 TimelineTableModel.INDEX_TIMESTAMP -> PREFERENCE_KEY_TIMESTAMP_WIDTH
@@ -177,17 +181,7 @@ class TimelineView(private val project: Project,
         addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
                 if (e.keyCode == KeyEvent.VK_R) {
-                    val current = this@TimelineView.model.getMessageAtRow(selectedRow) ?: return
-                    val other = if (current.isRequest) {
-                        messageContainer.findResponse(current)
-                    } else {
-                        messageContainer.findRequest(current)
-                    } ?: return
-                    val index = this@TimelineView.model.findMessageIndex(other)
-                    if (index != -1) {
-                        selectionModel.clearSelection()
-                        selectionModel.addSelectionInterval(index, index)
-                    }
+                    toggleRequestResponse()
                 }
             }
         })
@@ -208,6 +202,20 @@ class TimelineView(private val project: Project,
 
     init {
         add(JBScrollPane(tableView), BorderLayout.CENTER)
+    }
+
+    private fun toggleRequestResponse() {
+        val current = this@TimelineView.model.getMessageAtRow(tableView.selectedRow) ?: return
+        val other = if (current.isRequest) {
+            messageContainer.findResponse(current)
+        } else {
+            messageContainer.findRequest(current)
+        } ?: return
+        val index = this@TimelineView.model.findMessageIndex(other)
+        if (index != -1) {
+            tableView.selectionModel.clearSelection()
+            tableView.selectionModel.addSelectionInterval(index, index)
+        }
     }
 
     override var urlHider: BaseUrlHider?

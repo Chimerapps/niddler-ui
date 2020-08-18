@@ -73,7 +73,9 @@ class ProcessExecutionListener(val project: Project) {
                 if (matcher.reset(p0.text).matches()) {
                     val port = matcher.group(1).toInt()
                     val tag = matcher.group(2)
-                    connectNiddler(port, tag)
+                    val waitingForDebugger = if (matcher.groupCount() >= 4) { (matcher.group(4) == "true") } else false
+
+                    connectNiddler(port, tag, waitingForDebugger)
                 }
             }
             if (isAndroidDebug) {
@@ -95,14 +97,14 @@ class ProcessExecutionListener(val project: Project) {
         override fun startNotified(p0: ProcessEvent) {
         }
 
-        private fun connectNiddler(port: Int, tag: String) {
+        private fun connectNiddler(port: Int, tag: String, waitingForDebugger: Boolean) {
             val info = getQuickConnectionInfo(port, tag)
 
             NiddlerAutomaticConnectionHelper.connect(
                     project = project,
                     info = info,
                     reuseSession = reuseSession,
-                    connectUsingDebugger = connectUsingDebugger
+                    connectUsingDebugger = connectUsingDebugger || waitingForDebugger
             )
         }
 
