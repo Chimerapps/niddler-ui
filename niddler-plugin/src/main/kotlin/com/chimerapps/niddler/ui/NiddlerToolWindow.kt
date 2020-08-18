@@ -172,8 +172,8 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
         }
     }
 
-    fun newSessionForTag(tag: String) {
-        newSessionWindow().connectToTag(tag, withDebugger = false) //TODO debugger
+    fun newSessionForTag(tag: String, withDebugger: Boolean) {
+        newSessionWindow().connectToTag(tag, withDebugger = withDebugger)
     }
 
     fun newSessionFor(info: QuickConnectionInfo, reuse: Boolean, connectUsingDebugger: Boolean) {
