@@ -60,7 +60,6 @@ tasks.create("buildTranslationsEnum") {
 
         def file = project.rootProject.file("niddler-plugin/src/main/kotlin/com/chimerapps/niddler/ui/util/localization/Tr.kt")
         file.write "package com.chimerapps.niddler.ui.util.localization\n\n"
-//        file << "import com.chimerapps.niddler.ui.util.localization.Localization\n\n"
         file << "enum class Tr(val key: String) {\n"
         def sorted = new TreeSet<String>()
         translationProperties.propertyNames().each {
@@ -73,10 +72,12 @@ tasks.create("buildTranslationsEnum") {
             for (int i = 1; i < parts.length; ++i) {
                 str += parts[i].capitalize()
             }
-            file << "    $str(\"$string\")${(++c == sorted.size()) ? ";" : ","}\n"
+            file << "    $str(\"$string\")${(++c == sorted.size()) ? ";" : ","} //${translationProperties.getProperty(string).replaceAll("\n","\\\\n")}\n"
         }
-        file << "\n    fun tr() : String {\n"
-        file << "        return Localization.getString(key)\n"
+        file << "\n    fun tr(vararg arguments: Any) : String {\n"
+        file << "        val raw = Localization.getString(key)\n"
+        file << "        if (arguments.isEmpty()) return raw\n"
+        file << "        return String.format(raw, *arguments)\n"
         file << "    }\n"
         file << "}"
     }

@@ -1,8 +1,10 @@
 package com.chimerapps.niddler.ui.settings.ui
 
 import com.chimerapps.discovery.device.adb.ADBBootstrap
+import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.adb.ADBUtils
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
@@ -28,6 +30,12 @@ class SettingsFormWrapper(private val niddlerSettings: NiddlerSettings) {
 
     private var worker: VerifierWorker? = null
 
+    init {
+        settingsForm.pathToAdbLabel.text = Tr.PreferencesOptionPathToAdb.tr()
+        settingsForm.pathToiDeviceLabel.text = Tr.PreferencesOptionPathToIdevice.tr()
+        settingsForm.testConfigurationButton.text = Tr.PreferencesButtonTestConfiguration.tr()
+    }
+
     fun save() {
         settingsForm.iDeviceField.textOrNull?.let {
             niddlerSettings.iDeviceBinariesPath = it
@@ -38,10 +46,10 @@ class SettingsFormWrapper(private val niddlerSettings: NiddlerSettings) {
     }
 
     fun initUI(project: Project? = null) {
-        settingsForm.adbField.addBrowseFolderListener("Niddler - adb", "Path to adb", project, FileChooserDescriptor(true, false, false, false, false, false))
-        settingsForm.iDeviceField.addBrowseFolderListener("Niddler - imobiledevice", "Path to imobiledevice folders", project, FileChooserDescriptor(false, true, false, false, false, false))
+        settingsForm.adbField.addBrowseFolderListener(Tr.PreferencesBrowseAdbTitle.tr(), Tr.PreferencesBrowseAdbDescription.tr(), project, FileChooserDescriptor(true, false, false, false, false, false))
+        settingsForm.iDeviceField.addBrowseFolderListener(Tr.PreferencesBrowseIdeviceTitle.tr(), Tr.PreferencesBrowseIdeviceDescription.tr(), project, FileChooserDescriptor(false, true, false, false, false, false))
 
-        (settingsForm.iDeviceField.textField as? JBTextField)?.emptyText?.text = "/usr/local/bin"
+        (settingsForm.iDeviceField.textField as? JBTextField)?.emptyText?.text = NiddlerSessionWindow.DEFAULT_IDEVICE_PATH
 
         (settingsForm.adbField.textField as? JBTextField)?.emptyText?.text = ADBBootstrap(ADBUtils.guessPaths(project)).pathToAdb ?: ""
 
@@ -63,7 +71,7 @@ class SettingsFormWrapper(private val niddlerSettings: NiddlerSettings) {
         settingsForm.testConfigurationButton.isEnabled = false
 
         worker = VerifierWorker(settingsForm.adbField.textOrNull ?: ADBBootstrap(ADBUtils.guessPaths(project)).pathToAdb,
-                settingsForm.iDeviceField.textOrNull ?: "/usr/local/bin",
+                settingsForm.iDeviceField.textOrNull ?: NiddlerSessionWindow.DEFAULT_IDEVICE_PATH,
                 settingsForm.resultsPane, settingsForm.testConfigurationButton).also {
             it.execute()
         }
@@ -104,21 +112,21 @@ private class VerifierWorker(private val adbPath: String?,
     }
 
     private fun testADB(): Boolean {
-        publish("Testing ADB\n=======================================")
+        publish(Tr.PreferencesTestMessageTestingAdbTitle.tr())
         var ok = false
         if (adbPath == null) {
-            publish("Path to ADB not found")
+            publish(Tr.PreferencesTestMessageAdbNotFound.tr())
         } else {
-            publish("ADB defined at path: $adbPath")
+            publish(Tr.PreferencesTestMessageAdbFoundAt.tr(adbPath))
             val file = File(adbPath)
             if (file.isDirectory) {
-                publish("ERROR - Specified path is a directory")
+                publish(Tr.PreferencesTestMessageErrorPathIsDir.tr())
             } else if (!file.exists()) {
-                publish("ERROR - ADB file not found")
+                publish(Tr.PreferencesTestMessageAdbNotFound.tr())
             } else if (!file.canExecute()) {
-                publish("ERROR - ADB file not executable")
+                publish(Tr.PreferencesTestMessageErrorAdbNotExecutable.tr())
             } else {
-                publish("ADB path seems ok")
+                publish(Tr.PreferencesTestMessageAdbOk.tr())
                 ok = true
             }
         }
@@ -126,14 +134,14 @@ private class VerifierWorker(private val adbPath: String?,
     }
 
     private fun testIDevice(): Boolean {
-        publish("\nTesting iDevice\n=======================================")
+        publish(Tr.PreferencesTestMessageTestingIdeviceTitle.tr())
 
-        publish("iMobileDevice folder defined at path: $iDevicePath")
+        publish(Tr.PreferencesTestMessageIdevicePath.tr(iDevicePath))
         val file = File(iDevicePath)
         if (!file.exists()) {
-            publish("ERROR - iMobileDevice folder not found")
+            publish(Tr.PreferencesTestMessageErrorIdeviceNotFound.tr())
         } else if (!file.isDirectory) {
-            publish("ERROR - iMobileDevice path is not a directory")
+            publish(Tr.PreferencesTestMessageErrorIdeviceNotDirectory.tr())
         } else {
             checkFile(File(file, "ideviceinfo"))
             checkFile(File(file, "iproxy"))
@@ -145,26 +153,26 @@ private class VerifierWorker(private val adbPath: String?,
 
     private fun checkFile(file: File) {
         if (!file.exists()) {
-            publish("ERROR - ${file.name} file not found")
+            publish(Tr.PreferencesTestMessageErrorFileNotFound.tr(file.name))
         } else if (!file.canExecute()) {
-            publish("ERROR - ${file.name} file not executable")
+            publish(Tr.PreferencesTestMessageErrorFileNotExecutable.tr(file.name))
         } else {
-            publish("${file.name} seems ok")
+            publish(Tr.PreferencesTestMessageFileOk.tr(file.name))
         }
     }
 
     private fun checkADBExecutable(): Boolean {
-        publish("Checking adb command")
+        publish(Tr.PreferencesTestMessageCheckingAdb.tr())
         val bootstrap = ADBBootstrap(emptyList()) { adbPath!! }
-        publish("Starting adb server")
+        publish(Tr.PreferencesTestMessageStartingAdb.tr())
         try {
             val adbInterface = bootstrap.bootStrap()
-            publish("Listing devices")
+            publish(Tr.PreferencesTestMessageListingAdbDevices.tr())
             val devices = adbInterface.devices
-            publish("ADB devices returns: ${devices.size} devices")
+            publish(Tr.PreferencesTestMessageFoundDevicesCount.tr(devices.size))
             return true
         } catch (e: Exception) {
-            publish("ERROR - Failed to communicate with adb")
+            publish(Tr.PreferencesTestMessageErrorCommunicationFailed.tr())
             val writer = StringWriter()
             val printer = PrintWriter(writer)
             e.printStackTrace(printer)

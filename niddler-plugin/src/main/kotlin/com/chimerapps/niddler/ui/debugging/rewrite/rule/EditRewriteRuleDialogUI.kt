@@ -63,7 +63,7 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
             gridheight = 1
             anchor = GridBagConstraints.WEST
         }
-        content.add(JBLabel("Type:").also { label ->
+        content.add(JBLabel(Tr.EditRewriteUiType.tr()).also { label ->
             label.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
         }, labelConstraints)
 
@@ -91,12 +91,12 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
 
         it.border = BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(10, 0, 10, 0),
-                createPanelBorder("Where"))
+                createPanelBorder(Tr.EditRewriteUiPanelWhere.tr()))
 
         content.add(it, constraints)
     }
 
-    protected val requestCheckbox = CheckBox("Request").also {
+    protected val requestCheckbox = CheckBox(Tr.EditRewriteUiRequest.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 0
@@ -108,7 +108,7 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
         wherePanel.add(it, constraints)
     }
 
-    protected val responseCheckbox = CheckBox("Response").also {
+    protected val responseCheckbox = CheckBox(Tr.EditRewriteUiResponse.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 0
@@ -134,14 +134,14 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
         it.border = BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(0, 0, 10, 0),
                 BorderFactory.createCompoundBorder(
-                        createPanelBorder("Match"),
+                        createPanelBorder(Tr.EditRewriteUiPanelMatch.tr()),
                         BorderFactory.createEmptyBorder(5, 10, 5, 10)
                 ))
 
         content.add(it, constraints)
     }
 
-    private val matchLabel = JBLabel("Enter text to match or leave blank to match all").also {
+    private val matchLabel = JBLabel(Tr.EditRewriteUiMatchDescription.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 0
@@ -155,7 +155,7 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
         matchPanel.add(it, constraints)
     }
 
-    private val nameLabel = JBLabel("Name:").also {
+    private val nameLabel = JBLabel(Tr.EditRewriteUiMatchName.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 1
@@ -179,7 +179,7 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
 
         matchPanel.add(it, constraints)
     }
-    protected val matchNameRegex = CheckBox("Regex").also {
+    protected val matchNameRegex = CheckBox(Tr.EditRewriteUiMatchNameRegex.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 3
             gridy = 1
@@ -190,7 +190,7 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
 
         matchPanel.add(it, constraints)
     }
-    private val valueLabel = JBLabel("Value:").also {
+    private val valueLabel = JBLabel(Tr.EditRewriteUiValue.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 2
@@ -214,7 +214,7 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
 
         matchPanel.add(it, constraints)
     }
-    protected val matchValueRegex = CheckBox("Regex").also {
+    protected val matchValueRegex = CheckBox(Tr.EditRewriteUiMatchValueRegex.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 3
             gridy = 2
@@ -225,7 +225,7 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
 
         matchPanel.add(it, constraints)
     }
-    protected val matchEntire = CheckBox("Match whole value").also {
+    protected val matchEntire = CheckBox(Tr.EditRewriteUiMatchEntireValue.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 3
@@ -237,7 +237,7 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
 
         matchPanel.add(it, constraints)
     }
-    protected val caseSensitive = CheckBox("Case sensitive").also {
+    protected val caseSensitive = CheckBox(Tr.EditRewriteUiCaseSensitive.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 2
             gridy = 3
@@ -263,13 +263,13 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
         it.border = BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(0, 0, 10, 0),
                 BorderFactory.createCompoundBorder(
-                        createPanelBorder("Replace"),
+                        createPanelBorder(Tr.EditRewriteUiPanelReplace.tr()),
                         BorderFactory.createEmptyBorder(5, 10, 5, 10)
                 ))
 
         content.add(it, constraints)
     }
-    private val replaceNameLabel = JBLabel("Name:").also {
+    private val replaceNameLabel = JBLabel(Tr.EditRewriteUiReplaceName.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 0
@@ -293,7 +293,7 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
 
         replacePanel.add(it, constraints)
     }
-    private val replaceValueLabel = JBLabel("Value:").also {
+    private val replaceValueLabel = JBLabel(Tr.EditRewriteUiReplaceValue.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 1
@@ -317,7 +317,7 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
 
         replacePanel.add(it, constraints)
     }
-    protected val replaceFirst = JBRadioButton("Replace first").also {
+    protected val replaceFirst = JBRadioButton(Tr.EditRewriteUiReplaceFirst.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 1
             gridy = 2
@@ -330,7 +330,7 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
 
         replacePanel.add(it, constraints)
     }
-    protected val replaceAll = JBRadioButton("Replace all").also {
+    protected val replaceAll = JBRadioButton(Tr.EditRewriteUiReplaceAll.tr()).also {
         val constraints = GridBagConstraints().apply {
             gridx = 2
             gridy = 2
@@ -343,7 +343,7 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
 
         replacePanel.add(it, constraints)
     }
-    private val replaceLabel = JBLabel("<html>Enter new values or leave blank for no change. If using regex matches you may enter references to groups, eg. $1</html>").also {
+    private val replaceLabel = JBLabel("<html>${Tr.EditRewriteUiReplaceDescription.tr()}</html>").also {
         val constraints = GridBagConstraints().apply {
             gridx = 0
             gridy = 3
@@ -370,11 +370,11 @@ open class EditRewriteRuleDialogUI(parent: Window?) : JDialog(parent, Tr.EditRew
         content.add(it, constraints)
     }
 
-    protected val cancelButton = JButton("Cancel").also {
+    protected val cancelButton = JButton(Tr.EditRewriteUiCancel.tr()).also {
         buttonPanel.add(it)
     }
 
-    protected val okButton = JButton("OK").also {
+    protected val okButton = JButton(Tr.EditRewriteUiOk.tr()).also {
         buttonPanel.add(it)
     }
 

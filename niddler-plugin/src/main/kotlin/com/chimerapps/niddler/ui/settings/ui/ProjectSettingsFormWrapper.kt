@@ -1,6 +1,7 @@
 package com.chimerapps.niddler.ui.settings.ui
 
 import com.chimerapps.niddler.ui.settings.NiddlerProjectSettings
+import com.chimerapps.niddler.ui.util.localization.Tr
 import javax.swing.JComponent
 
 class ProjectSettingsFormWrapper(private val niddlerSettings: NiddlerProjectSettings) {
@@ -14,6 +15,12 @@ class ProjectSettingsFormWrapper(private val niddlerSettings: NiddlerProjectSett
         get() = ((settingsForm.reconnectCheckbox.isSelected != (niddlerSettings.automaticallyReconnect))
                 || (settingsForm.reuseCheckbox.isSelected != (niddlerSettings.reuseSession))
                 || (settingsForm.connectUsingDebuggerCheckbox.isSelected != (niddlerSettings.connectUsingDebugger)))
+
+    init{
+        settingsForm.reconnectCheckbox.text = Tr.PreferencesOptionReconnect.tr()
+        settingsForm.reuseCheckbox.text = Tr.PreferencesOptionReuseConnection.tr()
+        settingsForm.connectUsingDebuggerCheckbox.text = Tr.PreferencesOptionConnectDebugger.tr()
+    }
 
     fun save() {
         niddlerSettings.reuseSession = settingsForm.reuseCheckbox.isSelected

@@ -4,6 +4,7 @@ import com.chimerapps.niddler.ui.component.view.PopupTable
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
 import com.chimerapps.niddler.ui.model.renderer.reuseOrNew
 import com.chimerapps.niddler.ui.model.renderer.textAreaRenderer
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
 import com.chimerapps.niddler.ui.util.ui.Popup
 import com.chimerapps.niddler.ui.util.ui.action
@@ -64,8 +65,8 @@ object FormEncodedBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     private fun makePopup(@Suppress("UNUSED_PARAMETER") model: FormEncodedTableModel, data: Pair<String, String>?): JPopupMenu? {
         data ?: return null
 
-        return Popup("Copy key" action { ClipboardUtil.copyToClipboard(StringSelection(data.first)) },
-                "Copy value" action { ClipboardUtil.copyToClipboard(StringSelection(data.second)) })
+        return Popup(Tr.ViewActionCopyKey.tr() action { ClipboardUtil.copyToClipboard(StringSelection(data.first)) },
+                Tr.ViewActionCopyValue.tr() action { ClipboardUtil.copyToClipboard(StringSelection(data.second)) })
     }
 }
 

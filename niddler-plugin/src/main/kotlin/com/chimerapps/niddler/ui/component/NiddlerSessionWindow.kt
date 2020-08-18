@@ -80,10 +80,10 @@ class NiddlerSessionWindow(private val project: Project,
                            disposable: Disposable,
                            private val niddlerToolWindow: NiddlerToolWindow) : JPanel(BorderLayout()), NiddlerMessageListener, BaseUrlHideListener {
 
-    private companion object {
+    companion object {
         private const val APP_PREFERENCE_SCROLL_TO_END = "scrollToEnd"
         private const val APP_PREFERENCE_SPLITTER_STATE = "${AppPreferences.NIDDLER_PREFIX}detailSplitter"
-        private const val DEFAULT_IDEVICE_PATH = "/usr/local/bin"
+        const val DEFAULT_IDEVICE_PATH = "/usr/local/bin"
     }
 
     lateinit var content: Content

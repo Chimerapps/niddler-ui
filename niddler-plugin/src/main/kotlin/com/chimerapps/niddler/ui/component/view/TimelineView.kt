@@ -85,18 +85,18 @@ class TimelineView(private val project: Project,
             val url = urlContainer?.url
 
             actions += if (message.isRequest)
-                "View response" action { toggleRequestResponse() }
+                Tr.ViewTimelineActionViewResponse.tr() action { toggleRequestResponse() }
             else
-                "View request" action { toggleRequestResponse() }
+                Tr.ViewTimelineActionViewRequest.tr() action { toggleRequestResponse() }
 
             if (url != null) {
-                actions += "Copy URL" action { ClipboardUtil.copyToClipboard(StringSelection(url)) }
+                actions += Tr.ViewTimelineActionCopyUrl.tr() action { ClipboardUtil.copyToClipboard(StringSelection(url)) }
             }
             if (!message.hasBody)
-                actions += "Copy body" action { ClipboardUtil.copyToClipboard(parsedNiddlerMessageProvider.provideParsedMessage(message).get()) }
+                actions += Tr.ViewTimelineActionCopyBody.tr() action { ClipboardUtil.copyToClipboard(parsedNiddlerMessageProvider.provideParsedMessage(message).get()) }
 
             if (urlContainer != null) {
-                actions += "Export cUrl request" action {
+                actions += Tr.ViewTimelineActionExportCurlRequest.tr() action {
                     val bestNetworkMatchInfo = if (message.isRequest) {
                         messageContainer.findResponse(message)?.networkRequest
                     } else {
@@ -114,7 +114,7 @@ class TimelineView(private val project: Project,
             }
 
             if (urlContainer != null) {
-                actions += "Add request rewrite rule" action {
+                actions += Tr.ViewTimelineActionAddRequestRewriteRule.tr() action {
                     RewriteDialog.showAdd(SwingUtilities.getWindowAncestor(this), project, urlContainer)?.let {
                         ProjectConfig.save(project, ProjectConfig.CONFIG_REWRITE, it)
                     }
@@ -125,14 +125,14 @@ class TimelineView(private val project: Project,
                 val hider = urlHider
                 val hiddenBaseUrl = hider?.getHiddenBaseUrl(url)
                 actions += if (hiddenBaseUrl == null) {
-                    "Hide base urls" action {
-                        val result = JOptionPane.showInputDialog("Hide base url", url)
+                    Tr.ViewTimelineActionHideBaseUrls.tr() action {
+                        val result = JOptionPane.showInputDialog(Tr.ViewTimelineActionDialogConfigureBaseUrl.tr(), url)
                         if (!result.isNullOrBlank()) {
                             baseUrlHideListener.hideBaseUrl(result)
                         }
                     }
                 } else {
-                    "Show base urls" action {
+                    Tr.ViewTimelineActionShowBaseUrls.tr() action {
                         baseUrlHideListener.showBaseUrl(hiddenBaseUrl)
                     }
                 }

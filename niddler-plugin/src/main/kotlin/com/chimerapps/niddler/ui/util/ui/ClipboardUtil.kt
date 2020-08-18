@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.util.ui
 
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.icapps.niddler.lib.model.BodyFormatType
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
 import com.intellij.ide.ClipboardSynchronizer
@@ -72,7 +73,7 @@ object ClipboardUtil {
             }
             BodyFormatType.FORMAT_BINARY -> {
                 message.message.getBodyAsBytes?.let { data ->
-                    chooseSaveFile("Save data to", "")?.let { file ->
+                    chooseSaveFile(Tr.ClipboardActionDialogSaveTitle.tr(), "")?.let { file ->
                         runWriteAction {
                             file.writeBytes(data)
                         }

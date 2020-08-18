@@ -32,7 +32,7 @@ open class EditLocationUI(includeAction: Boolean, includeButtons: Boolean) {
         it.addItem("PATCH")
         it.addItem("OPTIONS")
 
-        addLabel("Action:", gridY)
+        addLabel(Tr.EditLocationAction.tr(), gridY)
 
         val constraints = GridBagConstraints().apply {
             gridx = 1

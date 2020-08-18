@@ -1,8 +1,8 @@
 package com.chimerapps.niddler.ui.model.renderer.impl.json
 
 import com.chimerapps.niddler.ui.model.renderer.BodyRenderer
-import com.chimerapps.niddler.ui.model.renderer.reuseOrNew
 import com.chimerapps.niddler.ui.model.renderer.textAreaRenderer
+import com.chimerapps.niddler.ui.util.localization.Tr
 import com.chimerapps.niddler.ui.util.ui.ClipboardUtil
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.chimerapps.niddler.ui.util.ui.Popup
@@ -89,11 +89,11 @@ private class NiddlerJsonTree(json: JsonElement) : Tree() {
 
         val node = path.lastPathComponent as JsonTreeNode
         val actions = mutableListOf<PopupAction>()
-        actions += "Copy Json" action {
+        actions += Tr.ViewJsonActionCopyJson.tr() action {
             ClipboardUtil.copyToClipboard(StringSelection(JsonTreeTransferHandler.formatJson(node.jsonElement)))
         }
-        node.name?.let { actions += "Copy key" action { ClipboardUtil.copyToClipboard(StringSelection(it)) } }
-        node.value?.let { actions += "Copy value" action { ClipboardUtil.copyToClipboard(StringSelection(it)) } }
+        node.name?.let { actions += Tr.ViewActionCopyKey.tr() action { ClipboardUtil.copyToClipboard(StringSelection(it)) } }
+        node.value?.let { actions += Tr.ViewActionCopyValue.tr() action { ClipboardUtil.copyToClipboard(StringSelection(it)) } }
 
         return Popup(actions)
     }
