@@ -49,10 +49,7 @@ object XMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     }
 
     override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
-        val data = (message.bodyData as? Document)
-        val text = data?.let { XmlTreeTransferHandler.formatXML(it) } ?: ""
-
-        return textAreaRenderer(text, reuseComponent, project, XmlFileType.INSTANCE, requestFocus)
+        return textAreaRenderer(prettyText(message.bodyData), reuseComponent, project, XmlFileType.INSTANCE, requestFocus)
     }
 
     override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
@@ -60,6 +57,10 @@ object XMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
         return textAreaRenderer(stringData, reuseComponent, project, XmlFileType.INSTANCE, requestFocus)
     }
 
+    override fun prettyText(bodyData: Any?): String {
+        val data = (bodyData as? Document)
+        return data?.let { XmlTreeTransferHandler.formatXML(it) } ?: ""
+    }
 }
 
 private class NiddlerXmlTree : Tree() {

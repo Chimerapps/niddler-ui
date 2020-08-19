@@ -47,19 +47,22 @@ object FormEncodedBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
 
     @Suppress("UNCHECKED_CAST")
     override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
-        val data = message.bodyData as? Map<String, List<String>>
-        val asString = buildString {
+        return textAreaRenderer(prettyText(message.bodyData), reuseComponent, project, PlainTextFileType.INSTANCE, requestFocus)
+    }
+
+    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
+        return textAreaRenderer(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent, project, PlainTextFileType.INSTANCE, requestFocus)
+    }
+
+    override fun prettyText(bodyData: Any?): String {
+        @Suppress("UNCHECKED_CAST") val data = bodyData as? Map<String, List<String>>
+        return buildString {
             data?.forEach { key, values ->
                 values.forEach { value ->
                     append(key).append(" = ").append(value).append("\n")
                 }
             }
         }
-        return textAreaRenderer(asString, reuseComponent, project, PlainTextFileType.INSTANCE, requestFocus)
-    }
-
-    override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
-        return textAreaRenderer(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent, project, PlainTextFileType.INSTANCE, requestFocus)
     }
 
     private fun makePopup(@Suppress("UNUSED_PARAMETER") model: FormEncodedTableModel, data: Pair<String, String>?): JPopupMenu? {

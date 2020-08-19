@@ -25,4 +25,7 @@ object HTMLBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         return textAreaRenderer(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent, project, HtmlFileType.INSTANCE, requestFocus)
     }
+
+    override fun prettyText(bodyData: Any?): String = bodyData as? String ?: ""
+
 }

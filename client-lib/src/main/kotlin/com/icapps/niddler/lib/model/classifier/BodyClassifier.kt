@@ -24,6 +24,8 @@ interface BodyClassifier {
 
     fun classifyFormat(message: NiddlerMessage): BodyClassifierResult
 
+    fun classifyFormat(mimeType: String): BodyClassifierResult
+
 }
 
 interface BodyFormatClassifierExtension {
@@ -45,25 +47,29 @@ class HeaderBodyClassifier(private val bodyFormatExtensions: Iterable<BodyFormat
         val contentTypeHeader = message.headers?.get("content-type")
         if (!contentTypeHeader.isNullOrEmpty()) {
             val contentTypeString = contentTypeHeader[0]
-            val parsedContentType = ContentType.parse(contentTypeString)
-
-            bodyFormatExtensions.forEach {
-                val extensionFormat = it.classifyFormat(parsedContentType.mimeType, parsedContentType.charset?.name(), parsedContentType)
-                if (extensionFormat != null)
-                    return extensionFormat
-            }
-
-            val type = classifyFromMimeType(parsedContentType.mimeType, parsedContentType.charset?.name(), parsedContentType)
-            if (type != null)
-                return type
-
-            return BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_EMPTY, parsedContentType.mimeType, parsedContentType.charset?.name()), bodyParser = BinaryBodyParser())
+            return classifyFormat(contentTypeString)
         }
         return BodyClassifierResult(BodyFormat.NONE, bodyParser = BinaryBodyParser())
     }
 
+    override fun classifyFormat(mimeType: String): BodyClassifierResult {
+        val parsedContentType = ContentType.parse(mimeType)
+
+        bodyFormatExtensions.forEach {
+            val extensionFormat = it.classifyFormat(parsedContentType.mimeType, parsedContentType.charset?.name(), parsedContentType)
+            if (extensionFormat != null)
+                return extensionFormat
+        }
+
+        val type = classifyFromMimeType(parsedContentType.mimeType, parsedContentType.charset?.name(), parsedContentType)
+        if (type != null)
+            return type
+
+        return BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_EMPTY, parsedContentType.mimeType, parsedContentType.charset?.name()), bodyParser = BinaryBodyParser())
+    }
+
     private fun classifyFromMimeType(mimeType: String, charset: String?, contentType: ContentType): BodyClassifierResult? {
-        return when (val lowercased = mimeType.toLowerCase()) {
+        return when (val lowerCased = mimeType.toLowerCase()) {
             "application/json" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_JSON, mimeType, charset), JsonBodyParser())
             "application/xml", "text/xml", "application/dash+xml" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_XML, mimeType, charset), XmlBodyParser())
             "application/octet-stream" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_BINARY, mimeType, charset), BinaryBodyParser())
@@ -74,7 +80,7 @@ class HeaderBodyClassifier(private val bodyFormatExtensions: Iterable<BodyFormat
             "image/gif", "image/webp", "application/svg+xml" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_IMAGE, mimeType, charset), ImageBodyParser())
             //"multipart/form-data" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_MULTIPART_FORM, mimeType, charset), MultiPartFormBodyParser(contentType))
             else -> when {
-                lowercased.matches(Regex("text/.*")) -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_PLAIN, mimeType, charset), PlainTextBodyParser())
+                lowerCased.matches(Regex("text/.*")) -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_PLAIN, mimeType, charset), PlainTextBodyParser())
                 else -> null
             }
         }

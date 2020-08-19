@@ -26,4 +26,7 @@ object BinaryBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
         component.second.setData(message.message.getBodyAsBytes)
         return component.first
     }
+
+    override fun prettyText(bodyData: Any?): String = ""
+
 }

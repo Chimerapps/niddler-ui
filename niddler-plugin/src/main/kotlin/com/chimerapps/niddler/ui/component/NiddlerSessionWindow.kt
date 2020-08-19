@@ -10,6 +10,7 @@ import com.chimerapps.discovery.ui.DiscoveredDeviceConnection
 import com.chimerapps.discovery.ui.ManualConnection
 import com.chimerapps.discovery.utils.freePort
 import com.chimerapps.niddler.ui.NiddlerToolWindow
+import com.chimerapps.niddler.ui.actions.BreakpointViewAction
 import com.chimerapps.niddler.ui.actions.ConnectAction
 import com.chimerapps.niddler.ui.actions.ConnectDebuggerAction
 import com.chimerapps.niddler.ui.actions.DisconnectAction
@@ -38,6 +39,7 @@ import com.chimerapps.niddler.ui.util.ui.ProjectSessionIconProvider
 import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.chimerapps.niddler.ui.util.ui.ensureMain
+import com.chimerapps.niddler.ui.util.ui.find
 import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
@@ -132,16 +134,20 @@ class NiddlerSessionWindow(private val project: Project,
         }
 
     private var currentMessagesView: MessagesView? = null
-    private val bodyParser = NiddlerMessageBodyParser(HeaderBodyClassifier(emptyList())) //TODO extensions!
+    private val bodyClassifier = HeaderBodyClassifier(emptyList()) //TODO extensions!
+    private val bodyParser = NiddlerMessageBodyParser(bodyClassifier)
 
     private val messageContainer = NiddlerMessageContainer(QuickBinaryMessageStorage())
     private val parsedNiddlerMessageProvider = ParsedNiddlerMessageProvider({ dispatchMain(it) }, bodyParser, messageContainer)
     private var niddlerClient: NiddlerClient? = null
     private var lastConnection: PreparedDeviceConnection? = null
     private val detailView = MessageDetailView(project, disposable, parsedNiddlerMessageProvider, messageContainer)
-    private val debugWindow = DebugItemWindow(project)
+    private val debugWindow = DebugItemWindow(project, disposable, bodyClassifier)
     val rewriteDebugListener = RewriteDebugListener(::onWrongStatusMessageReplacement)
-    val breakpointDebugListener = BreakpointDebugListener(debugWindow)
+    val breakpointDebugListener = BreakpointDebugListener(debugWindow) { ensureMain { viewToolbar.updateActionsImmediately() } }
+
+    val hasItemInBreakpoint: Boolean
+        get() = breakpointDebugListener.hasActiveBreakpoint
 
     init {
         add(rootContent, BorderLayout.CENTER)
@@ -154,14 +160,25 @@ class NiddlerSessionWindow(private val project: Project,
         messageContainer.registerListener(this)
     }
 
-    fun switchToDebugger() {
+    private fun switchToDebugger() {
+        if (find { it == debugWindow } != null) return
         remove(rootContent)
         add(debugWindow, BorderLayout.CENTER)
+        repaint()
+        revalidate()
+    }
+
+    private fun switchToMessages() {
+        if (find { it == rootContent } != null) return
+        remove(debugWindow)
+        add(rootContent, BorderLayout.CENTER)
+        repaint()
+        revalidate()
     }
 
     fun currentViewModeUnselected() {
         //Do not switch to other view mode until other view mode is supported
-        currentViewMode = if (currentViewMode == ViewMode.VIEW_MODE_LINKED) {
+        currentViewMode = if (currentViewMode == ViewMode.VIEW_MODE_LINKED || currentViewMode == ViewMode.BREAKPOINT) {
             ViewMode.VIEW_MODE_TIMELINE
         } else {
             ViewMode.VIEW_MODE_LINKED
@@ -257,6 +274,8 @@ class NiddlerSessionWindow(private val project: Project,
         actionGroup.add(LinkedAction(window = this))
 
         actionGroup.addSeparator()
+        actionGroup.add(BreakpointViewAction(window = this))
+        actionGroup.addSeparator()
         actionGroup.add(ScrollToBottomAction(window = this))
         actionGroup.addSeparator()
 
@@ -277,9 +296,18 @@ class NiddlerSessionWindow(private val project: Project,
     private fun updateView() {
         ensureMain {
             when (currentViewMode) {
-                ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(project, messageContainer, detailView,
-                        parsedNiddlerMessageProvider, baseUrlHideListener = this))
-                ViewMode.VIEW_MODE_LINKED -> replaceMessagesView(LinkedView(messageContainer, detailView, parsedNiddlerMessageProvider, baseUrlHideListener = this))
+                ViewMode.VIEW_MODE_TIMELINE -> {
+                    switchToMessages()
+                    replaceMessagesView(TimelineView(project, messageContainer, detailView,
+                            parsedNiddlerMessageProvider, baseUrlHideListener = this))
+                }
+                ViewMode.VIEW_MODE_LINKED -> {
+                    switchToMessages()
+                    replaceMessagesView(LinkedView(messageContainer, detailView, parsedNiddlerMessageProvider, baseUrlHideListener = this))
+                }
+                ViewMode.BREAKPOINT -> {
+                    switchToDebugger()
+                }
             }
         }
     }
@@ -488,7 +516,8 @@ class NiddlerSessionWindow(private val project: Project,
 
 enum class ViewMode {
     VIEW_MODE_TIMELINE,
-    VIEW_MODE_LINKED
+    VIEW_MODE_LINKED,
+    BREAKPOINT
 }
 
 enum class ConnectionMode {

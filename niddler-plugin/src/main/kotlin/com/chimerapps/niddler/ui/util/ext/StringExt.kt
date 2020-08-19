@@ -7,5 +7,5 @@ fun String.trimToNull(): String? {
 }
 
 fun String.headerCase(): String {
-    return split('-').map { it.capitalize() }.joinToString("-")
+    return split('-').joinToString("-") { it.capitalize() }
 }

@@ -24,4 +24,7 @@ object PlainBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
         return textAreaRenderer(message.message.getBodyAsString(message.bodyFormat.encoding) ?: "", reuseComponent, project, PlainTextFileType.INSTANCE, requestFocus)
     }
+
+    override fun prettyText(bodyData: Any?): String = bodyData as? String ?: ""
+
 }

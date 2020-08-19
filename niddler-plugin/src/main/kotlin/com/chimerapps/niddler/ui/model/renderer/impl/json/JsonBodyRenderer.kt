@@ -48,8 +48,7 @@ object JsonBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     }
 
     override fun pretty(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
-        val stringData = GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(message.bodyData)
-        return textAreaRenderer(stringData, reuseComponent, project, JsonFileType.INSTANCE, requestFocus)
+        return textAreaRenderer(prettyText(message.bodyData), reuseComponent, project, JsonFileType.INSTANCE, requestFocus)
     }
 
     override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
@@ -57,6 +56,9 @@ object JsonBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
         return textAreaRenderer(stringData, reuseComponent, project, JsonFileType.INSTANCE, requestFocus)
     }
 
+    override fun prettyText(bodyData: Any?): String {
+        return GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(bodyData)
+    }
 }
 
 private class NiddlerJsonTree(json: JsonElement) : Tree() {

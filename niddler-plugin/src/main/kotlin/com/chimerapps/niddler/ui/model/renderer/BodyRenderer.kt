@@ -47,11 +47,18 @@ interface BodyRenderer<T : ParsedNiddlerMessage> {
     fun pretty(message: T, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent
     fun raw(message: T, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent
 
+    fun prettyText(bodyData: Any?): String
+
 }
 
 //TODO extensions
 fun bodyRendererForFormat(format: BodyFormat): BodyRenderer<ParsedNiddlerMessage>? {
-    return when (format.type) {
+    return bodyRendererForFormat(format.type)
+}
+
+//TODO extensions
+fun bodyRendererForFormat(formatType: BodyFormatType): BodyRenderer<ParsedNiddlerMessage>? {
+    return when (formatType) {
         BodyFormatType.FORMAT_JSON -> JsonBodyRenderer
         BodyFormatType.FORMAT_PLAIN -> PlainBodyRenderer
         BodyFormatType.FORMAT_IMAGE -> ImageBodyRenderer

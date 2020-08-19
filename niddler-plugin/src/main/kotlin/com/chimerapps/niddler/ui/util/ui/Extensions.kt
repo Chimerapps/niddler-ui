@@ -2,6 +2,7 @@ package com.chimerapps.niddler.ui.util.ui
 
 import com.intellij.openapi.application.ApplicationManager
 import java.beans.PropertyChangeEvent
+import javax.swing.JComponent
 import javax.swing.JTable
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
@@ -37,7 +38,7 @@ fun ensureMain(toExecute: () -> Unit) {
         dispatchMain(toExecute)
 }
 
-fun <T: JTextField> T.addChangeListener(changeListener: (T) -> Unit) {
+fun <T : JTextField> T.addChangeListener(changeListener: (T) -> Unit) {
     val dl = object : DocumentListener {
         private var lastChange = 0
         private var lastNotifiedChange = 0
@@ -81,4 +82,14 @@ fun runWriteAction(writeAction: () -> Unit) {
             }
         }
     }
+}
+
+inline fun JComponent.find(block: (JComponent) -> Boolean): JComponent? {
+    for (i in 0 until componentCount) {
+        (getComponent(i) as? JComponent)?.let { component ->
+            if (block(component))
+                return component
+        }
+    }
+    return null
 }
