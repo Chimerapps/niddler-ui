@@ -178,8 +178,8 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
                     }
                 } catch (e: Throwable) {
                 }
+                sessionWindow.rewriteDebugListener.updateRuleSets(config.sets, debuggerService.rewriteInterface)
             }
-            sessionWindow.rewriteDebugListener.updateRuleSets(config.sets)
         }
     }
 
@@ -199,8 +199,8 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
                     }
                 } catch (e: Throwable) {
                 }
+                sessionWindow.breakpointDebugListener.updateBreakpoints(config.breakpoints, debuggerService.breakpointInterface)
             }
-            sessionWindow.breakpointDebugListener.updateBreakpoints(config.breakpoints)
         }
     }
 

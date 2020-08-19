@@ -18,13 +18,13 @@ class BreakpointDebuggerInterface(private val debuggerService: DebuggerService) 
         val id = UUID.randomUUID().toString()
         val ids = breakpoint.locations.map { createLocationInterceptor(it, breakpoint.method) }
 
-        breakpointMap[id] = BreakpointReference(breakpoint, ids)
+        synchronized(breakpointMap) { breakpointMap[id] = BreakpointReference(breakpoint, ids) }
 
         return id
     }
 
     fun removeBreakpoint(token: String) {
-        val reference = breakpointMap.remove(token) ?: return
+        val reference = synchronized(breakpointMap) { breakpointMap.remove(token) } ?: return
         reference.remoteIds.forEach {
             debuggerService.removeRequestOverrideMethod(it.first)
             debuggerService.removeResponseAction(it.first)
@@ -41,13 +41,18 @@ class BreakpointDebuggerInterface(private val debuggerService: DebuggerService) 
     }
 
     fun clearBreakpoints() {
-        breakpointMap.forEach { (_, ruleSetReference) ->
-            ruleSetReference.remoteIds.forEach {
-                debuggerService.removeRequestOverrideMethod(it.first)
-                debuggerService.removeResponseAction(it.first)
+        synchronized(breakpointMap) {
+            breakpointMap.forEach { (_, ruleSetReference) ->
+                ruleSetReference.remoteIds.forEach {
+                    debuggerService.removeRequestOverrideMethod(it.first)
+                    debuggerService.removeResponseAction(it.first)
+                }
             }
+            breakpointMap.clear()
         }
     }
+
+    fun isRegistered(id: String): Boolean = id.isEmpty() || synchronized(breakpointMap) { breakpointMap.containsKey(id) } //Is empty is for legacy clients
 
 }
 
@@ -56,19 +61,24 @@ interface DebugActionHandler {
     fun handleDebugResponse(request: DebugResponse): DebugResponse
 }
 
-class BreakpointDebugListener(private val actionHandler: DebugActionHandler, private val activeCountChangedListener: () -> Unit) : NiddlerDebugListener {
+class BreakpointDebugListener(private val actionHandler: DebugActionHandler,
+                              private val activeCountChangedListener: () -> Unit) : NiddlerDebugListener {
 
     private var breakpoints: List<Breakpoint> = emptyList()
+    private var debuggerInterface: BreakpointDebuggerInterface?=null
     private var numOverridesActive = AtomicInteger()
 
     val hasActiveBreakpoint: Boolean
         get() = numOverridesActive.get() > 0
 
-    fun updateBreakpoints(breakpoints: List<Breakpoint>) {
+    fun updateBreakpoints(breakpoints: List<Breakpoint>, debuggerInterface: BreakpointDebuggerInterface) {
         this.breakpoints = breakpoints
+        this.debuggerInterface = debuggerInterface
     }
 
-    override fun onRequestOverride(message: NiddlerMessage): DebugRequest? {
+    override fun onRequestOverride(actionId: String, message: NiddlerMessage): DebugRequest? {
+        if (debuggerInterface?.isRegistered(actionId) != true) return null
+
         val url = message.url ?: return null
         val method = message.method ?: return null
 
@@ -91,11 +101,13 @@ class BreakpointDebugListener(private val actionHandler: DebugActionHandler, pri
         return null
     }
 
-    override fun onRequestAction(requestId: String): DebugResponse? {
+    override fun onRequestAction(actionId: String, requestId: String): DebugResponse? {
         return null
     }
 
-    override fun onResponseAction(requestId: String, response: NiddlerMessage, request: NiddlerMessage?): DebugResponse? {
+    override fun onResponseAction(actionId: String, requestId: String, response: NiddlerMessage, request: NiddlerMessage?): DebugResponse? {
+        if (debuggerInterface?.isRegistered(actionId) != true) return null
+
         val url = request?.url ?: return null
 
         try {

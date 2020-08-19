@@ -126,16 +126,16 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean, private val messa
         }
     }
 
-    override fun onRequestOverride(message: NiddlerMessage): DebugRequest? {
-        return debugListener?.onRequestOverride(message)
+    override fun onRequestOverride(actionId: String, message: NiddlerMessage): DebugRequest? {
+        return debugListener?.onRequestOverride(actionId, message)
     }
 
-    override fun onRequestAction(requestId: String): DebugResponse? {
-        return debugListener?.onRequestAction(requestId)
+    override fun onRequestAction(actionId: String, requestId: String): DebugResponse? {
+        return debugListener?.onRequestAction(actionId, requestId)
     }
 
-    override fun onResponseAction(requestId: String, response: NiddlerMessage, request: NiddlerMessage?): DebugResponse? {
-        return debugListener?.onResponseAction(requestId, response, request)
+    override fun onResponseAction(actionId: String, requestId: String, response: NiddlerMessage, request: NiddlerMessage?): DebugResponse? {
+        return debugListener?.onResponseAction(actionId, requestId, response, request)
     }
 
     override fun sendMessage(message: String) {

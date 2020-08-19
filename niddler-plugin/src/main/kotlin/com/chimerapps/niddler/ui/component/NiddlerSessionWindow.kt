@@ -399,11 +399,11 @@ class NiddlerSessionWindow(private val project: Project,
                         debuggerService = DebuggerService(client).also { service ->
                             service.connect()
                             if (rewriteConfig?.allEnabled == true) {
-                                rewriteDebugListener.updateRuleSets(rewriteConfig.sets)
+                                rewriteDebugListener.updateRuleSets(rewriteConfig.sets, service.rewriteInterface)
                                 rewriteConfig.sets.forEach { set -> if (set.active) service.rewriteInterface.addRuleSet(set) }
                             }
                             if (debugConfig?.allEnabled == true) {
-                                breakpointDebugListener.updateBreakpoints(debugConfig.breakpoints)
+                                breakpointDebugListener.updateBreakpoints(debugConfig.breakpoints, service.breakpointInterface)
                                 debugConfig.breakpoints.forEach { breakPoint -> if (breakPoint.active) service.breakpointInterface.addBreakpoint(breakPoint) }
                             }
                             service.setActive(true)

@@ -7,7 +7,7 @@ import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebuggerInterface
 import java.util.UUID
 
 /**
- * @author nicolaverbeeck
+ * @author Nicola Verbeeck
  */
 class DebuggerService(private val connection: NiddlerDebuggerConnection) {
 
