@@ -40,7 +40,7 @@ class DebugItemWindow(private val project: Project,
 
     init {
         editor = (EditorFactory.getInstance().createViewer(EditorFactory.getInstance().createDocument(""), project) as EditorImpl).also { editor ->
-            Disposer.register(disposable, Disposable {
+            Disposer.register(disposable, {
                 EditorFactory.getInstance().releaseEditor(editor)
             })
         }
@@ -91,7 +91,7 @@ class DebugItemWindow(private val project: Project,
     }
 
     private fun buildHeaders(into: StringBuilder, headers: Map<String, List<String>>) {
-        into.append('\n');
+        into.append('\n')
         headers.forEach { (key, values) ->
             values.forEach { value -> into.append(key.headerCase()).append(": ").append(value).append('\n') }
         }
@@ -99,7 +99,7 @@ class DebugItemWindow(private val project: Project,
 
     private fun initMessagePreamble(preamble: String) {
         runWriteAction {
-            CommandProcessor.getInstance().executeCommand(project, Runnable {
+            CommandProcessor.getInstance().executeCommand(project, {
                 document.replaceString(0, document.textLength, preamble)
                 editor.caretModel.moveToOffset(0)
             }, null, null, UndoConfirmationPolicy.DO_NOT_REQUEST_CONFIRMATION, document)
