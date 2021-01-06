@@ -4,7 +4,10 @@ import com.chimerapps.discovery.device.Device
 import com.chimerapps.discovery.device.DirectPreparedConnection
 import com.chimerapps.discovery.device.PreparedDeviceConnection
 import com.chimerapps.discovery.device.idevice.IDeviceBootstrap
+import com.chimerapps.discovery.ui.Base64SessionIconProvider
+import com.chimerapps.discovery.ui.CompoundSessionIconProvider
 import com.chimerapps.discovery.ui.ConnectDialog
+import com.chimerapps.discovery.ui.DefaultSessionIconProvider
 import com.chimerapps.discovery.ui.DiscoveredDeviceConnection
 import com.chimerapps.discovery.ui.ManualConnection
 import com.chimerapps.discovery.utils.freePort
@@ -224,7 +227,8 @@ class NiddlerSessionWindow(private val project: Project,
                 niddlerToolWindow.adbInterface ?: return,
                 IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin")),
                 Device.NIDDLER_ANNOUNCEMENT_PORT,
-                sessionIconProvider = ProjectSessionIconProvider.instance(project)) ?: return
+                sessionIconProvider = ProjectSessionIconProvider.instance(project,
+                    delegate = CompoundSessionIconProvider(DefaultSessionIconProvider(), Base64SessionIconProvider()))) ?: return
 
         result.discovered?.let {
             tryConnectSession(it, withDebugger)
@@ -338,7 +342,9 @@ class NiddlerSessionWindow(private val project: Project,
                 override fun onServerInfo(serverInfo: NiddlerServerInfo) {
                     ensureMain {
                         val newIcon = serverInfo.icon?.let { iconString ->
-                            ProjectSessionIconProvider.instance(project).iconForString(iconString)
+                            ProjectSessionIconProvider.instance(project,
+                                delegate = CompoundSessionIconProvider(DefaultSessionIconProvider(), Base64SessionIconProvider())
+                            ).iconForString(iconString)
                         }
                         content.icon = newIcon
                     }
