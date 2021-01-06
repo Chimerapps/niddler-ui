@@ -16,7 +16,7 @@ internal class NiddlerSqliteDatabase(file: File) : Closeable {
     private companion object {
         private const val NIDDLER_META_TABLE = "niddler_meta"  //This can never change without breaking compatibility
         private const val NIDDLER_META_KEY_VERSION = "version" //This can never change without breaking compatibility
-        private const val STORAGE_VERSION = 1
+        private const val STORAGE_VERSION = 2
         private const val NIDDLER_MESSAGE_TABLE = "niddler_messages"
 
         init {
@@ -43,7 +43,7 @@ internal class NiddlerSqliteDatabase(file: File) : Closeable {
     }
 
     fun insert(message: NiddlerMessage) {
-        connection.prepareStatement("INSERT OR IGNORE INTO $NIDDLER_MESSAGE_TABLE VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").use {
+        connection.prepareStatement("INSERT OR IGNORE INTO $NIDDLER_MESSAGE_TABLE VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").use {
             bind(message, topLevel = true, preparedStatement = it)
             it.executeUpdate()
             it.clearParameters()
@@ -107,10 +107,11 @@ internal class NiddlerSqliteDatabase(file: File) : Closeable {
                 readTime = resultSet.optInt(11),
                 waitTime = resultSet.optInt(12),
                 httpVersion = resultSet.getString(13),
-                networkRequest = resultSet.getString(16)?.let { if (loadNested) getById(it, loadNested = false) else null },
-                networkReply = resultSet.getString(17)?.let { if (loadNested) getById(it, loadNested = false) else null },
                 trace = resultSet.getString(14).fromJson(),
-                context = resultSet.getString(15).fromJson()
+                context = resultSet.getString(15).fromJson(),
+                metadata = resultSet.getString(16).fromJson(),
+                networkRequest = resultSet.getString(17)?.let { if (loadNested) getById(it, loadNested = false) else null },
+                networkReply = resultSet.getString(18)?.let { if (loadNested) getById(it, loadNested = false) else null }
         )
     }
 
@@ -130,9 +131,10 @@ internal class NiddlerSqliteDatabase(file: File) : Closeable {
         preparedStatement.optSetString(13, message.httpVersion)
         preparedStatement.optSetString(14, message.trace.json())
         preparedStatement.optSetString(15, message.context.json())
-        preparedStatement.optSetString(16, message.networkRequest?.messageId)
-        preparedStatement.optSetString(17, message.networkReply?.messageId)
-        preparedStatement.setBoolean(18, topLevel)
+        preparedStatement.optSetString(16, message.metadata.jsoMap())
+        preparedStatement.optSetString(17, message.networkRequest?.messageId)
+        preparedStatement.optSetString(18, message.networkReply?.messageId)
+        preparedStatement.setBoolean(19, topLevel)
     }
 
     private fun initNew() {
@@ -153,6 +155,7 @@ internal class NiddlerSqliteDatabase(file: File) : Closeable {
                 "httpVersion TEXT, " +
                 "traces TEXT, " +
                 "context TEXT, " +
+                "metadata TEXT, " +
                 "networkRequestId TEXT, " +
                 "networkReplyId TEXT," +
                 "topLevel INTEGER" +
@@ -160,7 +163,9 @@ internal class NiddlerSqliteDatabase(file: File) : Closeable {
     }
 
     private fun upgradeFrom(version: Int) {
-        TODO("Not supported")
+        //Hard migration
+        exec("DROP TABLE $NIDDLER_MESSAGE_TABLE")
+        initNew()
     }
 
     private fun exec(sqlStatement: String): Boolean {
@@ -210,6 +215,11 @@ internal class NiddlerSqliteDatabase(file: File) : Closeable {
     }
 
     private fun <T, U> Map<T, List<U>>?.json(): String? {
+        if (this == null) return null
+        return gson.toJson(this)
+    }
+
+    private fun <T, U> Map<T, U>?.jsoMap(): String? {
         if (this == null) return null
         return gson.toJson(this)
     }
