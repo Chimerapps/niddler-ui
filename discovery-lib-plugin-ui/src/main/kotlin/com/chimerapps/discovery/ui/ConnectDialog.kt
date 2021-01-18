@@ -102,7 +102,7 @@ class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInt
 
     override fun onConnect() {
         val ip = deviceIpField.text?.trim() ?: ""
-        val port = deviceIpField.text?.trim() ?: ""
+        val port = portField.text?.trim() ?: ""
         val node = devicesTree.selectionPath?.lastPathComponent
 
         if (ip.isEmpty() || port.isEmpty()) {

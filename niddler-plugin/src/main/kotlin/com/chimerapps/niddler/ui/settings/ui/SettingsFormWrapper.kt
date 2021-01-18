@@ -1,6 +1,7 @@
 package com.chimerapps.niddler.ui.settings.ui
 
 import com.chimerapps.discovery.device.adb.ADBBootstrap
+import com.chimerapps.discovery.device.idevice.IDeviceBootstrap
 import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.adb.ADBUtils
@@ -138,26 +139,48 @@ private class VerifierWorker(private val adbPath: String?,
 
         publish(Tr.PreferencesTestMessageIdevicePath.tr(iDevicePath))
         val file = File(iDevicePath)
+        var ok = true
         if (!file.exists()) {
             publish(Tr.PreferencesTestMessageErrorIdeviceNotFound.tr())
+            ok = false
         } else if (!file.isDirectory) {
             publish(Tr.PreferencesTestMessageErrorIdeviceNotDirectory.tr())
+            ok = false
         } else {
-            checkFile(File(file, "ideviceinfo"))
-            checkFile(File(file, "iproxy"))
-            checkFile(File(file, "idevice_id"))
+            ok = ok && checkFile(File(file, "ideviceinfo"))
+            ok = ok && checkFile(File(file, "iproxy"))
+            ok = ok && checkFile(File(file, "idevice_id"))
         }
 
-        return true //TODO
+        if (ok) {
+            try {
+                publish("Listing devices")
+                val devices = IDeviceBootstrap(file).devices
+                publish("iDevice `idevice_id -l` returns: ${devices.size} devices")
+            }catch(e: Throwable) {
+                publish("ERROR - Failed to communicate with idevice_id")
+                val writer = StringWriter()
+                val printer = PrintWriter(writer)
+                e.printStackTrace(printer)
+                printer.flush()
+                publish(writer.toString())
+                ok = false
+            }
+        }
+
+        return ok
     }
 
-    private fun checkFile(file: File) {
-        if (!file.exists()) {
+    private fun checkFile(file: File) : Boolean{
+        return if (!file.exists()) {
             publish(Tr.PreferencesTestMessageErrorFileNotFound.tr(file.name))
+            false
         } else if (!file.canExecute()) {
             publish(Tr.PreferencesTestMessageErrorFileNotExecutable.tr(file.name))
+            false
         } else {
             publish(Tr.PreferencesTestMessageFileOk.tr(file.name))
+            true
         }
     }
 
@@ -171,7 +194,7 @@ private class VerifierWorker(private val adbPath: String?,
             val devices = adbInterface.devices
             publish(Tr.PreferencesTestMessageFoundDevicesCount.tr(devices.size))
             return true
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             publish(Tr.PreferencesTestMessageErrorCommunicationFailed.tr())
             val writer = StringWriter()
             val printer = PrintWriter(writer)

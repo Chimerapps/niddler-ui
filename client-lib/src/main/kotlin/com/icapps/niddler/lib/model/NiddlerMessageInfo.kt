@@ -26,7 +26,7 @@ data class NiddlerMessageInfo(
                     message.requestId,
                     message.timestamp,
                     message.url,
-                    type= determineType(message),
+                    type = determineType(message),
                     method = message.method,
                     format = determineFormat(message),
                     statusCode = message.statusCode,
@@ -41,7 +41,7 @@ data class NiddlerMessageInfo(
             if (message.isRequest) {
                 if (message.isDebugOverride) return NiddlerMessageType.UP_DEBUG
                 return NiddlerMessageType.UP
-            }else {
+            } else {
                 if (message.isDebugOverride) return NiddlerMessageType.DOWN_DEBUG
                 if (message.isCachedResponse) return NiddlerMessageType.DOWN_CACHED
                 return NiddlerMessageType.DOWN

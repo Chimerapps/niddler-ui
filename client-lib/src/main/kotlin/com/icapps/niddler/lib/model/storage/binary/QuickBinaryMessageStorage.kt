@@ -28,6 +28,7 @@ class QuickBinaryMessageStorage : NiddlerMessageStorage, Closeable {
 
     private val lruCache = LruCache<String, NiddlerMessage>(MAX_LRU_SIZE)
     private val lruHeadersCache = LruCache<String, Map<String, List<String>>>(MAX_LRU_SIZE)
+    private val lruMetadataCache = LruCache<String, Map<String, String>>(MAX_LRU_SIZE)
 
     private val offsetMap = hashMapOf<String, Long>()
     private var currentOffset = 0L
@@ -73,6 +74,20 @@ class QuickBinaryMessageStorage : NiddlerMessageStorage, Closeable {
         }
     }
 
+    override fun loadMessageMetadata(message: NiddlerMessageInfo): Map<String, String>? {
+        synchronized(offsetMap) {
+            lruMetadataCache[message.messageId]?.let { return it }
+            val offset = offsetMap[message.messageId] ?: return null
+
+            file.seek(offset)
+
+            header.read(file)
+            val headers = readMetadata(header.numMetadata)
+            lruMetadataCache[message.messageId] = headers
+            return headers
+        }
+    }
+
     override fun clear() {
         synchronized(offsetMap) {
             file.seek(0)
@@ -92,29 +107,31 @@ class QuickBinaryMessageStorage : NiddlerMessageStorage, Closeable {
         header.read(file)
 
         val headers = readHeaders(header.numHeaders)
+        val metadata = readMetadata(header.numMetadata)
         val traces = if (header.numTraces <= 0) null else readStringList(header.numTraces)
         val context = if (header.numContext <= 0) null else readStringList(header.numContext)
         val body = readOptString(header.bodySize)
         val httpVersion = readOptString()
 
         return NetworkNiddlerMessage(
-                requestId = source.requestId,
-                messageId = source.messageId,
-                statusLine = source.statusLine,
-                statusCode = source.statusCode,
-                timestamp = source.timestamp,
-                method = source.method,
-                url = source.url,
-                body = body,
-                context = context,
-                trace = traces,
-                headers = headers,
-                httpVersion = httpVersion,
-                readTime = header.readTime,
-                writeTime = header.writeTime,
-                waitTime = header.waitTime,
-                networkRequest = if (nested && source.networkRequest != null) readNestedMessage(source.networkRequest) else null,
-                networkReply = if (nested && source.networkReply != null) readNestedMessage(source.networkReply) else null
+            requestId = source.requestId,
+            messageId = source.messageId,
+            statusLine = source.statusLine,
+            statusCode = source.statusCode,
+            timestamp = source.timestamp,
+            method = source.method,
+            url = source.url,
+            body = body,
+            context = context,
+            trace = traces,
+            headers = headers,
+            metadata = metadata,
+            httpVersion = httpVersion,
+            readTime = header.readTime,
+            writeTime = header.writeTime,
+            waitTime = header.waitTime,
+            networkRequest = if (nested && source.networkRequest != null) readNestedMessage(source.networkRequest) else null,
+            networkReply = if (nested && source.networkReply != null) readNestedMessage(source.networkReply) else null
         )
     }
 
@@ -129,9 +146,11 @@ class QuickBinaryMessageStorage : NiddlerMessageStorage, Closeable {
         header.readTime = message.readTime ?: -1
         header.writeTime = message.writeTime ?: -1
         header.waitTime = message.waitTime ?: -1
+        header.numMetadata = message.metadata?.size ?: 0
         header.write(file)
 
         message.headers?.let(::writeHeaders)
+        message.metadata?.let(::writeMetadata)
         writeStringList(message.trace, writeSize = false)
         writeStringList(message.context, writeSize = false)
         writeString(message.body, writeSize = false)
@@ -158,6 +177,21 @@ class QuickBinaryMessageStorage : NiddlerMessageStorage, Closeable {
         headers.forEach { (key, values) ->
             writeString(key, writeSize = true)
             writeStringList(values, writeSize = true)
+        }
+    }
+
+    private fun readMetadata(numEntries: Int): Map<String, String> {
+        val map = LinkedHashMap<String, String>()
+        for (i in 0 until numEntries) {
+            map[readString()] = readString()
+        }
+        return map
+    }
+
+    private fun writeMetadata(metadata: Map<String, String>) {
+        metadata.forEach { (key, value) ->
+            writeString(key, writeSize = true)
+            writeString(value, writeSize = true)
         }
     }
 
@@ -210,16 +244,18 @@ class QuickBinaryMessageStorage : NiddlerMessageStorage, Closeable {
     }
 }
 
-private class BinaryHeader(var numHeaders: Int = 0,
-                           var numTraces: Int = 0,
-                           var numContext: Int = 0,
-                           var bodySize: Int = -1,
-                           var writeTime: Int = -1,
-                           var readTime: Int = -1,
-                           var waitTime: Int = -1
+private class BinaryHeader(
+    var numHeaders: Int = 0,
+    var numTraces: Int = 0,
+    var numContext: Int = 0,
+    var bodySize: Int = -1,
+    var writeTime: Int = -1,
+    var readTime: Int = -1,
+    var waitTime: Int = -1,
+    var numMetadata: Int = 0,
 ) {
     companion object {
-        const val HEADER_BINARY_SIZE = 7 * 4 //7 intrs
+        const val HEADER_BINARY_SIZE = 8 * 4 //8 ints
     }
 
     fun read(input: DataInput) {
@@ -230,6 +266,7 @@ private class BinaryHeader(var numHeaders: Int = 0,
         writeTime = input.readInt()
         readTime = input.readInt()
         waitTime = input.readInt()
+        numMetadata = input.readInt()
     }
 
     fun write(output: DataOutput) {
@@ -240,5 +277,6 @@ private class BinaryHeader(var numHeaders: Int = 0,
         output.writeInt(writeTime)
         output.writeInt(readTime)
         output.writeInt(waitTime)
+        output.writeInt(numMetadata)
     }
 }

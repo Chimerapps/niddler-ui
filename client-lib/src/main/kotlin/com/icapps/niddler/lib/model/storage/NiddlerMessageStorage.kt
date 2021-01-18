@@ -20,6 +20,8 @@ interface NiddlerMessageStorage {
 
     fun loadMessageHeaders(message: NiddlerMessageInfo): Map<String, List<String>>?
 
+    fun loadMessageMetadata(message: NiddlerMessageInfo): Map<String, String>?
+
     fun clear()
 
     fun isEmpty(): Boolean

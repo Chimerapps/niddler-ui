@@ -17,6 +17,7 @@ interface NiddlerMessage {
     val method: String?
     val body: String?
     val headers: Map<String, List<String>>?
+    val metadata: Map<String, String>?
     val statusCode: Int?
     val statusLine: String?
 
@@ -55,10 +56,12 @@ inline val NiddlerMessage.isResponse: Boolean
     get() = !isRequest
 
 val NiddlerMessage.isCachedResponse: Boolean
-    get() = !isRequest && (networkReply?.statusCode == 304)
+    get() = !isRequest && ((networkReply?.statusCode == 304) ||
+            metadata?.any { "x-niddler-fromdiskcache".equals(it.key, ignoreCase = true) && it.value == "true" } == true)
 
 val NiddlerMessage.isDebugOverride: Boolean
-    get() = headers?.any { "x-niddler-debug".equals(it.key, ignoreCase = true) } == true
+    get() = headers?.any { "x-niddler-debug".equals(it.key, ignoreCase = true) } == true ||
+            metadata?.any { "x-niddler-debug".equals(it.key, ignoreCase = true) && it.value == "true" } == true
 
 class NetworkNiddlerMessage(
         override val requestId: String,
@@ -68,6 +71,7 @@ class NetworkNiddlerMessage(
         override val method: String? = null,
         override val body: String? = null,
         override val headers: Map<String, List<String>>? = null,
+        override val metadata: Map<String, String>? = null,
         override val statusCode: Int? = null,
         override val statusLine: String? = null,
         override val writeTime: Int? = null,
@@ -79,7 +83,6 @@ class NetworkNiddlerMessage(
         override val trace: List<String>? = null,
         override val context: List<String>? = null
 ) : NiddlerMessage {
-
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
