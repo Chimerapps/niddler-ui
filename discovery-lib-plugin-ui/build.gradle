@@ -61,7 +61,7 @@ bintray {
         vcsUrl = 'https://github.com/Chimerapps/niddler-ui'
 
         version {
-            desc = "Plugin UI base library for discovering devices/sessions for niddler, PreferenceSpy, ..."
+            desc = "Plugin UI base library for discovering devices/sessions for niddler, moor, ..."
             name = "$artifactVersion"
             released = new Date()
         }

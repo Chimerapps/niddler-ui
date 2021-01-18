@@ -98,7 +98,7 @@ publishing {
 
             pom.withXml {
                 def root = asNode()
-                root.appendNode('description', 'Base library for discovering devices/sessions for niddler, PreferenceSpy, ...')
+                root.appendNode('description', 'Base library for discovering devices/sessions for niddler, moor, ...')
                 root.appendNode('name', "$artifactName")
                 root.appendNode('url', 'https://github.com/Chimerapps/niddler-ui')
                 root.children().last() + pomConfig

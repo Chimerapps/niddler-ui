@@ -1,6 +1,7 @@
 package com.chimerapps.niddler.ui.settings.ui
 
 import com.chimerapps.discovery.device.adb.ADBBootstrap
+import com.chimerapps.discovery.device.idevice.IDeviceBootstrap
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.adb.ADBUtils
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
@@ -130,26 +131,48 @@ private class VerifierWorker(private val adbPath: String?,
 
         publish("iMobileDevice folder defined at path: $iDevicePath")
         val file = File(iDevicePath)
+        var ok = true
         if (!file.exists()) {
             publish("ERROR - iMobileDevice folder not found")
+            ok = false
         } else if (!file.isDirectory) {
             publish("ERROR - iMobileDevice path is not a directory")
+            ok = false
         } else {
-            checkFile(File(file, "ideviceinfo"))
-            checkFile(File(file, "iproxy"))
-            checkFile(File(file, "idevice_id"))
+            ok = ok && checkFile(File(file, "ideviceinfo"))
+            ok = ok && checkFile(File(file, "iproxy"))
+            ok = ok && checkFile(File(file, "idevice_id"))
         }
 
-        return true //TODO
+        if (ok) {
+            try {
+                publish("Listing devices")
+                val devices = IDeviceBootstrap(file).devices
+                publish("iDevice `idevice_id -l` returns: ${devices.size} devices")
+            }catch(e: Throwable) {
+                publish("ERROR - Failed to communicate with idevice_id")
+                val writer = StringWriter()
+                val printer = PrintWriter(writer)
+                e.printStackTrace(printer)
+                printer.flush()
+                publish(writer.toString())
+                ok = false
+            }
+        }
+
+        return ok
     }
 
-    private fun checkFile(file: File) {
-        if (!file.exists()) {
+    private fun checkFile(file: File) : Boolean{
+        return if (!file.exists()) {
             publish("ERROR - ${file.name} file not found")
+            false
         } else if (!file.canExecute()) {
             publish("ERROR - ${file.name} file not executable")
+            false
         } else {
             publish("${file.name} seems ok")
+            true
         }
     }
 
@@ -163,7 +186,7 @@ private class VerifierWorker(private val adbPath: String?,
             val devices = adbInterface.devices
             publish("ADB devices returns: ${devices.size} devices")
             return true
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             publish("ERROR - Failed to communicate with adb")
             val writer = StringWriter()
             val printer = PrintWriter(writer)
