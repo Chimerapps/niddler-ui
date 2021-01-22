@@ -75,11 +75,10 @@ class NiddlerConnectFilter(private val project: Project) : Filter, DumbAware {
 class NiddlerConnectHyperlinkInfo(private val port: Int, private val tag: String, private val withDebugger: Boolean) : HyperlinkInfo {
 
     override fun navigate(project: Project) {
-        val window = ToolWindowManager.getInstance(project).getToolWindow("Niddler") ?: return
-        val niddlerWindow = window.contentManager.getContent(0)?.component as? NiddlerToolWindow ?: return
+        val (niddlerWindow, toolWindow) = NiddlerToolWindow.get(project) ?: return
 
-        if (!window.isVisible) {
-            window.show {
+        if (!toolWindow.isVisible) {
+            toolWindow.show {
                 niddlerWindow.newSessionForTag(tag, withDebugger)
             }
         } else {

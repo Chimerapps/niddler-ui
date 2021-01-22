@@ -2,11 +2,16 @@ package com.chimerapps.niddler.ui.settings.ui
 
 import com.chimerapps.discovery.device.adb.ADBBootstrap
 import com.chimerapps.discovery.device.idevice.IDeviceBootstrap
+import com.chimerapps.niddler.ui.NiddlerToolWindow
+import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.adb.ADBUtils
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
+import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.components.JBTextField
 import java.io.File
 import java.io.PrintWriter
@@ -24,23 +29,33 @@ class SettingsFormWrapper(private val niddlerSettings: NiddlerSettings) {
         get() = settingsForm.`$$$getRootComponent$$$`()
 
     val isModified: Boolean
-        get() = ((settingsForm.iDeviceField.textOrNull != (niddlerSettings.iDeviceBinariesPath))
-                || (settingsForm.adbField.textOrNull != (niddlerSettings.adbPath)))
+        get() = ((settingsForm.iDeviceField.textOrNull != (niddlerSettings.state.iDeviceBinariesPath))
+                || (settingsForm.adbField.textOrNull != (niddlerSettings.state.adbPath)))
 
     private var worker: VerifierWorker? = null
 
     fun save() {
-        settingsForm.iDeviceField.textOrNull?.let {
-            niddlerSettings.iDeviceBinariesPath = it
-        }
-        settingsForm.adbField.textOrNull?.let {
-            niddlerSettings.adbPath = it
-        }
+        niddlerSettings.state.iDeviceBinariesPath = settingsForm.iDeviceField.textOrNull
+        niddlerSettings.state.adbPath = settingsForm.adbField.textOrNull
+
+        val project = ProjectManager.getInstance().openProjects.firstOrNull { project ->
+            val window = WindowManager.getInstance().suggestParentWindow(project)
+            window != null && window.isActive
+        } ?: return
+        NiddlerToolWindow.get(project)?.first?.redoADBBootstrapBlocking()
     }
 
     fun initUI(project: Project? = null) {
-        settingsForm.adbField.addBrowseFolderListener("Niddler - adb", "Path to adb", project, FileChooserDescriptor(true, false, false, false, false, false))
-        settingsForm.iDeviceField.addBrowseFolderListener("Niddler - imobiledevice", "Path to imobiledevice folders", project, FileChooserDescriptor(false, true, false, false, false, false))
+        settingsForm.adbField.addBrowseFolderListener(
+            "Niddler - adb", "Path to adb",
+            project,
+            FileChooserDescriptor(true, false, false, false, false, false)
+        )
+        settingsForm.iDeviceField.addBrowseFolderListener(
+            "Niddler - imobiledevice", "Path to imobiledevice folders",
+            project,
+            FileChooserDescriptor(false, true, false, false, false, false)
+        )
 
         (settingsForm.iDeviceField.textField as? JBTextField)?.emptyText?.text = "/usr/local/bin"
 
@@ -54,8 +69,8 @@ class SettingsFormWrapper(private val niddlerSettings: NiddlerSettings) {
     }
 
     fun reset() {
-        settingsForm.adbField.text = niddlerSettings.adbPath ?: ""
-        settingsForm.iDeviceField.text = niddlerSettings.iDeviceBinariesPath ?: ""
+        settingsForm.adbField.text = niddlerSettings.state.adbPath ?: ""
+        settingsForm.iDeviceField.text = niddlerSettings.state.iDeviceBinariesPath ?: ""
     }
 
     private fun runTest(project: Project?) {
@@ -63,9 +78,11 @@ class SettingsFormWrapper(private val niddlerSettings: NiddlerSettings) {
         settingsForm.resultsPane.text = ""
         settingsForm.testConfigurationButton.isEnabled = false
 
-        worker = VerifierWorker(settingsForm.adbField.textOrNull ?: ADBBootstrap(ADBUtils.guessPaths(project)).pathToAdb,
-                settingsForm.iDeviceField.textOrNull ?: "/usr/local/bin",
-                settingsForm.resultsPane, settingsForm.testConfigurationButton).also {
+        worker = VerifierWorker(
+            settingsForm.adbField.textOrNull ?: ADBBootstrap(ADBUtils.guessPaths(project)).pathToAdb,
+            settingsForm.iDeviceField.textOrNull ?: "/usr/local/bin",
+            settingsForm.resultsPane, settingsForm.testConfigurationButton
+        ).also {
             it.execute()
         }
     }
@@ -79,10 +96,12 @@ private val TextFieldWithBrowseButton.textOrNull: String?
         return textValue
     }
 
-private class VerifierWorker(private val adbPath: String?,
-                             private val iDevicePath: String,
-                             private val textField: JTextPane,
-                             private val button: JButton) : SwingWorker<Boolean, String>() {
+private class VerifierWorker(
+    private val adbPath: String?,
+    private val iDevicePath: String,
+    private val textField: JTextPane,
+    private val button: JButton
+) : SwingWorker<Boolean, String>() {
 
     private val builder = StringBuilder()
 
@@ -149,7 +168,7 @@ private class VerifierWorker(private val adbPath: String?,
                 publish("Listing devices")
                 val devices = IDeviceBootstrap(file).devices
                 publish("iDevice `idevice_id -l` returns: ${devices.size} devices")
-            }catch(e: Throwable) {
+            } catch (e: Throwable) {
                 publish("ERROR - Failed to communicate with idevice_id")
                 val writer = StringWriter()
                 val printer = PrintWriter(writer)
@@ -163,7 +182,7 @@ private class VerifierWorker(private val adbPath: String?,
         return ok
     }
 
-    private fun checkFile(file: File) : Boolean{
+    private fun checkFile(file: File): Boolean {
         return if (!file.exists()) {
             publish("ERROR - ${file.name} file not found")
             false

@@ -29,6 +29,7 @@ import com.chimerapps.niddler.ui.component.view.TimelineView
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteConfig
 import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.model.ProjectConfig
+import com.chimerapps.niddler.ui.settings.ApplicationConfigurationProvider
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.session.SessionFinderUtil
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
@@ -58,6 +59,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.ui.FilterComponent
 import com.intellij.ui.JBSplitter
@@ -225,10 +227,14 @@ class NiddlerSessionWindow(private val project: Project,
     private fun showConnectDialog(withDebugger: Boolean) {
         val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
                 niddlerToolWindow.adbInterface ?: return,
-                IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin")),
+                IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin")),
                 Device.NIDDLER_ANNOUNCEMENT_PORT,
                 sessionIconProvider = ProjectSessionIconProvider.instance(project,
-                    delegate = CompoundSessionIconProvider(DefaultSessionIconProvider(), Base64SessionIconProvider()))) ?: return
+                    delegate = CompoundSessionIconProvider(DefaultSessionIconProvider(), Base64SessionIconProvider())),
+        configurePluginCallback = {
+            ShowSettingsUtil.getInstance().showSettingsDialog(project, "NiddlerRoot")
+            niddlerToolWindow.adbInterface!! to IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin"))
+        }) ?: return
 
         result.discovered?.let {
             tryConnectSession(it, withDebugger)
@@ -431,7 +437,7 @@ class NiddlerSessionWindow(private val project: Project,
 
     fun connectToTag(tag: String, withDebugger: Boolean) {
         val adb = niddlerToolWindow.adbInterface
-        val iDevice = IDeviceBootstrap(File(NiddlerSettings.instance.iDeviceBinariesPath ?: "/usr/local/bin"))
+        val iDevice = IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin"))
         val port = Device.NIDDLER_ANNOUNCEMENT_PORT
         object : SwingWorker<DiscoveredDeviceConnection?, Any>() {
             override fun doInBackground(): DiscoveredDeviceConnection? {

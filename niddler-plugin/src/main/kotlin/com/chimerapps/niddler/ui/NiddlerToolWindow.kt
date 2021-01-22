@@ -21,6 +21,8 @@ import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import com.intellij.openapi.wm.ToolWindow
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.content.ContentManagerEvent
 import com.intellij.ui.content.ContentManagerListener
@@ -35,6 +37,15 @@ import javax.swing.SwingUtilities
 
 class NiddlerToolWindow(private val project: Project, private val disposable: Disposable) : SimpleToolWindowPanel(/* vertical */ false, /* borderless */ true) {
 
+    companion object {
+        fun get(project: Project) : Pair<NiddlerToolWindow, ToolWindow>? {
+            val toolWindowManager = project.getComponent(ToolWindowManager::class.java)
+            val window = toolWindowManager.getToolWindow("Niddler") ?: return null
+            val toolWindow = window.contentManager.getContent(0)?.component as? NiddlerToolWindow ?: return null
+            return toolWindow to window
+        }
+    }
+
     private val tabsContainer: RunnerLayoutUi
     private var c = 0
 
@@ -48,9 +59,9 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
         get() = synchronized(this@NiddlerToolWindow) {
             val result = field ?: return null
             if (!result.isRealConnection) {
-                val path = NiddlerSettings.instance.adbPath
+                val path = NiddlerSettings.instance.state.adbPath
                 if (path != null && File(path).let { it.exists() && it.canExecute() }) {
-                    adbBootstrap = ADBBootstrap(ADBUtils.guessPaths(project)) { NiddlerSettings.instance.adbPath }
+                    adbBootstrap = ADBBootstrap(ADBUtils.guessPaths(project)) { NiddlerSettings.instance.state.adbPath }
                     field = adbBootstrap.bootStrap()
                 }
             }
@@ -81,8 +92,12 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
             }
         }, disposable)
 
-        adbBootstrap = ADBBootstrap(ADBUtils.guessPaths(project)) { NiddlerSettings.instance.adbPath }
+        adbBootstrap = ADBBootstrap(ADBUtils.guessPaths(project)) { NiddlerSettings.instance.state.adbPath }
         bootStrapADB()
+    }
+
+    fun redoADBBootstrapBlocking() {
+        adbInterface = adbBootstrap.bootStrap()
     }
 
     private fun bootStrapADB() {

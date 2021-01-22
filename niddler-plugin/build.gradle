@@ -16,7 +16,7 @@ sourceCompatibility = 1.8
 intellij {
     version versions.minIntelliJ
     updateSinceUntilBuild false
-//    plugins "Dart:192.6459", "java"
+//    plugins "java"
 }
 
 compileKotlin {
@@ -48,6 +48,8 @@ dependencies {
             exclude group: 'org.slf4j', module: 'slf4j-api'
         }
     }
+    implementation project(':discovery-lib-plugin-ui')
+
     implementation(project(path: ':client-lib', configuration: 'default')) {
         exclude group: 'org.slf4j', module: 'slf4j-api'
     }

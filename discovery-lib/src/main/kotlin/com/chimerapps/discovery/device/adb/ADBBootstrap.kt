@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Nicola Verbeeck
  */
-class ADBBootstrap(sdkPathGuesses: Collection<String>, private val adbPathProvider: (() -> String?)? = null) {
+class ADBBootstrap(private val sdkPathGuesses: Collection<String>, private val adbPathProvider: (() -> String?)? = null) {
 
     companion object {
         private val log = logger<ADBBootstrap>()
@@ -65,15 +65,20 @@ class ADBBootstrap(sdkPathGuesses: Collection<String>, private val adbPathProvid
 
     }
 
-    val pathToAdb: String? = adbPathProvider?.invoke() ?: findADB(sdkPathGuesses)
+    val pathToAdb: String?
+        get() = adbPathProvider?.invoke() ?: findADB(sdkPathGuesses)
     private var hasBootStrap = false
 
     fun bootStrap(): ADBInterface {
-        if (!hasBootStrap) {
-            hasBootStrap = true
-            executeADBCommand("start-server")
+        val pathToAdb = pathToAdb
+        if (!hasBootStrap && pathToAdb != null && File(pathToAdb).let { it.exists() && it.canExecute() }) {
+            try {
+                executeADBCommand("start-server")
+                hasBootStrap = true
+            } catch (e: Throwable) {
+            }
         }
-        if (pathToAdb == null || !File(pathToAdb).exists())
+        if (pathToAdb == null || !File(pathToAdb).let { it.exists() && it.canExecute() })
             return ADBInterface(connection = null, bootstrap = this)
         return ADBInterface(connection = JadbConnection(), bootstrap = this)
     }
