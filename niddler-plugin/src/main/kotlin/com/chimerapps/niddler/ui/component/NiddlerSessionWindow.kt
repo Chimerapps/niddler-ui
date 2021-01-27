@@ -60,6 +60,7 @@ import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.options.ShowSettingsUtil
+import com.intellij.openapi.options.ex.ConfigurableExtensionPointUtil
 import com.intellij.openapi.project.Project
 import com.intellij.ui.FilterComponent
 import com.intellij.ui.JBSplitter
@@ -75,9 +76,11 @@ import javax.swing.JPanel
 import javax.swing.SwingUtilities
 import javax.swing.SwingWorker
 
-class NiddlerSessionWindow(private val project: Project,
-                           disposable: Disposable,
-                           private val niddlerToolWindow: NiddlerToolWindow) : JPanel(BorderLayout()), NiddlerMessageListener, BaseUrlHideListener {
+class NiddlerSessionWindow(
+    private val project: Project,
+    disposable: Disposable,
+    private val niddlerToolWindow: NiddlerToolWindow
+) : JPanel(BorderLayout()), NiddlerMessageListener, BaseUrlHideListener {
 
     private companion object {
         private const val APP_PREFERENCE_SCROLL_TO_END = "scrollToEnd"
@@ -95,7 +98,8 @@ class NiddlerSessionWindow(private val project: Project,
     private var baseUrlHider: BaseUrlHider? = null
     private var currentFilter: NiddlerMessageStorage.Filter? = null
     val debugListener = RewriteDebugListener(::onWrongStatusMessageReplacement)
-    var debuggerService: DebuggerService? = null//TODO disconnect
+    var debuggerService: DebuggerService? = null
+        //TODO disconnect
         private set
 
     var currentViewMode: ViewMode = ViewMode.VIEW_MODE_TIMELINE
@@ -226,15 +230,17 @@ class NiddlerSessionWindow(private val project: Project,
 
     private fun showConnectDialog(withDebugger: Boolean) {
         val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
-                niddlerToolWindow.adbInterface ?: return,
-                IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin")),
-                Device.NIDDLER_ANNOUNCEMENT_PORT,
-                sessionIconProvider = ProjectSessionIconProvider.instance(project,
-                    delegate = CompoundSessionIconProvider(DefaultSessionIconProvider(), Base64SessionIconProvider())),
-        configurePluginCallback = {
-            ShowSettingsUtil.getInstance().showSettingsDialog(project, "NiddlerRoot")
-            niddlerToolWindow.adbInterface!! to IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin"))
-        }) ?: return
+            niddlerToolWindow.adbInterface ?: return,
+            IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin")),
+            Device.NIDDLER_ANNOUNCEMENT_PORT,
+            sessionIconProvider = ProjectSessionIconProvider.instance(
+                project,
+                delegate = CompoundSessionIconProvider(DefaultSessionIconProvider(), Base64SessionIconProvider())
+            ),
+            configurePluginCallback = {
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, "Niddler")
+                niddlerToolWindow.adbInterface!! to IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin"))
+            }) ?: return
 
         result.discovered?.let {
             tryConnectSession(it, withDebugger)
@@ -271,8 +277,12 @@ class NiddlerSessionWindow(private val project: Project,
     private fun updateView() {
         ensureMain {
             when (currentViewMode) {
-                ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(TimelineView(project, messageContainer, detailView,
-                        parsedNiddlerMessageProvider, baseUrlHideListener = this))
+                ViewMode.VIEW_MODE_TIMELINE -> replaceMessagesView(
+                    TimelineView(
+                        project, messageContainer, detailView,
+                        parsedNiddlerMessageProvider, baseUrlHideListener = this
+                    )
+                )
                 ViewMode.VIEW_MODE_LINKED -> replaceMessagesView(LinkedView(messageContainer, detailView, parsedNiddlerMessageProvider, baseUrlHideListener = this))
             }
         }
@@ -348,7 +358,8 @@ class NiddlerSessionWindow(private val project: Project,
                 override fun onServerInfo(serverInfo: NiddlerServerInfo) {
                     ensureMain {
                         val newIcon = serverInfo.icon?.let { iconString ->
-                            ProjectSessionIconProvider.instance(project,
+                            ProjectSessionIconProvider.instance(
+                                project,
                                 delegate = CompoundSessionIconProvider(DefaultSessionIconProvider(), Base64SessionIconProvider())
                             ).iconForString(iconString)
                         }
@@ -415,9 +426,11 @@ class NiddlerSessionWindow(private val project: Project,
         val filter = currentFilter
         var applyFilter = false
         if (filter != null) {
-            val option = JOptionPane.showOptionDialog(this, "A filter is active.\nDo you wish to export only the items matching the filter?",
-                    "Export options", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, IncludedIcons.Status.logo,
-                    arrayOf("Current view", "All"), "All")
+            val option = JOptionPane.showOptionDialog(
+                this, "A filter is active.\nDo you wish to export only the items matching the filter?",
+                "Export options", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, IncludedIcons.Status.logo,
+                arrayOf("Current view", "All"), "All"
+            )
             when (option) {
                 0 -> applyFilter = true
                 -1 -> return
@@ -469,9 +482,11 @@ class NiddlerSessionWindow(private val project: Project,
 
     private fun onWrongStatusMessageReplacement(replacement: String) {
         dispatchMain {
-            NotificationUtil.error("Replacement failed",
-                    "Status code replacement failed, new value is not a valid HTTP status line. Required format: '\\d+\\s+.*'. Got: '$replacement'",
-                    project)
+            NotificationUtil.error(
+                "Replacement failed",
+                "Status code replacement failed, new value is not a valid HTTP status line. Required format: '\\d+\\s+.*'. Got: '$replacement'",
+                project
+            )
         }
     }
 }
