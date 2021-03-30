@@ -50,11 +50,12 @@ class StackTraceView(project: Project) : JPanel() {
         } catch (e: Throwable) {
             false
         }
+
     }
 
     private val normalFont = JBFont.create(Font("Monospaced", 0, 12))
     private val textArea: JTextPane = JTextPane()
-    private val exceptionFilter = if (isSupported) ExceptionHelper(project, textArea) else null
+    private val exceptionFilter = if (isSupported) ExceptionHelper(project, textArea, ExceptionFilter(GlobalSearchScope.allScope(project))) else null
     private val dartExceptionFilter = if (isDartSupported(project)) DartExceptionHelper(project, textArea) else null
 
     init {
@@ -123,7 +124,7 @@ class StackTraceView(project: Project) : JPanel() {
     }
 }
 
-private class ExceptionHelper(project: Project, textArea: JTextPane) : BaseExceptionHelper(project, ExceptionFilter(GlobalSearchScope.allScope(project)), textArea)
+private class ExceptionHelper(project: Project, textArea: JTextPane, filter: Filter) : BaseExceptionHelper(project, filter, textArea)
 
 private class DartExceptionHelper(project: Project,
                                   textArea: JTextPane)

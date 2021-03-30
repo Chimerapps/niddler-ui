@@ -16,7 +16,6 @@ import com.icapps.niddler.lib.debugger.NiddlerDebuggerConnection
 import com.icapps.niddler.lib.debugger.model.DebugRequest
 import com.icapps.niddler.lib.debugger.model.DebugResponse
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
-import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.drafts.Draft_6455
 import org.java_websocket.handshake.ServerHandshake

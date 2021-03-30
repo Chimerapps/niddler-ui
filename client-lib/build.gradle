@@ -8,6 +8,7 @@ dependencies {
     deps.libCompile.each { name, dep ->
         api dep
     }
+    api project(':discovery-lib')
 
     deps.libTestCompile.each { name, dep ->
         testImplementation dep

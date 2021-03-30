@@ -67,6 +67,7 @@ private const val REUSE_COMPONENT_KEY = "niddler_reuse_component_key"
 
 private val projectEditors = IdentityHashMap<Project, EditorImpl>()
 
+@Suppress("UNUSED_PARAMETER")
 internal fun textAreaRenderer(stringData: String, reuseComponent: JComponent?, project: Project, fileType: FileType?, requestFocus: Boolean): JComponent {
     val editor = projectEditors.getOrPut(project) {
         (EditorFactory.getInstance().createViewer(EditorFactory.getInstance().createDocument(""), project) as EditorImpl).also {
@@ -123,7 +124,7 @@ fun buildCodeFolding(fileType: FileType, project: Project, stringData: String, d
     }
 }
 
-internal inline fun <reified T : JComponent> reuseOrNew(project: Project, key: String, reuseComponent: JComponent?, componentCreator: () -> T): Pair<JBScrollPane, T> {
+internal inline fun <reified T : JComponent> reuseOrNew(key: String, reuseComponent: JComponent?, componentCreator: () -> T): Pair<JBScrollPane, T> {
     return if (reuseComponent is JBScrollPane && reuseComponent.componentCount != 0
             && reuseComponent.getComponent(0) is T && reuseComponent.getClientProperty(REUSE_COMPONENT_KEY) == key) {
         reuseComponent to reuseComponent.getComponent(0) as T

@@ -5,12 +5,10 @@ import com.chimerapps.niddler.ui.component.view.LinkedRootNode
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
 import com.icapps.niddler.lib.model.NiddlerMessageInfo
 import com.icapps.niddler.lib.model.NiddlerMessageType
-import com.icapps.niddler.lib.model.ParsedNiddlerMessageProvider
 import com.icapps.niddler.lib.utils.getStatusCodeString
-import com.intellij.ui.JBDefaultTreeCellRenderer
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.render.LabelBasedRenderer
 import com.intellij.util.ui.UIUtil
-import com.intellij.util.ui.tree.WideSelectionTreeUI
 import java.awt.Component
 import java.awt.Dimension
 import java.text.SimpleDateFormat
@@ -24,7 +22,7 @@ import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.SwingConstants
 
-class LinkedViewCellRenderer(private val parsedNiddlerMessageProvider: ParsedNiddlerMessageProvider) : JBDefaultTreeCellRenderer() {
+class LinkedViewCellRenderer : LabelBasedRenderer.Tree() {
 
     private val timeFormatter = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
     private val directionUp = IncludedIcons.Status.outgoing
@@ -94,14 +92,14 @@ class LinkedViewCellRenderer(private val parsedNiddlerMessageProvider: ParsedNid
         myFocusedCalculated = false
 
         when (value) {
-            is LinkedRootNode -> return getRequestComponent(value.entry.request)
-            is LinkedResponseNode -> return getResponseComponent(value)
+            is LinkedRootNode -> return getRequestComponent(value.entry.request, selected, hasFocus)
+            is LinkedResponseNode -> return getResponseComponent(value, selected, hasFocus)
         }
         return this
     }
 
-    private fun getRequestComponent(request: NiddlerMessageInfo?): Component {
-        updatePanel(requestPanel, myTree)
+    private fun getRequestComponent(request: NiddlerMessageInfo?, selected: Boolean, hasFocus: Boolean): Component {
+        updatePanel(requestPanel, myTree, selected, hasFocus)
 
         if (request == null) {
             requestTimeLabel.text = ""
@@ -124,11 +122,11 @@ class LinkedViewCellRenderer(private val parsedNiddlerMessageProvider: ParsedNid
         return requestPanel
     }
 
-    private fun getResponseComponent(value: LinkedResponseNode): Component {
+    private fun getResponseComponent(value: LinkedResponseNode, selected: Boolean, hasFocus: Boolean): Component {
         if (value.response.isRequest)
-            return getRequestComponent(value.response)
+            return getRequestComponent(value.response, selected, hasFocus)
 
-        updatePanel(responsePanel, myTree)
+        updatePanel(responsePanel, myTree, selected, hasFocus)
 
         val response = value.response
         responseTimeLabel.text = formatTime(response.timestamp)
@@ -157,13 +155,9 @@ class LinkedViewCellRenderer(private val parsedNiddlerMessageProvider: ParsedNid
         }
     }
 
-    private fun updatePanel(panel: JPanel, tree: JTree) {
+    private fun updatePanel(panel: JPanel, tree: JTree, selected: Boolean, hasFocus: Boolean) {
         if (UIUtil.isFullRowSelectionLAF()) {
             panel.background = if (selected) UIUtil.getTreeSelectionBackground(true) else null
-        } else if (WideSelectionTreeUI.isWideSelection(tree)) {
-            if (selected) {
-                requestPanel.background = if (hasFocus) UIUtil.getTreeSelectionBackground(true) else UIUtil.getTreeSelectionBackground(false)
-            }
         } else if (selected) {
             if (isFocused()) {
                 panel.background = UIUtil.getTreeSelectionBackground(true)
@@ -176,11 +170,7 @@ class LinkedViewCellRenderer(private val parsedNiddlerMessageProvider: ParsedNid
 
         panel.foreground = tree.foreground
 
-        if (WideSelectionTreeUI.isWideSelection(tree)) {
-            panel.isOpaque = false  // avoid nasty background
-        } else {
-            panel.isOpaque = selected && hasFocus || selected && isFocused() // draw selection background even for non-opaque tree
-        }
+        panel.isOpaque = selected && hasFocus || selected && isFocused() // draw selection background even for non-opaque tree
     }
 
     private fun updateForeground(label: JBLabel) {

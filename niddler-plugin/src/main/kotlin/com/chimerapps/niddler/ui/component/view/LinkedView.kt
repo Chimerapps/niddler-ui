@@ -1,7 +1,6 @@
 package com.chimerapps.niddler.ui.component.view
 
 import com.chimerapps.niddler.ui.component.renderer.LinkedViewCellRenderer
-import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.model.BaseUrlHider
 import com.icapps.niddler.lib.model.LinkedMessageHolder
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
@@ -34,7 +33,7 @@ class LinkedView(messageContainer: NiddlerMessageContainer,
         it.dragEnabled = false
 
         it.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
-        it.cellRenderer = LinkedViewCellRenderer(parsedNiddlerMessageProvider)
+        it.cellRenderer = LinkedViewCellRenderer()
         it.rowHeight = 32
         it.selectionModel.addTreeSelectionListener { _ ->
             when (val selection = it.selectionPath?.lastPathComponent) {

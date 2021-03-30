@@ -22,7 +22,7 @@ object BinaryBodyRenderer : BodyRenderer<ParsedNiddlerMessage> {
     }
 
     override fun raw(message: ParsedNiddlerMessage, reuseComponent: JComponent?, project: Project, requestFocus: Boolean): JComponent {
-        val component = reuseOrNew(project, "hexViewer", reuseComponent) { HexViewer().also { it.postInit() } }
+        val component = reuseOrNew("hexViewer", reuseComponent) { HexViewer().also { it.postInit() } }
         component.second.setData(message.message.getBodyAsBytes)
         return component.first
     }
