@@ -1,12 +1,18 @@
 <idea-plugin>
     <id>com.icapps.niddler</id>
     <name>Niddler</name>
-    <version>2.9.12</version>
+    <version>2.10.0</version>
     <vendor email="support@chimerapps.com" url="https://www.icapps.com">Chimerapps &amp; icapps</vendor>
 
     <description>This plugin enables the niddler ui inside the IDE</description>
 
     <change-notes><![CDATA[
+    <p>
+        <b>2.10.0</b>
+        <ul>
+            <li>Bump min IntelliJ version to ensure future compatibility</li>
+        </ul>
+    </p>
     <p>
         <b>2.9.12</b>
         <ul>
@@ -285,7 +291,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Niddler" anchor="bottom" factoryClass="com.chimerapps.niddler.ui.NiddlerToolWindowFactory" icon="/niddler_small.png" />
         <applicationConfigurable instance="com.chimerapps.niddler.ui.settings.ApplicationConfigurationProvider" id="NiddlerRoot" displayName="Niddler" />
-        <projectConfigurable instance="com.chimerapps.niddler.ui.settings.ProjectConfigurationProvider" parentId="NiddlerRoot" displayName="Per project" />
+        <projectConfigurable instance="com.chimerapps.niddler.ui.settings.ProjectConfigurationProvider" parentId="NiddlerRoot" displayName="Per Project" />
         <applicationService
             serviceImplementation="com.chimerapps.niddler.ui.settings.NiddlerSettings" />
         <projectService serviceImplementation="com.chimerapps.niddler.ui.settings.NiddlerProjectSettings" />
