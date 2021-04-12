@@ -39,7 +39,7 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
 
     companion object {
         fun get(project: Project) : Pair<NiddlerToolWindow, ToolWindow>? {
-            val toolWindowManager = project.getComponent(ToolWindowManager::class.java)
+            val toolWindowManager = ToolWindowManager.getInstance(project)
             val window = toolWindowManager.getToolWindow("Niddler") ?: return null
             val toolWindow = window.contentManager.getContent(0)?.component as? NiddlerToolWindow ?: return null
             return toolWindow to window
