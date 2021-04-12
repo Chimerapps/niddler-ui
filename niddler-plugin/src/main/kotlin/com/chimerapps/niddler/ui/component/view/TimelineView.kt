@@ -322,7 +322,6 @@ class TimelineTableModel(private val messageContainer: NiddlerMessageContainer) 
             NiddlerMessageType.UP_DEBUG -> upDebugIcon
             NiddlerMessageType.DOWN_DEBUG -> downDebugIcon
             NiddlerMessageType.DOWN_CACHED -> downCacheIcon
-            null -> downIcon
         }
     }
 

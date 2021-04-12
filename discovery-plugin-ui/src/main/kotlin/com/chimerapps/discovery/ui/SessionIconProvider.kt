@@ -1,7 +1,6 @@
 package com.chimerapps.discovery.ui
 
 import com.intellij.util.IconUtil
-import java.lang.Float
 import java.util.Base64
 import javax.swing.Icon
 import javax.swing.ImageIcon
@@ -35,7 +34,7 @@ open class Base64SessionIconProvider : SessionIconProvider {
             if (icon.image == null)
                 return null
 
-            return IconUtil.scale(icon, null, Float.min(20.0f / icon.iconWidth, 20.0f / icon.iconHeight))
+            return IconUtil.scale(icon, null, kotlin.math.min(20.0f / icon.iconWidth, 20.0f / icon.iconHeight))
         } catch (e: Throwable) {
             return null
         }

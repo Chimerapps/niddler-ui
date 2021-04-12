@@ -152,8 +152,8 @@ class RewriteImporter {
         val matchWholeValue = rewriteRule.childWithTag("matchWholeValue")?.textContent?.toBoolean() ?: false
         val caseSensitive = rewriteRule.childWithTag("caseSensitive")?.textContent?.toBoolean() ?: false
         val replaceTypeInt = rewriteRule.childWithTag("replaceType")?.textContent?.toInt() ?: -1
-        val matchHeader = rewriteRule.childWithTag("matchHeader")?.textContent
-        val matchValue = rewriteRule.childWithTag("matchValue")?.textContent
+        val matchHeader = rewriteRule.childWithTag("matchHeader")?.textContent?.emptyIsNull()
+        val matchValue = rewriteRule.childWithTag("matchValue")?.textContent?.emptyIsNull()
         val newHeader = rewriteRule.childWithTag("newHeader")?.textContent
         val newValue = rewriteRule.childWithTag("newValue")?.textContent
 
@@ -166,7 +166,7 @@ class RewriteImporter {
                 matchHeaderRegex = matchHeaderRegex,
                 matchValueRegex = matchValueRegex,
                 matchRequest = matchRequest,
-                matchResponse = matchResponse,
+                matchResponse = matchResponse || type == RewriteType.RESPONSE_STATUS,
                 newHeaderRegex = newHeaderRegex,
                 newValueRegex = newValueRegex,
                 matchWholeValue = matchWholeValue,
@@ -202,6 +202,8 @@ class RewriteImporter {
     }
 
 }
+
+private fun String?.emptyIsNull(): String? = if (this.isNullOrEmpty()) null else this
 
 private fun Node.childWithTag(name: String): Node? {
     val children = childNodes

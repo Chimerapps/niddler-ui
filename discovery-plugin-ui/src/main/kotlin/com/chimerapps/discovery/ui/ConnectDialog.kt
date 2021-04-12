@@ -14,7 +14,9 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.ui.treeStructure.Tree
+import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.Window
@@ -50,16 +52,25 @@ data class DiscoveredDeviceConnection(val device: Device, val session: Discovere
 
 data class ConnectDialogResult(val direct: ManualConnection?, val discovered: DiscoveredDeviceConnection?)
 
-class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInterface,
-                    iDeviceBootstrap: IDeviceBootstrap, sessionIconProvider: SessionIconProvider)
-    : ConnectDialogUI(parent, "Select a device to connect to", sessionIconProvider) {
+class ConnectDialog(parent: Window?,
+                    private val announcementPort: Int,
+                    private var adbInterface: ADBInterface,
+                    private var iDeviceBootstrap: IDeviceBootstrap,
+                    sessionIconProvider: SessionIconProvider,
+                    configurePluginCallback: () -> Pair<ADBInterface,IDeviceBootstrap>
+)
+    : ConnectDialogUI(parent, "Select a device to connect to", sessionIconProvider, configurePluginCallback) {
 
     companion object {
         private const val PORT_MAX = 65535
 
-        fun show(parent: Window?, adbInterface: ADBInterface, iDeviceBootstrap: IDeviceBootstrap, announcementPort: Int,
-                 sessionIconProvider: SessionIconProvider = DefaultSessionIconProvider()): ConnectDialogResult? {
-            val dialog = ConnectDialog(parent, announcementPort, adbInterface, iDeviceBootstrap, sessionIconProvider)
+        fun show(parent: Window?,
+                 adbInterface: ADBInterface,
+                 iDeviceBootstrap: IDeviceBootstrap,
+                 announcementPort: Int,
+                 sessionIconProvider: SessionIconProvider = DefaultSessionIconProvider(),
+                 configurePluginCallback: () -> Pair<ADBInterface,IDeviceBootstrap>): ConnectDialogResult? {
+            val dialog = ConnectDialog(parent, announcementPort, adbInterface, iDeviceBootstrap, sessionIconProvider, configurePluginCallback)
             dialog.pack()
             dialog.setSize(500, 350)
             if (dialog.parent != null)
@@ -72,12 +83,16 @@ class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInt
         }
     }
 
-    private val deviceScanner = DeviceScanner(adbInterface, iDeviceBootstrap, announcementPort, listener = ::onDevicesUpdated)
+    private var deviceScanner = DeviceScanner(adbInterface, iDeviceBootstrap, announcementPort, listener = ::onDevicesUpdated)
 
     var result: ConnectDialogResult? = null
         private set
 
-    init {
+    init{
+        init()
+    }
+
+    private fun init() {
         val statuses = mutableListOf<String>()
         if (!adbInterface.isRealConnection) {
             statuses += "ADB path not found"
@@ -101,7 +116,7 @@ class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInt
 
     override fun onConnect() {
         val ip = deviceIpField.text?.trim() ?: ""
-        val port = deviceIpField.text?.trim() ?: ""
+        val port = portField.text?.trim() ?: ""
         val node = devicesTree.selectionPath?.lastPathComponent
 
         if (ip.isEmpty() || port.isEmpty()) {
@@ -129,6 +144,15 @@ class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInt
     override fun onDeviceIpChanged() = updateButtonState()
 
     override fun onPortChanged() = updateButtonState()
+
+    override fun resetConfiguration(adbInterface: ADBInterface, iDeviceInterface: IDeviceBootstrap) {
+        this.adbInterface = adbInterface
+        this.iDeviceBootstrap = iDeviceInterface
+
+        deviceScanner.stopScanning()
+        deviceScanner = DeviceScanner(adbInterface, iDeviceInterface, announcementPort, listener = ::onDevicesUpdated)
+        init()
+    }
 
     private fun connectToSession(device: Device, niddlerSession: DiscoveredSession) {
         result = ConnectDialogResult(direct = null, discovered = DiscoveredDeviceConnection(device, niddlerSession))
@@ -158,7 +182,11 @@ class ConnectDialog(parent: Window?, announcementPort: Int, adbInterface: ADBInt
 
 }
 
-abstract class ConnectDialogUI(parent: Window?, title: String, sessionIconProvider: SessionIconProvider) : JDialog(parent, title, ModalityType.APPLICATION_MODAL) {
+abstract class ConnectDialogUI(
+    parent: Window?, title: String,
+    sessionIconProvider: SessionIconProvider,
+    private val configurePluginCallback: () -> Pair<ADBInterface,IDeviceBootstrap>
+) : JDialog(parent, title, ModalityType.APPLICATION_MODAL) {
 
     protected val deviceModel = ConnectDialogModel()
     protected val devicesTree = Tree(deviceModel).also {
@@ -254,9 +282,24 @@ abstract class ConnectDialogUI(parent: Window?, title: String, sessionIconProvid
     protected fun setStatuses(statuses: List<String>) {
         statusContainer.removeAll()
         statuses.forEach { status ->
-            statusContainer.add(JBLabel(status, AllIcons.General.BalloonWarning, SwingConstants.LEFT))
+            val panel = JPanel(FlowLayout(FlowLayout.LEADING))
+            panel.add(JBLabel(status, AllIcons.General.BalloonWarning, SwingConstants.LEFT))
+            panel.add(LinkLabel.create("Open settings") {
+                        val (adbInterface, iDeviceInterface) = configurePluginCallback()
+                        resetConfiguration(adbInterface, iDeviceInterface)
+                    })
+
+            statusContainer.add(panel)
         }
+        statusContainer.revalidate()
+        statusContainer.repaint()
+        contentPane.revalidate()
+        contentPane.repaint()
+        size = size.also { it.height += 1 }
+        size = size.also { it.height -= 1 }
     }
+
+    protected abstract fun resetConfiguration(adbInterface: ADBInterface, iDeviceInterface: IDeviceBootstrap)
 
 }
 

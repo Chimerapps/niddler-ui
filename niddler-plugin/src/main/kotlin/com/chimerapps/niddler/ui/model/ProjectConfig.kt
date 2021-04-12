@@ -35,7 +35,8 @@ object ProjectConfig {
         }
     }
 
-    fun <T> save(project: Project, key: String, data: T?, clazz: Class<T>) {
+    @Suppress("UNUSED_PARAMETER")
+    fun <T> save(project: Project, key: String, data: T?, ignored: Class<T>) {
         synchronized(gson) {
             val dataHolder = getOrCreate()
             if (data == null) {
