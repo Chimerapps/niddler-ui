@@ -26,13 +26,7 @@ class RewriteExporter {
 
         sets.forEach { root.appendChild(writeSet(it, document)) }
 
-        val transformer = TransformerFactory.newInstance().newTransformer().apply {
-            setOutputProperty(OutputKeys.ENCODING, "UTF-8")
-            setOutputProperty(OutputKeys.INDENT, "yes")
-            setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "")
-            setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
-        }
-        transformer.transform(DOMSource(document), StreamResult(output))
+        writeDocument(document, output)
     }
 
     private fun writeSet(rewriteSet: RewriteSet, document: Document): Element {
@@ -67,20 +61,8 @@ class RewriteExporter {
 
     private fun writeLocationMatch(locationMatch: RewriteLocationMatch, document: Document): Node {
         val root = document.createElement("locationMatch")
-        root.appendChild(writeLocation(locationMatch.location, document))
+        root.appendChild(writeLocation(locationMatch.location, document, "location"))
         root.appendChild(document.createTextNode("enabled", locationMatch.enabled.toString()))
-        return root
-    }
-
-    private fun writeLocation(location: RewriteLocation, document: Document): Node {
-        val root = document.createElement("location")
-
-        location.protocol?.let { root.appendChild(document.createTextNode("protocol", it)) }
-        location.host?.let { root.appendChild(document.createTextNode("host", it)) }
-        location.port?.let { root.appendChild(document.createTextNode("port", it.toString())) }
-        location.path?.let { root.appendChild(document.createTextNode("path", it)) }
-        location.query?.let { root.appendChild(document.createTextNode("query", it)) }
-
         return root
     }
 
@@ -110,6 +92,30 @@ class RewriteExporter {
         return root
     }
 
+    companion object {
+        fun writeDocument(document: Document, output: OutputStream) {
+            val transformer = TransformerFactory.newInstance().newTransformer().apply {
+                setOutputProperty(OutputKeys.ENCODING, "UTF-8")
+                setOutputProperty(OutputKeys.INDENT, "yes")
+                setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "")
+                setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
+            }
+            transformer.transform(DOMSource(document), StreamResult(output))
+        }
+
+        fun writeLocation(location: RewriteLocation, document: Document, name: String): Node {
+            val root = document.createElement(name)
+
+            location.protocol?.let { root.appendChild(document.createTextNode("protocol", it)) }
+            location.host?.let { root.appendChild(document.createTextNode("host", it)) }
+            location.port?.let { root.appendChild(document.createTextNode("port", it)) }
+            location.path?.let { root.appendChild(document.createTextNode("path", it)) }
+            location.query?.let { root.appendChild(document.createTextNode("query", it)) }
+
+            return root
+        }
+    }
+
 }
 
 class RewriteImporter {
@@ -132,11 +138,12 @@ class RewriteImporter {
         val locations = hosts?.childNodes?.mapNotNullNodesWithName("locationPatterns", ::parseHostLocationPattern)?.flatten()
         val rewriteRules = rules?.childNodes?.mapNotNullNodesWithName("rewriteRule", ::parseRewriteRule)
 
-        return RewriteSet(active = active,
-                name = name,
-                rules = rewriteRules.orEmpty(),
-                locations = locations.orEmpty(),
-                id = UUID.randomUUID().toString()
+        return RewriteSet(
+            active = active,
+            name = name,
+            rules = rewriteRules.orEmpty(),
+            locations = locations.orEmpty(),
+            id = UUID.randomUUID().toString()
         )
     }
 
@@ -161,21 +168,21 @@ class RewriteImporter {
         val replaceType = ReplaceType.fromCharlesCode(replaceTypeInt) ?: return null
 
         return RewriteRule(
-                active = active,
-                ruleType = type,
-                matchHeaderRegex = matchHeaderRegex,
-                matchValueRegex = matchValueRegex,
-                matchRequest = matchRequest,
-                matchResponse = matchResponse || type == RewriteType.RESPONSE_STATUS,
-                newHeaderRegex = newHeaderRegex,
-                newValueRegex = newValueRegex,
-                matchWholeValue = matchWholeValue,
-                caseSensitive = caseSensitive,
-                replaceType = replaceType,
-                matchHeader = matchHeader,
-                matchValue = matchValue,
-                newHeader = newHeader,
-                newValue = newValue
+            active = active,
+            ruleType = type,
+            matchHeaderRegex = matchHeaderRegex,
+            matchValueRegex = matchValueRegex,
+            matchRequest = matchRequest,
+            matchResponse = matchResponse || type == RewriteType.RESPONSE_STATUS,
+            newHeaderRegex = newHeaderRegex,
+            newValueRegex = newValueRegex,
+            matchWholeValue = matchWholeValue,
+            caseSensitive = caseSensitive,
+            replaceType = replaceType,
+            matchHeader = matchHeader,
+            matchValue = matchValue,
+            newHeader = newHeader,
+            newValue = newValue
         )
     }
 
@@ -187,25 +194,34 @@ class RewriteImporter {
         val enabled = locationMatchNode.childWithTag("enabled")?.textContent?.toBoolean() ?: false
         val locationNode = locationMatchNode.childWithTag("location") ?: return null
 
-        val protocol = locationNode.childWithTag("protocol")?.textContent?.trim()
-        val host = locationNode.childWithTag("host")?.textContent?.trim()
-        val port = locationNode.childWithTag("port")?.textContent?.trim()
-        val path = locationNode.childWithTag("path")?.textContent?.trim()
-        val query = locationNode.childWithTag("query")?.textContent?.trim()
+        return RewriteLocationMatch(
+            enabled = enabled,
+            location = parseRewriteLocation(locationNode),
+        )
+    }
 
-        return RewriteLocationMatch(enabled = enabled,
-                location = RewriteLocation(protocol = protocol,
-                        host = host,
-                        port = port,
-                        path = path,
-                        query = query))
+    companion object {
+        fun parseRewriteLocation(locationNode: Node): RewriteLocation {
+            val protocol = locationNode.childWithTag("protocol")?.textContent?.trim()
+            val host = locationNode.childWithTag("host")?.textContent?.trim()
+            val port = locationNode.childWithTag("port")?.textContent?.trim()
+            val path = locationNode.childWithTag("path")?.textContent?.trim()
+            val query = locationNode.childWithTag("query")?.textContent?.trim()
+            return RewriteLocation(
+                protocol = protocol,
+                host = host,
+                port = port,
+                path = path,
+                query = query
+            )
+        }
     }
 
 }
 
 private fun String?.emptyIsNull(): String? = if (this.isNullOrEmpty()) null else this
 
-private fun Node.childWithTag(name: String): Node? {
+fun Node.childWithTag(name: String): Node? {
     val children = childNodes
     for (i in 0..children.length) {
         val child = children.item(i) ?: continue
@@ -215,7 +231,7 @@ private fun Node.childWithTag(name: String): Node? {
     return null
 }
 
-private fun <T> NodeList.mapNotNullNodesWithName(name: String, map: (Node) -> T?): List<T> {
+fun <T> NodeList.mapNotNullNodesWithName(name: String, map: (Node) -> T?): List<T> {
     val list = mutableListOf<T>()
     for (i in 0..length) {
         val hostChild = item(i) ?: continue
@@ -226,7 +242,7 @@ private fun <T> NodeList.mapNotNullNodesWithName(name: String, map: (Node) -> T?
     return list
 }
 
-private fun Document.createTextNode(name: String, value: String): Element {
+fun Document.createTextNode(name: String, value: String): Element {
     val item = createElement(name)
     item.appendChild(createTextNode(value))
     return item

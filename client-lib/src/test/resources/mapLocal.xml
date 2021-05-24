@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<?charles serialisation-version='2.0' ?>
+<mapLocal>
+    <toolEnabled>true</toolEnabled>
+    <mappings>
+        <mapLocalMapping>
+            <sourceLocation>
+                <protocol>http</protocol>
+                <host>hosttest</host>
+                <port>123</port>
+                <path>some/path/with/</path>
+                <query>target=2</query>
+            </sourceLocation>
+            <dest>/Users/example/overridden.json</dest>
+            <enabled>true</enabled>
+            <caseSensitive>true</caseSensitive>
+        </mapLocalMapping>
+    </mappings>
+</mapLocal>
