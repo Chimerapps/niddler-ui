@@ -58,17 +58,16 @@ class ObservableLinkedMessageList(private val storage: NiddlerMessageContainer) 
     fun addMessage(message: NiddlerMessageInfo): Boolean {
         synchronized(internalList) {
             addMessage(message, internalList)
-
-            dispatchToViews { notifyMessageInsert(message) }
         }
+        dispatchToViews { notifyMessageInsert(message) }
         return true
     }
 
     fun clear() {
         synchronized(internalList) {
             internalList.clear()
-            dispatchToViews { notifyMessagesCleared() }
         }
+        dispatchToViews { notifyMessagesCleared() }
     }
 
     fun isEmpty(): Boolean {
