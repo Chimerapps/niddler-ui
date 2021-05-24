@@ -343,7 +343,7 @@ class RewriteDetailPanel(private val parentWindow: Window,
     }
 }
 
-private class PackingJBTable(model: TableModel, onRowDoubleClicked: (Int, TableModel) -> Unit) : JBTable(model) {
+class PackingJBTable(model: TableModel, onRowDoubleClicked: (Int, TableModel) -> Unit) : JBTable(model) {
 
     init {
         addMouseListener(object : MouseAdapter() {

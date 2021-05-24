@@ -15,10 +15,35 @@ data class MapLocalEntry(
     val destination: String,
     val enabled: Boolean,
     val caseSensitive: Boolean,
+    @Transient val id: String,
 )
 
 fun interface FileResolver {
 
     fun resolveFile(file: String): String
+
+}
+
+class VariableFileResolver(
+    private val mapping: Map<String, String>,
+) : FileResolver {
+
+    companion object {
+        fun replacePrefix(source: String, variableName: String, prefix: String): String {
+            return source.replace(prefix, "%$variableName%")
+        }
+
+        fun makeRelative(configuration: MapLocalConfiguration, variableName: String, relativeRoot: String): MapLocalConfiguration {
+            return configuration.copy(mappings = configuration.mappings.map { e -> e.copy(destination = replacePrefix(e.destination, variableName, relativeRoot)) })
+        }
+    }
+
+    override fun resolveFile(file: String): String {
+        var resolved = file
+        mapping.forEach { (key, value) ->
+            resolved = resolved.replace("%$key%", value)
+        }
+        return resolved
+    }
 
 }

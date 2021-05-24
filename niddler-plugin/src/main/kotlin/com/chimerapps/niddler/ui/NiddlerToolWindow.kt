@@ -7,6 +7,7 @@ import com.chimerapps.niddler.ui.actions.ConfigureRewriteAction
 import com.chimerapps.niddler.ui.actions.NewSessionAction
 import com.chimerapps.niddler.ui.component.ConnectionMode
 import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
+import com.chimerapps.niddler.ui.debugging.maplocal.MapLocalDialog
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteConfig
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.ProjectConfig
@@ -38,7 +39,7 @@ import javax.swing.SwingUtilities
 class NiddlerToolWindow(private val project: Project, private val disposable: Disposable) : SimpleToolWindowPanel(/* vertical */ false, /* borderless */ true) {
 
     companion object {
-        fun get(project: Project) : Pair<NiddlerToolWindow, ToolWindow>? {
+        fun get(project: Project): Pair<NiddlerToolWindow, ToolWindow>? {
             val toolWindowManager = ToolWindowManager.getInstance(project)
             val window = toolWindowManager.getToolWindow("Niddler") ?: return null
             val toolWindow = window.contentManager.getContent(0)?.component as? NiddlerToolWindow ?: return null
@@ -157,8 +158,16 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
                 applyRewriteConfig(it)
             }
         }
+        //TODO
+        val configureDebuggerAction2 = ConfigureRewriteAction(this) {
+            MapLocalDialog.show(SwingUtilities.getWindowAncestor(this), project)?.let {
+                ProjectConfig.save(project, ProjectConfig.CONFIG_MAPLOCAL, it)
+//                applyRewriteConfig(it) TODO
+            }
+        }
         actionGroup.add(newSessionAction)
         actionGroup.add(configureDebuggerAction)
+        actionGroup.add(configureDebuggerAction2)
 
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, false)
         setToolbar(toolbar.component)
@@ -204,7 +213,7 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
 }
 
 data class QuickConnectionInfo(
-        val port: Int,
-        val tag: String,
-        val device: Device? = null
+    val port: Int,
+    val tag: String,
+    val device: Device? = null
 )

@@ -11,6 +11,7 @@ import org.w3c.dom.Node
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.UUID
 import javax.xml.parsers.DocumentBuilderFactory
 
 /**
@@ -69,6 +70,7 @@ class MapLocalImporter {
             destination = localMappingNode.childWithTag("dest")!!.textContent,
             enabled = localMappingNode.childWithTag("enabled")?.textContent?.toBoolean() ?: false,
             caseSensitive = localMappingNode.childWithTag("caseSensitive")?.textContent?.toBoolean() ?: false,
+            id = UUID.randomUUID().toString(),
         )
     }
 }
