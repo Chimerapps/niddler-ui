@@ -2,6 +2,7 @@ apply from: '../dependencies.gradle'
 
 apply plugin: "org.jetbrains.intellij"
 apply plugin: 'kotlin'
+apply plugin: "com.github.ben-manes.versions"
 
 def actualPluginVersion = hasProperty("internalBuildNumber") ? "$pluginVersion-$internalBuildNumber" : "$pluginVersion"
 

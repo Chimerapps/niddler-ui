@@ -25,6 +25,7 @@ import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import com.icapps.niddler.lib.utils.UrlUtil
 import java.io.OutputStream
 import java.util.Date
+import java.util.Locale
 
 /**
  * @author Nicola Verbeeck
@@ -68,25 +69,25 @@ class HarExport(private val parsedMessageProvider: ParsedNiddlerMessageProvider)
         val urlUtil = UrlUtil(niddlerMessage.url)
 
         return Request(
-                method = niddlerMessage.method ?: "",
-                url = urlUtil.url ?: "",
-                httpVersion = niddlerMessage.httpVersion?.toUpperCase() ?: "HTTP/1.1",
-                headers = makeHeaders(niddlerMessage),
-                queryString = urlUtil.query.map {
-                    QueryParameter(name = it.key, value = it.value.joinToString(","))
-                },
-                postData = extractPostData(parsedMessageProvider.provideParsedMessage(niddlerMessage).get())
+            method = niddlerMessage.method ?: "",
+            url = urlUtil.url ?: "",
+            httpVersion = niddlerMessage.httpVersion?.uppercase(Locale.getDefault()) ?: "HTTP/1.1",
+            headers = makeHeaders(niddlerMessage),
+            queryString = urlUtil.query.map {
+                QueryParameter(name = it.key, value = it.value.joinToString(","))
+            },
+            postData = extractPostData(parsedMessageProvider.provideParsedMessage(niddlerMessage).get())
         )
     }
 
     private fun makeResponse(niddlerMessage: NiddlerMessage): Response {
 
         return Response(
-                status = niddlerMessage.statusCode ?: 0,
-                statusText = niddlerMessage.statusLine ?: "",
-                httpVersion = niddlerMessage.httpVersion?.toUpperCase() ?: "HTTP/1.1",
-                content = extractContent(parsedMessageProvider.provideParsedMessage(niddlerMessage).get()),
-                headers = makeHeaders(niddlerMessage)
+            status = niddlerMessage.statusCode ?: 0,
+            statusText = niddlerMessage.statusLine ?: "",
+            httpVersion = niddlerMessage.httpVersion?.uppercase(Locale.getDefault()) ?: "HTTP/1.1",
+            content = extractContent(parsedMessageProvider.provideParsedMessage(niddlerMessage).get()),
+            headers = makeHeaders(niddlerMessage)
         )
     }
 

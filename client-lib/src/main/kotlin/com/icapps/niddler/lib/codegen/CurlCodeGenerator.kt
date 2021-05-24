@@ -2,6 +2,7 @@ package com.icapps.niddler.lib.codegen
 
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.model.ParsedNiddlerMessage
+import java.util.Locale
 
 /**
  * @author Nicola Verbeeck
@@ -16,7 +17,7 @@ class CurlCodeGenerator : CodeGenerator {
         if (!request.isRequest)
             return "<not a request>"
 
-        return when (request.method!!.toLowerCase()) {
+        return when (request.method!!.lowercase(Locale.getDefault())) {
             "get" -> generateGet(request)
             "options" -> generateOptions(request)
             "delete" -> generateDelete(request)
@@ -63,7 +64,7 @@ class CurlCodeGenerator : CodeGenerator {
         val builder = StringBuilder(COMMAND_NAME)
         builder.append(" -i ")
         addHeaders(builder, request)
-        builder.append("-X \"").append(method.toUpperCase()).append("\" \"")
+        builder.append("-X \"").append(method.uppercase(Locale.getDefault())).append("\" \"")
         builder.append(request.url!!).append('"')
         addDecompress(builder, request)
         return builder.toString()
@@ -73,7 +74,7 @@ class CurlCodeGenerator : CodeGenerator {
         val builder = StringBuilder(COMMAND_NAME)
         builder.append(" -i ")
         addHeaders(builder, request)
-        builder.append("-X \"").append(method.toUpperCase()).append("\" ")
+        builder.append("-X \"").append(method.uppercase(Locale.getDefault())).append("\" ")
 
         val bytes = request.getBodyAsBytes
         if (bytes != null) {

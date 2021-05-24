@@ -54,12 +54,12 @@ class GuessingBodyParser(private val initialBodyFormat: BodyClassifierResult, pr
 
     private fun determineBodyFromContent(content: ByteArray): ConcreteBody? {
         when (findFirstNonBlankByte(content)) {
-            '{'.toByte(), '['.toByte() -> {
+            '{'.code, '['.code -> {
                 val jsonParser = JsonBodyParser()
                 val data = jsonParser.parse(BodyFormat(BodyFormatType.FORMAT_JSON, null, null), content) ?: return null
                 return ConcreteBody(BodyFormatType.FORMAT_JSON, BodyFormatType.FORMAT_JSON.verbose, data)
             }
-            '<'.toByte() -> {
+            '<'.code -> {
                 val xmlParser = XmlBodyParser()
                 val data = xmlParser.parse(BodyFormat(BodyFormatType.FORMAT_XML, null, null), content)
                 if (data != null) {
@@ -88,9 +88,9 @@ class GuessingBodyParser(private val initialBodyFormat: BodyClassifierResult, pr
         return null
     }
 
-    private fun findFirstNonBlankByte(bytes: ByteArray): Byte? {
+    private fun findFirstNonBlankByte(bytes: ByteArray): Int? {
         val index = bytes.indexOfFirst { it != SPACE || it != CR || it != LF || it != TAB }
-        return bytes.getOrNull(index)
+        return bytes.getOrNull(index)?.toInt()
     }
 
     private fun firstBytesContainHtml(bytes: ByteArray): Boolean {

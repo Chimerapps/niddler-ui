@@ -2,13 +2,14 @@ package com.icapps.niddler.lib.debugger.model.rewrite.action
 
 import com.icapps.niddler.lib.debugger.model.rewrite.ReplaceType
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
+import java.util.Locale
 
 interface BaseModifyParameterAction {
 
     //TODO regex
 
     fun modifyMap(rule: RewriteRule, match: MapMatchResult, map: Map<String, List<String>>?, applyLowerCaseKey: Boolean): Map<String, List<String>>? {
-        var newHeader = if (applyLowerCaseKey) rule.newHeader?.toLowerCase() else rule.newHeader
+        var newHeader = if (applyLowerCaseKey) rule.newHeader?.lowercase(Locale.getDefault()) else rule.newHeader
 
         val matchedHeader = match.matchedHeader ?: newHeader ?: return map
         if (newHeader == null) newHeader = matchedHeader
