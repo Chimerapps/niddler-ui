@@ -123,15 +123,9 @@ object NiddlerAutomaticConnectionHelper {
 
     fun connect(project: Project, info: QuickConnectionInfo, reuseSession: Boolean, connectUsingDebugger: Boolean) {
         ensureMain {
-            val (niddlerWindow, toolWindow) = NiddlerToolWindow.get(project) ?: return@ensureMain
+            val (niddlerWindow, _) = NiddlerToolWindow.get(project) ?: return@ensureMain
 
-            if (!toolWindow.isVisible) {
-                toolWindow.show {
-                    niddlerWindow.newSessionFor(info, reuse = reuseSession, connectUsingDebugger = connectUsingDebugger)
-                }
-            } else {
-                niddlerWindow.newSessionFor(info, reuse = reuseSession, connectUsingDebugger = connectUsingDebugger)
-            }
+            niddlerWindow.newSessionFor(info, reuse = reuseSession, connectUsingDebugger = connectUsingDebugger)
         }
     }
 

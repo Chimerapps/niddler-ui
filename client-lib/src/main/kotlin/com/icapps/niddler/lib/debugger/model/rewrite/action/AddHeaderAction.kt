@@ -4,6 +4,7 @@ import com.icapps.niddler.lib.debugger.model.DebugRequest
 import com.icapps.niddler.lib.debugger.model.DebugResponse
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
+import java.util.Locale
 
 class AddHeaderAction(rule: RewriteRule) : BaseModifyMapAction(rule), BaseAddParameterAction, RequestAction, ResponseAction {
 
@@ -26,7 +27,7 @@ class AddHeaderAction(rule: RewriteRule) : BaseModifyMapAction(rule), BaseAddPar
     //TODO regex
 
     private fun apply(originalHeaders: Map<String, List<String>>?): Map<String, List<String>>? {
-        val newHeader = rule.newHeader?.toLowerCase()
+        val newHeader = rule.newHeader?.lowercase(Locale.getDefault())
         val newValue = rule.newValue
         if (newHeader.isNullOrBlank() || newValue.isNullOrBlank())
             return originalHeaders
