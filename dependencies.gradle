@@ -8,14 +8,14 @@ def versions = [
         intelliJPlugin        : '0.4.8',
         jadb                  : '1.2.1',
         junit4                : '4.13.2',
-        kotlin                : '1.4.0',
+        kotlin                : '1.5.10',
         minIntelliJ           : '2020.1.4',
         mockk                 : '1.11.0',
         multiPart             : '1.1.0',
         sqlite                : '3.34.0',
         versionsPlugin        : '0.38.0',
         webp                  : '0.1.6',
-        websocket             : '1.5.1',
+        websocket             : '1.5.2',
         xmlUnit               : '1.6',
 ]
 

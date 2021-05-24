@@ -12,6 +12,7 @@ import com.icapps.niddler.lib.model.bodyparser.PlainTextBodyParser
 import com.icapps.niddler.lib.model.bodyparser.URLEncodedBodyParser
 import com.icapps.niddler.lib.model.bodyparser.XmlBodyParser
 import org.apache.http.entity.ContentType
+import java.util.Locale
 
 /**
  * @author Nicola Verbeeck
@@ -63,7 +64,7 @@ class HeaderBodyClassifier(private val bodyFormatExtensions: Iterable<BodyFormat
     }
 
     private fun classifyFromMimeType(mimeType: String, charset: String?, contentType: ContentType): BodyClassifierResult? {
-        return when (val lowercased = mimeType.toLowerCase()) {
+        return when (val lowercased = mimeType.lowercase(Locale.getDefault())) {
             "application/json" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_JSON, mimeType, charset), JsonBodyParser())
             "application/xml", "text/xml", "application/dash+xml" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_XML, mimeType, charset), XmlBodyParser())
             "application/octet-stream" -> BodyClassifierResult(BodyFormat(BodyFormatType.FORMAT_BINARY, mimeType, charset), BinaryBodyParser())

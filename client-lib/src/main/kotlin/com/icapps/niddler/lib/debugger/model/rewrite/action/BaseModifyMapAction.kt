@@ -2,11 +2,12 @@ package com.icapps.niddler.lib.debugger.model.rewrite.action
 
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteRule
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteType
+import java.util.Locale
 
 open class BaseModifyMapAction(protected val rule: RewriteRule) {
 
     fun matches(originalValues: Map<String, List<String>>?): MapMatchResult {
-        val matchHeaderKey = rule.matchHeader?.toLowerCase()
+        val matchHeaderKey = rule.matchHeader?.lowercase(Locale.getDefault())
         val matchHeaderValue = rule.matchValue
 
         return when (rule.ruleType) {
