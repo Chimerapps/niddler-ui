@@ -2,6 +2,7 @@ package com.chimerapps.niddler.ui.debugging.maplocal
 
 import com.chimerapps.niddler.ui.debugging.rewrite.EditableTableModel
 import com.chimerapps.niddler.ui.debugging.rewrite.PackingJBTable
+import com.chimerapps.niddler.ui.debugging.rewrite.location.EditLocationDialog
 import com.chimerapps.niddler.ui.model.ProjectConfig
 import com.chimerapps.niddler.ui.util.ui.CheckBox
 import com.chimerapps.niddler.ui.util.ui.setColumnFixedWidth
@@ -110,7 +111,7 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
         it.columnSelectionAllowed = false
         it.selectionModel.addListSelectionListener { _ ->
             val hasSelection = it.selectedRowCount != 0
-//            locationRemoveButton.isEnabled = hasSelection TODO
+            removeButton.isEnabled = hasSelection
         }
 
         it.setColumnFixedWidth(0, 30)
@@ -154,7 +155,9 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
     }
     private val addButton = JButton("Add").also {
         actionButtonPanel.add(it)
-        //TODO
+        it.addActionListener {
+            val newLocation = EditLocalMappingDialog.show(this, null) ?: return@addActionListener
+        }
     }
     private val removeButton = JButton("Remove").also {
         actionButtonPanel.add(it)
