@@ -19,12 +19,14 @@ import java.awt.GridBagLayout
 import java.awt.RenderingHints
 import java.awt.Window
 import java.awt.event.KeyEvent
+import java.io.File
 import java.util.UUID
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JComponent
 import javax.swing.JDialog
+import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.KeyStroke
 import javax.swing.SwingConstants
@@ -64,7 +66,9 @@ class EditLocalMappingDialog(parent: Window?, source: MapLocalEntry?, project: P
 
         editLocationUI.okButton.addActionListener {
             result = makeResult()
-            dispose()
+            if (result != null) {
+                dispose()
+            }
         }
         editLocationUI.cancelButton.addActionListener {
             dispose()
@@ -156,7 +160,11 @@ class EditLocalMappingDialog(parent: Window?, source: MapLocalEntry?, project: P
         contentPane = content.padding(left = 10, right = 10, bottom = 10, top = 10)
     }
 
-    private fun makeResult(): MapLocalEntry {
+    private fun makeResult(): MapLocalEntry? {
+        if (!File(browseButton.text).exists()) {
+            JOptionPane.showMessageDialog(this, "Provided path does not exist")
+            return null
+        }
         return MapLocalEntry(
             enabled = true,
             location = RewriteLocation(

@@ -24,8 +24,8 @@ fun interface FileResolver {
 
 }
 
-class VariableFileResolver(
-    private val mapping: Map<String, String>,
+open class VariableFileResolver(
+    protected val mapping: MutableMap<String, String>,
 ) : FileResolver {
 
     companion object {

@@ -2,19 +2,26 @@ package com.chimerapps.niddler.ui.debugging.maplocal
 
 import com.chimerapps.niddler.ui.debugging.rewrite.EditableTableModel
 import com.chimerapps.niddler.ui.debugging.rewrite.PackingJBTable
+import com.chimerapps.niddler.ui.debugging.rewrite.createRewriteLocationFor
 import com.chimerapps.niddler.ui.model.ProjectConfig
 import com.chimerapps.niddler.ui.util.ui.CheckBox
+import com.chimerapps.niddler.ui.util.ui.NotificationUtil
+import com.chimerapps.niddler.ui.util.ui.chooseSaveFile
 import com.chimerapps.niddler.ui.util.ui.setColumnFixedWidth
 import com.icapps.niddler.lib.debugger.model.maplocal.MapLocalConfiguration
 import com.icapps.niddler.lib.debugger.model.maplocal.MapLocalEntry
+import com.icapps.niddler.lib.debugger.model.maplocal.MapLocalExporter
+import com.icapps.niddler.lib.debugger.model.maplocal.VariableFileResolver
 import com.icapps.niddler.lib.model.NiddlerMessageInfo
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Toolkit
 import java.awt.Window
+import java.io.File
 import java.util.UUID
 import javax.swing.BorderFactory
 import javax.swing.Box
@@ -43,11 +50,15 @@ val JComponent.leftJustify: JComponent
 /**
  * @author Nicola Verbeeck
  */
-class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLocal settings", ModalityType.APPLICATION_MODAL) {
+class MapLocalDialog(
+    parent: Window?,
+    private val fileResolver: ProjectFileResolver,
+    private val project: Project,
+) : JDialog(parent, "MapLocal settings", ModalityType.APPLICATION_MODAL) {
 
     companion object {
         fun show(parent: Window?, project: Project): MapLocalConfiguration? {
-            val dialog = MapLocalDialog(parent, project)
+            val dialog = MapLocalDialog(parent, ProjectFileResolver(project), project)
             if (dialog.parent != null)
                 dialog.setLocationRelativeTo(parent)
 
@@ -56,15 +67,16 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
         }
 
         fun showAdd(parent: Window?, project: Project, message: NiddlerMessageInfo): MapLocalConfiguration? {
-            val dialog = MapLocalDialog(parent, project)
+            val dialog = MapLocalDialog(parent, ProjectFileResolver(project), project)
             if (dialog.parent != null)
                 dialog.setLocationRelativeTo(parent)
 
-//            dialog.addNewRuleFor(message) TODO
+            dialog.addNewRuleFor(message)
 
             dialog.isVisible = true
             return dialog.response
         }
+
     }
 
     var response: MapLocalConfiguration? = null
@@ -86,11 +98,9 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
         if (col == 0) {
             val item = mappings.getOrNull(row) ?: return@EditableTableModel
             mappings[row] = item.copy(enabled = value == true)
-//            onItemUpdated(item, copy) TODO
         }
     }, onRowDoubleClicked = { row, model ->
         val item = mappings.getOrNull(row) ?: return@PackingJBTable
-        //TODO
         val edited = EditLocalMappingDialog.show(this, item, project)
             ?: return@PackingJBTable
         mappings[row] = edited
@@ -131,7 +141,7 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
     private val exportButton = JButton("Export").also {
         buttonPanel.add(it.padding(left = 10))
         buttonPanel.add(Box.createHorizontalGlue())
-        //TODO
+        it.addActionListener { showExportDialog() }
     }
     private val cancelButton = JButton("Cancel").also {
         buttonPanel.add(it)
@@ -143,7 +153,7 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
         buttonPanel.add(it)
         it.addActionListener {
             val finalMappings = mappings
-            response = MapLocalConfiguration(allEnabled, finalMappings)
+            response = MapLocalConfiguration(allEnabled, fileResolver.unResolveAll(finalMappings))
             dispose()
         }
     }
@@ -153,7 +163,7 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
             val newMapping = EditLocalMappingDialog.show(this, null, project) ?: return@addActionListener
 
             mappings.add(newMapping)
-            (mappingTable.model as DefaultTableModel).addRow(arrayOf(true, newMapping.location.asString(), newMapping.destination))
+            (mappingTable.model as DefaultTableModel).addRow(arrayOf(true, newMapping.location.asString(), fileResolver.unResolve(newMapping.destination)))
 //            onItemUpdated(item, copy)
         }
     }
@@ -209,12 +219,71 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
             allEnabled = it.enabled
 
             mappings.forEach { entry ->
-                (mappingTable.model as DefaultTableModel).addRow(arrayOf(entry.enabled, entry.location.asString(), entry.destination))
+                (mappingTable.model as DefaultTableModel).addRow(arrayOf(entry.enabled, entry.location.asString(), fileResolver.unResolve(entry.destination)))
             }
         }
     }
+
+    private fun addNewRuleFor(message: NiddlerMessageInfo) {
+        val entry = MapLocalEntry(
+            enabled = true,
+            location = createRewriteLocationFor(message),
+            caseSensitive = true,
+            destination = "",
+            id = UUID.randomUUID().toString()
+        )
+
+        mappings.add(entry)
+        (mappingTable.model as DefaultTableModel).addRow(arrayOf(entry.enabled, entry.location.asString(), fileResolver.unResolve(entry.destination)))
+    }
+
+    private fun showExportDialog() {
+        val items = mappingTable.selectedRows.map { mappings[it] }
+        if (items.isEmpty()) return
+
+        var file = chooseSaveFile("Export to", ".xml") ?: return
+        if (file.extension.isEmpty()) {
+            file = File(file.absolutePath + ".xml")
+        }
+        file.outputStream().use { MapLocalExporter().export(MapLocalConfiguration(allEnabled, items), fileResolver, it) }
+        NotificationUtil.info("Rule export complete", "<html>Rule export completed to <a href=\"file://${file.absolutePath}\">${file.name}</a></html>", project)
+    }
+
 }
 
 private fun List<MapLocalEntry>.createIds(): List<MapLocalEntry> {
     return map { it.copy(id = UUID.randomUUID().toString()) }
+}
+
+class ProjectFileResolver(project: Project) : VariableFileResolver(linkedMapOf()) {
+
+    init {
+        project.guessProjectDir()?.path?.let { path ->
+            mapping["projectDir"] = path.cleanPath()
+        }
+        System.getProperty("user.home")?.let {
+            mapping["user.home"] = it.cleanPath()
+        }
+    }
+
+    fun unResolve(toUnResolve: String): String {
+        var variable = toUnResolve
+        mapping.forEach { (key, value) ->
+            variable = replacePrefix(variable, variableName = key, prefix = value)
+        }
+        return variable
+    }
+
+    fun unResolveAll(mappings: MutableList<MapLocalEntry>): List<MapLocalEntry> {
+        return mappings.map { it.copy(destination = unResolve(it.destination), id = UUID.randomUUID().toString()) }
+    }
+
+}
+
+private fun String.cleanPath(): String {
+    val path = File(this).absolutePath
+    if (path.endsWith(File.pathSeparatorChar)) {
+        return path.substring(1, path.length - 1)
+    }
+    return path
 }
