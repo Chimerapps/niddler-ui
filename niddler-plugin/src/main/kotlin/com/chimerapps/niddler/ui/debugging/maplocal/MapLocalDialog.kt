@@ -2,7 +2,6 @@ package com.chimerapps.niddler.ui.debugging.maplocal
 
 import com.chimerapps.niddler.ui.debugging.rewrite.EditableTableModel
 import com.chimerapps.niddler.ui.debugging.rewrite.PackingJBTable
-import com.chimerapps.niddler.ui.debugging.rewrite.location.EditLocationDialog
 import com.chimerapps.niddler.ui.model.ProjectConfig
 import com.chimerapps.niddler.ui.util.ui.CheckBox
 import com.chimerapps.niddler.ui.util.ui.setColumnFixedWidth
@@ -25,6 +24,7 @@ import javax.swing.JComponent
 import javax.swing.JDialog
 import javax.swing.JPanel
 import javax.swing.ListSelectionModel
+import javax.swing.table.DefaultTableModel
 
 
 fun JComponent.padding(left: Int = 0, top: Int = 0, right: Int = 0, bottom: Int = 0): JComponent {
@@ -91,14 +91,11 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
     }, onRowDoubleClicked = { row, model ->
         val item = mappings.getOrNull(row) ?: return@PackingJBTable
         //TODO
-//        val edited = EditLocationDialog.show(parentWindow, item.locations[row].location)
-//            ?: return@PackingJBTable
-//        val locationsCopy = item.locations.toMutableList()
-//        locationsCopy[row] = locationsCopy[row].copy(location = edited)
-//        val copy = item.copy(locations = locationsCopy)
-//        (model as DefaultTableModel).setValueAt(edited.asString(), row, 1)
-//        _currentItemInternal = copy
-//        onItemUpdated(item, copy)
+        val edited = EditLocalMappingDialog.show(this, item, project)
+            ?: return@PackingJBTable
+        mappings[row] = edited
+        (model as DefaultTableModel).setValueAt(edited.location.asString(), row, 1)
+        (model as DefaultTableModel).setValueAt(edited.destination, row, 2)
     }).also {
         val model = it.model as EditableTableModel
         model.addColumn("", java.lang.Boolean::class.java)
@@ -144,23 +141,31 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
     }
     private val okButton = JButton("OK").also {
         buttonPanel.add(it)
-//        it.addActionListener {
-//            for (i in 0 until rules.size) {
-//                rules[i] = rules[i].copy(active = masterPanel.isRewriteSetEnabled(rules[i]))
-//            }
-//            response = RewriteConfig(masterPanel.allEnabled, rules)
-//            dispose()
-//        }
+        it.addActionListener {
+            val finalMappings = mappings
+            response = MapLocalConfiguration(allEnabled, finalMappings)
+            dispose()
+        }
     }
     private val addButton = JButton("Add").also {
         actionButtonPanel.add(it)
         it.addActionListener {
-            val newLocation = EditLocalMappingDialog.show(this, null, project) ?: return@addActionListener
+            val newMapping = EditLocalMappingDialog.show(this, null, project) ?: return@addActionListener
+
+            mappings.add(newMapping)
+            (mappingTable.model as DefaultTableModel).addRow(arrayOf(true, newMapping.location.asString(), newMapping.destination))
+//            onItemUpdated(item, copy)
         }
     }
     private val removeButton = JButton("Remove").also {
         actionButtonPanel.add(it)
-        //TODO
+        it.addActionListener { _ ->
+            mappingTable.selectedRows.sortedDescending().forEach { index ->
+                mappings.removeAt(index)
+                (mappingTable.model as DefaultTableModel).removeRow(index)
+            }
+            it.isEnabled = false
+        }
     }
     private val upButton = JButton("Up").also {
         actionButtonPanel.add(it)
@@ -182,6 +187,7 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
             val enableExportAndRemove = value && selectedIndices > 0
             exportButton.isEnabled = enableExportAndRemove
             removeButton.isEnabled = enableExportAndRemove
+            addButton.isEnabled = value
         }
 
     init {
@@ -196,8 +202,15 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
 
         ProjectConfig.load<MapLocalConfiguration>(project, ProjectConfig.CONFIG_MAPLOCAL)?.let {
             val config = it.copy(mappings = it.mappings.createIds())
+            mappings.addAll(it.mappings)
             mappingTable.isEnabled = config.enabled
-//            masterPanel.addRewriteSets(config.sets, selectLast = false)
+            addButton.isEnabled = config.enabled
+            removeButton.isEnabled = false
+            allEnabled = it.enabled
+
+            mappings.forEach { entry ->
+                (mappingTable.model as DefaultTableModel).addRow(arrayOf(entry.enabled, entry.location.asString(), entry.destination))
+            }
         }
     }
 }

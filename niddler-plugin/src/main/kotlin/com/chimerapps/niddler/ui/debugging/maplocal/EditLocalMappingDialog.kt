@@ -2,6 +2,7 @@ package com.chimerapps.niddler.ui.debugging.maplocal
 
 import com.chimerapps.niddler.ui.debugging.rewrite.location.EditLocationDialogUI
 import com.chimerapps.niddler.ui.util.ext.trimToNull
+import com.icapps.niddler.lib.debugger.model.maplocal.MapLocalEntry
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocation
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
@@ -18,6 +19,7 @@ import java.awt.GridBagLayout
 import java.awt.RenderingHints
 import java.awt.Window
 import java.awt.event.KeyEvent
+import java.util.UUID
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -30,10 +32,10 @@ import javax.swing.SwingConstants
 /**
  * @author Nicola Verbeeck
  */
-class EditLocalMappingDialog(parent: Window?, source: RewriteLocation?, project: Project?) : JDialog(parent, "Edit Mapping", ModalityType.APPLICATION_MODAL) {
+class EditLocalMappingDialog(parent: Window?, source: MapLocalEntry?, project: Project?) : JDialog(parent, "Edit Mapping", ModalityType.APPLICATION_MODAL) {
 
     companion object {
-        fun show(parent: Window?, source: RewriteLocation?, project: Project?): RewriteLocation? {
+        fun show(parent: Window?, source: MapLocalEntry?, project: Project?): MapLocalEntry? {
             val dialog = EditLocalMappingDialog(parent, source, project)
             dialog.pack()
             dialog.setSize(420, dialog.height)
@@ -45,13 +47,14 @@ class EditLocalMappingDialog(parent: Window?, source: RewriteLocation?, project:
         }
     }
 
-    var result: RewriteLocation? = null
+    var result: MapLocalEntry? = null
         private set
 
     private val content = JPanel().also {
         it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
     }
     private val editLocationUI = EditLocationDialogUI(addButtons = false)
+    private val browseButton: TextFieldWithBrowseButton
 
     init {
         content.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
@@ -68,11 +71,11 @@ class EditLocalMappingDialog(parent: Window?, source: RewriteLocation?, project:
         }
 
         source?.let { initFrom ->
-            initFrom.protocol?.let { editLocationUI.protocolChooser.selectedItem = it }
-            initFrom.host?.let { editLocationUI.host.text = it }
-            initFrom.port?.let { editLocationUI.port.text = it.toString() }
-            initFrom.path?.let { editLocationUI.path.text = it }
-            initFrom.query?.let { editLocationUI.query.text = it }
+            initFrom.location.protocol?.let { editLocationUI.protocolChooser.selectedItem = it }
+            initFrom.location.host?.let { editLocationUI.host.text = it }
+            initFrom.location.port?.let { editLocationUI.port.text = it.toString() }
+            initFrom.location.path?.let { editLocationUI.path.text = it }
+            initFrom.location.query?.let { editLocationUI.query.text = it }
         }
 
         val locationPanel = object : JPanel(BorderLayout()) {
@@ -106,7 +109,7 @@ class EditLocalMappingDialog(parent: Window?, source: RewriteLocation?, project:
             anchor = GridBagConstraints.EAST
         })
 
-        val path = TextFieldWithBrowseButton().also {
+        browseButton = TextFieldWithBrowseButton().also {
             mapToPanel.add(it, GridBagConstraints().apply {
                 gridx = 1
                 gridy = 1
@@ -116,11 +119,12 @@ class EditLocalMappingDialog(parent: Window?, source: RewriteLocation?, project:
                 weightx = 100.0
             })
         }
-        path.addBrowseFolderListener(
+        browseButton.addBrowseFolderListener(
             "Local File/Folder", "Local file or folder to map to",
             project,
             FileChooserDescriptor(true, true, false, false, false, false)
         )
+        browseButton.text = source?.destination ?: ""
 
         val filePanel = object : JPanel() {
             override fun getPreferredSize(): Dimension = Dimension(this.parent.width, super.getPreferredSize().height)
@@ -141,6 +145,8 @@ class EditLocalMappingDialog(parent: Window?, source: RewriteLocation?, project:
             it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
             it.add(JBTextArea("You can select a directory instead of a file to map remote paths to the local structure").also { child ->
                 child.lineWrap = true
+                child.background = Color(0, true)
+                child.isEditable = false
             }, BorderLayout.WEST)
         })
 
@@ -150,13 +156,19 @@ class EditLocalMappingDialog(parent: Window?, source: RewriteLocation?, project:
         contentPane = content.padding(left = 10, right = 10, bottom = 10, top = 10)
     }
 
-    private fun makeResult(): RewriteLocation {
-        return RewriteLocation(
-            protocol = (editLocationUI.protocolChooser.selectedItem as String).trimToNull(),
-            host = editLocationUI.host.text.trimToNull(),
-            path = editLocationUI.path.text.trimToNull(),
-            query = editLocationUI.query.text.trimToNull(),
-            port = editLocationUI.port.text.trimToNull()
+    private fun makeResult(): MapLocalEntry {
+        return MapLocalEntry(
+            enabled = true,
+            location = RewriteLocation(
+                protocol = (editLocationUI.protocolChooser.selectedItem as String).trimToNull(),
+                host = editLocationUI.host.text.trimToNull(),
+                path = editLocationUI.path.text.trimToNull(),
+                query = editLocationUI.query.text.trimToNull(),
+                port = editLocationUI.port.text.trimToNull()
+            ),
+            caseSensitive = true,
+            id = UUID.randomUUID().toString(),
+            destination = browseButton.text,
         )
     }
 }
