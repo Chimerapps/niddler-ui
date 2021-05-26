@@ -3,29 +3,38 @@ package com.chimerapps.niddler.ui.debugging.maplocal
 import com.chimerapps.niddler.ui.debugging.rewrite.location.EditLocationDialogUI
 import com.chimerapps.niddler.ui.util.ext.trimToNull
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocation
+import com.intellij.openapi.fileChooser.FileChooserDescriptor
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.TextFieldWithBrowseButton
+import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBTextArea
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
 import java.awt.RenderingHints
 import java.awt.Window
 import java.awt.event.KeyEvent
 import javax.swing.BorderFactory
+import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JComponent
 import javax.swing.JDialog
 import javax.swing.JPanel
 import javax.swing.KeyStroke
+import javax.swing.SwingConstants
 
 /**
  * @author Nicola Verbeeck
  */
-class EditLocalMappingDialog(parent: Window?, source: RewriteLocation?) : JDialog(parent, "Edit Mapping", ModalityType.APPLICATION_MODAL) {
+class EditLocalMappingDialog(parent: Window?, source: RewriteLocation?, project: Project?) : JDialog(parent, "Edit Mapping", ModalityType.APPLICATION_MODAL) {
 
     companion object {
-        fun show(parent: Window?, source: RewriteLocation?): RewriteLocation? {
-            val dialog = EditLocalMappingDialog(parent, source)
+        fun show(parent: Window?, source: RewriteLocation?, project: Project?): RewriteLocation? {
+            val dialog = EditLocalMappingDialog(parent, source, project)
             dialog.pack()
             dialog.setSize(420, dialog.height)
             if (dialog.parent != null)
@@ -78,7 +87,67 @@ class EditLocalMappingDialog(parent: Window?, source: RewriteLocation?) : JDialo
         }, BorderLayout.NORTH)
 
         content.add(locationPanel)
-        contentPane = content
+
+        val mapToPanel = object : JPanel(GridBagLayout()) {
+            override fun getPreferredSize(): Dimension {
+                return Dimension(this.parent.width, super.getPreferredSize().height)
+            }
+        }.also {
+            it.border = BorderFactory.createEmptyBorder(20, 20, 0, 20)
+        }
+
+        mapToPanel.add(JBLabel("Local path:", SwingConstants.RIGHT).also {
+            it.border = BorderFactory.createEmptyBorder(0, 0, 0, 5)
+        }, GridBagConstraints().apply {
+            gridx = 0
+            gridy = 1
+            gridwidth = 1
+            gridheight = 1
+            anchor = GridBagConstraints.EAST
+        })
+
+        val path = TextFieldWithBrowseButton().also {
+            mapToPanel.add(it, GridBagConstraints().apply {
+                gridx = 1
+                gridy = 1
+                gridwidth = 1
+                gridheight = 1
+                fill = GridBagConstraints.HORIZONTAL
+                weightx = 100.0
+            })
+        }
+        path.addBrowseFolderListener(
+            "Local File/Folder", "Local file or folder to map to",
+            project,
+            FileChooserDescriptor(true, true, false, false, false, false)
+        )
+
+        val filePanel = object : JPanel() {
+            override fun getPreferredSize(): Dimension = Dimension(this.parent.width, super.getPreferredSize().height)
+        }.also {
+            it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
+        }
+        filePanel.border = BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(), "Map To")
+        filePanel.add(BackgroundRenderingJPanel(Color(0x11000000, true)).also {
+            it.add(mapToPanel)
+            mapToPanel.background = Color(0, true)
+        }, BorderLayout.NORTH)
+
+        content.add(filePanel)
+
+        content.add(object : JPanel() {
+            override fun getPreferredSize(): Dimension = Dimension(this.parent.width, super.getPreferredSize().height)
+        }.also {
+            it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
+            it.add(JBTextArea("You can select a directory instead of a file to map remote paths to the local structure").also { child ->
+                child.lineWrap = true
+            }, BorderLayout.WEST)
+        })
+
+        content.add(Box.createVerticalGlue())
+        content.add(editLocationUI.buttonPanel)
+
+        contentPane = content.padding(left = 10, right = 10, bottom = 10, top = 10)
     }
 
     private fun makeResult(): RewriteLocation {

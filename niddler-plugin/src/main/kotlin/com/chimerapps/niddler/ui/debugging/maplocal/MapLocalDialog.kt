@@ -32,7 +32,7 @@ fun JComponent.padding(left: Int = 0, top: Int = 0, right: Int = 0, bottom: Int 
     return this
 }
 
-private val JComponent.leftJustify: JComponent
+val JComponent.leftJustify: JComponent
     get() {
         val b = Box.createHorizontalBox()
         b.add(this)
@@ -74,7 +74,6 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
 
     private val rootContainer = JPanel().also {
         it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
-        it.background = Color.CYAN
 
         it.add(JBLabel("Use local files to serve remote locations").leftJustify.padding(top = 16, left = 10))
     }
@@ -156,7 +155,7 @@ class MapLocalDialog(parent: Window?, project: Project) : JDialog(parent, "MapLo
     private val addButton = JButton("Add").also {
         actionButtonPanel.add(it)
         it.addActionListener {
-            val newLocation = EditLocalMappingDialog.show(this, null) ?: return@addActionListener
+            val newLocation = EditLocalMappingDialog.show(this, null, project) ?: return@addActionListener
         }
     }
     private val removeButton = JButton("Remove").also {
