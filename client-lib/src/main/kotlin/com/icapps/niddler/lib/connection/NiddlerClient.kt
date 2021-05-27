@@ -129,8 +129,8 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean, private val messa
         return debugListener?.onRequestOverride(message)
     }
 
-    override fun onRequestAction(requestId: String): DebugResponse? {
-        return debugListener?.onRequestAction(requestId)
+    override fun onRequestAction(requestId: String, request: NiddlerMessage?): DebugResponse? {
+        return debugListener?.onRequestAction(requestId, request)
     }
 
     override fun onResponseAction(requestId: String, response: NiddlerMessage, request: NiddlerMessage?): DebugResponse? {

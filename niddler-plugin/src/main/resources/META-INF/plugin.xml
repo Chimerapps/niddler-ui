@@ -1,12 +1,18 @@
 <idea-plugin>
     <id>com.icapps.niddler</id>
     <name>Niddler</name>
-    <version>2.10.2</version>
+    <version>2.11.0</version>
     <vendor email="support@chimerapps.com" url="https://www.icapps.com">Chimerapps &amp; icapps</vendor>
 
     <description>This plugin enables the niddler ui inside the IDE</description>
 
     <change-notes><![CDATA[
+    <p>
+        <b>2.11.0</b>
+        <ul>
+            <li>Added preview of local mapping feature. (Requires niddler java/android 1.5.5 or niddler-dart 1.1.0)</li>
+        </ul>
+    </p>
     <p>
         <b>2.10.2</b>
         <ul>

@@ -160,7 +160,7 @@ private fun List<RewriteSet>.createIds(): List<RewriteSet> {
 
 data class RewriteConfig(val allEnabled: Boolean, val sets: List<RewriteSet>)
 
-private fun createRewriteLocationFor(message: NiddlerMessageInfo): RewriteLocation {
+fun createRewriteLocationFor(message: NiddlerMessageInfo): RewriteLocation {
     val uri = message.url?.let { URI.create(it) } ?: return RewriteLocation()
 
     return RewriteLocation(protocol = uri.scheme,

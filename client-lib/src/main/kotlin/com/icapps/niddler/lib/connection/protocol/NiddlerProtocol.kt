@@ -103,9 +103,10 @@ interface NiddlerDebugListener {
      * Called when the server has hit a configured breakpoint for a request and allows the client to return a request without hitting the actual network server
      *
      * @param requestId The id ({@link NiddlerMessage.requestId}) of the request that triggered the breakpoint
+     * @param request If available, the request that triggered this breakpoint
      * @return The overridden response to send to the server instead of hitting the actual network server. Return null to allow normal processing to continue
      */
-    fun onRequestAction(requestId: String): DebugResponse?
+    fun onRequestAction(requestId: String, request: NiddlerMessage?): DebugResponse?
 
     /**
      * Called when the server has hit a configured breakpoint for a request when the response has been received from the actual network server
