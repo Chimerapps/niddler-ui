@@ -2,6 +2,7 @@ package com.icapps.niddler.lib.debugger.model
 
 import com.google.gson.GsonBuilder
 import com.icapps.niddler.lib.debugger.NiddlerDebuggerConnection
+import com.icapps.niddler.lib.debugger.model.maplocal.MapLocalDebuggerInterface
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebuggerInterface
 import java.util.UUID
 
@@ -15,6 +16,7 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
             .create()
 
     val rewriteInterface = RewriteDebuggerInterface(this)
+    val mapLocalInterface = MapLocalDebuggerInterface(this)
 
     fun addBlacklistItem(regex: String) {
         sendMessage(AddBlacklistMessage(regex))

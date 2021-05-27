@@ -8,9 +8,11 @@ import com.icapps.niddler.lib.debugger.model.rewrite.createTextNode
 import com.icapps.niddler.lib.debugger.model.rewrite.mapNotNullNodesWithName
 import org.w3c.dom.Document
 import org.w3c.dom.Node
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.UUID
 import javax.xml.parsers.DocumentBuilderFactory
 
 /**
@@ -39,11 +41,16 @@ class MapLocalExporter {
         val node = document.createElement("mapLocalMapping")
 
         node.appendChild(writeLocation(localEntry.location, document, "sourceLocation"))
-        node.appendChild(document.createTextNode("dest", resolver.resolveFile(localEntry.destination)))
+        node.appendChild(document.createTextNode("dest", makeExportable(resolver.resolveFile(localEntry.destination))))
         node.appendChild(document.createTextNode("enabled", localEntry.enabled.toString()))
         node.appendChild(document.createTextNode("caseSensitive", localEntry.caseSensitive.toString()))
 
         return node
+    }
+
+    private fun makeExportable(resolveFile: String): String {
+        if (File(resolveFile).isDirectory) return "$resolveFile/*"
+        return resolveFile
     }
 
 }
@@ -66,9 +73,15 @@ class MapLocalImporter {
     private fun parseMapping(localMappingNode: Node): MapLocalEntry {
         return MapLocalEntry(
             location = parseRewriteLocation(localMappingNode.childWithTag("sourceLocation")!!),
-            destination = localMappingNode.childWithTag("dest")!!.textContent,
+            destination = importPath(localMappingNode.childWithTag("dest")!!.textContent),
             enabled = localMappingNode.childWithTag("enabled")?.textContent?.toBoolean() ?: false,
             caseSensitive = localMappingNode.childWithTag("caseSensitive")?.textContent?.toBoolean() ?: false,
+            id = UUID.randomUUID().toString(),
         )
+    }
+
+    private fun importPath(textContent: String): String {
+        if (textContent.endsWith('*')) return textContent.substring(0, textContent.length - 1)
+        return textContent
     }
 }
