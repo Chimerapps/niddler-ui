@@ -7,6 +7,7 @@ import com.intellij.openapi.fileChooser.FileTypeDescriptor
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.File
 
+@Suppress("UNUSED_PARAMETER")
 fun chooseSaveFile(title: String, extension: String): File? {
     val descriptor = FileSaverDescriptor(title, "")
     val dialog = FileChooserFactory.getInstance().createSaveFileDialog(descriptor, null)

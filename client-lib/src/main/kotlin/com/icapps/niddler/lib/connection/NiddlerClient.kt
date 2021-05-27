@@ -16,7 +16,6 @@ import com.icapps.niddler.lib.debugger.NiddlerDebuggerConnection
 import com.icapps.niddler.lib.debugger.model.DebugRequest
 import com.icapps.niddler.lib.debugger.model.DebugResponse
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
-import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.drafts.Draft_6455
 import org.java_websocket.handshake.ServerHandshake
@@ -130,8 +129,8 @@ class NiddlerClient(serverURI: URI, val withDebugger: Boolean, private val messa
         return debugListener?.onRequestOverride(message)
     }
 
-    override fun onRequestAction(requestId: String): DebugResponse? {
-        return debugListener?.onRequestAction(requestId)
+    override fun onRequestAction(requestId: String, request: NiddlerMessage?): DebugResponse? {
+        return debugListener?.onRequestAction(requestId, request)
     }
 
     override fun onResponseAction(requestId: String, response: NiddlerMessage, request: NiddlerMessage?): DebugResponse? {

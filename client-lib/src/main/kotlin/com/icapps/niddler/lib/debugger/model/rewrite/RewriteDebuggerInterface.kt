@@ -89,7 +89,7 @@ class RewriteDebugListener(private val onWrongStatusMessageReplacement: (String)
         return newRequest
     }
 
-    override fun onRequestAction(requestId: String): DebugResponse? {
+    override fun onRequestAction(requestId: String, request: NiddlerMessage?): DebugResponse? {
         return null
     }
 

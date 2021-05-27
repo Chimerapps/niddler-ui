@@ -1,17 +1,14 @@
 apply from: '../dependencies.gradle'
 
+apply plugin: "org.jetbrains.intellij"
 apply plugin: 'kotlin'
-apply plugin: 'org.jetbrains.dokka'
 apply plugin: "com.github.ben-manes.versions"
 
-dependencies {
-    deps.discoveryCompile.each { name, dep ->
-        api dep
-    }
+sourceCompatibility = 1.8
 
-    deps.discoveryTestCompile.each { name, dep ->
-        testImplementation dep
-    }
+intellij {
+    version versions.minIntelliJ
+    updateSinceUntilBuild false
 }
 
 compileKotlin {
@@ -21,8 +18,12 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+dependencies {
+    deps.discoveryPluginCompile.each { name, dep ->
+        api dep
+    }
+    api project(':discovery-lib')
+}
 
 task sourceJar(type: Jar, dependsOn: classes) {
     classifier 'sources'
@@ -42,10 +43,10 @@ task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
 
 ext {
     artifactVersion = project.ext.pluginVersion
-    artifactName = 'discovery-lib'
+    artifactName = 'discovery-plugin-ui'
     artifactGroup = 'com.chimerapps'
-    artifactVersioon = versions.discoveryLib
-    artifactDescription = 'Base library for discovering devices/sessions for niddler, moor, ...'
+    artifactVersioon = versions.discoveryPluginLib
+    artifactDescription = 'Plugin UI base library for discovering devices/sessions for niddler, moor, ...'
 }
 
 apply from: "${rootProject.projectDir}/scripts/publish-mavencentral.gradle"

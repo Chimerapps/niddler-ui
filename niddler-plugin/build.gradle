@@ -2,6 +2,7 @@ apply from: '../dependencies.gradle'
 
 apply plugin: "org.jetbrains.intellij"
 apply plugin: 'kotlin'
+apply plugin: "com.github.ben-manes.versions"
 
 def actualPluginVersion = hasProperty("internalBuildNumber") ? "$pluginVersion-$internalBuildNumber" : "$pluginVersion"
 
@@ -16,7 +17,7 @@ sourceCompatibility = 1.8
 intellij {
     version versions.minIntelliJ
     updateSinceUntilBuild false
-//    plugins "java"
+    plugins "java"
 }
 
 compileKotlin {
@@ -48,7 +49,7 @@ dependencies {
             exclude group: 'org.slf4j', module: 'slf4j-api'
         }
     }
-    implementation project(':discovery-lib-plugin-ui')
+    implementation project(':discovery-plugin-ui')
 
     implementation(project(path: ':client-lib', configuration: 'default')) {
         exclude group: 'org.slf4j', module: 'slf4j-api'

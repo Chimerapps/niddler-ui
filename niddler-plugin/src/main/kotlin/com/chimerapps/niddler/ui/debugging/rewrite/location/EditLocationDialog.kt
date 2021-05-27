@@ -5,10 +5,10 @@ import com.icapps.niddler.lib.debugger.model.rewrite.RewriteLocation
 import java.awt.Window
 import java.awt.event.KeyEvent
 import javax.swing.JComponent
+import javax.swing.JDialog
 import javax.swing.KeyStroke
 
-
-class EditLocationDialog(parent: Window?, source: RewriteLocation?) : EditLocationDialogUI(parent) {
+class EditLocationDialog(parent: Window?, source: RewriteLocation?) : JDialog(parent, "Edit Location", ModalityType.APPLICATION_MODAL) {
 
     companion object {
         fun show(parent: Window?, source: RewriteLocation?): RewriteLocation? {
@@ -25,35 +25,40 @@ class EditLocationDialog(parent: Window?, source: RewriteLocation?) : EditLocati
 
     var result: RewriteLocation? = null
         private set
+    private val contentUI = EditLocationDialogUI(addButtons = true)
 
     init {
-        content.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-        protocolChooser.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+        contentPane = contentUI.content
 
-        rootPane.defaultButton = okButton
+        contentUI. content.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+        contentUI. protocolChooser.registerKeyboardAction({ dispose() }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
 
-        okButton.addActionListener {
+        rootPane.defaultButton = contentUI.okButton
+
+        contentUI.okButton.addActionListener {
             result = makeResult()
             dispose()
         }
-        cancelButton.addActionListener {
+        contentUI.cancelButton.addActionListener {
             dispose()
         }
 
         source?.let { initFrom ->
-            initFrom.protocol?.let { protocolChooser.selectedItem = it }
-            initFrom.host?.let { host.text = it }
-            initFrom.port?.let { port.text = it.toString() }
-            initFrom.path?.let { path.text = it }
-            initFrom.query?.let { query.text = it }
+            initFrom.protocol?.let { contentUI.protocolChooser.selectedItem = it }
+            initFrom.host?.let { contentUI.host.text = it }
+            initFrom.port?.let { contentUI.port.text = it.toString() }
+            initFrom.path?.let { contentUI.path.text = it }
+            initFrom.query?.let { contentUI.query.text = it }
         }
     }
 
     private fun makeResult(): RewriteLocation {
-        return RewriteLocation(protocol = (protocolChooser.selectedItem as String).trimToNull(),
-                host = host.text.trimToNull(),
-                path = path.text.trimToNull(),
-                query = query.text.trimToNull(),
-                port = port.text.trimToNull())
+        return RewriteLocation(
+            protocol = (contentUI.protocolChooser.selectedItem as String).trimToNull(),
+            host = contentUI.host.text.trimToNull(),
+            path = contentUI.path.text.trimToNull(),
+            query = contentUI.query.text.trimToNull(),
+            port = contentUI.port.text.trimToNull()
+        )
     }
 }
