@@ -101,7 +101,7 @@ class MapLocalDialog(
         }
     }, onRowDoubleClicked = { row, model ->
         val item = mappings.getOrNull(row) ?: return@PackingJBTable
-        val edited = EditLocalMappingDialog.show(this, item, project)
+        val edited = EditLocalMappingDialog.show(this, item.copy(destination = fileResolver.resolveFile(item.destination)), project)
             ?: return@PackingJBTable
         mappings[row] = edited
         (model as DefaultTableModel).setValueAt(edited.location.asString(), row, 1)
@@ -212,7 +212,7 @@ class MapLocalDialog(
 
         ProjectConfig.load<MapLocalConfiguration>(project, ProjectConfig.CONFIG_MAPLOCAL)?.let {
             val config = it.copy(mappings = it.mappings.createIds())
-            mappings.addAll(it.mappings)
+            mappings.addAll(it.mappings.createIds())
             mappingTable.isEnabled = config.enabled
             addButton.isEnabled = config.enabled
             removeButton.isEnabled = false

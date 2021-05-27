@@ -16,7 +16,11 @@ data class MapLocalEntry(
     val enabled: Boolean,
     val caseSensitive: Boolean,
     @Transient val id: String,
-)
+) {
+    fun matchesUrl(url: String): Boolean {
+        return Regex(location.asRegex()).matches(url)
+    }
+}
 
 fun interface FileResolver {
 

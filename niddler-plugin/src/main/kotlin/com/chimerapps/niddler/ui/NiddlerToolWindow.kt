@@ -3,6 +3,7 @@ package com.chimerapps.niddler.ui
 import com.chimerapps.discovery.device.Device
 import com.chimerapps.discovery.device.adb.ADBBootstrap
 import com.chimerapps.discovery.device.adb.ADBInterface
+import com.chimerapps.niddler.ui.actions.ConfigureMapLocalAction
 import com.chimerapps.niddler.ui.actions.ConfigureRewriteAction
 import com.chimerapps.niddler.ui.actions.NewSessionAction
 import com.chimerapps.niddler.ui.component.ConnectionMode
@@ -14,6 +15,7 @@ import com.chimerapps.niddler.ui.model.ProjectConfig
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.adb.ADBUtils
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
+import com.icapps.niddler.lib.debugger.model.maplocal.MapLocalConfiguration
 import com.intellij.execution.ui.RunnerLayoutUi
 import com.intellij.execution.ui.layout.PlaceInGrid
 import com.intellij.openapi.Disposable
@@ -158,16 +160,15 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
                 applyRewriteConfig(it)
             }
         }
-        //TODO
-        val configureDebuggerAction2 = ConfigureRewriteAction(this) {
+        val configureLocalMapping = ConfigureMapLocalAction(this) {
             MapLocalDialog.show(SwingUtilities.getWindowAncestor(this), project)?.let {
                 ProjectConfig.save(project, ProjectConfig.CONFIG_MAPLOCAL, it)
-//                applyRewriteConfig(it) TODO
+                applyMapLocalConfig(it)
             }
         }
         actionGroup.add(newSessionAction)
         actionGroup.add(configureDebuggerAction)
-        actionGroup.add(configureDebuggerAction2)
+        actionGroup.add(configureLocalMapping)
 
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, false)
         setToolbar(toolbar.component)
@@ -192,7 +193,28 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
                 } catch (e: Throwable) {
                 }
             }
-            sessionWindow.debugListener.updateRuleSets(config.sets)
+            sessionWindow.rewriteDebugListener.updateRuleSets(config.sets)
+        }
+    }
+
+    private fun applyMapLocalConfig(config: MapLocalConfiguration) {
+        tabsContainer.contents.mapNotNull { content ->
+            val sessionWindow = (content.component as? NiddlerSessionWindow) ?: return@mapNotNull null
+            if (sessionWindow.connectionMode == ConnectionMode.MODE_CONNECTED)
+                sessionWindow
+            else
+                null
+        }.forEach { sessionWindow ->
+            sessionWindow.debuggerService?.let { debuggerService ->
+                try {
+                    debuggerService.mapLocalInterface.clearRuleSets()
+                    if (config.enabled) {
+                        config.mappings.forEach { set -> debuggerService.mapLocalInterface.addLocalMapping(set) }
+                    }
+                } catch (e: Throwable) {
+                }
+            }
+            sessionWindow.mapLocalDebugListener.updateMapLocal(config.mappings)
         }
     }
 

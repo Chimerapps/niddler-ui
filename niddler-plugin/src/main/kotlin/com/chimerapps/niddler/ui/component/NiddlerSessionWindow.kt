@@ -26,10 +26,10 @@ import com.chimerapps.niddler.ui.component.view.MessageDetailView
 import com.chimerapps.niddler.ui.component.view.MessagesView
 import com.chimerapps.niddler.ui.component.view.NiddlerStatusBar
 import com.chimerapps.niddler.ui.component.view.TimelineView
+import com.chimerapps.niddler.ui.debugging.maplocal.ProjectFileResolver
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteConfig
 import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.model.ProjectConfig
-import com.chimerapps.niddler.ui.settings.ApplicationConfigurationProvider
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.session.SessionFinderUtil
 import com.chimerapps.niddler.ui.util.ui.IncludedIcons
@@ -42,7 +42,10 @@ import com.icapps.niddler.lib.connection.NiddlerClient
 import com.icapps.niddler.lib.connection.model.NiddlerMessage
 import com.icapps.niddler.lib.connection.model.NiddlerServerInfo
 import com.icapps.niddler.lib.connection.protocol.NiddlerMessageListener
+import com.icapps.niddler.lib.debugger.DispatchingNiddlerDebugListener
 import com.icapps.niddler.lib.debugger.model.DebuggerService
+import com.icapps.niddler.lib.debugger.model.maplocal.MapLocalConfiguration
+import com.icapps.niddler.lib.debugger.model.maplocal.MapLocalDebugListener
 import com.icapps.niddler.lib.debugger.model.rewrite.RewriteDebugListener
 import com.icapps.niddler.lib.export.HarExport
 import com.icapps.niddler.lib.model.BaseUrlHider
@@ -60,7 +63,6 @@ import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.options.ShowSettingsUtil
-import com.intellij.openapi.options.ex.ConfigurableExtensionPointUtil
 import com.intellij.openapi.project.Project
 import com.intellij.ui.FilterComponent
 import com.intellij.ui.JBSplitter
@@ -97,7 +99,12 @@ class NiddlerSessionWindow(
     private val splitter = JBSplitter(APP_PREFERENCE_SPLITTER_STATE, 0.6f)
     private var baseUrlHider: BaseUrlHider? = null
     private var currentFilter: NiddlerMessageStorage.Filter? = null
-    val debugListener = RewriteDebugListener(::onWrongStatusMessageReplacement)
+    val rewriteDebugListener = RewriteDebugListener(::onWrongStatusMessageReplacement)
+    val mapLocalDebugListener = MapLocalDebugListener(ProjectFileResolver(project))
+    private val debugListener = DispatchingNiddlerDebugListener().also {
+        it.addDelegate(rewriteDebugListener)
+        it.addDelegate(mapLocalDebugListener)
+    }
     var debuggerService: DebuggerService? = null
         //TODO disconnect
         private set
@@ -373,14 +380,22 @@ class NiddlerSessionWindow(
                 override fun onReady() {
                     val client = niddlerClient
                     if (client?.withDebugger == true) {
-                        val rewriteConfig = ProjectConfig.load<RewriteConfig>(project, ProjectConfig.CONFIG_REWRITE) ?: return
-                        debuggerService = DebuggerService(client).also { service ->
-                            service.connect()
-                            if (rewriteConfig.allEnabled) {
-                                debugListener.updateRuleSets(rewriteConfig.sets)
-                                rewriteConfig.sets.forEach { set -> service.rewriteInterface.addRuleSet(set) }
+                        //TODO load others
+                        val rewriteConfig = ProjectConfig.load<RewriteConfig>(project, ProjectConfig.CONFIG_REWRITE)
+                        val mapLocal = ProjectConfig.load<MapLocalConfiguration>(project, ProjectConfig.CONFIG_MAPLOCAL)
+                        if (rewriteConfig != null || mapLocal != null) {
+                            debuggerService = DebuggerService(client).also { service ->
+                                service.connect()
+                                if (rewriteConfig?.allEnabled == true) {
+                                    rewriteDebugListener.updateRuleSets(rewriteConfig.sets)
+                                    rewriteConfig.sets.forEach { set -> service.rewriteInterface.addRuleSet(set) }
+                                }
+                                if (mapLocal?.enabled == true){
+                                    mapLocalDebugListener.updateMapLocal(mapLocal.mappings)
+                                    mapLocal.mappings.forEach { mapping -> service.mapLocalInterface.addLocalMapping(mapping) }
+                                }
+                                service.setActive(true)
                             }
-                            service.setActive(true)
                         }
                     }
                 }

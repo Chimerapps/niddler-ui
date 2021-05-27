@@ -10,16 +10,17 @@ import com.icapps.niddler.lib.debugger.model.MESSAGE_DEBUG_REQUEST
 import com.icapps.niddler.lib.debugger.model.NiddlerDebugControlMessage
 import com.icapps.niddler.lib.debugger.model.mergeToJson
 import com.icapps.niddler.lib.model.NiddlerMessageContainer
-import com.icapps.niddler.lib.model.storage.NiddlerMessageStorage
 import org.java_websocket.client.WebSocketClient
 
 /**
  * @author Nicola Verbeeck
  */
-open class NiddlerV4ProtocolHandler(messageListener: NiddlerMessageListener,
-                                    protected val debugListener: NiddlerDebugListener,
-                                    protocolVersion: Int,
-                                    private val messageStorage: NiddlerMessageContainer?) : NiddlerV2ProtocolHandler(messageListener, protocolVersion) {
+open class NiddlerV4ProtocolHandler(
+    messageListener: NiddlerMessageListener,
+    protected val debugListener: NiddlerDebugListener,
+    protocolVersion: Int,
+    private val messageStorage: NiddlerMessageContainer?
+) : NiddlerV2ProtocolHandler(messageListener, protocolVersion) {
 
     companion object {
         private val log = logger<NiddlerV4ProtocolHandler>()
@@ -40,10 +41,11 @@ open class NiddlerV4ProtocolHandler(messageListener: NiddlerMessageListener,
             onDebugRequestOverride(socket, gson.fromJson(message.getAsJsonObject("request"), NiddlerMessage::class.java))
         } else if (message.has("requestId")) {
             val requestId = message.get("requestId").asString
+            val messageId = message.get("messageId").asString
             if (message.has("response")) {
-                onDebugResponseAction(socket, requestId, gson.fromJson(message.get("response"), NiddlerMessage::class.java))
+                onDebugResponseAction(socket, requestId, messageId, gson.fromJson(message.get("response"), NiddlerMessage::class.java))
             } else {
-                onDebugRequestAction(socket, requestId)
+                onDebugRequestAction(socket, requestId, messageId)
             }
         } else {
             log.warn("Failed to debug request message, unknown type: $message")
@@ -68,19 +70,20 @@ open class NiddlerV4ProtocolHandler(messageListener: NiddlerMessageListener,
         socket.send(mergeToJson(gson, controlMessage).toString())
     }
 
-    private fun onDebugRequestAction(socket: WebSocketClient, requestId: String) {
-        val response = debugListener.onRequestAction(requestId)
+    private fun onDebugRequestAction(socket: WebSocketClient, requestId: String, messageId: String) {
+        val storage = messageStorage
+        val response = debugListener.onRequestAction(requestId, request = storage?.let { storage.findRequest(requestId)?.let(storage::load) })
 
-        val controlMessage = NiddlerDebugControlMessage(MESSAGE_DEBUG_REPLY, messageId = requestId, payload = response)
+        val controlMessage = NiddlerDebugControlMessage(MESSAGE_DEBUG_REPLY, messageId = messageId, payload = response)
 
         socket.send(mergeToJson(gson, controlMessage).toString())
     }
 
-    private fun onDebugResponseAction(socket: WebSocketClient, requestId: String, message: NiddlerMessage) {
+    private fun onDebugResponseAction(socket: WebSocketClient, requestId: String, messageId: String, message: NiddlerMessage) {
         val storage = messageStorage
         val response = debugListener.onResponseAction(requestId, message, request = storage?.let { storage.findRequest(message.requestId)?.let(storage::load) })
 
-        val controlMessage = NiddlerDebugControlMessage(MESSAGE_DEBUG_REPLY, messageId = requestId, payload = response)
+        val controlMessage = NiddlerDebugControlMessage(MESSAGE_DEBUG_REPLY, messageId = messageId, payload = response)
 
         socket.send(mergeToJson(gson, controlMessage).toString())
     }

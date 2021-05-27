@@ -4,7 +4,7 @@ import com.chimerapps.niddler.ui.NiddlerToolWindow
 import com.intellij.icons.AllIcons
 
 class ConfigureRewriteAction(private val window: NiddlerToolWindow, actionListener: () -> Unit)
-    : DisableableAction(text = "Configure debugger", description = "Configure debugger",
+    : DisableableAction(text = "Configure rewrites", description = "Configure rewrites",
         icon = AllIcons.Debugger.MultipleBreakpoints, actionListener = actionListener) {
 
     override val isEnabled: Boolean
