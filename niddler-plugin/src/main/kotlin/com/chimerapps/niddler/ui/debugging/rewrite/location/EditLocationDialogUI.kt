@@ -7,11 +7,16 @@ import com.intellij.ui.components.JBTextField
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.net.URL
 import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.SwingConstants
+import javax.swing.SwingUtilities
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 import javax.swing.text.AbstractDocument
+
 
 @Suppress("DuplicatedCode")
 open class EditLocationDialogUI(addButtons: Boolean) {
@@ -44,6 +49,31 @@ open class EditLocationDialogUI(addButtons: Boolean) {
 
     val host = JBTextField().also {
         addLabel("Host:", 2)
+
+        (it.document as AbstractDocument).addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent) {
+                if (e.length > 1) {
+                    try {
+                        val inserted = e.document.getText(e.offset, e.length)
+                        val url = URL(inserted)
+                        protocolChooser.selectedItem = url.protocol ?: ""
+                        port.text = if (url.port == -1) "" else url.port.toString()
+                        path.text = url.path ?: ""
+                        query.text = url.query ?: ""
+                        SwingUtilities.invokeLater {
+                            it.text = url.host ?: ""
+                        }
+                    } catch (ignored: Throwable) {
+                    }
+                }
+            }
+
+            override fun removeUpdate(e: DocumentEvent?) {
+            }
+
+            override fun changedUpdate(e: DocumentEvent?) {
+            }
+        })
 
         val constraints = GridBagConstraints().apply {
             gridx = 1
