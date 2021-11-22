@@ -1,3 +1,6 @@
+plugins {
+    id("org.jetbrains.dokka") version "1.5.30"
+}
 apply from: '../dependencies.gradle'
 
 apply plugin: "org.jetbrains.intellij"
@@ -30,22 +33,15 @@ task sourceJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
-task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
-    outputFormat = 'javadoc'
-    outputDirectory = "$buildDir/javadoc"
-    inputs.dir 'src/main/kotlin'
-}
-
 task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
     classifier = 'javadoc'
     from "$buildDir/javadoc"
 }
 
 ext {
-    artifactVersion = project.ext.pluginVersion
     artifactName = 'discovery-plugin-ui'
     artifactGroup = 'com.chimerapps'
-    artifactVersioon = versions.discoveryPluginLib
+    artifactVersion = versions.discoveryPluginLib
     artifactDescription = 'Plugin UI base library for discovering devices/sessions for niddler, moor, ...'
 }
 

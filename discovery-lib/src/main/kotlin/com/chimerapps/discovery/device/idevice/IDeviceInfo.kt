@@ -16,7 +16,8 @@ interface IDeviceInfo {
     val udid: String
     val wifiMacAddress: String
     val deviceName: String
-    val deviceType: IDeviceType
+    val deviceType: IDeviceType?
+    val alternativeDeviceTypeName: String?
     val osVersion: String
 }
 
@@ -39,8 +40,9 @@ class IDeviceBootstrap(private val binaryPath: File = File("/usr/local/bin/")) {
 internal data class IDeviceInfoImpl(override val udid: String,
                                     override val wifiMacAddress: String,
                                     override val deviceName: String,
-                                    override val deviceType: IDeviceType,
-                                    override val osVersion: String) : IDeviceInfo
+                                    override val deviceType: IDeviceType?,
+                                    override val osVersion: String,
+                                    override val alternativeDeviceTypeName: String?) : IDeviceInfo
 
 class IDevice internal constructor(val deviceInfo: IDeviceInfo,
                                    private val commandExecutor: IDeviceCommandExecutor) : BaseDevice() {

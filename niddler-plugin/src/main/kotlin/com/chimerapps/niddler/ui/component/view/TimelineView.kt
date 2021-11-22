@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.component.view
 
+import com.chimerapps.niddler.ui.debugging.maplocal.MapLocalDialog
 import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.AppPreferences
 import com.chimerapps.niddler.ui.model.ProjectConfig
@@ -116,6 +117,11 @@ class TimelineView(private val project: Project,
                 actions += "Add request rewrite rule" action {
                     RewriteDialog.showAdd(SwingUtilities.getWindowAncestor(this), project, urlContainer)?.let {
                         ProjectConfig.save(project, ProjectConfig.CONFIG_REWRITE, it)
+                    }
+                }
+                actions += "Add request map local rule" action {
+                    MapLocalDialog.showAdd(SwingUtilities.getWindowAncestor(this), project, urlContainer)?.let {
+                        ProjectConfig.save(project, ProjectConfig.CONFIG_MAPLOCAL, it)
                     }
                 }
             }

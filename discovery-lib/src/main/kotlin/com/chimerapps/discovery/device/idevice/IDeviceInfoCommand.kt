@@ -29,10 +29,13 @@ internal class IDeviceInfoCommand(private val udid: String) : IDeviceCommand<IDe
             }
         }
 
-        return IDeviceInfoImpl(udid = udid,
-                wifiMacAddress = wifiAddress ?: return null,
-                deviceName = deviceName ?: return null,
-                deviceType = IDeviceType.values().find { it.productType == productType } ?: return null,
-                osVersion = productVersion ?: return null)
+        return IDeviceInfoImpl(
+            udid = udid,
+            wifiMacAddress = wifiAddress ?: return null,
+            deviceName = deviceName ?: return null,
+            deviceType = IDeviceType.values().find { it.productType == productType },
+            osVersion = productVersion ?: return null,
+            alternativeDeviceTypeName = productType ?: return null,
+        )
     }
 }
