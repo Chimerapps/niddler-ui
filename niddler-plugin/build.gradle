@@ -12,7 +12,7 @@ def StudioCompilePath = localProperties.getProperty('StudioCompilePath')
 
 group 'com.icapps'
 version actualPluginVersion
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 
 intellij {
     version versions.minIntelliJ
@@ -21,10 +21,10 @@ intellij {
 }
 
 compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }
 
 configurations {
@@ -41,8 +41,6 @@ dependencies {
             dependencies "oro:oro:2.0.8:jar"
         }
     }
-    compileOnly fileTree(dir: "$StudioCompilePath/plugins/android/lib", include: ['*.jar'])
-    compileOnly fileTree(dir: "$StudioCompilePath/lib", include: ['*.jar'])
 
     deps.pluginCompile.each { name, dep ->
         implementation(dep) {
@@ -54,6 +52,9 @@ dependencies {
     implementation(project(path: ':client-lib', configuration: 'default')) {
         exclude group: 'org.slf4j', module: 'slf4j-api'
     }
+
+    compileOnly fileTree(dir: "$StudioCompilePath/plugins/android/lib", include: ['*.jar'])
+    compileOnly fileTree(dir: "$StudioCompilePath/lib", include: ['*.jar'])
 }
 
 tasks.create('uploadToInternalServer') {

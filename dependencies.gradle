@@ -1,7 +1,7 @@
 def versions = [
         androidEmulatorControl: '0.1.2',
         discoveryLib          : '1.3.4',
-        discoveryPluginLib    : '1.4.3',
+        discoveryPluginLib    : '1.4.4',
         gson                  : '2.8.6',
         httpcore              : '4.4.14',
         intelliJPlugin        : '0.4.8',

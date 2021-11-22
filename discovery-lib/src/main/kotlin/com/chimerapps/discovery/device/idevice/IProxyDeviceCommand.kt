@@ -12,7 +12,7 @@ internal class IProxyDeviceCommand(udid: String, private val localPort: Int, tar
     }
 
     override val command: String = "iproxy"
-    override val arguments: List<String> = listOf(localPort.toString(), targetPort.toString(), udid)
+    override val arguments: List<String> = listOf(localPort.toString(), targetPort.toString(), "-u", udid)
 
     override fun onProcessStarted(process: Process, onFinishListener: (code: Int) -> Unit) {
         //Don't wait for process to finish, just notify if we can connect on the local port
