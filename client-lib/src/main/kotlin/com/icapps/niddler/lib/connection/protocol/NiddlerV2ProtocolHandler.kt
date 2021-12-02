@@ -11,8 +11,10 @@ import java.util.Base64
 /**
  * @author Nicola Verbeeck
  */
-open class NiddlerV2ProtocolHandler(messageListener: NiddlerMessageListener,
-                                    protected val protocolVersion: Int) : NiddlerV1ProtocolHandler(messageListener) {
+open class NiddlerV2ProtocolHandler(
+    messageListener: NiddlerMessageListener,
+    protected val protocolVersion: Int
+) : NiddlerV1ProtocolHandler(messageListener) {
 
     companion object {
         private val log = logger<NiddlerV2ProtocolHandler>()
@@ -39,11 +41,14 @@ open class NiddlerV2ProtocolHandler(messageListener: NiddlerMessageListener,
 
     private fun onServerInfo(serverInfo: JsonObject) {
         messageListener.onServerInfo(
-                NiddlerServerInfo(
-                        serverName = serverInfo["serverName"].asString,
-                        serverDescription = serverInfo["serverDescription"].asString,
-                        icon = if (serverInfo["icon"]?.isJsonNull == false) serverInfo["icon"].asString else null,
-                        protocol = protocolVersion))
+            NiddlerServerInfo(
+                serverName = serverInfo["serverName"].asString,
+                serverDescription = serverInfo["serverDescription"].asString,
+                icon = if (serverInfo["icon"]?.isJsonNull == false) serverInfo["icon"].asString else null,
+                protocol = protocolVersion,
+                extensions = if (serverInfo["extensions"]?.isJsonObject == true) serverInfo["extensions"].asJsonObject else null
+            ),
+        )
     }
 
     private fun onAuthRequest(socket: WebSocketClient, authRequestMessage: JsonObject) {

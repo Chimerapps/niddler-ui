@@ -20,6 +20,7 @@ import com.chimerapps.niddler.ui.actions.LinkedAction
 import com.chimerapps.niddler.ui.actions.ScrollToBottomAction
 import com.chimerapps.niddler.ui.actions.SimpleAction
 import com.chimerapps.niddler.ui.actions.TimelineAction
+import com.chimerapps.niddler.ui.actions.ToggleWifiAction
 import com.chimerapps.niddler.ui.component.view.BaseUrlHideListener
 import com.chimerapps.niddler.ui.component.view.LinkedView
 import com.chimerapps.niddler.ui.component.view.MessageDetailView
@@ -60,6 +61,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.options.ShowSettingsUtil
@@ -94,6 +96,7 @@ class NiddlerSessionWindow(
     private val rootContent = JPanel(BorderLayout())
     private val connectToolbar = setupConnectToolbar()
     private val exportAction = ExportAction(::doExport)
+    private val toggleWifiAction = ToggleWifiAction(this) { debuggerService?.toggleWifi() }
     private val viewToolbar = setupViewToolbar()
     private val statusBar = NiddlerStatusBar()
     private val splitter = JBSplitter(APP_PREFERENCE_SPLITTER_STATE, 0.6f)
@@ -105,6 +108,9 @@ class NiddlerSessionWindow(
         it.addDelegate(rewriteDebugListener)
         it.addDelegate(mapLocalDebugListener)
     }
+    private val extensionBasedActions = mapOf<String, AnAction>("toggleInternet" to toggleWifiAction)
+    private lateinit var actionGroup: DefaultActionGroup
+
     var debuggerService: DebuggerService? = null
         //TODO disconnect
         private set
@@ -259,6 +265,7 @@ class NiddlerSessionWindow(
 
     private fun setupViewToolbar(): ActionToolbar {
         val actionGroup = DefaultActionGroup()
+        this.actionGroup = actionGroup
 
         actionGroup.add(TimelineAction(window = this))
         actionGroup.add(LinkedAction(window = this))
@@ -275,6 +282,7 @@ class NiddlerSessionWindow(
         })
         actionGroup.addSeparator()
         actionGroup.add(exportAction)
+        actionGroup.addSeparator()
 
         val toolbar = ActionManager.getInstance().createActionToolbar("Niddler", actionGroup, false)
         add(toolbar.component, BorderLayout.WEST)
@@ -359,6 +367,7 @@ class NiddlerSessionWindow(
                         }
                     }
                     debuggerService = null
+                    updateExtensionActions(null)
                 }
             })
             it.registerMessageListener(object : NiddlerMessageListener {
@@ -371,6 +380,7 @@ class NiddlerSessionWindow(
                             ).iconForString(iconString)
                         }
                         content.icon = newIcon
+                        updateExtensionActions(serverInfo)
                     }
                 }
             })
@@ -383,19 +393,18 @@ class NiddlerSessionWindow(
                         //TODO load others
                         val rewriteConfig = ProjectConfig.load<RewriteConfig>(project, ProjectConfig.CONFIG_REWRITE)
                         val mapLocal = ProjectConfig.load<MapLocalConfiguration>(project, ProjectConfig.CONFIG_MAPLOCAL)
-                        if (rewriteConfig != null || mapLocal != null) {
-                            debuggerService = DebuggerService(client).also { service ->
-                                service.connect()
-                                if (rewriteConfig?.allEnabled == true) {
-                                    rewriteDebugListener.updateRuleSets(rewriteConfig.sets)
-                                    rewriteConfig.sets.forEach { set -> service.rewriteInterface.addRuleSet(set) }
-                                }
-                                if (mapLocal?.enabled == true){
-                                    mapLocalDebugListener.updateMapLocal(mapLocal.mappings)
-                                    mapLocal.mappings.forEach { mapping -> service.mapLocalInterface.addLocalMapping(mapping) }
-                                }
-                                service.setActive(true)
+                        debuggerService = DebuggerService(client).also { service ->
+                            service.connect()
+                            if (rewriteConfig?.allEnabled == true) {
+                                rewriteDebugListener.updateRuleSets(rewriteConfig.sets)
+                                rewriteConfig.sets.forEach { set -> service.rewriteInterface.addRuleSet(set) }
                             }
+                            if (mapLocal?.enabled == true) {
+                                mapLocalDebugListener.updateMapLocal(mapLocal.mappings)
+                                mapLocal.mappings.forEach { mapping -> service.mapLocalInterface.addLocalMapping(mapping) }
+                            }
+                            service.setActive(true)
+                            dispatchMain(viewToolbar::updateActionsImmediately)
                         }
                     }
                 }
@@ -406,6 +415,17 @@ class NiddlerSessionWindow(
         connectionMode = ConnectionMode.MODE_CONNECTED
     }
 
+    private fun updateExtensionActions(serverInfo: NiddlerServerInfo?) {
+        extensionBasedActions.forEach { (_, action) -> actionGroup.remove(action) }
+        serverInfo?.extensions?.let { extensions ->
+            extensions.keySet().forEach { key ->
+                when (key) {
+                    "debug.disableInternet" -> actionGroup.add(toggleWifiAction)
+                }
+            }
+        }
+        dispatchMain(viewToolbar::updateActionsImmediately)
+    }
 
     override fun onServiceMessage(niddlerMessage: NiddlerMessage) {
         currentMessagesView?.onMessagesUpdated()

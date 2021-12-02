@@ -33,6 +33,8 @@ object IncludedIcons {
         val pretty = loadIcon("/ic_pretty.svg")
         val chronological = loadIcon("/ic_chronological_flat.svg")
         val localMapping = loadIcon("/ic_map_local.svg")
+        val enableWifi = loadIcon("/ic_wifi_off.svg")
+        val disableWifi = loadIcon("/ic_wifi_on.svg")
     }
 
 }
