@@ -9,6 +9,7 @@ import com.chimerapps.discovery.model.connectdialog.ConnectDialogModel
 import com.chimerapps.discovery.model.connectdialog.ConnectDialogProcessNode
 import com.chimerapps.discovery.model.connectdialog.DeviceModel
 import com.chimerapps.discovery.model.connectdialog.DeviceScanner
+import com.chimerapps.discovery.ui.renderer.ConnectDialogTreeCellDelegate
 import com.chimerapps.discovery.ui.renderer.ConnectDialogTreeCellRenderer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.ApplicationManager
@@ -16,7 +17,6 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.ui.treeStructure.Tree
-import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.Window
@@ -47,30 +47,62 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
-data class ManualConnection(val ip: String, val port: Int)
-data class DiscoveredDeviceConnection(val device: Device, val session: DiscoveredSession)
-
-data class ConnectDialogResult(val direct: ManualConnection?, val discovered: DiscoveredDeviceConnection?)
-
-class ConnectDialog(parent: Window?,
-                    private val announcementPort: Int,
-                    private var adbInterface: ADBInterface,
-                    private var iDeviceBootstrap: IDeviceBootstrap,
-                    sessionIconProvider: SessionIconProvider,
-                    configurePluginCallback: () -> Pair<ADBInterface,IDeviceBootstrap>
+data class ManualConnection(
+    val ip: String,
+    val port: Int,
 )
-    : ConnectDialogUI(parent, "Select a device to connect to", sessionIconProvider, configurePluginCallback) {
+
+data class DiscoveredDeviceConnection(
+    val device: Device,
+    val session: DiscoveredSession,
+)
+
+data class ConnectDialogResult(
+    val direct: ManualConnection?,
+    val discovered: DiscoveredDeviceConnection?,
+)
+
+class ConnectDialog(
+    parent: Window?,
+    private val announcementPort: Int,
+    private var adbInterface: ADBInterface,
+    private var iDeviceBootstrap: IDeviceBootstrap,
+    sessionIconProvider: SessionIconProvider,
+    renderDelegate: ConnectDialogTreeCellDelegate = ConnectDialogTreeCellDelegate(),
+    localizationDelegate: LocalizationDelegate,
+    configurePluginCallback: () -> Pair<ADBInterface, IDeviceBootstrap>,
+) : ConnectDialogUI(
+    parent = parent,
+    title = localizationDelegate.connectDialogTitle,
+    sessionIconProvider = sessionIconProvider,
+    configurePluginCallback = configurePluginCallback,
+    renderDelegate = renderDelegate,
+    localizationDelegate = localizationDelegate,
+) {
 
     companion object {
         private const val PORT_MAX = 65535
 
-        fun show(parent: Window?,
-                 adbInterface: ADBInterface,
-                 iDeviceBootstrap: IDeviceBootstrap,
-                 announcementPort: Int,
-                 sessionIconProvider: SessionIconProvider = DefaultSessionIconProvider(),
-                 configurePluginCallback: () -> Pair<ADBInterface,IDeviceBootstrap>): ConnectDialogResult? {
-            val dialog = ConnectDialog(parent, announcementPort, adbInterface, iDeviceBootstrap, sessionIconProvider, configurePluginCallback)
+        fun show(
+            parent: Window?,
+            adbInterface: ADBInterface,
+            iDeviceBootstrap: IDeviceBootstrap,
+            announcementPort: Int,
+            sessionIconProvider: SessionIconProvider = DefaultSessionIconProvider(),
+            renderDelegate: ConnectDialogTreeCellDelegate = ConnectDialogTreeCellDelegate(),
+            localizationDelegate: LocalizationDelegate,
+            configurePluginCallback: () -> Pair<ADBInterface, IDeviceBootstrap>,
+        ): ConnectDialogResult? {
+            val dialog = ConnectDialog(
+                parent = parent,
+                announcementPort = announcementPort,
+                adbInterface = adbInterface,
+                iDeviceBootstrap = iDeviceBootstrap,
+                sessionIconProvider = sessionIconProvider,
+                renderDelegate = renderDelegate,
+                localizationDelegate = localizationDelegate,
+                configurePluginCallback = configurePluginCallback,
+            )
             dialog.pack()
             dialog.setSize(500, 350)
             if (dialog.parent != null)
@@ -83,22 +115,27 @@ class ConnectDialog(parent: Window?,
         }
     }
 
-    private var deviceScanner = DeviceScanner(adbInterface, iDeviceBootstrap, announcementPort, listener = ::onDevicesUpdated)
+    private var deviceScanner = DeviceScanner(
+        adbInterface,
+        iDeviceBootstrap,
+        announcementPort,
+        listener = ::onDevicesUpdated,
+    )
 
     var result: ConnectDialogResult? = null
         private set
 
-    init{
+    init {
         init()
     }
 
     private fun init() {
         val statuses = mutableListOf<String>()
         if (!adbInterface.isRealConnection) {
-            statuses += "ADB path not found"
+            statuses += localizationDelegate.statusADBPathNotFound
         }
         if (!iDeviceBootstrap.isRealConnection) {
-            statuses += "iDevice path not found"
+            statuses += localizationDelegate.statusIDevicePathNotFound
         }
         setStatuses(statuses)
         deviceScanner.startScanning()
@@ -133,7 +170,12 @@ class ConnectDialog(parent: Window?,
         }
         val parsedPort = port.toIntOrNull()
         if (parsedPort == null || parsedPort < 0 || parsedPort > PORT_MAX) {
-            JOptionPane.showMessageDialog(this, "Invalid port", "Could not connect", JOptionPane.ERROR_MESSAGE)
+            JOptionPane.showMessageDialog(
+                this,
+                localizationDelegate.errorMessageInvalidPort,
+                localizationDelegate.errorTitleInvalidPort,
+                JOptionPane.ERROR_MESSAGE,
+            )
             return
         }
         connectDirectly(ip, parsedPort)
@@ -185,7 +227,9 @@ class ConnectDialog(parent: Window?,
 abstract class ConnectDialogUI(
     parent: Window?, title: String,
     sessionIconProvider: SessionIconProvider,
-    private val configurePluginCallback: () -> Pair<ADBInterface,IDeviceBootstrap>
+    private val configurePluginCallback: () -> Pair<ADBInterface, IDeviceBootstrap>,
+    renderDelegate: ConnectDialogTreeCellDelegate,
+    protected val localizationDelegate: LocalizationDelegate,
 ) : JDialog(parent, title, ModalityType.APPLICATION_MODAL) {
 
     protected val deviceModel = ConnectDialogModel()
@@ -194,7 +238,7 @@ abstract class ConnectDialogUI(
         it.showsRootHandles = true
         it.isRootVisible = false
         it.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
-        it.cellRenderer = ConnectDialogTreeCellRenderer(sessionIconProvider)
+        it.cellRenderer = ConnectDialogTreeCellRenderer(sessionIconProvider, localizationDelegate, renderDelegate)
         it.selectionModel.addTreeSelectionListener { onDeviceSelectionChanged() }
 
         it.addMouseListener(object : MouseAdapter() {
@@ -206,14 +250,14 @@ abstract class ConnectDialogUI(
             }
         })
     }
-    protected val cancelButton = JButton("Cancel").also {
+    protected val cancelButton = JButton(localizationDelegate.buttonCancel).also {
         it.addActionListener { onCancel() }
     }
-    protected val connectButton = JButton("Connect").also {
+    protected val connectButton = JButton(localizationDelegate.buttonConnect).also {
         it.addActionListener { onConnect() }
     }
-    private val deviceIpLabel = JLabel("Device ip:")
-    private val portLabel = JLabel("Port:")
+    private val deviceIpLabel = JLabel(localizationDelegate.deviceIp)
+    private val portLabel = JLabel(localizationDelegate.processPort)
     protected val deviceIpField = JTextField().also {
         it.addChangeListener { onDeviceIpChanged() }
     }
@@ -285,9 +329,9 @@ abstract class ConnectDialogUI(
             val panel = JPanel(FlowLayout(FlowLayout.LEADING))
             panel.add(JBLabel(status, AllIcons.General.BalloonWarning, SwingConstants.LEFT))
             panel.add(LinkLabel.create("Open settings") {
-                        val (adbInterface, iDeviceInterface) = configurePluginCallback()
-                        resetConfiguration(adbInterface, iDeviceInterface)
-                    })
+                val (adbInterface, iDeviceInterface) = configurePluginCallback()
+                resetConfiguration(adbInterface, iDeviceInterface)
+            })
 
             statusContainer.add(panel)
         }

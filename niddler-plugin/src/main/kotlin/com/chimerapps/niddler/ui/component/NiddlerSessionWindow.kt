@@ -9,6 +9,7 @@ import com.chimerapps.discovery.ui.CompoundSessionIconProvider
 import com.chimerapps.discovery.ui.ConnectDialog
 import com.chimerapps.discovery.ui.DefaultSessionIconProvider
 import com.chimerapps.discovery.ui.DiscoveredDeviceConnection
+import com.chimerapps.discovery.ui.LocalizationDelegate
 import com.chimerapps.discovery.ui.ManualConnection
 import com.chimerapps.discovery.utils.freePort
 import com.chimerapps.niddler.ui.NiddlerToolWindow
@@ -242,10 +243,11 @@ class NiddlerSessionWindow(
     }
 
     private fun showConnectDialog(withDebugger: Boolean) {
-        val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
-            niddlerToolWindow.adbInterface ?: return,
-            IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin")),
-            Device.NIDDLER_ANNOUNCEMENT_PORT,
+        val result = ConnectDialog.show(
+            parent = SwingUtilities.getWindowAncestor(this),
+            adbInterface = niddlerToolWindow.adbInterface ?: return,
+            iDeviceBootstrap = IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin")),
+            announcementPort = Device.NIDDLER_ANNOUNCEMENT_PORT,
             sessionIconProvider = ProjectSessionIconProvider.instance(
                 project,
                 delegate = CompoundSessionIconProvider(DefaultSessionIconProvider(), Base64SessionIconProvider())
@@ -253,7 +255,9 @@ class NiddlerSessionWindow(
             configurePluginCallback = {
                 ShowSettingsUtil.getInstance().showSettingsDialog(project, "Niddler")
                 niddlerToolWindow.adbInterface!! to IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin"))
-            }) ?: return
+            },
+            localizationDelegate = LocalizationDelegate(),
+        ) ?: return
 
         result.discovered?.let {
             tryConnectSession(it, withDebugger)
@@ -348,7 +352,7 @@ class NiddlerSessionWindow(
         messageContainer.clear()
         try {
             debuggerService?.disconnect()
-        } catch (e: Throwable) {
+        } catch (ignored: Throwable) {
         }
         debuggerService = null
 
