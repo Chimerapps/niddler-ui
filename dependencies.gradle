@@ -8,23 +8,16 @@ def versions = [
         jadb                  : '1.2.1',
         junit4                : '4.13.2',
         kotlin                : '1.5.31',
-        minIntelliJ           : '2020.1.4',
+        minIntelliJ           : '2020.3',
         mockk                 : '1.11.0',
         multiPart             : '1.1.0',
         sqlite                : '3.34.0',
-        versionsPlugin        : '0.38.0',
         webp                  : '0.1.6',
         websocket             : '1.5.2',
         xmlUnit               : '1.6',
 ]
 
 ext.versions = versions
-
-def gradlePlugins = [
-        kotlin  : "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
-        versions: "com.github.ben-manes:gradle-versions-plugin:${versions.versionsPlugin}",
-        intelliJ: "gradle.plugin.org.jetbrains.intellij.plugins:gradle-intellij-plugin:${versions.intelliJPlugin}",
-]
 
 def discoveryCompile = [
         kotlin: "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
@@ -38,13 +31,13 @@ def discoveryPluginCompile = [
 ]
 
 def libCompile = [
-        kotlin      : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
-        websocket   : "org.java-websocket:Java-WebSocket:${versions.websocket}",
-        httpcore    : "org.apache.httpcomponents:httpcore:${versions.httpcore}",
-        multiPart   : "org.synchronoss.cloud:nio-multipart-parser:${versions.multiPart}",
-        gson        : "com.google.code.gson:gson:${versions.gson}",
-        sqlite      : "org.xerial:sqlite-jdbc:${versions.sqlite}",
-        webp        : "org.sejda.imageio:webp-imageio:${versions.webp}",
+        kotlin   : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
+        websocket: "org.java-websocket:Java-WebSocket:${versions.websocket}",
+        httpcore : "org.apache.httpcomponents:httpcore:${versions.httpcore}",
+        multiPart: "org.synchronoss.cloud:nio-multipart-parser:${versions.multiPart}",
+        gson     : "com.google.code.gson:gson:${versions.gson}",
+        sqlite   : "org.xerial:sqlite-jdbc:${versions.sqlite}",
+        webp     : "org.sejda.imageio:webp-imageio:${versions.webp}",
 ]
 
 def pluginCompile = [
@@ -59,11 +52,15 @@ def libTestCompile = [
         xmlUnit: "xmlunit:xmlunit:${versions.xmlUnit}",
 ]
 
+def pluginTestCompile = [
+        junit4: "junit:junit:${versions.junit4}",
+]
+
 ext.deps = [
         'libCompile'            : libCompile,
-        'gradlePlugins'         : gradlePlugins,
         'libTestCompile'        : libTestCompile,
         'pluginCompile'         : pluginCompile,
         'discoveryCompile'      : discoveryCompile,
         'discoveryPluginCompile': discoveryPluginCompile,
+        'pluginTestCompile'     : pluginTestCompile,
 ]

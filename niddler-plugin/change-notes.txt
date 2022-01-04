@@ -1,0 +1,310 @@
+<p>
+    <b>2.13.1</b>
+    <ul>
+        <li>Added option to turn on debug logging to help examining issues</li>
+        <li>Improved compatibility with more recent android studio versions</li>
+    </ul>
+</p>
+<p>
+    <b>2.12.2</b>
+    <ul>
+        <li>Fixed issue where real i-devices never appeared in connect dialog even if found</li>
+        <li>Start requiring java 11</li>
+    </ul>
+</p>
+<p>
+    <b>2.12.1</b>
+    <ul>
+        <li>Fixed issue where unknown i-devices would not show up because we could not parse the name</li>
+    </ul>
+</p>
+<p>
+    <b>2.12.0</b>
+    <ul>
+        <li>You can now paste a full URL in the host field of rewrite/map local location dialog and it will be split automatically</li>
+        <li>You can add a map local rule based on received requests via the context menu</li>
+    </ul>
+</p>
+<p>
+    <b>2.11.0</b>
+    <ul>
+        <li>Added preview of local mapping feature. (Requires niddler java/android 1.5.5 or niddler-dart 1.1.0)</li>
+    </ul>
+</p>
+<p>
+    <b>2.10.2</b>
+    <ul>
+        <li>Bugfix for `ToolWindowManager it is a service` error</li>
+    </ul>
+</p>
+<p>
+    <b>2.10.1</b>
+    <ul>
+        <li>Bump min IntelliJ version to ensure future compatibility</li>
+    </ul>
+</p>
+<p>
+    <b>2.9.12</b>
+    <ul>
+        <li>Fixed issue with charles rewrite rule importing that prevented them from being active</li>
+        <li>Fixed 'Open Settings' not going to niddler settings<li>
+    </ul>
+</p>
+<p>
+    <b>2.9.11</b>
+    <ul>
+        <li>Improvements to settings handling</li>
+    </ul>
+</p>
+<p>
+    <b>2.9.10</b>
+    <ul>
+        <li>Fixed parsing of manually provided port numbers</li>
+    </ul>
+</p>
+<p>
+    <b>2.9.9</b>
+    <ul>
+        <li>Support new metadata properties that will replace custom headers</li>
+        <li>Support Base64 encoded icons in server info messages</li>
+    </ul>
+</p>
+<p>
+    <b>2.9.7</b>
+    <ul>
+        <li>Support parsing debugger status from niddler startup. This allows the system to automatically connect using the debugger when appropriate</li>
+        <li>Added context menu item to toggle between request/response in timeline mode</li>
+    </ul>
+</p>
+<p>
+    <b>2.9.6</b>
+    <ul>
+        <li>When possible also start niddler session when debugging android applications</li>
+    </ul>
+</p>
+<p>
+    <b>2.9.5</b>
+    <ul>
+        <li>Apply debugger configuration when it changes even if the session is already connected</li>
+        <li>Fixed issue where rules could not be disabled</li>
+    </ul>
+</p>
+<p>
+    <b>2.9.4</b>
+    <ul>
+        <li>Fixed response status rewrite rule not triggering</li>
+        <li>Added tooltip for URLs with parameters in detail panel</li>
+        <li>Added configuration option to automatically connect using the debugger</li>
+    </ul>
+</p>
+<p>
+    <b>2.9.3</b>
+    <ul>
+        <li>Fixed issues where unknown body types would never render</li>
+    </ul>
+</p>
+<p>
+    <b>2.9.2</b>
+    <ul>
+        <li>Fixed issue where focus was stolen from the messages list</li>
+        <li>Fixed issue during connection flow that sometimes makes connections impossible</li>
+    </ul>
+</p>
+<p>
+    <b>2.9.1</b>
+    <ul>
+        <li>New logo!</li>
+        <li>Added loading indicator to body panel</li>
+        <li>Automatically grab focus in pretty/raw mode editor if available</li>
+    </ul>
+</p>
+<p>
+    <b>2.9.0</b>
+    <ul>
+        <li>Memory usage improvements by not keeping message body, headers, ... in memory all the time</li>
+        <li>Webp images should now load on all platforms without relying on external application</li>
+    </ul>
+</p>
+<p>
+    <b>2.8.4</b>
+    <ul>
+        <li>Code folding is now supported in pretty mode for json and xml!</li>
+        <li>Fixed memory leak</li>
+    </ul>
+</p>
+<p>
+    <b>2.8.3</b>
+    <ul>
+        <li>Speed searching arrives to structures views! Start typing to search through the contents just like in project view, ...</li>
+    </ul>
+</p>
+<p>
+    <b>2.8.2</b>
+    <ul>
+        <li>Searching and syntax hightlighting is now supported in pretty/raw view!</li>
+    </ul>
+</p>
+<p>
+    <b>2.8.1</b>
+    <ul>
+        <li>Fixed issue where dart stacktraces would not highlight</li>
+    </ul>
+</p>
+<p>
+    <b>2.8.0</b>
+    <ul>
+        <li>Added extra configuration option to automatically start niddler when running your code. This is saved per project</li>
+    </ul>
+</p>
+<p>
+    <b>2.7.2</b>
+    <ul>
+        <li>Desaturate icon in session tab header when connection is lost</li>
+    </ul>
+</p>
+<p>
+    <b>2.7.1</b>
+    <ul>
+        <li>Show server icon in session tab header if supplied</li>
+    </ul>
+</p>
+<p>
+    <b>2.7.0</b>
+    <ul>
+        <li>Observe the console for niddler server messages and allow direct connections</li>
+        <li><p>Support for icons in the session discovery. Out of the box supported: android,apple,dart,flutter.</p>
+        <p>If you want to support custom icons or overwrite the defaults, place bitmaps (png,bmp,...) in the .idea/niddler folder (square 20x20 or 40x40 with @2x), matching happens by file name (without extension).</p>
+        <p>Update the server code with the requested icon using the provided libraries for dart/java/android</p>
+        </li>
+    </ul>
+</p>
+<p>
+    <b>2.6.6</b>
+    <ul>
+        <li>Add array position indicator to json structured rendering</li>
+        <li>When no content-type headers are sent, try to check if we are an image by using some magic numbers</li>
+    </ul>
+</p>
+<p>
+    <b>2.6.5</b>
+    <ul>
+        <li>Fixed exported rewrite rule not being imported by charles</li>
+    </ul>
+</p>
+<p>
+    <b>2.6.4</b>
+    <ul>
+        <li>Enhanced icons to account for people with color-blindness</li>
+        <li>Fixed network headers not always showing up in detail panel</li>
+        <li>Curl export will now export network request when possible, containing cookies, ...</li>
+        <li>Curl export will add a flag to decompress the output when appropriate</li>
+    </ul>
+</p>
+<p>
+    <b>2.6.3</b>
+    <ul>
+        <li>Fixed debugger not connecting if rewrite rules are not enabled</li>
+        <li>Fixed 'add rule from response' not saving</li>
+    </ul>
+</p>
+<p>
+    <b>2.6.2</b>
+    <ul>
+        <li>Fixed matched whole value and case sensitive not being correctly pre-filled</li>
+        <li>Added indication to requests/responses which have been changed by the debugger</li>
+    </ul>
+</p>
+<p>
+    <b>2.6.1</b>
+    <ul>
+        <li>Headers are now displayed with the first letters capitalized</li>
+        <li>Fixed issue where rule config was broken</li>
+        <li>Quickly create new rule by right clicking request</li>
+    </ul>
+</p>
+<p>
+    <b>2.6.0</b>
+    <ul>
+        <li>Start bringing back debugging - rewrite only</li>
+        <li>Fixed stack traces sometimes disappearing</li>
+    </ul>
+</p>
+<p>
+    <b>2.5.1</b>
+    <ul>
+        <li>Show warnings in connect dialog when adb paths are not set.</li>
+        <li>Load adb again when it suddenly could be found by settings.</li>
+    </ul>
+</p>
+<p>
+    <b>2.5.0</b>
+    <ul>
+        <li>Support dart stack traces</li>
+        <li>Removed html pretty rendering with javafx, not included in JDKs anymore</li>
+    </ul>
+</p>
+<p>
+    <b>2.4.2</b>
+    <ul>
+        <li>Fixed issue where idevice processes would not be cleaned up in all scenarios</li>
+        <li>Provided a more robust check of iproxy command status</li>
+    </ul>
+</p>
+<p>
+    <b>2.4.1</b>
+    <ul>
+        <li>Fixed issue where the manually provided adb path could cause issues listing devices</li>
+    </ul>
+</p>
+<p>
+    <b>2.4.0</b>
+    <ul>
+        <li>Discover i-devices connected over usb using libimobiledevice (mac only for now)</li>
+        <li>Provide settings UI to manually provide the paths for adb and libimobiledevice</li>
+    </ul>
+</p>
+<p>
+    <b>2.3.1</b>
+    <ul>
+        <li>Fixed copy-key-and-value not copying key in general panel</li>
+        <li>When viewing an in-progress message, update UI when the response arrives</li>
+    </ul>
+</p>
+<p>
+    <b>2.3.0</b>
+    <ul>
+        <li>When no content type is provided, try to check if it is plain text</li>
+        <li>More support for text/* mime types</li>
+        <li>When the body cannot be determined, assume binary instead of empty</li>
+        <li>Add save button on body panel. This saves the raw body to a file</li>
+    </ul>
+</p>
+<p>
+    <b>2.2.1</b>
+    <ul>
+        <li>Fixed issue where the UI would sometimes not fully reflect the connection status</li>
+    </ul>
+</p>
+<p>
+    <b>2.2.0</b>
+    <ul>
+        <li>Network headers that differ from the application headers are now shown on the detail panel with an asterisk (*) in front of the name</li>
+        <li>Updated background of stack trace panel</li>
+    </ul>
+</p>
+<p>
+    <b>2.1.0</b>
+    <ul>
+        <li>Cached responses are now displayed differently</li>
+        <li>Missing network requests and responses in linked view</li>
+    </ul>
+</p>
+<p>
+    <b>2.0.0 - Complete internal rework!</b>
+    <ul>
+        <li>Tighter integration with intellij platform</li>
+        <li>Performance optimizations</li>
+        <li>Icons have been updated to better integrate into the new look</li>
+        <li>SVG icons for crisp visuals!</li>
+    </ul>
+</p>

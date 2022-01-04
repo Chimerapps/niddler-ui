@@ -105,7 +105,7 @@ class MapLocalDialog(
             ?: return@PackingJBTable
         mappings[row] = edited
         (model as DefaultTableModel).setValueAt(edited.location.asString(), row, 1)
-        (model as DefaultTableModel).setValueAt(edited.destination, row, 2)
+        model.setValueAt(edited.destination, row, 2)
     }).also {
         val model = it.model as EditableTableModel
         model.addColumn("", java.lang.Boolean::class.java)

@@ -10,7 +10,6 @@ import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.HyperlinkInfo
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.search.GlobalSearchScope
 import java.util.regex.Pattern
 
@@ -25,11 +24,38 @@ class ConnectConsoleFilterProvider : ConsoleFilterProviderEx {
 
 }
 
+data class NiddlerStartEvent(
+    val port: Int,
+    val tag: String,
+    val extras: Map<String, String>,
+)
+
 class NiddlerConnectFilter(private val project: Project) : Filter, DumbAware {
 
     companion object {
-        const val START_REGEX = ".*Niddler Server running on (\\d+)\\s+\\[([a-zA-Z0-9]+)\\](\\[waitingForDebugger=(true|false)\\])?\\s*"
+        private const val START_REGEX = ".*Niddler Server running on (\\d+)\\s+\\[([a-zA-Z0-9]+)\\](.*)\\s*"
+        private const val EXTRA_REGEX = "\\[([^\\]=]+)=?([^\\]]+)?\\]"
         private const val START_PROCESS_REGEX = "\\S+ \\S+ (\\d+)-(\\d+)/.*"
+
+        fun findServerStart(inLine: String): NiddlerStartEvent? {
+            val matcher = Pattern.compile(START_REGEX).matcher(inLine)
+            if (!matcher.matches()) return null
+
+            val port = matcher.group(1).toInt()
+            val tag = matcher.group(2)
+
+            val extras = mutableMapOf<String, String>()
+            if (matcher.groupCount() > 2) {
+                val extraMatcher = Pattern.compile(EXTRA_REGEX).matcher(matcher.group(3))
+                while (extraMatcher.find()) {
+                    val inner = extraMatcher.group(1)
+                    val outer = if (extraMatcher.groupCount() > 1) extraMatcher.group(2) else null
+                    extras[inner] = outer ?: ""
+                }
+            }
+
+            return NiddlerStartEvent(port, tag, extras)
+        }
     }
 
     private val matcher = Pattern.compile(START_REGEX).matcher("")
@@ -57,17 +83,19 @@ class NiddlerConnectFilter(private val project: Project) : Filter, DumbAware {
                 val reuseSession = settings.reuseSession == true
                 val connectUsingDebugger = settings.connectUsingDebugger == true || waitingForDebugger
                 NiddlerAutomaticConnectionHelper.connect(
-                        project = project,
-                        info = info,
-                        reuseSession = reuseSession,
-                        connectUsingDebugger = connectUsingDebugger
+                    project = project,
+                    info = info,
+                    reuseSession = reuseSession,
+                    connectUsingDebugger = connectUsingDebugger
                 )
             }
         }
 
         val textStartOffset = entireLength - line.length
-        return Filter.Result(textStartOffset + tagGroupStart,
-                textStartOffset + tagGroupEnd, NiddlerConnectHyperlinkInfo(port, tag, settings.connectUsingDebugger == true || waitingForDebugger))
+        return Filter.Result(
+            textStartOffset + tagGroupStart,
+            textStartOffset + tagGroupEnd, NiddlerConnectHyperlinkInfo(port, tag, settings.connectUsingDebugger == true || waitingForDebugger)
+        )
     }
 
 }

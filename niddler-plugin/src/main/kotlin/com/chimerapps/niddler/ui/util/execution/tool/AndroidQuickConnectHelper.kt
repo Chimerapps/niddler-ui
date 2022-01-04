@@ -21,6 +21,8 @@ class AndroidQuickConnectHelper(private val executionEnvironment: ExecutionEnvir
 
         var multiDeviceCall: Method? = null
             private set
+        var multiDevice2Call: Method? = null
+            private set
         var singleDeviceCall: Method? = null
             private set
 
@@ -28,9 +30,10 @@ class AndroidQuickConnectHelper(private val executionEnvironment: ExecutionEnvir
             val target = Class.forName("com.android.tools.idea.run.deployment.AndroidExecutionTarget")
             multiDeviceCall = target.declaredMethods.find { it.name == "getDevices" }?.also { it.isAccessible = true }
             singleDeviceCall = target.declaredMethods.find { it.name == "getIDevice" }?.also { it.isAccessible = true }
+            multiDevice2Call = target.declaredMethods.find { it.name == "getRunningDevices" }?.also { it.isAccessible = true }
 
             Class.forName("com.android.tools.idea.run.AndroidProcessHandler")
-            multiDeviceCall != null || singleDeviceCall != null
+            multiDeviceCall != null || singleDeviceCall != null || multiDevice2Call != null
         } catch (e: Throwable) {
             false
         }
@@ -60,6 +63,13 @@ class AndroidQuickConnectHelper(private val executionEnvironment: ExecutionEnvir
         handler as AndroidProcessHandler
 
         (multiDeviceCall?.invoke(target) as? Collection<IDevice>)?.let { devices ->
+            devices.forEach { device ->
+                if (handler.isAssociated(device)) {
+                    return device
+                }
+            }
+        }
+        (multiDevice2Call?.invoke(target) as? Collection<IDevice>)?.let { devices ->
             devices.forEach { device ->
                 if (handler.isAssociated(device)) {
                     return device
