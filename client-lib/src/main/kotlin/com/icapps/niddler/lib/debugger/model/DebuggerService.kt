@@ -18,6 +18,9 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
     val rewriteInterface = RewriteDebuggerInterface(this)
     val mapLocalInterface = MapLocalDebuggerInterface(this)
 
+    var isWifiDisabled: Boolean = false
+        private set
+
     fun addBlacklistItem(regex: String) {
         sendMessage(AddBlacklistMessage(regex))
     }
@@ -137,6 +140,11 @@ class DebuggerService(private val connection: NiddlerDebuggerConnection) {
             sendMessage(NiddlerDebugControlMessage(MESSAGE_ACTIVATE, payload = null))
         else
             sendMessage(NiddlerDebugControlMessage(MESSAGE_DEACTIVATE, payload = null))
+    }
+
+    fun toggleWifi() {
+        isWifiDisabled = !isWifiDisabled
+        sendMessage(NiddlerDebugControlMessage(MESSAGE_TOGGLE_INTERNET, payload = mapOf("enable" to !isWifiDisabled)))
     }
 
 }
