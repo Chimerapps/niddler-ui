@@ -13,9 +13,11 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import java.lang.reflect.Method
 
-class AndroidQuickConnectHelper(private val executionEnvironment: ExecutionEnvironment,
-                                private val handler: ProcessHandler,
-                                private val project: Project) {
+class AndroidQuickConnectHelper(
+    private val executionEnvironment: ExecutionEnvironment,
+    private val handler: ProcessHandler,
+    private val project: Project
+) {
 
     companion object {
 
@@ -83,6 +85,27 @@ class AndroidQuickConnectHelper(private val executionEnvironment: ExecutionEnvir
         return null
     }
 
+    fun isSupported(): Boolean = isAndroidSupported && handler is AndroidProcessHandler
+
+    fun getDeviceProcessInfo(): DeviceWithProcessId? {
+        if (!isAndroidSupported) {
+            return null
+        }
+        try {
+            if (handler !is AndroidProcessHandler) {
+                return null
+            }
+            val target = (executionEnvironment.executionTarget as? AndroidExecutionTarget) ?: return null
+
+            return findDevice(target)?.let { device ->
+                val client = handler.getClient(device) ?: return@let null
+                return DeviceWithProcessId(device.serialNumber, client.clientData.pid)
+            }
+        } catch (e: Throwable) {
+            return null
+        }
+    }
+
 }
 
 private class IDeviceWrapper(private val iDevice: IDevice) : Device {
@@ -96,10 +119,14 @@ private class IDeviceWrapper(private val iDevice: IDevice) : Device {
             override fun tearDown() {
                 try {
                     iDevice.removeForward(suggestedLocalPort, remotePort)
-                }catch(ignore: Throwable){
+                } catch (ignore: Throwable) {
                 }
             }
         }
     }
-
 }
+
+data class DeviceWithProcessId(
+    val deviceSerial: String,
+    val processId: Int,
+)
