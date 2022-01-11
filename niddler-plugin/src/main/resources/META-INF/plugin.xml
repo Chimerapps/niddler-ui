@@ -14,7 +14,7 @@
     <depends optional="true" config-file="plugin_withandroid.xml">org.jetbrains.android</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Niddler" anchor="bottom" factoryClass="com.chimerapps.niddler.ui.NiddlerToolWindowFactory" icon="/niddler_small.png" />
+        <toolWindow id="Niddler" anchor="bottom" factoryClass="com.chimerapps.niddler.ui.NiddlerToolWindowFactory" icon="/niddler_small.svg" />
         <applicationConfigurable instance="com.chimerapps.niddler.ui.settings.ApplicationConfigurationProvider" id="NiddlerRoot" displayName="Niddler" />
         <projectConfigurable instance="com.chimerapps.niddler.ui.settings.ProjectConfigurationProvider" parentId="NiddlerRoot" displayName="Per Project" />
         <applicationService

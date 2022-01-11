@@ -1,4 +1,12 @@
 <p>
+    <b>2.13.2</b>
+    <ul>
+        <li>Fixed logo resolution</li>
+        <li>Removed unused images</li>
+        <li>Updated connect dialog to request focus when first device is found</li>
+    </ul>
+</p>
+<p>
     <b>2.13.1</b>
     <ul>
         <li>Added option to turn on debug logging to help examining issues</li>

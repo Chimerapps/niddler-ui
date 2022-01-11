@@ -212,6 +212,7 @@ class ConnectDialog(
     }
 
     private fun onDevicesUpdated(devices: List<DeviceModel>) {
+        val focus = (deviceModel.devicesRoot.isEmpty && devices.isNotEmpty())
         deviceModel.updateModel(devices)
         val devicesRoot = deviceModel.devicesRoot
         devicesTree.expandPath(TreePath(devicesRoot.path))
@@ -219,6 +220,9 @@ class ConnectDialog(
         for (i in 0 until devicesRoot.childCount) {
             val path = (devicesRoot.getChildAt(i) as DefaultMutableTreeNode).path
             devicesTree.expandPath(TreePath(path))
+        }
+        if (focus) {
+            devicesTree.requestFocus()
         }
     }
 
