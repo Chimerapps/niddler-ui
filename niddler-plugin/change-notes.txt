@@ -1,4 +1,10 @@
 <p>
+    <b>2.13.3</b>
+    <ul>
+        <li>Use reflection to access changing android classes</li>
+    </ul>
+</p>
+<p>
     <b>2.13.2</b>
     <ul>
         <li>Fixed logo resolution</li>

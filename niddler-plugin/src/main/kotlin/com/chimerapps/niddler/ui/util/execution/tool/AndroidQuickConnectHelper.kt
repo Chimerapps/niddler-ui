@@ -27,6 +27,10 @@ class AndroidQuickConnectHelper(
             private set
         var singleDeviceCall: Method? = null
             private set
+        var getClientDataCall: Method? = null
+            private set
+        var getPidCall: Method? =null
+        private set
 
         val isAndroidSupported = try {
             val target = Class.forName("com.android.tools.idea.run.deployment.AndroidExecutionTarget")
@@ -37,6 +41,17 @@ class AndroidQuickConnectHelper(
             Class.forName("com.android.tools.idea.run.AndroidProcessHandler")
             multiDeviceCall != null || singleDeviceCall != null || multiDevice2Call != null
         } catch (e: Throwable) {
+            false
+        }
+
+        val hasClient = try {
+            val client = Class.forName("com.android.ddmlib.Client")
+            val clientData = Class.forName("com.android.ddmlib.ClientData")
+            getClientDataCall = client.declaredMethods.find { it.name == "getClientData" }?.also { it.isAccessible = true }
+            getPidCall = clientData.declaredMethods.find { it.name == "getPid" }?.also { it.isAccessible = true }
+
+            getClientDataCall != null && getPidCall != null
+        }catch(e: Throwable){
             false
         }
     }
@@ -88,7 +103,7 @@ class AndroidQuickConnectHelper(
     fun isSupported(): Boolean = isAndroidSupported && handler is AndroidProcessHandler
 
     fun getDeviceProcessInfo(): DeviceWithProcessId? {
-        if (!isAndroidSupported) {
+        if (!isAndroidSupported || !hasClient) {
             return null
         }
         try {
@@ -99,7 +114,10 @@ class AndroidQuickConnectHelper(
 
             return findDevice(target)?.let { device ->
                 val client = handler.getClient(device) ?: return@let null
-                return DeviceWithProcessId(device.serialNumber, client.clientData.pid)
+                val clientData = getClientDataCall!!.invoke(client)
+                val pid = getPidCall!!.invoke(clientData) as Int
+
+                return DeviceWithProcessId(device.serialNumber, pid)
             }
         } catch (e: Throwable) {
             return null
