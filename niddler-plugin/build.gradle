@@ -1,8 +1,17 @@
-apply from: '../dependencies.gradle'
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+}
 
-apply plugin: "org.jetbrains.intellij"
-apply plugin: 'kotlin'
-apply plugin: "com.github.ben-manes.versions"
+plugins {
+    id 'org.jetbrains.intellij' version '1.3.0'
+    id "dev.bmac.intellij.plugin-uploader" version "1.2.2"
+    id "com.github.ben-manes.versions" version "0.39.0"
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+apply from: '../dependencies.gradle'
 
 def actualPluginVersion = hasProperty("internalBuildNumber") ? "$pluginVersion-$internalBuildNumber" : "$pluginVersion"
 
@@ -12,12 +21,23 @@ def StudioCompilePath = localProperties.getProperty('StudioCompilePath')
 
 group 'com.icapps'
 version actualPluginVersion
-sourceCompatibility = 11
 
 intellij {
-    version versions.minIntelliJ
-    updateSinceUntilBuild false
-    plugins "java"
+    version = versions.minIntelliJ
+    updateSinceUntilBuild = false
+    plugins = ["java", "dart:203.6912", "io.flutter:65.2.1"]
+}
+patchPluginXml {
+    changeNotes = file('change-notes.txt').text
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
+tasks.compileJava {
+    options.release.set(11)
 }
 
 compileKotlin {
@@ -36,12 +56,6 @@ sourceSets {
 }
 
 dependencies {
-    ftpAntTask("org.apache.ant:ant-commons-net:1.10.5") {
-        module("commons-net:commons-net:1.4.1") {
-            dependencies "oro:oro:2.0.8:jar"
-        }
-    }
-
     deps.pluginCompile.each { name, dep ->
         implementation(dep) {
             exclude group: 'org.slf4j', module: 'slf4j-api'
@@ -55,35 +69,37 @@ dependencies {
 
     compileOnly fileTree(dir: "$StudioCompilePath/plugins/android/lib", include: ['*.jar'])
     compileOnly fileTree(dir: "$StudioCompilePath/lib", include: ['*.jar'])
-}
 
-tasks.create('uploadToInternalServer') {
-    doLast {
-        ant {
-            taskdef(name: 'ftp',
-                    classname: 'org.apache.tools.ant.taskdefs.optional.net.FTP',
-                    classpath: configurations.ftpAntTask.asPath)
-
-            def properties = new Properties()
-            properties.load(new File("local.properties").newDataInputStream())
-            def internalServer = properties.internalServer
-            def internalServerUser = properties.internalServerUser
-            def internalServerPassword = properties.internalServerPassword
-            def internalServerDir = properties.internalServerDir
-            def publicPath = properties.internalServerPublicPath
-
-            def pluginFileContents = "<plugins><plugin id=\"com.icapps.niddler\" url=\"$publicPath/versions/niddler-plugin-${actualPluginVersion}.zip\" version=\"$actualPluginVersion\"/></plugins>"
-            def pluginDescriptorFile = new File("niddler-plugin/build/distributions/updatePlugins.xml")
-            pluginDescriptorFile.write pluginFileContents
-
-            ftp(server: "$internalServer", userid: "$internalServerUser", password: "$internalServerPassword",
-                    remoteDir: "$internalServerDir", passive: 'yes') {
-                fileset(dir: "build/distributions") {
-                    include(name: "niddler-plugin-${actualPluginVersion}.zip")
-                    include(name: "updatePlugins.xml")
-                }
-            }
-        }
+    deps.pluginTestCompile.each { name, dep ->
+        testImplementation(dep)
     }
 }
 
+signPlugin {
+    certificateChain = new File(System.getenv("NIDDLER_PLUGIN_CERTIFICATE_CHAIN")).text
+    privateKey = new File(System.getenv("NIDDLER_PLUGIN_PRIVATE_KEY")).text
+    password = System.getenv("NIDDLER_PLUGIN_PRIVATE_KEY_PASSWORD")
+}
+
+publishPlugin {
+    token = System.getenv("NIDDLER_PLUGIN_PUBLISH_TOKEN")
+}
+
+uploadPlugin {
+    dependsOn(project.tasks.named('signPlugin'))
+    def signPluginTask = project.tasks.named("signPlugin").get()
+    def archive = signPluginTask.outputArchiveFile.asFile
+
+    def publishToken = System.getenv("PLUGIN_UPLOAD_TOKEN")
+
+    pluginName.set('Niddler')
+    file.set(archive.get())
+    pluginId.set('com.icapps.niddler')
+    version.set(project.version)
+    pluginDescription.set(file('plugin_description.txt').text)
+    changeNotes.set(file('change-notes.txt').text)
+    sinceBuild.set("203")
+
+    url.set(System.getenv("PLUGIN_UPLOAD_PATH"))
+    authentication.set("Bearer $publishToken")
+}

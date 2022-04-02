@@ -24,4 +24,12 @@ object NotificationUtil {
         val notification = group.createNotification(title, message, NotificationType.ERROR, null)
         Notifications.Bus.notify(notification, project)
     }
+
+    fun debug(title: String, message: String, project: Project?) {
+        val group = NotificationGroup("${NOTIFICATION_CHANNEL}_info", NotificationDisplayType.TOOL_WINDOW, true)
+
+        val notification = group.createNotification(title, message, NotificationType.INFORMATION, RevealFileAction.FILE_SELECTING_LISTENER)
+        Notifications.Bus.notify(notification, project)
+    }
+
 }

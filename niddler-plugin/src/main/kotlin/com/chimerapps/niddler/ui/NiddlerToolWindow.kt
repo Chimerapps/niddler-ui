@@ -232,10 +232,21 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
         window.connectToTag(info.tag, withDebugger = connectUsingDebugger)
     }
 
+    fun newSessionFor(info: PIDQuickConnectionInfo, reuse: Boolean, connectUsingDebugger: Boolean) {
+        val window = if (reuse) unusedOrNewSessionWindow() else newSessionWindow()
+
+        window.connectToProccessOn(info.deviceSerial, info.pid, withDebugger = connectUsingDebugger)
+    }
+
 }
 
 data class QuickConnectionInfo(
     val port: Int,
     val tag: String,
     val device: Device? = null
+)
+
+data class PIDQuickConnectionInfo(
+    val deviceSerial: String,
+    val pid: Int,
 )

@@ -23,6 +23,9 @@ class RootNode : DefaultMutableTreeNode() {
 
     private var devices: List<DeviceModel> = emptyList()
 
+    val isEmpty: Boolean
+        get() = devices.isEmpty()
+
     fun update(newDevices: List<DeviceModel>, model: DefaultTreeModel) {
         if (devices != newDevices) {
             devices = newDevices

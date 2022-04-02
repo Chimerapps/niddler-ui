@@ -24,7 +24,7 @@ object IncludedIcons {
         val incoming = loadIcon("/ic_down_wide.svg")
         val incoming_cached = loadIcon("/ic_down_wide_cache.svg")
         val outgoing = loadIcon("/ic_up_wide.svg")
-        val logo = loadIcon("/niddler_logo.png")
+        val logo = loadIcon("/niddler_logo.svg")
         val incoming_debugged = loadIcon("/ic_down_wide_debug.svg")
         val outgoing_debugged = loadIcon("/ic_up_wide_debug.svg")
     }

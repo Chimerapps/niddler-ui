@@ -1,0 +1,1 @@
+This plugin enables the niddler ui inside the IDE

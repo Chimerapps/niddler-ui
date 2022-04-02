@@ -3,12 +3,14 @@ package com.chimerapps.niddler.ui.component
 import com.chimerapps.discovery.device.Device
 import com.chimerapps.discovery.device.DirectPreparedConnection
 import com.chimerapps.discovery.device.PreparedDeviceConnection
+import com.chimerapps.discovery.device.idevice.IDevice
 import com.chimerapps.discovery.device.idevice.IDeviceBootstrap
 import com.chimerapps.discovery.ui.Base64SessionIconProvider
 import com.chimerapps.discovery.ui.CompoundSessionIconProvider
 import com.chimerapps.discovery.ui.ConnectDialog
 import com.chimerapps.discovery.ui.DefaultSessionIconProvider
 import com.chimerapps.discovery.ui.DiscoveredDeviceConnection
+import com.chimerapps.discovery.ui.LocalizationDelegate
 import com.chimerapps.discovery.ui.ManualConnection
 import com.chimerapps.discovery.utils.freePort
 import com.chimerapps.niddler.ui.NiddlerToolWindow
@@ -242,10 +244,11 @@ class NiddlerSessionWindow(
     }
 
     private fun showConnectDialog(withDebugger: Boolean) {
-        val result = ConnectDialog.show(SwingUtilities.getWindowAncestor(this),
-            niddlerToolWindow.adbInterface ?: return,
-            IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin")),
-            Device.NIDDLER_ANNOUNCEMENT_PORT,
+        val result = ConnectDialog.show(
+            parent = SwingUtilities.getWindowAncestor(this),
+            adbInterface = niddlerToolWindow.adbInterface ?: return,
+            iDeviceBootstrap = IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin")),
+            announcementPort = Device.NIDDLER_ANNOUNCEMENT_PORT,
             sessionIconProvider = ProjectSessionIconProvider.instance(
                 project,
                 delegate = CompoundSessionIconProvider(DefaultSessionIconProvider(), Base64SessionIconProvider())
@@ -253,7 +256,9 @@ class NiddlerSessionWindow(
             configurePluginCallback = {
                 ShowSettingsUtil.getInstance().showSettingsDialog(project, "Niddler")
                 niddlerToolWindow.adbInterface!! to IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin"))
-            }) ?: return
+            },
+            localizationDelegate = LocalizationDelegate(),
+        ) ?: return
 
         result.discovered?.let {
             tryConnectSession(it, withDebugger)
@@ -348,7 +353,7 @@ class NiddlerSessionWindow(
         messageContainer.clear()
         try {
             debuggerService?.disconnect()
-        } catch (e: Throwable) {
+        } catch (ignored: Throwable) {
         }
         debuggerService = null
 
@@ -483,6 +488,22 @@ class NiddlerSessionWindow(
         }
     }
 
+    fun connectToProccessOn(serial: String, processId: Int, withDebugger: Boolean) {
+        val adb = niddlerToolWindow.adbInterface
+        val iDevice = DummyIDeviceBootstrap() //No serial
+        val port = Device.NIDDLER_ANNOUNCEMENT_PORT
+        object : SwingWorker<DiscoveredDeviceConnection?, Any>() {
+            override fun doInBackground(): DiscoveredDeviceConnection? {
+                return SessionFinderUtil(adb, iDevice, port).findSessionWithPiD(processId, withSerial = serial)
+            }
+
+            override fun done() {
+                val session = get() ?: return
+                tryConnectSession(session, withDebugger = withDebugger || session.session.extensions?.any { it.name == "WaitingForDebugger" } == true)
+            }
+        }.execute()
+    }
+
     fun connectToTag(tag: String, withDebugger: Boolean) {
         val adb = niddlerToolWindow.adbInterface
         val iDevice = IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin"))
@@ -534,4 +555,9 @@ enum class ViewMode {
 enum class ConnectionMode {
     MODE_CONNECTED,
     MODE_DISCONNECTED
+}
+
+private class DummyIDeviceBootstrap : IDeviceBootstrap() {
+    override val devices = emptyList<IDevice>()
+    override val isRealConnection = false
 }

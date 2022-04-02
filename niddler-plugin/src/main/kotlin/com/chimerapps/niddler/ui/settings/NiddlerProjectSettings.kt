@@ -18,8 +18,9 @@ class NiddlerProjectSettings : PersistentStateComponent<NiddlerProjectSettings> 
     var automaticallyReconnect: Boolean? = null
     var reuseSession: Boolean? = null
     var connectUsingDebugger: Boolean? = null
+    var logDebugInfo: Boolean? = null
 
-    override fun getState(): NiddlerProjectSettings? = this
+    override fun getState(): NiddlerProjectSettings = this
 
     override fun loadState(state: NiddlerProjectSettings) {
         copyBean(state, this)

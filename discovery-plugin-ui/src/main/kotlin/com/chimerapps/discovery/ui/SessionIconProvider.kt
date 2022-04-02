@@ -25,7 +25,10 @@ open class DefaultSessionIconProvider : SessionIconProvider {
 
 }
 
-open class Base64SessionIconProvider : SessionIconProvider {
+open class Base64SessionIconProvider(
+    private val width: Float = 20.0f,
+    private val height: Float = 20.0f,
+) : SessionIconProvider {
 
     override fun iconForString(iconString: String): Icon? {
         try {
@@ -34,7 +37,7 @@ open class Base64SessionIconProvider : SessionIconProvider {
             if (icon.image == null)
                 return null
 
-            return IconUtil.scale(icon, null, kotlin.math.min(20.0f / icon.iconWidth, 20.0f / icon.iconHeight))
+            return IconUtil.scale(icon, null, kotlin.math.min(width / icon.iconWidth, height / icon.iconHeight))
         } catch (e: Throwable) {
             return null
         }

@@ -30,7 +30,7 @@ class BodyMessageDetailPanel(private val project: Project,
     private val structuredButton = JToggleButton("Structured", AllIcons.Hierarchy.Subtypes)
     private val prettyButton = JToggleButton("Pretty", IncludedIcons.Action.pretty)
     private val rawButton = JToggleButton("Raw", AllIcons.Debugger.Db_primitive)
-    private val saveButton = JButton("", AllIcons.Actions.Menu_saveall).also {
+    private val saveButton = JButton("", AllIcons.Actions.MenuSaveall).also {
         it.toolTipText = "Save body"
     }
 

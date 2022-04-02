@@ -21,11 +21,11 @@ interface IDeviceInfo {
     val osVersion: String
 }
 
-class IDeviceBootstrap(private val binaryPath: File = File("/usr/local/bin/")) {
+open class IDeviceBootstrap(private val binaryPath: File = File("/usr/local/bin/")) {
 
     private val executor = IDeviceCommandExecutor(binaryPath)
 
-    val devices: List<IDevice>
+    open val devices: List<IDevice>
         get() {
             if (currentPlatform != Platform.DARWIN)
                 return emptyList()
@@ -33,7 +33,7 @@ class IDeviceBootstrap(private val binaryPath: File = File("/usr/local/bin/")) {
             return executor.execute(ListDevicesCommand()).get().map { IDevice(it, executor) }
         }
 
-    val isRealConnection: Boolean
+    open val isRealConnection: Boolean
         get() = File(binaryPath, "idevice_id").let { it.exists() && it.canExecute() }
 }
 
