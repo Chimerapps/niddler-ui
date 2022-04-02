@@ -1,4 +1,11 @@
 <p>
+    <b>2.13.4</b>
+    <ul>
+        <li>Use more reflection to access changing android classes</li>
+        <li>Provide console quick link to connect on flutter runs</li>
+    </ul>
+</p>
+<p>
     <b>2.13.3</b>
     <ul>
         <li>Use reflection to access changing android classes</li>

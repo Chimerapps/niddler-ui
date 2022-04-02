@@ -29,8 +29,8 @@ class AndroidQuickConnectHelper(
             private set
         var getClientDataCall: Method? = null
             private set
-        var getPidCall: Method? =null
-        private set
+        var getPidCall: Method? = null
+            private set
 
         val isAndroidSupported = try {
             val target = Class.forName("com.android.tools.idea.run.deployment.AndroidExecutionTarget")
@@ -51,7 +51,7 @@ class AndroidQuickConnectHelper(
             getPidCall = clientData.declaredMethods.find { it.name == "getPid" }?.also { it.isAccessible = true }
 
             getClientDataCall != null && getPidCall != null
-        }catch(e: Throwable){
+        } catch (e: Throwable) {
             false
         }
     }
@@ -127,6 +127,9 @@ class AndroidQuickConnectHelper(
 }
 
 private class IDeviceWrapper(private val iDevice: IDevice) : Device {
+
+    private val removeForwardMethod: Method? = iDevice.javaClass.declaredMethods.find { it.name == "removeForward" }?.also { it.isAccessible = true }
+
     override fun getSessions(announcementPort: Int): List<DiscoveredSession> {
         throw IllegalStateException("Not supported")
     }
@@ -136,7 +139,11 @@ private class IDeviceWrapper(private val iDevice: IDevice) : Device {
         return object : DirectPreparedConnection("127.0.0.1", suggestedLocalPort) {
             override fun tearDown() {
                 try {
-                    iDevice.removeForward(suggestedLocalPort, remotePort)
+                    if (removeForwardMethod?.parameterCount == 1) {
+                        removeForwardMethod.invoke(iDevice, suggestedLocalPort)
+                    } else if (removeForwardMethod?.parameterCount == 2) {
+                        removeForwardMethod.invoke(iDevice, suggestedLocalPort, remotePort)
+                    }
                 } catch (ignore: Throwable) {
                 }
             }

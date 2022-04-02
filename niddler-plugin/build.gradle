@@ -25,7 +25,7 @@ version actualPluginVersion
 intellij {
     version = versions.minIntelliJ
     updateSinceUntilBuild = false
-    plugins = ["java"]
+    plugins = ["java", "dart:203.6912", "io.flutter:65.2.1"]
 }
 patchPluginXml {
     changeNotes = file('change-notes.txt').text

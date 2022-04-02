@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <consoleActionsPostProcessor implementation="com.chimerapps.niddler.ui.util.execution.ConsoleActionPostProcessingHelper" />
+    </extensions>
+</idea-plugin>

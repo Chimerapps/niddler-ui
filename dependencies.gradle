@@ -8,7 +8,7 @@ def versions = [
         jadb                  : '1.2.1',
         junit4                : '4.13.2',
         kotlin                : '1.5.31',
-        minIntelliJ           : '2020.3',
+        minIntelliJ           : '2020.3.1',
         mockk                 : '1.11.0',
         multiPart             : '1.1.0',
         sqlite                : '3.34.0',
