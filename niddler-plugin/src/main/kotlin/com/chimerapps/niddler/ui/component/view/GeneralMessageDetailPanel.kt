@@ -41,10 +41,11 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
     private companion object {
         private fun createOuterContainer(title: String, inner: JComponent): JPanel {
             val border = BorderFactory.createTitledBorder(
-                    BorderFactory.createCompoundBorder(
-                            BorderFactory.createBevelBorder(BevelBorder.LOWERED),
-                            EmptyBorder(5, 5, 5, 5)
-                    ), title, TitledBorder.ABOVE_TOP, TitledBorder.LEFT)
+                BorderFactory.createCompoundBorder(
+                    BorderFactory.createBevelBorder(BevelBorder.LOWERED),
+                    EmptyBorder(5, 5, 5, 5)
+                ), title, TitledBorder.ABOVE_TOP, TitledBorder.LEFT
+            )
 
             return JPanel(BorderLayout()).also {
                 it.border = border
@@ -142,6 +143,13 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
         val execTimeValue = makeExecutionTimeLabel(message, other, "Execution time")
         generalPanel.add(buildLabel("Execution time", value = execTimeValue.text, withPopupMenu = true), constraints.xy(1, row))
         generalPanel.add(execTimeValue, constraints.xy(3, row))
+        ++row
+
+        makeWaitTimeLabel(message, other, "Wait time")?.let { waitTimeValue ->
+            generalPanel.add(buildLabel("Wait time", value = waitTimeValue.text, withPopupMenu = true), constraints.xy(1, row))
+            generalPanel.add(waitTimeValue, constraints.xy(3, row))
+            ++row
+        }
     }
 
     private fun makeUrlTooltip(url: String?): String? {
@@ -242,7 +250,7 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
                 it.addMouseListener(object : MouseAdapter() {
 
                     private var toolTipInstance: IdeTooltip? = null
-                    
+
                     override fun mouseEntered(e: MouseEvent) {
                         val tip = object : IdeTooltip(it, e.point, JBLabel(toolTip)) {
                             override fun canBeDismissedOnTimeout(): Boolean {
@@ -271,6 +279,15 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
             firstMessage.timestamp - secondMessage.timestamp
         else
             secondMessage.timestamp - firstMessage.timestamp
+        return buildValue("$time msec", key = key)
+    }
+
+    private fun makeWaitTimeLabel(firstMessage: NiddlerMessageInfo?, secondMessage: NiddlerMessageInfo?, key: String): JBLabel? {
+        if (firstMessage == null || secondMessage == null) {
+            return null
+        }
+        val time = firstMessage.waitTime ?: secondMessage.waitTime ?: return null
+        if (time < 0) return null
         return buildValue("$time msec", key = key)
     }
 
