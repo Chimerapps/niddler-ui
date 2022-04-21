@@ -11,7 +11,7 @@ class NiddlerProjectSettings : PersistentStateComponent<NiddlerProjectSettings> 
 
     companion object {
         fun instance(project: Project): NiddlerProjectSettings {
-            return ServiceManager.getService(project, NiddlerProjectSettings::class.java)
+            return project.getService(NiddlerProjectSettings::class.java)
         }
     }
 

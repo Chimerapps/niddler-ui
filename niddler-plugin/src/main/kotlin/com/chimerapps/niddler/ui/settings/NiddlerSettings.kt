@@ -1,5 +1,6 @@
 package com.chimerapps.niddler.ui.settings
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.ServiceManager.getService
 import com.intellij.openapi.components.State
@@ -10,7 +11,7 @@ class NiddlerSettings : PersistentStateComponent<NiddlerSettingsData> {
 
     companion object {
         val instance: NiddlerSettings
-            get() = getService(NiddlerSettings::class.java)
+            get() = ApplicationManager.getApplication().getService(NiddlerSettings::class.java)
     }
 
     private var settings: NiddlerSettingsData = NiddlerSettingsData()
