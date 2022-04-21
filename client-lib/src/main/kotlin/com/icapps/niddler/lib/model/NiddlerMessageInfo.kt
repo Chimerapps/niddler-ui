@@ -15,6 +15,7 @@ data class NiddlerMessageInfo(
         val statusCode: Int?,
         val statusLine: String?,
         val hasBody: Boolean,
+        val waitTime: Int?,
         val networkRequest: NiddlerMessageInfo?,
         val networkReply: NiddlerMessageInfo?
 ) {
@@ -33,7 +34,8 @@ data class NiddlerMessageInfo(
                     statusLine = message.statusLine,
                     hasBody = !message.body.isNullOrEmpty(),
                     networkReply = message.networkReply?.let { fromMessage(it) },
-                    networkRequest = message.networkRequest?.let { fromMessage(it) }
+                    networkRequest = message.networkRequest?.let { fromMessage(it) },
+                    waitTime = message.waitTime,
             )
         }
 
