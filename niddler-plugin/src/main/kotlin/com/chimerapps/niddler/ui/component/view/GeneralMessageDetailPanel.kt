@@ -54,7 +54,7 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
         }
     }
 
-    private val generalPanel = JPanel(FormLayout("left:default, 3dlu, pref", "pref, pref, pref, pref, pref, pref"))
+    private val generalPanel = JPanel(FormLayout("left:default, 3dlu, pref", "pref, pref, pref, pref, pref, pref, pref"))
     private val headersPanel = JPanel(FormLayout("left:default, 3dlu, pref", "pref, pref, pref, pref, pref, pref"))
     private val tracePanel = StackTraceView(project)
     private val contextPanel = JPanel()

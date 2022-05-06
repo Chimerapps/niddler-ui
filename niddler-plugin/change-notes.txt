@@ -1,4 +1,10 @@
 <p>
+    <b>2.14.1</b>
+    <ul>
+        <li>Also report wait time for messages</li>
+    </ul>
+</p>
+<p>
     <b>2.14.0</b>
     <ul>
         <li>Also report wait time for messages</li>
