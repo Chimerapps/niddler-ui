@@ -11,6 +11,8 @@ import com.icapps.niddler.lib.model.NiddlerMessageInfo
 import com.intellij.ide.IdeTooltip
 import com.intellij.ide.IdeTooltipManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.ui.TooltipWithClickableLinks
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBFont
@@ -35,6 +37,8 @@ import javax.swing.JPanel
 import javax.swing.border.BevelBorder
 import javax.swing.border.EmptyBorder
 import javax.swing.border.TitledBorder
+import javax.swing.event.HyperlinkEvent
+import javax.swing.event.HyperlinkListener
 
 class GeneralMessageDetailPanel(project: Project, private val niddlerMessageContainer: NiddlerMessageContainer) : JPanel(BorderLayout()) {
 
@@ -247,25 +251,10 @@ class GeneralMessageDetailPanel(project: Project, private val niddlerMessageCont
             it.componentPopupMenu = makePopup(key ?: "", text ?: "", text ?: "")
 
             if (toolTip != null) {
-                it.addMouseListener(object : MouseAdapter() {
+                IdeTooltipManager.getInstance().setCustomTooltip(it, object: TooltipWithClickableLinks(it, toolTip, {}) {
+                    override fun canBeDismissedOnTimeout(): Boolean = false
 
-                    private var toolTipInstance: IdeTooltip? = null
-
-                    override fun mouseEntered(e: MouseEvent) {
-                        val tip = object : IdeTooltip(it, e.point, JBLabel(toolTip)) {
-                            override fun canBeDismissedOnTimeout(): Boolean {
-                                return false
-                            }
-                        }
-                        IdeTooltipManager.getInstance().hide(toolTipInstance)
-                        toolTipInstance = IdeTooltipManager.getInstance().show(tip, true)
-                    }
-
-                    override fun mouseExited(e: MouseEvent?) {
-                        super.mouseExited(e)
-                        IdeTooltipManager.getInstance().hide(toolTipInstance)
-                        toolTipInstance = null
-                    }
+                    override fun getShowDelay(): Int = 100
                 })
             }
         }
