@@ -2,7 +2,7 @@ package com.chimerapps.discovery.ui
 
 import com.chimerapps.discovery.device.Device
 import com.chimerapps.discovery.device.DiscoveredSession
-import com.chimerapps.discovery.device.adb.ADBInterface
+import com.chimerapps.discovery.device.debugbridge.DebugBridgeInterface
 import com.chimerapps.discovery.device.idevice.IDeviceBootstrap
 import com.chimerapps.discovery.model.connectdialog.ConnectDialogDeviceNode
 import com.chimerapps.discovery.model.connectdialog.ConnectDialogModel
@@ -62,15 +62,22 @@ data class ConnectDialogResult(
     val discovered: DiscoveredDeviceConnection?,
 )
 
+data class PluginConfiguration(
+    val adbInterface: DebugBridgeInterface,
+    val sdbInterface: DebugBridgeInterface,
+    val iDeviceBootstrap: IDeviceBootstrap,
+)
+
 class ConnectDialog(
     parent: Window?,
     private val announcementPort: Int,
-    private var adbInterface: ADBInterface,
+    private var adbInterface: DebugBridgeInterface,
+    private var sdbInterface: DebugBridgeInterface,
     private var iDeviceBootstrap: IDeviceBootstrap,
     sessionIconProvider: SessionIconProvider,
     renderDelegate: ConnectDialogTreeCellDelegate = ConnectDialogTreeCellDelegate(),
     localizationDelegate: LocalizationDelegate,
-    configurePluginCallback: () -> Pair<ADBInterface, IDeviceBootstrap>,
+    configurePluginCallback: () -> PluginConfiguration,
 ) : ConnectDialogUI(
     parent = parent,
     title = localizationDelegate.connectDialogTitle,
@@ -85,18 +92,20 @@ class ConnectDialog(
 
         fun show(
             parent: Window?,
-            adbInterface: ADBInterface,
+            adbInterface: DebugBridgeInterface,
+            sdbInterface: DebugBridgeInterface,
             iDeviceBootstrap: IDeviceBootstrap,
             announcementPort: Int,
             sessionIconProvider: SessionIconProvider = DefaultSessionIconProvider(),
             renderDelegate: ConnectDialogTreeCellDelegate = ConnectDialogTreeCellDelegate(),
             localizationDelegate: LocalizationDelegate,
-            configurePluginCallback: () -> Pair<ADBInterface, IDeviceBootstrap>,
+            configurePluginCallback: () -> PluginConfiguration,
         ): ConnectDialogResult? {
             val dialog = ConnectDialog(
                 parent = parent,
                 announcementPort = announcementPort,
                 adbInterface = adbInterface,
+                sdbInterface = sdbInterface,
                 iDeviceBootstrap = iDeviceBootstrap,
                 sessionIconProvider = sessionIconProvider,
                 renderDelegate = renderDelegate,
@@ -117,6 +126,7 @@ class ConnectDialog(
 
     private var deviceScanner = DeviceScanner(
         adbInterface,
+        sdbInterface,
         iDeviceBootstrap,
         announcementPort,
         listener = ::onDevicesUpdated,
@@ -133,6 +143,9 @@ class ConnectDialog(
         val statuses = mutableListOf<String>()
         if (!adbInterface.isRealConnection) {
             statuses += localizationDelegate.statusADBPathNotFound
+        }
+        if (!sdbInterface.isRealConnection) {
+            statuses += localizationDelegate.statusSDBPathNotFound
         }
         if (!iDeviceBootstrap.isRealConnection) {
             statuses += localizationDelegate.statusIDevicePathNotFound
@@ -187,12 +200,22 @@ class ConnectDialog(
 
     override fun onPortChanged() = updateButtonState()
 
-    override fun resetConfiguration(adbInterface: ADBInterface, iDeviceInterface: IDeviceBootstrap) {
+    override fun resetConfiguration(
+        adbInterface: DebugBridgeInterface,
+        sdbInterface: DebugBridgeInterface,
+        iDeviceInterface: IDeviceBootstrap,
+    ) {
         this.adbInterface = adbInterface
         this.iDeviceBootstrap = iDeviceInterface
 
         deviceScanner.stopScanning()
-        deviceScanner = DeviceScanner(adbInterface, iDeviceInterface, announcementPort, listener = ::onDevicesUpdated)
+        deviceScanner = DeviceScanner(
+            adbInterface,
+            sdbInterface,
+            iDeviceInterface,
+            announcementPort,
+            listener = ::onDevicesUpdated,
+        )
         init()
     }
 
@@ -231,7 +254,7 @@ class ConnectDialog(
 abstract class ConnectDialogUI(
     parent: Window?, title: String,
     sessionIconProvider: SessionIconProvider,
-    private val configurePluginCallback: () -> Pair<ADBInterface, IDeviceBootstrap>,
+    private val configurePluginCallback: () -> PluginConfiguration,
     renderDelegate: ConnectDialogTreeCellDelegate,
     protected val localizationDelegate: LocalizationDelegate,
 ) : JDialog(parent, title, ModalityType.APPLICATION_MODAL) {
@@ -333,8 +356,12 @@ abstract class ConnectDialogUI(
             val panel = JPanel(FlowLayout(FlowLayout.LEADING))
             panel.add(JBLabel(status, AllIcons.General.BalloonWarning, SwingConstants.LEFT))
             panel.add(LinkLabel.create("Open settings") {
-                val (adbInterface, iDeviceInterface) = configurePluginCallback()
-                resetConfiguration(adbInterface, iDeviceInterface)
+                val configuration = configurePluginCallback()
+                resetConfiguration(
+                    adbInterface = configuration.adbInterface,
+                    sdbInterface = configuration.sdbInterface,
+                    iDeviceInterface = configuration.iDeviceBootstrap,
+                )
             })
 
             statusContainer.add(panel)
@@ -347,7 +374,11 @@ abstract class ConnectDialogUI(
         size = size.also { it.height -= 1 }
     }
 
-    protected abstract fun resetConfiguration(adbInterface: ADBInterface, iDeviceInterface: IDeviceBootstrap)
+    protected abstract fun resetConfiguration(
+        adbInterface: DebugBridgeInterface,
+        sdbInterface: DebugBridgeInterface,
+        iDeviceInterface: IDeviceBootstrap,
+    )
 
 }
 

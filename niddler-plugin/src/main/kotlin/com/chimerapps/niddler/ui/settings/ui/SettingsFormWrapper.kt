@@ -2,15 +2,15 @@ package com.chimerapps.niddler.ui.settings.ui
 
 import com.chimerapps.discovery.device.adb.ADBBootstrap
 import com.chimerapps.discovery.device.idevice.IDeviceBootstrap
+import com.chimerapps.discovery.device.sdb.SDBBootstrap
 import com.chimerapps.niddler.ui.NiddlerToolWindow
-import com.chimerapps.niddler.ui.component.NiddlerSessionWindow
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.adb.ADBUtils
+import com.chimerapps.niddler.ui.util.sdb.SDBUtils
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
-import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.components.JBTextField
 import java.io.File
@@ -37,6 +37,7 @@ class SettingsFormWrapper(private val niddlerSettings: NiddlerSettings) {
     fun save() {
         niddlerSettings.state.iDeviceBinariesPath = settingsForm.iDeviceField.textOrNull
         niddlerSettings.state.adbPath = settingsForm.adbField.textOrNull
+        niddlerSettings.state.sdbPath = settingsForm.sdbField.textOrNull
 
         val project = ProjectManager.getInstance().openProjects.firstOrNull { project ->
             val window = WindowManager.getInstance().suggestParentWindow(project)
@@ -56,10 +57,16 @@ class SettingsFormWrapper(private val niddlerSettings: NiddlerSettings) {
             project,
             FileChooserDescriptor(false, true, false, false, false, false)
         )
+        settingsForm.sdbField.addBrowseFolderListener(
+            "Niddler - sdb", "Path to sdb",
+            project,
+            FileChooserDescriptor(true, false, false, false, false, false)
+        )
 
         (settingsForm.iDeviceField.textField as? JBTextField)?.emptyText?.text = "/usr/local/bin"
 
-        (settingsForm.adbField.textField as? JBTextField)?.emptyText?.text = ADBBootstrap(ADBUtils.guessPaths(project)).pathToAdb ?: ""
+        (settingsForm.adbField.textField as? JBTextField)?.emptyText?.text = ADBBootstrap(ADBUtils.guessPaths(project)).pathToDebugBridge ?: ""
+        (settingsForm.sdbField.textField as? JBTextField)?.emptyText?.text = ADBBootstrap(SDBUtils.guessPaths(project)).pathToDebugBridge ?: ""
 
         settingsForm.testConfigurationButton.addActionListener {
             runTest(project)
@@ -70,6 +77,7 @@ class SettingsFormWrapper(private val niddlerSettings: NiddlerSettings) {
 
     fun reset() {
         settingsForm.adbField.text = niddlerSettings.state.adbPath ?: ""
+        settingsForm.sdbField.text = niddlerSettings.state.sdbPath ?: ""
         settingsForm.iDeviceField.text = niddlerSettings.state.iDeviceBinariesPath ?: ""
     }
 
@@ -79,7 +87,8 @@ class SettingsFormWrapper(private val niddlerSettings: NiddlerSettings) {
         settingsForm.testConfigurationButton.isEnabled = false
 
         worker = VerifierWorker(
-            settingsForm.adbField.textOrNull ?: ADBBootstrap(ADBUtils.guessPaths(project)).pathToAdb,
+            settingsForm.adbField.textOrNull ?: ADBBootstrap(ADBUtils.guessPaths(project)).pathToDebugBridge,
+            settingsForm.sdbField.textOrNull ?: SDBBootstrap(SDBUtils.guessPaths(project)).pathToDebugBridge,
             settingsForm.iDeviceField.textOrNull ?: "/usr/local/bin",
             settingsForm.resultsPane, settingsForm.testConfigurationButton
         ).also {
@@ -98,6 +107,7 @@ private val TextFieldWithBrowseButton.textOrNull: String?
 
 private class VerifierWorker(
     private val adbPath: String?,
+    private val sdbPath: String?,
     private val iDevicePath: String,
     private val textField: JTextPane,
     private val button: JButton
@@ -107,8 +117,9 @@ private class VerifierWorker(
 
     override fun doInBackground(): Boolean {
         val adbResult = testADB()
+        val sdbResult = testSDB()
         val iDeviceResult = testIDevice()
-        return adbResult && iDeviceResult
+        return adbResult && iDeviceResult && sdbResult
     }
 
     override fun process(chunks: List<String>) {
@@ -143,6 +154,28 @@ private class VerifierWorker(
             }
         }
         return ok && checkADBExecutable()
+    }
+
+    private fun testSDB(): Boolean {
+        publish("\nTesting SDB\n=======================================")
+        var ok = false
+        if (sdbPath == null) {
+            publish("Path to SDB not found")
+        } else {
+            publish("SDB defined at path: $sdbPath")
+            val file = File(sdbPath)
+            if (file.isDirectory) {
+                publish("ERROR - Specified path is a directory")
+            } else if (!file.exists()) {
+                publish("ERROR - SDB file not found")
+            } else if (!file.canExecute()) {
+                publish("ERROR - SDB file not executable")
+            } else {
+                publish("SDB path seems ok")
+                ok = true
+            }
+        }
+        return ok && checkSDBExecutable()
     }
 
     private fun testIDevice(): Boolean {
@@ -213,6 +246,27 @@ private class VerifierWorker(
             printer.flush()
             publish(writer.toString())
             return false
+        }
+    }
+
+    private fun checkSDBExecutable(): Boolean {
+        publish("Checking sdb command")
+        val bootstrap = SDBBootstrap(emptyList()) { sdbPath!! }
+        publish("Starting sdb server")
+        return try {
+            val sdbInterface = bootstrap.bootStrap()
+            publish("Listing devices")
+            val devices = sdbInterface.devices
+            publish("SDB devices returns: ${devices.size} devices")
+            true
+        } catch (e: Throwable) {
+            publish("ERROR - Failed to communicate with sdb")
+            val writer = StringWriter()
+            val printer = PrintWriter(writer)
+            e.printStackTrace(printer)
+            printer.flush()
+            publish(writer.toString())
+            false
         }
     }
 

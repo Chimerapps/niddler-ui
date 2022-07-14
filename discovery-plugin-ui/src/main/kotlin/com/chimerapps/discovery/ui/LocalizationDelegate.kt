@@ -6,6 +6,7 @@ package com.chimerapps.discovery.ui
 open class LocalizationDelegate {
     open val connectDialogTitle = "Select a device to connect to"
     open val statusADBPathNotFound = "ADB path not found"
+    open val statusSDBPathNotFound = "SDB path not found"
     open val statusIDevicePathNotFound = "iDevice path not found"
     open val errorMessageInvalidPort = "Invalid port"
     open val errorTitleInvalidPort = "Could not connect"

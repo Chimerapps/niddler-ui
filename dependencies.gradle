@@ -1,9 +1,9 @@
 def versions = [
         androidEmulatorControl: '0.1.2',
-        discoveryLib          : '4.0.0',
-        discoveryPluginLib    : '4.1.3',
-        gson                  : '2.8.6',
-        httpcore              : '4.4.14',
+        discoveryLib          : '4.1.0',
+        discoveryPluginLib    : '4.2.0',
+        gson                  : '2.9.0',
+        httpcore              : '4.4.15',
         intelliJPlugin        : '0.4.8',
         jadb                  : '1.2.1',
         junit4                : '4.13.2',
@@ -11,9 +11,9 @@ def versions = [
         minIntelliJ           : '2020.3.1',
         mockk                 : '1.11.0',
         multiPart             : '1.1.0',
-        sqlite                : '3.34.0',
+        sqlite                : '3.36.0.3',
         webp                  : '0.1.6',
-        websocket             : '1.5.2',
+        websocket             : '1.5.3',
         xmlUnit               : '1.6',
 ]
 
@@ -43,7 +43,6 @@ def libCompile = [
 def pluginCompile = [
         kotlin       : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${versions.kotlin}",
         kotlinReflect: "org.jetbrains.kotlin:kotlin-reflect:${versions.kotlin}",
-        discoveryLib : "com.chimerapps:discovery-plugin-ui:${versions.discoveryPluginLib}",
 ]
 
 def libTestCompile = [

@@ -1,4 +1,10 @@
 <p>
+    <b>2.15.0</b>
+    <ul>
+        <li>Experimental support for tizen devices</li>
+    </ul>
+</p>
+<p>
     <b>2.14.2</b>
     <ul>
         <li>Optimize url params popup</li>
