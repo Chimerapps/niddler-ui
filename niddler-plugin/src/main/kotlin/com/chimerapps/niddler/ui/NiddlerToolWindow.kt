@@ -2,7 +2,8 @@ package com.chimerapps.niddler.ui
 
 import com.chimerapps.discovery.device.Device
 import com.chimerapps.discovery.device.adb.ADBBootstrap
-import com.chimerapps.discovery.device.adb.ADBInterface
+import com.chimerapps.discovery.device.debugbridge.DebugBridgeInterface
+import com.chimerapps.discovery.device.sdb.SDBBootstrap
 import com.chimerapps.niddler.ui.actions.ConfigureMapLocalAction
 import com.chimerapps.niddler.ui.actions.ConfigureRewriteAction
 import com.chimerapps.niddler.ui.actions.NewSessionAction
@@ -14,6 +15,7 @@ import com.chimerapps.niddler.ui.debugging.rewrite.RewriteDialog
 import com.chimerapps.niddler.ui.model.ProjectConfig
 import com.chimerapps.niddler.ui.settings.NiddlerSettings
 import com.chimerapps.niddler.ui.util.adb.ADBUtils
+import com.chimerapps.niddler.ui.util.sdb.SDBUtils
 import com.chimerapps.niddler.ui.util.ui.dispatchMain
 import com.icapps.niddler.lib.debugger.model.maplocal.MapLocalConfiguration
 import com.intellij.execution.ui.RunnerLayoutUi
@@ -58,7 +60,9 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
 
     //TODO move bootstrapping to full plugin start to ensure we have a connection beforehand
     private var adbBootstrap: ADBBootstrap
-    var adbInterface: ADBInterface? = null
+    private var sdbBootstrap: SDBBootstrap
+
+    var adbInterface: DebugBridgeInterface? = null
         get() = synchronized(this@NiddlerToolWindow) {
             val result = field ?: return null
             if (!result.isRealConnection) {
@@ -66,6 +70,23 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
                 if (path != null && File(path).let { it.exists() && it.canExecute() }) {
                     adbBootstrap = ADBBootstrap(ADBUtils.guessPaths(project)) { NiddlerSettings.instance.state.adbPath }
                     field = adbBootstrap.bootStrap()
+                }
+            }
+            field
+        }
+        private set(value) {
+            synchronized(this@NiddlerToolWindow) {
+                field = value
+            }
+        }
+    var sdbInterface: DebugBridgeInterface? = null
+        get() = synchronized(this@NiddlerToolWindow) {
+            val result = field ?: return null
+            if (!result.isRealConnection) {
+                val path = NiddlerSettings.instance.state.sdbPath
+                if (path != null && File(path).let { it.exists() && it.canExecute() }) {
+                    sdbBootstrap = SDBBootstrap(SDBUtils.guessPaths(project)) { NiddlerSettings.instance.state.sdbPath }
+                    field = sdbBootstrap.bootStrap()
                 }
             }
             field
@@ -96,14 +117,15 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
         }, disposable)
 
         adbBootstrap = ADBBootstrap(ADBUtils.guessPaths(project)) { NiddlerSettings.instance.state.adbPath }
-        bootStrapADB()
+        sdbBootstrap = SDBBootstrap(SDBUtils.guessPaths(project)) { NiddlerSettings.instance.state.sdbPath }
+        bootStrapDebugBridges()
     }
 
     fun redoADBBootstrapBlocking() {
         adbInterface = adbBootstrap.bootStrap()
     }
 
-    private fun bootStrapADB() {
+    private fun bootStrapDebugBridges() {
         val loadingContent = JPanel(GridBagLayout())
 
         val labelAndLoading = JPanel(BorderLayout())
@@ -119,6 +141,7 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
 
         Thread({
             adbInterface = adbBootstrap.bootStrap()
+            sdbInterface = sdbBootstrap.bootStrap()
             dispatchMain {
                 remove(loadingContent)
                 setContent(tabsContainer.component)
@@ -127,7 +150,7 @@ class NiddlerToolWindow(private val project: Project, private val disposable: Di
                     newSessionWindow() //Create first session window
                 actionToolbar.updateActionsImmediately()
             }
-        }, "ADB startup").start()
+        }, "Debug Bridge startup").start()
     }
 
     private fun newSessionWindow(): NiddlerSessionWindow {

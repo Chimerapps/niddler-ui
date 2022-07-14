@@ -26,5 +26,6 @@ class NiddlerSettings : PersistentStateComponent<NiddlerSettingsData> {
 
 data class NiddlerSettingsData(
     var adbPath: String? = null,
+    var sdbPath: String? = null,
     var iDeviceBinariesPath: String? = null
 )

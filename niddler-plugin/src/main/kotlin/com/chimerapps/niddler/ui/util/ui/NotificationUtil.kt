@@ -17,7 +17,7 @@ object NotificationUtil {
 
         group.createNotification(message, NotificationType.INFORMATION)
             .setTitle(title)
-            .setListener(RevealFileAction.FILE_SELECTING_LISTENER)
+            .addAction(RevealFileAction())
             .notify(project)
     }
     fun error(title: String, message: String, project: Project?) {
@@ -25,7 +25,7 @@ object NotificationUtil {
 
         group.createNotification(message, NotificationType.ERROR)
             .setTitle(title)
-            .setListener(RevealFileAction.FILE_SELECTING_LISTENER)
+            .addAction(RevealFileAction())
             .notify(project)
     }
     fun debug(title: String, message: String, project: Project?) {
@@ -33,7 +33,7 @@ object NotificationUtil {
 
         group.createNotification(message, NotificationType.INFORMATION)
             .setTitle(title)
-            .setListener(RevealFileAction.FILE_SELECTING_LISTENER)
+            .addAction(RevealFileAction())
             .notify(project)
     }
 
