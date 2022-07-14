@@ -12,6 +12,7 @@ import com.chimerapps.discovery.ui.DefaultSessionIconProvider
 import com.chimerapps.discovery.ui.DiscoveredDeviceConnection
 import com.chimerapps.discovery.ui.LocalizationDelegate
 import com.chimerapps.discovery.ui.ManualConnection
+import com.chimerapps.discovery.ui.PluginConfiguration
 import com.chimerapps.discovery.utils.freePort
 import com.chimerapps.niddler.ui.NiddlerToolWindow
 import com.chimerapps.niddler.ui.actions.ConnectAction
@@ -247,6 +248,7 @@ class NiddlerSessionWindow(
         val result = ConnectDialog.show(
             parent = SwingUtilities.getWindowAncestor(this),
             adbInterface = niddlerToolWindow.adbInterface ?: return,
+            sdbInterface = niddlerToolWindow.sdbInterface ?: return,
             iDeviceBootstrap = IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin")),
             announcementPort = Device.NIDDLER_ANNOUNCEMENT_PORT,
             sessionIconProvider = ProjectSessionIconProvider.instance(
@@ -255,7 +257,11 @@ class NiddlerSessionWindow(
             ),
             configurePluginCallback = {
                 ShowSettingsUtil.getInstance().showSettingsDialog(project, "Niddler")
-                niddlerToolWindow.adbInterface!! to IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin"))
+                PluginConfiguration(
+                    adbInterface = niddlerToolWindow.adbInterface!!,
+                    sdbInterface = niddlerToolWindow.adbInterface!!,
+                    IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin")),
+                )
             },
             localizationDelegate = LocalizationDelegate(),
         ) ?: return
@@ -490,11 +496,12 @@ class NiddlerSessionWindow(
 
     fun connectToProccessOn(serial: String, processId: Int, withDebugger: Boolean) {
         val adb = niddlerToolWindow.adbInterface
+        val sdb = niddlerToolWindow.sdbInterface
         val iDevice = DummyIDeviceBootstrap() //No serial
         val port = Device.NIDDLER_ANNOUNCEMENT_PORT
         object : SwingWorker<DiscoveredDeviceConnection?, Any>() {
             override fun doInBackground(): DiscoveredDeviceConnection? {
-                return SessionFinderUtil(adb, iDevice, port).findSessionWithPiD(processId, withSerial = serial)
+                return SessionFinderUtil(adb, sdb, iDevice, port).findSessionWithPiD(processId, withSerial = serial)
             }
 
             override fun done() {
@@ -506,11 +513,12 @@ class NiddlerSessionWindow(
 
     fun connectToTag(tag: String, withDebugger: Boolean) {
         val adb = niddlerToolWindow.adbInterface
+        val sdb = niddlerToolWindow.sdbInterface
         val iDevice = IDeviceBootstrap(File(NiddlerSettings.instance.state.iDeviceBinariesPath ?: "/usr/local/bin"))
         val port = Device.NIDDLER_ANNOUNCEMENT_PORT
         object : SwingWorker<DiscoveredDeviceConnection?, Any>() {
             override fun doInBackground(): DiscoveredDeviceConnection? {
-                return SessionFinderUtil(adb, iDevice, port).findSessionWithTag(tag)
+                return SessionFinderUtil(adb, sdb, iDevice, port).findSessionWithTag(tag)
             }
 
             override fun done() {

@@ -1,6 +1,5 @@
 package com.chimerapps.discovery.ui
 
-import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
 
@@ -15,6 +14,7 @@ object IncludedLibIcons {
         val emulator = loadIcon("/ic_device_emulator.svg")
         val real = loadIcon("/ic_device_real.svg")
         val realApple = loadIcon("/ic_device_real_apple.svg")
+        val realTizen = loadIcon("/ic_device_tizen.svg")
     }
 
     object Icons {

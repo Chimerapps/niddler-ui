@@ -3,13 +3,14 @@ package com.chimerapps.niddler.ui.util.session
 import com.chimerapps.discovery.device.AnnouncementExtension
 import com.chimerapps.discovery.device.Device
 import com.chimerapps.discovery.device.DiscoveredSession
-import com.chimerapps.discovery.device.adb.ADBInterface
+import com.chimerapps.discovery.device.debugbridge.DebugBridgeInterface
 import com.chimerapps.discovery.device.idevice.IDeviceBootstrap
 import com.chimerapps.discovery.device.local.LocalDevice
 import com.chimerapps.discovery.ui.DiscoveredDeviceConnection
 
 class SessionFinderUtil(
-    private val adbInterface: ADBInterface?,
+    private val adbInterface: DebugBridgeInterface?,
+    private val sdbInterface: DebugBridgeInterface?,
     private val iDeviceBootstrap: IDeviceBootstrap,
     private val port: Int
 ) {
@@ -17,6 +18,7 @@ class SessionFinderUtil(
     fun findSessionWithTag(tag: String): DiscoveredDeviceConnection? {
         findSessionOnDevice(LocalDevice(), tagFinder(tag))?.let { return it }
         adbInterface?.devices?.forEach { device -> findSessionOnDevice(device, tagFinder(tag))?.let { return it } }
+        sdbInterface?.devices?.forEach { device -> findSessionOnDevice(device, tagFinder(tag))?.let { return it } }
         iDeviceBootstrap.devices.forEach { device -> findSessionOnDevice(device, tagFinder(tag))?.let { return it } }
 
         return null
